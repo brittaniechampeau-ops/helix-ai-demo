@@ -1,0 +1,13 @@
+System,Object,Property Name,Property Label,Property Type,Required,Allowed Values,Relationship / Object Notes,Maps To Canonical Entity,Maps To Canonical Attribute,Activation Constraint,Example Value
+HubSpot,Campaign,hs_campaign_name,Campaign Name,Text,Yes,,Campaign record display name,Campaign,campaign_name,Required for campaign creation,AgentOps UK/EU Regulatory Urgency
+HubSpot,Campaign,hs_campaign_status,Campaign Status,Enumeration,Yes,planned;active;paused;completed;archived,Campaign lifecycle status,Campaign,status,Must use HubSpot internal values,planned
+HubSpot,Contact,persona,Persona,Enumeration,No,risk_executive;compliance_executive;technology_executive;ai_leader;cx_leader;unknown,Customer persona property,Persona,persona_group,Must map title to accepted persona value,risk_executive
+HubSpot,Contact,buying_role,Buying Role,Enumeration,No,economic_buyer;champion;technical_buyer;influencer;blocker;unknown,Buying committee role,Buying Committee Role,buying_role,Used for account coverage reporting,champion
+HubSpot,Company,industry,Industry,Enumeration,Yes,financial_services;banking;insurance;wealth_management;fintech;other,Company industry taxonomy,Industry,industry,Required for list building,banking
+HubSpot,Company,region,Region,Enumeration,No,na;emea;apac;global,Company region taxonomy,Region,region,Used for workflow branches,emea
+HubSpot,List,list_name,List Name,Text,Yes,{Campaign}-{Segment},Active list naming convention,Segment,segment_name,Must be unique,AgentOps - EU AI Act Urgency
+HubSpot,List,enrollment_criteria,Enrollment Criteria,Rule JSON,Yes,,Workflow/list filter criteria,Segment,filter_logic,Must use valid property names,industry=banking AND region=emea
+HubSpot,Workflow,workflow_name,Workflow Name,Text,Yes,{Campaign}-{Persona}-{Offer},Workflow naming convention,Campaign Motion,workflow_name,Must be unique,AgentOps-RiskExecutive-Assessment
+HubSpot,Workflow,trigger,Enrollment Trigger,Rule,Yes,,Workflow trigger logic,Audience,trigger_logic,Must reference existing properties/lists,member of list AgentOps - EU AI Act Urgency
+HubSpot,Deal,dealstage,Deal Stage,Enumeration,No,appointmentscheduled;qualifiedtobuy;presentationscheduled;decisionmakerboughtin;contractsent;closedwon;closedlost,Deal stage values,Opportunity,stage,Used for open opportunity segment,qualifiedtobuy
+HubSpot,Contact,lifecyclestage,Lifecycle Stage,Enumeration,No,subscriber;lead;marketingqualifiedlead;salesqualifiedlead;opportunity;customer;evangelist;other,Lifecycle taxonomy,Funnel Stage,lifecycle_stage,Must not overwrite downstream stage without approval,salesqualifiedlead

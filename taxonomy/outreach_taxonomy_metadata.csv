@@ -1,0 +1,11 @@
+System,Object,Field Name,Field Label,Field Type,Required,Allowed Values / Pattern,Relationship / Object Notes,Maps To Canonical Entity,Maps To Canonical Attribute,Activation Constraint,Example Value
+Outreach,Sequence,sequence_name,Sequence Name,Text,Yes,{Campaign}-{Persona}-{Region}-{Offer},Sequence naming convention,Sales Play,sequence_name,Must be unique,AgentOps-CRO-EMEA-Assessment
+Outreach,Sequence,persona_tag,Persona Tag,Picklist,Yes,CRO_Risk;CCO_Compliance;CIO_Tech;CTO_Tech;VP_AI;CX_Leader,Sequence routing tag,Persona,persona_tag,Must map from canonical persona,CRO_Risk
+Outreach,Sequence,buying_role,Buying Role,Picklist,No,Economic Buyer;Champion;Technical Buyer;Influencer;Blocker,Buying committee role for sequence strategy,Buying Committee Role,buying_role,Used for prioritization,Champion
+Outreach,Sequence,territory,Territory,Picklist,Yes,NA;EMEA;APAC,Routing territory,Region,region,Must match rep territory model,EMEA
+Outreach,Sequence,offer,Offer,Picklist,Yes,Readiness Assessment;Pilot;Enterprise Expansion;Webinar,Offer used in sequence CTA,Offer,offer,Required for email templates,Readiness Assessment
+Outreach,Sequence Step,step_type,Step Type,Picklist,Yes,Email;Call;LinkedIn;Task,Cadence step type,Channel,channel,Must be valid Outreach step type,Email
+Outreach,Sequence Step,day_offset,Day Offset,Number,Yes,,Day in sequence,Sales Play,step_timing,Positive integer,3
+Outreach,Prospect,owner,Owner,User Lookup,Yes,,Prospect owner/SDR,Governance Rule,owner_assignment,Must resolve to active user,Alex SDR
+Outreach,Prospect,account_tier,Account Tier,Picklist,No,Tier 1;Tier 2;Tier 3;Strategic,Account priority,Account,account_tier,Used for sequence priority,Tier 1
+Outreach,Prospect,do_not_contact,Do Not Contact,Boolean,Yes,true;false,Compliance suppression,Governance Rule,suppression_flag,Hard stop if true,false

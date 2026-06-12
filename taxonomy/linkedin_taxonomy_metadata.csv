@@ -1,0 +1,10 @@
+System,Object,Field Name,Field Label,Field Type,Required,Allowed Values / Pattern,Relationship / Object Notes,Maps To Canonical Entity,Maps To Canonical Attribute,Activation Constraint,Example Value
+LinkedIn,Matched Audience,audience_name,Audience Name,Text,Yes,{Campaign}-{Segment}-{Region},Matched audience naming convention,Audience,audience_name,Must be unique,AgentOps-EU AI Act-EMEA
+LinkedIn,Matched Audience,account_name,Company Name,Text,Yes,,Account list upload field,Account,account_name,Required for account matching,Deutsche Kommerzbank
+LinkedIn,Matched Audience,company_domain,Company Domain,Text,No,,Improves match rate,Account,domain,Recommended,deutschekommerzbank.de
+LinkedIn,Campaign,objective,Objective,Picklist,Yes,Brand Awareness;Website Visits;Lead Generation;Engagement;Video Views,LinkedIn campaign objective,Campaign Motion,campaign_objective,Must match available LinkedIn objective,Lead Generation
+LinkedIn,Campaign,job_functions,Job Functions,Multi-Select,No,Business Development;Engineering;Finance;Information Technology;Legal;Operations;Product Management;Risk Management,Job targeting taxonomy,Persona,department,Translate personas into job functions,Risk Management
+LinkedIn,Campaign,seniorities,Seniorities,Multi-Select,No,CXO;VP;Director;Manager;Senior;Entry,Seniority targeting,Persona,seniority,Must match LinkedIn seniority labels,CXO
+LinkedIn,Campaign,industries,Industries,Multi-Select,No,Banking;Insurance;Financial Services;Investment Management;Computer Software,Industry targeting,Industry,industry,Must use LinkedIn industry labels,Banking
+LinkedIn,Campaign,locations,Locations,Multi-Select,Yes,United States;United Kingdom;Germany;France;Singapore;Australia,Geo targeting,Region,country,Must use LinkedIn geo IDs in real integration,Germany
+LinkedIn,Ad Creative,campaign_theme,Campaign Theme,Text,No,,Messaging/ad theme,Campaign Motion,campaign_theme,Should align to offer/motion,Regulatory Urgency

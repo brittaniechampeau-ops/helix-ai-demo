@@ -1,0 +1,16 @@
+System,Object,Field / Token Name,Field Label,Field Type,Required,Allowed Values / Pattern,Relationship / Object Notes,Maps To Canonical Entity,Maps To Canonical Attribute,Activation Constraint,Example Value
+Marketo,Program,Program Name,Program Name,String,Yes,{FY}-{Product}-{Region}-{Motion}-{Offer},Program naming convention,Campaign,campaign_name,Must be unique within workspace,FY25-AgentOps-NA-Regulatory-Assessment
+Marketo,Program,Channel,Program Channel,Picklist,Yes,Email;Webinar;Event;Nurture;Paid Media;ABM;Operational,Channel controls available statuses,Channel,channel,Must match Marketo channel type,Email
+Marketo,Program,Program Status,Program Status,Picklist,Yes,Planned;Active;Completed;Archived,Program lifecycle,Campaign,status,Required for program activation,Planned
+Marketo,Program Token,{{my.offer_name}},Offer Name Token,Token,No,,Reusable offer value in emails/landing pages,Offer,offer_name,Must be populated before asset generation,AI Agent Governance Readiness Assessment
+Marketo,Program Token,{{my.persona}},Persona Token,Token,No,Risk Executive;Compliance Executive;Technology Executive;AI Leader;CX Leader,Persona token for dynamic content,Persona,persona_group,Must map from canonical persona,Risk Executive
+Marketo,Program Token,{{my.regulatory_driver}},Regulatory Driver Token,Token,No,EU AI Act;OCC;FCA;MAS;APRA;None,Used for regional messaging,Regulatory Driver,regulatory_driver,Required when regulatory motion is selected,EU AI Act
+Marketo,Program Token,{{my.primary_cta}},Primary CTA Token,Token,No,,CTA copy token,Offer,primary_cta,Required for email/landing page templates,Book Readiness Assessment
+Marketo,Program Token,{{my.region}},Region Token,Token,No,NA;EMEA;APAC;Global,Dynamic regional copy,Region,region,Must match approved region values,EMEA
+Marketo,Smart List,Industry Filter,Industry,Filter,Yes,is;is not;contains;not contains;in list,Audience segmentation filter,Industry,industry,Use CRM industry values mapped to Marketo,Financial Services
+Marketo,Smart List,Person Score,Engagement Score,Filter,No,>;>=;<;<=;is,Engagement threshold filter,Audience,engagement_score,Used for prioritization,75
+Marketo,Smart List,Member of SFDC Campaign,SFDC Campaign Membership,Filter,No,true;false,Connects to Salesforce Campaign,Campaign,campaign_id,Requires SFDC sync,Govern What You've Built — Q1 Launch
+Marketo,Smart List,Job Title,Job Title Filter,Filter,No,contains;is;starts with,Used for persona matching,Persona,title_keywords,"Can be noisy, requires review",Chief Risk Officer
+Marketo,Member Status,Sent,Sent,Status,Yes,,Standard email channel status,Audience Member,member_status,Must align to program channel,Sent
+Marketo,Member Status,Responded,Responded,Status,Yes,,Success status for response,Audience Member,member_status,Channel-specific success status,Responded
+Marketo,Nurture Stream,Stream Name,Nurture Stream,String,No,{Persona} - {Motion},Stream organization,Sales Play,nurture_stream,Should map to persona/motion,Risk Executive - Regulatory Urgency

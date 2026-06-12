@@ -1,0 +1,11 @@
+Discovery Area,Metric,Value,Confidence,Notes
+Systems Detected,Count,5,High,"Salesforce, Marketo, HubSpot, Outreach, LinkedIn"
+Objects Detected,Count,23,High,"Campaign, Contact, Account, Program, Smart List, Workflow, Sequence, Audience, etc."
+Fields Detected,Count,78,High,Across simulated system exports
+Required Fields,Count,27,High,Fields marked Required = Yes
+Picklist / Enumeration Fields,Count,42,High,Fields with allowed values
+Canonical Entities Identified,Count,17,High,"Campaign, Segment, Audience, Persona, Offer, Region, Industry, etc."
+Governance Constraints,Count,8,Medium,"Suppression, required owner, required region, required offer, member statuses"
+Ontology Confidence,Score,94%,High,Demo-quality synthetic org taxonomy
+Primary Risk,Issue,Region mapping requires review,Medium,Western Europe and UK may collapse into EMEA in customer taxonomy
+Primary Blocker,Issue,Budget metadata missing,Medium,Can deploy structure but cannot finalize ROI reporting without budget

@@ -1,0 +1,23 @@
+System,Object,Field API Name,Field Label,Field Type,Required,Allowed Values,Relationship / Object Notes,Maps To Canonical Entity,Maps To Canonical Attribute,Activation Constraint,Example Value
+Salesforce,Campaign,Name,Campaign Name,Text,Yes,,Primary campaign display name,Campaign,campaign_name,Required for campaign creation,AgentOps — North America — Demand Gen
+Salesforce,Campaign,ParentId,Parent Campaign,Lookup,No,,Links child campaign to parent campaign,Campaign,parent_campaign_id,Required for hierarchy import if child campaign,Govern What You've Built — Q1 Launch
+Salesforce,Campaign,Type,Campaign Type,Picklist,Yes,Product Launch;Email;Webinar;Event;Direct Mail;Paid Media;ABM;Other,Standard or customized campaign type,Campaign,campaign_type,Must match existing picklist value,Email
+Salesforce,Campaign,Status,Campaign Status,Picklist,Yes,Planning;In Progress;Active;Completed;Cancelled,Campaign lifecycle status,Campaign,status,Must match existing picklist value,Planning
+Salesforce,Campaign,StartDate,Start Date,Date,Yes,,Campaign start date,Campaign,start_date,YYYY-MM-DD required,2025-01-06
+Salesforce,Campaign,EndDate,End Date,Date,No,,Campaign end date,Campaign,end_date,End date must be after start date,2025-03-31
+Salesforce,Campaign,BudgetedCost,Budgeted Cost,Currency,No,,Budget for campaign ROI reporting,Campaign,budget,Missing budget blocks ROI reporting,50000
+Salesforce,Campaign,ExpectedRevenue,Expected Revenue,Currency,No,,Pipeline or revenue target,Success Metric,expected_revenue,Optional but recommended for campaign ROI,18000000
+Salesforce,Campaign,Region__c,Region,Picklist,Yes,NA;EMEA;APAC;Global,Customer-specific region taxonomy,Region,region,Extracted regions must map to these values,NA
+Salesforce,Campaign,Persona__c,Persona,Multi-Select Picklist,No,Risk Executive;Compliance Executive;Technology Executive;AI Leader;Customer Experience Leader,Customer's persona taxonomy,Persona,persona_group,Must map title-level personas to customer persona groups,Risk Executive
+Salesforce,Campaign,Offer__c,Offer,Picklist,Yes,Readiness Assessment;Pilot Program;Enterprise License;Webinar;Content Download,Campaign offer taxonomy,Offer,offer,Required for activation and reporting,Readiness Assessment
+Salesforce,Campaign,GTM_Motion__c,GTM Motion,Picklist,Yes,Regulatory Urgency;Pipeline Acceleration;Customer Expansion;Executive Education;Competitive Displacement,Motion taxonomy,Campaign Motion,campaign_motion,Must map campaign purpose to approved motion,Regulatory Urgency
+Salesforce,Campaign,Industry_Focus__c,Industry Focus,Multi-Select Picklist,No,Financial Services;Banking;Insurance;Wealth Management;Fintech;Healthcare;Manufacturing;Public Sector,Industry taxonomy,Industry,industry,Use normalized industry values,Financial Services
+Salesforce,CampaignMember,Status,Campaign Member Status,Picklist,Yes,Sent;Responded;Registered;Attended;No Show;Open Opportunity;Customer;Disqualified,Member lifecycle status,Audience Member,member_status,Must align to campaign type,Responded
+Salesforce,Contact,Persona__c,Persona,Picklist,No,Risk Executive;Compliance Executive;Technology Executive;AI Leader;CX Leader;Unknown,Contact-level persona taxonomy,Persona,persona_group,Derived from title and department,Risk Executive
+Salesforce,Contact,Buying_Role__c,Buying Role,Picklist,No,Economic Buyer;Champion;Technical Buyer;Influencer;Blocker;Unknown,Buying committee role taxonomy,Buying Committee Role,buying_role,Should be inferred and reviewed,Champion
+Salesforce,Contact,Department,Department,Picklist,No,Risk;Compliance;Technology;Engineering;AI/ML;Customer Experience;Legal;Procurement;Security;Other,Standard department taxonomy,Persona,department,Used for persona and committee mapping,Risk
+Salesforce,Account,Industry,Industry,Picklist,Yes,Financial Services;Banking;Insurance;Wealth Management;Fintech;Healthcare;Manufacturing;Technology;Other,Account industry taxonomy,Industry,industry,Required for segmentation,Banking
+Salesforce,Account,Region__c,Region,Picklist,Yes,NA;EMEA;APAC;Global,Account region taxonomy,Region,region,Required for territory segmentation,EMEA
+Salesforce,Account,Account_Tier__c,Account Tier,Picklist,No,Tier 1;Tier 2;Tier 3;Strategic;Named,Account prioritization taxonomy,Account,account_tier,Used for priority scoring,Tier 1
+Salesforce,Account,AI_Maturity__c,AI Maturity,Picklist,No,Unknown;Exploring;Piloting;Production;Scaled,Custom signal for AI readiness,Account Signal,ai_maturity,Optional but high-value for targeting,Production
+Salesforce,Opportunity,StageName,Opportunity Stage,Picklist,Yes,Prospecting;Qualification;Discovery;Proposal;Negotiation;Closed Won;Closed Lost,Pipeline stage taxonomy,Opportunity,stage,Used for acceleration motion,Discovery
