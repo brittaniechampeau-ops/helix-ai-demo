@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "helix-demo",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-s", "assets", "-l", "3131"],
+      "port": 3131
+    }
+  ]
+}

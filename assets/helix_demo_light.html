@@ -313,6 +313,14 @@
     padding: 20px; margin-bottom: 18px; box-shadow: var(--shadow-md);
   }
 
+  /* ── GAUGE BARS ── */
+  .gauge-bars { flex: 1; }
+  .gauge-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 11px; }
+  .gauge-label { width: 160px; color: var(--txt3); }
+  .gauge-bar-wrap { flex: 1; background: var(--surface3); border-radius: 3px; height: 5px; }
+  .gauge-bar { height: 5px; border-radius: 3px; background: var(--accent); }
+  .gauge-score { width: 30px; text-align: right; color: var(--txt2); font-family: var(--mono); font-size: 11px; }
+
   /* ── SCROLLBAR ── */
   ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -336,7 +344,7 @@
     </div>
   </div>
   <div class="topbar-right">
-    <span class="badge badge-green">Ontology: Ready</span>
+    <span class="badge badge-green">Ontology: Active</span>
     <span class="badge badge-green">DNA: 91% Confidence</span>
     <span class="badge badge-accent">Canonical Model: Active</span>
   </div>
@@ -351,7 +359,7 @@
   <div class="step-arrow">›</div>
   <button class="step-btn done" onclick="showStep(2)">
     <div class="snum"><span class="n">2</span></div>
-    Strategy Discovery
+    Strategy Context Discovery
   </button>
   <div class="step-arrow">›</div>
   <button class="step-btn active" onclick="showStep(3)">
@@ -361,12 +369,12 @@
   <div class="step-arrow">›</div>
   <button class="step-btn" onclick="showStep(4)">
     <div class="snum"><span class="n">4</span></div>
-    Asset Generation
+    Generated Assets
   </button>
   <div class="step-arrow">›</div>
   <button class="step-btn" onclick="showStep(5)">
     <div class="snum"><span class="n">5</span></div>
-    Deployment Center
+    Institutional Memory
   </button>
 </div>
 
@@ -391,8 +399,8 @@
     </div>
     <div class="sidebar-section">
       <div class="sidebar-label">Activation</div>
-      <div class="sidebar-item" onclick="showStep(4)"><span class="icon">⚙</span> Asset Generator <span class="s-status s-active">38 ready</span></div>
-      <div class="sidebar-item" onclick="showStep(5)"><span class="icon">🚀</span> Deploy Center</div>
+      <div class="sidebar-item" onclick="showStep(4)"><span class="icon">⚙</span> Generated Assets <span class="s-status s-active">38 ready</span></div>
+      <div class="sidebar-item" onclick="showStep(5)"><span class="icon">🧠</span> Inst. Memory</div>
     </div>
     <div class="sidebar-section">
       <div class="sidebar-label">Connections</div>
@@ -406,11 +414,11 @@
   <!-- CONTENT -->
   <div class="content">
 
-    <!-- ══ STEP 1 ══ -->
+    <!-- ══ STEP 1: ORG CONTEXT DISCOVERY ══ -->
     <div class="step-panel" id="step-1">
       <div class="step-header">
         <h1>🏛 Org Context Discovery</h1>
-        <p>Helix learns how your organization operates — its systems, language, and governance rules — before activating any strategy.</p>
+        <p>Discovery Engine 1 of 2. Before any strategy is introduced, Helix learns how this organization operates — its systems, schemas, naming conventions, and governance rules. This is the operating model that every strategy must translate into.</p>
       </div>
 
       <div class="two-col">
@@ -419,13 +427,55 @@
           <div class="card">
             <div class="card-header"><div class="card-title">Source Files</div><span class="badge badge-green">7 processed</span></div>
             <div class="asset-list">
-              <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">📊</div><div><div class="asset-name">sf_campaign_export_q4.csv</div><div class="asset-meta">Salesforce · 1,247 campaigns · 38 fields</div></div></div><span class="badge badge-green">✓</span></div>
-              <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">📊</div><div><div class="asset-name">sf_contact_field_metadata.xml</div><div class="asset-meta">Salesforce · 184 fields · 22 picklists</div></div></div><span class="badge badge-green">✓</span></div>
-              <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">📊</div><div><div class="asset-name">sf_opportunity_stages.csv</div><div class="asset-meta">Salesforce · 9 stages · weighted pipeline</div></div></div><span class="badge badge-green">✓</span></div>
-              <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">📋</div><div><div class="asset-name">marketo_program_export.xlsx</div><div class="asset-meta">Marketo · 312 programs · token structure</div></div></div><span class="badge badge-green">✓</span></div>
-              <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">📄</div><div><div class="asset-name">gtm_naming_conventions_v3.pdf</div><div class="asset-meta">Governance doc · 22 pages</div></div></div><span class="badge badge-green">✓</span></div>
-              <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">📊</div><div><div class="asset-name">outreach_sequence_library.csv</div><div class="asset-meta">Outreach · 47 sequences · 8 personas</div></div></div><span class="badge badge-green">✓</span></div>
-              <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">📄</div><div><div class="asset-name">campaign_taxonomy_master.xlsx</div><div class="asset-meta">Taxonomy · 6 dimensions · 89 picklist values</div></div></div><span class="badge badge-green">✓</span></div>
+              <div class="asset-row">
+                <div class="asset-row-left">
+                  <div class="asset-icon">📊</div>
+                  <div><div class="asset-name">sf_campaign_export_q4.csv</div><div class="asset-meta">Salesforce · 1,247 campaigns · 38 fields</div></div>
+                </div>
+                <span class="badge badge-green">✓</span>
+              </div>
+              <div class="asset-row">
+                <div class="asset-row-left">
+                  <div class="asset-icon">📊</div>
+                  <div><div class="asset-name">sf_contact_field_metadata.xml</div><div class="asset-meta">Salesforce · 184 fields · 22 picklists</div></div>
+                </div>
+                <span class="badge badge-green">✓</span>
+              </div>
+              <div class="asset-row">
+                <div class="asset-row-left">
+                  <div class="asset-icon">📊</div>
+                  <div><div class="asset-name">sf_opportunity_stages.csv</div><div class="asset-meta">Salesforce · 9 stages · weighted pipeline</div></div>
+                </div>
+                <span class="badge badge-green">✓</span>
+              </div>
+              <div class="asset-row">
+                <div class="asset-row-left">
+                  <div class="asset-icon">📋</div>
+                  <div><div class="asset-name">marketo_program_export.xlsx</div><div class="asset-meta">Marketo · 312 programs · token structure</div></div>
+                </div>
+                <span class="badge badge-green">✓</span>
+              </div>
+              <div class="asset-row">
+                <div class="asset-row-left">
+                  <div class="asset-icon">📄</div>
+                  <div><div class="asset-name">gtm_naming_conventions_v3.pdf</div><div class="asset-meta">Governance doc · 22 pages</div></div>
+                </div>
+                <span class="badge badge-green">✓</span>
+              </div>
+              <div class="asset-row">
+                <div class="asset-row-left">
+                  <div class="asset-icon">📊</div>
+                  <div><div class="asset-name">outreach_sequence_library.csv</div><div class="asset-meta">Outreach · 47 sequences · 8 personas</div></div>
+                </div>
+                <span class="badge badge-green">✓</span>
+              </div>
+              <div class="asset-row">
+                <div class="asset-row-left">
+                  <div class="asset-icon">📄</div>
+                  <div><div class="asset-name">campaign_taxonomy_master.xlsx</div><div class="asset-meta">Taxonomy · 6 dimensions · 89 picklist values</div></div>
+                </div>
+                <span class="badge badge-green">✓</span>
+              </div>
             </div>
           </div>
         </div>
@@ -434,13 +484,14 @@
           <div class="section-label">Customer GTM Ontology — Output</div>
           <div class="card">
             <div class="card-header"><div class="card-title">Systems Discovered</div></div>
-            <div class="check-row"><span>☁</span><span class="label">Salesforce</span><span class="badge badge-accent">CRM</span></div>
-            <div class="check-row"><span>◈</span><span class="label">Marketo</span><span class="badge badge-accent">MAP</span></div>
-            <div class="check-row"><span>🔷</span><span class="label">Outreach</span><span class="badge badge-accent">SEP</span></div>
-            <div class="check-row"><span>◉</span><span class="label">LinkedIn Campaign Manager</span><span class="badge badge-accent">Paid</span></div>
+            <div class="check-row"><span style="color:var(--green)">☁</span><span class="label">Salesforce</span><span class="badge badge-green">CRM</span></div>
+            <div class="check-row"><span style="color:var(--accent)">◈</span><span class="label">Marketo</span><span class="badge badge-green">MAP</span></div>
+            <div class="check-row"><span style="color:var(--txt3)">🔷</span><span class="label">Outreach</span><span class="badge badge-green">SEP</span></div>
+            <div class="check-row"><span style="color:var(--txt3)">◉</span><span class="label">LinkedIn Campaign Manager</span><span class="badge badge-green">Paid</span></div>
           </div>
+
           <div class="card">
-            <div class="card-header"><div class="card-title">Schema Discovered</div></div>
+            <div class="card-header"><div class="card-title">Schema Indexed</div></div>
             <div class="kv-row"><span class="kv-key">Total fields indexed</span><span class="kv-val mono">247</span></div>
             <div class="kv-row"><span class="kv-key">Custom Salesforce fields</span><span class="kv-val mono">63</span></div>
             <div class="kv-row"><span class="kv-key">Picklists discovered</span><span class="kv-val mono">22</span></div>
@@ -448,80 +499,112 @@
             <div class="kv-row"><span class="kv-key">Marketo token types</span><span class="kv-val mono">8</span></div>
             <div class="kv-row"><span class="kv-key">Outreach sequence templates</span><span class="kv-val mono">47</span></div>
           </div>
-          <div class="card">
-            <div class="card-header"><div class="card-title">Naming Convention Detected</div><span class="badge badge-accent">High Confidence</span></div>
-            <div style="padding: 8px 10px; background: var(--surface2); border-radius: 6px; margin-bottom: 10px; font-family: var(--mono); font-size: 12px; color: var(--accent);">[Product] — [Region] — [Motion] — [Quarter]</div>
-            <div class="kv-row"><span class="kv-key">Validated against</span><span class="kv-val">1,247 campaigns</span></div>
-            <div class="kv-row"><span class="kv-key">Compliance rate</span><span class="kv-val" style="color:var(--amber)">84% (16% non-compliant)</span></div>
-          </div>
-          <div class="warn-row"><span class="wicon">⚠</span><div class="wtext"><strong>ICP_Tier__c</strong> picklist values differ between Salesforce and Marketo token structure — conflict flagged for Canonical Model resolution.</div></div>
         </div>
       </div>
 
-      <div class="section-label">Key Picklists Discovered</div>
       <div class="two-col">
-        <div class="card">
-          <div class="card-header"><div class="card-title">Campaign_Type__c (12 values)</div></div>
-          <div><span class="tag">Product Launch</span><span class="tag">Demand Gen</span><span class="tag">ABM</span><span class="tag">Webinar</span><span class="tag">Event</span><span class="tag">Nurture</span><span class="tag">Partner</span><span class="tag">Trial</span><span class="tag">Customer</span><span class="tag">Field</span><span class="tag">Content Synd</span><span class="tag">Direct Mail</span></div>
+        <div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Naming Convention Detected</div><span class="badge badge-accent">High Confidence</span></div>
+            <div style="padding: 8px 12px; background: var(--accent-lt); border-radius: 6px; margin-bottom: 10px; border: 1px solid rgba(91,94,244,0.15);">
+              <div class="mono" style="font-size:12px;">[Product] — [Region] — [Motion] — [Quarter]</div>
+            </div>
+            <div class="kv-row"><span class="kv-key">Example observed</span><span class="kv-val mono" style="font-size:10px;">AgentOps — NA — DemandGen — Q4</span></div>
+            <div class="kv-row"><span class="kv-key">Validated against</span><span class="kv-val">1,247 campaigns</span></div>
+            <div class="kv-row"><span class="kv-key">Compliance rate</span><span class="kv-val" style="color:var(--amber)">84% (16% non-compliant)</span></div>
+            <div style="margin-top:8px; font-size:11px; color:var(--txt3);">All campaign records generated by Helix will follow this pattern.</div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Governance Constraints</div></div>
+            <div class="warn-row"><span class="wicon">⚠</span><div class="wtext"><strong>Campaign_Type__c</strong> is required before contact assignment — 11 existing campaigns violate this rule</div></div>
+            <div class="warn-row"><span class="wicon">⚠</span><div class="wtext"><strong>ICP_Tier__c</strong> picklist values differ between Salesforce and Marketo token structure — conflict flagged for canonical resolution</div></div>
+            <div style="margin-top:8px; font-size:11px; color:var(--txt3);">These constraints are applied before any asset is generated. Helix will not produce records that violate them.</div>
+          </div>
         </div>
-        <div class="card">
-          <div class="card-header"><div class="card-title">Target_Persona__c (8 values)</div></div>
-          <div><span class="tag tag-accent">CRO</span><span class="tag tag-accent">CCO</span><span class="tag tag-accent">CIO</span><span class="tag tag-accent">CTO</span><span class="tag">VP AI</span><span class="tag">Head of CX</span><span class="tag">CISO</span><span class="tag">VP Eng</span></div>
+        <div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Org Vocabulary — Key Picklists</div></div>
+            <div class="section-label" style="margin-top:4px;">Campaign_Type__c (12 values)</div>
+            <div>
+              <span class="tag">Product Launch</span><span class="tag">Demand Gen</span><span class="tag">ABM</span>
+              <span class="tag">Webinar</span><span class="tag">Event</span><span class="tag">Nurture</span>
+              <span class="tag">Partner</span><span class="tag">Trial</span><span class="tag">Customer</span>
+              <span class="tag">Field</span><span class="tag">Content Synd</span><span class="tag">Direct Mail</span>
+            </div>
+            <div class="section-label">Target_Persona__c (8 values)</div>
+            <div>
+              <span class="tag">CRO</span><span class="tag">CCO</span><span class="tag">CIO</span>
+              <span class="tag">CTO</span><span class="tag">VP AI</span><span class="tag">Head of CX</span>
+              <span class="tag">CISO</span><span class="tag">VP Eng</span>
+            </div>
+            <div class="section-label">ICP_Tier__c (3 values)</div>
+            <div>
+              <span class="tag tag-accent">Tier 1</span><span class="tag tag-accent">Tier 2</span><span class="tag">Tier 3</span>
+            </div>
+            <div class="section-label">Opportunity_Stage (9 values)</div>
+            <div>
+              <span class="tag">Discovery</span><span class="tag">Qualification</span><span class="tag">Pilot</span>
+              <span class="tag">Proposal</span><span class="tag">Negotiation</span><span class="tag">Closed Won</span>
+              <span class="tag">Closed Lost</span><span class="tag">On Hold</span><span class="tag">Champion</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- ══ STEP 2 ══ -->
+
+    <!-- ══ STEP 2: STRATEGY CONTEXT DISCOVERY ══ -->
     <div class="step-panel" id="step-2">
       <div class="step-header">
         <h1>🧬 Strategy Context Discovery</h1>
-        <p>Helix reads your GTM strategy — decks, briefs, ICPs, sales plays — and extracts structured campaign execution context.</p>
+        <p>Discovery Engine 2 of 2. Helix reads the GTM strategy across multiple documents and extracts everything execution requires. Every field is labeled by how it was produced: explicit in the source, inferred from context, or identified as missing.</p>
       </div>
 
       <div class="summary-card">
-        <div style="text-align:center; margin-bottom:16px;">
-          <div style="font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--txt3); margin-bottom:5px;">HELIX AI · GTM CONTEXT EXTRACTION</div>
-          <div style="font-size:16px; font-weight:700; color:var(--txt); margin-bottom:2px;">Northstar AgentOps — Govern What You've Built</div>
-          <div style="font-size:11px; color:var(--txt3);">Extracted from 17-slide PPTX · 2025-06-12</div>
+        <div style="text-align:center; padding: 4px 0 14px;">
+          <div style="font-size:11px; font-weight:600; letter-spacing:0.8px; text-transform:uppercase; color:var(--txt3); margin-bottom:6px;">HELIX AI · STRATEGY CONTEXT EXTRACTION</div>
+          <div style="font-size:14px; font-weight:700; color:var(--txt); margin-bottom:2px;">Northstar AgentOps — Govern What You've Built</div>
+          <div style="font-size:11px; color:var(--txt3);">Extracted from 3 strategy documents · 2025-06-12</div>
         </div>
-        <div style="display:flex; justify-content:center; align-items:center; gap:16px; margin-bottom:18px;">
+        <div style="display:flex; justify-content:center; margin-bottom:16px;">
           <div class="conf-score">91%</div>
-          <div>
-            <div style="font-size:12px; color:var(--txt2); font-weight:600;">Confidence Score — High</div>
-            <div style="font-size:11px; color:var(--txt3);">12 inferred fields · 7 missing</div>
+          <div style="margin-left:12px; padding-top:6px;">
+            <div style="font-size:11px; color:var(--txt3);">Extraction Confidence</div>
+            <div style="font-size:11px; color:var(--txt2);">High · 12 fields inferred · 7 gaps identified</div>
           </div>
         </div>
-        <div class="three-col">
-          <div style="background:var(--green-lt); border:1px solid rgba(13,158,110,0.2); border-radius:8px; padding:12px;">
-            <div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.6px; color:var(--green); margin-bottom:8px;">✓ DISCOVERED</div>
+        <div class="three-col" style="margin-bottom:12px;">
+          <div style="background:var(--surface); border-radius:8px; padding:10px; border:1px solid var(--border);">
+            <div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.6px; color:var(--txt3); margin-bottom:8px;">EXTRACTED</div>
             <div class="check-row"><span style="color:var(--green)">✓</span><span class="label">6 Buyer Personas</span></div>
             <div class="check-row"><span style="color:var(--green)">✓</span><span class="label">6 Audience Segments</span></div>
             <div class="check-row"><span style="color:var(--green)">✓</span><span class="label">4 Target Industries</span></div>
-            <div class="check-row"><span style="color:var(--green)">✓</span><span class="label">3 Offers Defined</span></div>
+            <div class="check-row"><span style="color:var(--green)">✓</span><span class="label">3 Offers</span></div>
             <div class="check-row"><span style="color:var(--green)">✓</span><span class="label">5 Campaign Motions</span></div>
+            <div class="check-row"><span style="color:var(--green)">✓</span><span class="label">4 Sales Plays</span></div>
             <div class="check-row"><span style="color:var(--green)">✓</span><span class="label">10 Regulatory Triggers</span></div>
           </div>
-          <div style="background:var(--accent-lt); border:1px solid rgba(91,94,244,0.2); border-radius:8px; padding:12px;">
-            <div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.6px; color:var(--accent); margin-bottom:8px;">⚡ GENERATED</div>
-            <div class="check-row"><span style="color:var(--accent)">→</span><span class="label">9 Salesforce Campaigns</span></div>
-            <div class="check-row"><span style="color:var(--accent)">→</span><span class="label">6 Segment Definitions</span></div>
-            <div class="check-row"><span style="color:var(--accent)">→</span><span class="label">6 Persona Templates</span></div>
-            <div class="check-row"><span style="color:var(--accent)">→</span><span class="label">1 Buying Committee Map</span></div>
-            <div class="check-row"><span style="color:var(--accent)">→</span><span class="label">Boolean Targeting Rules</span></div>
-            <div class="check-row"><span style="color:var(--accent)">→</span><span class="label">Offer Sequencing Path</span></div>
+          <div style="background:var(--surface); border-radius:8px; padding:10px; border:1px solid var(--border);">
+            <div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.6px; color:var(--txt3); margin-bottom:8px;">STRUCTURED</div>
+            <div class="check-row"><span style="color:var(--green)">✓</span><span class="label">9 Campaign Records</span></div>
+            <div class="check-row"><span style="color:var(--green)">✓</span><span class="label">6 Segment Definitions</span></div>
+            <div class="check-row"><span style="color:var(--green)">✓</span><span class="label">6 Persona Templates</span></div>
+            <div class="check-row"><span style="color:var(--green)">✓</span><span class="label">1 Buying Committee</span></div>
+            <div class="check-row"><span style="color:var(--green)">✓</span><span class="label">Targeting Rules</span></div>
+            <div class="check-row"><span style="color:var(--green)">✓</span><span class="label">Offer Mapping</span></div>
           </div>
-          <div style="background:var(--amber-lt); border:1px solid rgba(180,83,9,0.2); border-radius:8px; padding:12px;">
-            <div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.6px; color:var(--amber); margin-bottom:8px;">⚠ ATTENTION</div>
-            <div class="check-row"><span style="color:var(--amber)">⚠</span><span class="label">7 Missing Inputs</span></div>
-            <div class="check-row"><span style="color:var(--amber)">⚠</span><span class="label">8 Data Quality Risks</span></div>
+          <div style="background:var(--amber-lt); border-radius:8px; padding:10px; border:1px solid rgba(180,83,9,0.2);">
+            <div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.6px; color:var(--amber); margin-bottom:8px;">GAPS FLAGGED</div>
+            <div class="check-row"><span style="color:var(--amber)">⚠</span><span class="label">7 Missing Fields</span></div>
             <div class="check-row"><span style="color:var(--amber)">⚠</span><span class="label">12 Inferred Fields</span></div>
-            <div class="check-row"><span style="color:var(--amber)">⚠</span><span class="label">2 Compliance Flags</span></div>
+            <div class="check-row"><span style="color:var(--amber)">⚠</span><span class="label">3 Cross-System Conflicts</span></div>
+            <div style="margin-top:8px; font-size:10px; color:var(--amber);">Conflicts resolved in Canonical Model. Missing fields require human input.</div>
           </div>
         </div>
-        <div class="two-col" style="margin-top:14px; font-size:12px;">
+        <div class="two-col" style="font-size:11px;">
           <div class="kv-row"><span class="kv-key">Product</span><span class="kv-val">Northstar AgentOps</span></div>
+          <div class="kv-row"><span class="kv-key">Primary CTA</span><span class="kv-val">Book Readiness Assessment → northstar.ai/assess</span></div>
           <div class="kv-row"><span class="kv-key">SQL Goal</span><span class="kv-val">200 SQLs in 90 days</span></div>
-          <div class="kv-row"><span class="kv-key">Primary CTA</span><span class="kv-val">northstar.ai/assess</span></div>
           <div class="kv-row"><span class="kv-key">Deal Range</span><span class="kv-val">$180K – $450K ARR</span></div>
         </div>
       </div>
@@ -576,40 +659,40 @@
       </div>
     </div>
 
-    <!-- ══ STEP 3 ══ -->
+
+    <!-- ══ STEP 3: CANONICAL GTM MODEL ══ -->
     <div class="step-panel active" id="step-3">
       <div class="step-header">
         <h1>⟷ Canonical GTM Model</h1>
-        <p>Helix aligns your Org Ontology with your Campaign DNA to create a unified mapping layer — the translation engine between strategy and execution.</p>
+        <p>The translation layer. Helix holds the org's operating model and the campaign's strategy requirements simultaneously — resolves every conflict between them, enforces governance, and produces a unified model that every connected system can act on. This is the product.</p>
       </div>
 
-      <!-- Architecture Diagram -->
       <div class="card" style="margin-bottom:18px;">
         <div style="display:flex; align-items:center; justify-content:center; gap:14px; padding:8px 0; flex-wrap:wrap;">
           <div class="arch-box">
-            <div class="arch-label c-dim">Org Ontology</div>
-            <div class="arch-name">Customer GTM Language</div>
+            <div class="arch-label c-dim">ORG ONTOLOGY</div>
+            <div class="arch-name">Operating Model</div>
             <div class="arch-sub">Systems · Fields · Picklists<br>Naming · Governance</div>
           </div>
-          <div style="display:flex; flex-direction:column; align-items:center; gap:3px;">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
             <div style="width:50px; height:2px; background:linear-gradient(90deg, var(--border2), var(--accent));"></div>
-            <div style="font-size:20px; color:var(--accent); font-weight:700;">⟷</div>
+            <div style="font-size:16px; color:var(--accent);">⟷</div>
             <div style="width:50px; height:2px; background:linear-gradient(90deg, var(--accent), var(--green));"></div>
-            <div style="font-size:10px; color:var(--txt3); letter-spacing:0.5px; font-weight:600;">HELIX MAPS</div>
+            <div style="font-size:9px; font-weight:700; letter-spacing:0.6px; color:var(--txt3); text-transform:uppercase;">HELIX RESOLVES</div>
           </div>
           <div class="arch-box accent">
-            <div class="arch-label c-accent">Canonical Model</div>
-            <div class="arch-name">Universal GTM Objects</div>
+            <div class="arch-label c-accent">CANONICAL MODEL</div>
+            <div class="arch-name">Translation Layer</div>
             <div class="arch-sub">Aligned · Normalized<br>System-agnostic</div>
           </div>
-          <div style="display:flex; flex-direction:column; align-items:center; gap:3px;">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
             <div style="width:50px; height:2px; background:linear-gradient(90deg, var(--accent), var(--green));"></div>
-            <div style="font-size:20px; color:var(--green); font-weight:700;">→</div>
+            <div style="font-size:16px; color:var(--green);">→</div>
             <div style="width:50px; height:2px; background:linear-gradient(90deg, var(--green), var(--border2));"></div>
-            <div style="font-size:10px; color:var(--txt3); letter-spacing:0.5px; font-weight:600;">ACTIVATES</div>
+            <div style="font-size:9px; font-weight:700; letter-spacing:0.6px; color:var(--txt3); text-transform:uppercase;">ACTIVATES</div>
           </div>
           <div class="arch-box green">
-            <div class="arch-label c-green">Campaign DNA</div>
+            <div class="arch-label c-green">CAMPAIGN DNA</div>
             <div class="arch-name">Strategy Requirements</div>
             <div class="arch-sub">Personas · Segments<br>Offers · Sales Plays</div>
           </div>
@@ -637,6 +720,11 @@
               <div class="map-right"><span class="field-chip fc-right">icp.account_tier</span><br>segment.tier</div>
             </div>
             <div class="map-row">
+              <div class="map-left"><span class="field-chip fc-left">Region__c</span><br>North America / UK / EU</div>
+              <div class="map-arrow">↔</div>
+              <div class="map-right"><span class="field-chip fc-right">icp.geography</span><br>segment.region</div>
+            </div>
+            <div class="map-row">
               <div class="map-left"><span class="field-chip fc-left">Target_Industry__c</span><br>Banking / Insurance</div>
               <div class="map-arrow">↔</div>
               <div class="map-right"><span class="field-chip fc-right">icp.industries</span><br>segment.industry</div>
@@ -652,22 +740,28 @@
               <div class="map-right"><span class="field-chip fc-right">regulatory_triggers</span><br>messaging.urgency</div>
             </div>
           </div>
+
           <div class="card">
             <div class="card-header"><div class="card-title">Marketo ↔ Canonical</div><span class="badge badge-green">24 tokens mapped</span></div>
             <div class="map-row">
-              <div class="map-left"><span class="field-chip fc-left">&#123;&#123;my.Persona&#125;&#125;</span><br>Marketo token</div>
+              <div class="map-left"><span class="field-chip fc-left">{{my.Persona}}</span><br>Marketo token</div>
               <div class="map-arrow">↔</div>
               <div class="map-right"><span class="field-chip fc-right">persona.name</span><br>Canonical persona</div>
             </div>
             <div class="map-row">
-              <div class="map-left"><span class="field-chip fc-left">&#123;&#123;my.CTA_Text&#125;&#125;</span><br>Marketo token</div>
+              <div class="map-left"><span class="field-chip fc-left">{{my.CTA_Text}}</span><br>Marketo token</div>
               <div class="map-arrow">↔</div>
               <div class="map-right"><span class="field-chip fc-right">campaign.primary_cta</span><br>Canonical CTA</div>
             </div>
             <div class="map-row">
-              <div class="map-left"><span class="field-chip fc-left">&#123;&#123;my.Offer&#125;&#125;</span><br>Marketo token</div>
+              <div class="map-left"><span class="field-chip fc-left">{{my.Offer}}</span><br>Marketo token</div>
               <div class="map-arrow">↔</div>
               <div class="map-right"><span class="field-chip fc-right">offers.primary_offer</span><br>Canonical offer</div>
+            </div>
+            <div class="map-row">
+              <div class="map-left"><span class="field-chip fc-left">Program.Channel</span><br>Marketo channel</div>
+              <div class="map-arrow">↔</div>
+              <div class="map-right"><span class="field-chip fc-right">campaign.channel</span><br>Canonical channel</div>
             </div>
           </div>
         </div>
@@ -675,58 +769,80 @@
         <div>
           <div class="section-label">Canonical GTM Model — Objects</div>
           <div class="card">
-            <div class="card-header"><div class="card-title">Model Objects (16)</div><span class="badge badge-accent">Internal</span></div>
+            <div class="card-header"><div class="card-title">Universal Objects (16)</div><span class="badge badge-accent">System-agnostic</span></div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px;">
-              <span class="tag tag-accent">Campaign</span><span class="tag tag-accent">Segment</span>
-              <span class="tag tag-accent">Audience</span><span class="tag tag-accent">Persona</span>
-              <span class="tag tag-accent">Buying Committee Role</span><span class="tag tag-accent">Offer</span>
-              <span class="tag tag-accent">Industry</span><span class="tag tag-accent">Region</span>
-              <span class="tag tag-accent">Product</span><span class="tag tag-accent">Use Case</span>
-              <span class="tag tag-accent">Funnel Stage</span><span class="tag tag-accent">Regulatory Driver</span>
-              <span class="tag tag-accent">Success Metric</span><span class="tag tag-accent">Channel</span>
-              <span class="tag tag-accent">Sales Play</span><span class="tag tag-accent">Governance Rule</span>
+              <div class="tag tag-accent">Campaign</div>
+              <div class="tag tag-accent">Segment</div>
+              <div class="tag tag-accent">Audience</div>
+              <div class="tag tag-accent">Persona</div>
+              <div class="tag tag-accent">Buying Committee Role</div>
+              <div class="tag tag-accent">Offer</div>
+              <div class="tag tag-accent">Industry</div>
+              <div class="tag tag-accent">Region</div>
+              <div class="tag tag-accent">Product</div>
+              <div class="tag tag-accent">Use Case</div>
+              <div class="tag tag-accent">Funnel Stage</div>
+              <div class="tag tag-accent">Regulatory Driver</div>
+              <div class="tag tag-accent">Success Metric</div>
+              <div class="tag tag-accent">Channel</div>
+              <div class="tag tag-accent">Sales Play</div>
+              <div class="tag tag-accent">Governance Rule</div>
             </div>
           </div>
 
-          <div class="section-label">Resolved Conflicts</div>
-          <div class="ok-row"><span class="wicon">✓</span><div class="wtext"><strong>Persona label mismatch resolved</strong> — Salesforce "VP AI" mapped to Marketo "AI Leader" via Canonical persona object.</div></div>
-          <div class="ok-row"><span class="wicon">✓</span><div class="wtext"><strong>ICP Tier aligned</strong> — Salesforce "Tier 1/2" ↔ Marketo "Enterprise/Mid-Market" mapped to Canonical account_tier.</div></div>
-          <div class="ok-row"><span class="wicon">✓</span><div class="wtext"><strong>Naming convention enforced</strong> — 9 campaigns will be created: "AgentOps — [Region] — [Motion] — Q1"</div></div>
-          <div class="warn-row" style="margin-top:6px;"><span class="wicon">⚠</span><div class="wtext"><strong>Budget fields</strong> — Salesforce Budgeted_Cost__c cannot be auto-populated. Requires campaign owner input.</div></div>
-
-          <div class="section-label">Governance Rules Applied</div>
           <div class="card">
+            <div class="card-header"><div class="card-title">Conflicts Resolved</div></div>
+            <div class="ok-row">
+              <span class="wicon">✓</span>
+              <div class="wtext"><strong>Persona label mismatch — resolved</strong><br><span style="font-size:11px;">Salesforce "VP AI" and Marketo "AI Leader" are the same persona. Both now map to canonical "VP AI". Without this, the same person would have received assets built on conflicting labels.</span></div>
+            </div>
+            <div class="ok-row">
+              <span class="wicon">✓</span>
+              <div class="wtext"><strong>ICP Tier misalignment — resolved</strong><br><span style="font-size:11px;">Salesforce "Tier 1/2" and Marketo "Enterprise/Mid-Market" now map to canonical account_tier. Segmentation rules produce consistent results across both systems.</span></div>
+            </div>
+            <div class="ok-row">
+              <span class="wicon">✓</span>
+              <div class="wtext"><strong>Naming convention enforced</strong><br><span style="font-size:11px;">All 9 campaign records follow the detected pattern: "AgentOps — [Region] — [Motion] — Q1". 16% of historical campaigns were non-compliant. None of Helix's output will be.</span></div>
+            </div>
+
+            <div class="section-label" style="margin-top:10px;">Requires Human Input</div>
+            <div class="warn-row"><span class="wicon">⚠</span><div class="wtext"><strong>Budget field</strong> — Salesforce Budgeted_Cost__c cannot be populated from strategy context. This is the only required field Helix cannot resolve. All others are populated.</div></div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><div class="card-title">Governance — Applied</div></div>
             <div class="kv-row"><span class="kv-key">Naming convention</span><span class="kv-val" style="color:var(--green)">Enforced</span></div>
             <div class="kv-row"><span class="kv-key">Required SF fields</span><span class="kv-val" style="color:var(--green)">11/11 populated</span></div>
             <div class="kv-row"><span class="kv-key">Picklist compliance</span><span class="kv-val" style="color:var(--green)">100% valid values</span></div>
             <div class="kv-row"><span class="kv-key">DO NOT CONTACT</span><span class="kv-val" style="color:var(--green)">2 records excluded</span></div>
-            <div class="kv-row"><span class="kv-key">Duplicate contacts</span><span class="kv-val" style="color:var(--amber)">3 pairs flagged</span></div>
+            <div class="kv-row"><span class="kv-key">Duplicate contacts</span><span class="kv-val" style="color:var(--green)">3 pairs flagged</span></div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ══ STEP 4 ══ -->
+
+    <!-- ══ STEP 4: GENERATED ASSETS ══ -->
     <div class="step-panel" id="step-4">
       <div class="step-header">
-        <h1>⚙ Asset Generation</h1>
-        <p>Helix generates deployable assets for each connected system — pre-populated, governance-compliant, ready to import.</p>
+        <h1>⚙ Generated Assets</h1>
+        <p>Once the Canonical GTM Model is resolved, deployment-ready assets are a mechanical output. Every field value traces back to a canonical mapping. Every campaign name follows the detected naming convention. Every contact score reflects the extracted ICP and persona definitions.</p>
       </div>
 
       <div class="system-tabs" id="sys-tabs">
-        <div class="system-tab active" onclick="showSys('salesforce', this)">
+        <div class="system-tab active" onclick="showSys('salesforce')">
           <div class="sys-dot" style="background:#00a1e0;"></div> Salesforce
           <span class="badge badge-green" style="margin-left:4px;">9 assets</span>
         </div>
-        <div class="system-tab" onclick="showSys('marketo', this)">
+        <div class="system-tab" onclick="showSys('marketo')">
           <div class="sys-dot" style="background:#5c4ee5;"></div> Marketo
-          <span class="badge badge-accent" style="margin-left:4px;">6 programs</span>
+          <span class="badge badge-accent" style="margin-left:4px;">6 assets</span>
         </div>
-        <div class="system-tab" onclick="showSys('outreach', this)">
+        <div class="system-tab" onclick="showSys('outreach')">
           <div class="sys-dot" style="background:#ff6533;"></div> Outreach
           <span class="badge badge-accent" style="margin-left:4px;">6 sequences</span>
         </div>
-        <div class="system-tab" onclick="showSys('linkedin', this)">
+        <div class="system-tab" onclick="showSys('linkedin')">
           <div class="sys-dot" style="background:#0a66c2;"></div> LinkedIn
           <span class="badge badge-accent" style="margin-left:4px;">3 audiences</span>
         </div>
@@ -737,35 +853,64 @@
           <div>
             <div class="section-label">Campaigns (9 records)</div>
             <div class="asset-list">
-              <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">📁</div><div><div class="asset-name">Govern What You've Built — Q1 Launch</div><div class="asset-meta">Parent · Product Launch · $18M expected revenue</div></div></div><span class="badge badge-green">Ready</span></div>
-              <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">📄</div><div><div class="asset-name">AgentOps — NA — DemandGen — Q1</div><div class="asset-meta">Child · Email · CRO/CCO/CIO/CTO</div></div></div><span class="badge badge-green">Ready</span></div>
-              <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">📄</div><div><div class="asset-name">AgentOps — EU — RegulatoryUrgency — Q1</div><div class="asset-meta">Child · Email · EU AI Act</div></div></div><span class="badge badge-green">Ready</span></div>
-              <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">📄</div><div><div class="asset-name">AgentOps — APAC — MAS-Compliance — Q1</div><div class="asset-meta">Child · Email · MAS/APRA</div></div></div><span class="badge badge-green">Ready</span></div>
-              <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">📄</div><div><div class="asset-name">AgentOps — Global — OpenPipeline — Q1</div><div class="asset-meta">Child · Direct Mail · Open Opps</div></div></div><span class="badge badge-green">Ready</span></div>
-              <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">📄</div><div><div class="asset-name">AgentOps — Global — CustomerExpansion — Q1</div><div class="asset-meta">Child · Other · Existing Customers</div></div></div><span class="badge badge-green">Ready</span></div>
-              <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">📄</div><div><div class="asset-name">AgentOps — Global — Webinar — Q1</div><div class="asset-meta">Child · Event · All Segments</div></div></div><span class="badge badge-green">Ready</span></div>
-              <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">📄</div><div><div class="asset-name">AgentOps — NA — ExecRoundtable-NYC — Q1</div><div class="asset-meta">Child · Event · Segment 1 · Tier 1</div></div></div><span class="badge badge-green">Ready</span></div>
-              <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">📄</div><div><div class="asset-name">AgentOps — UK — ExecRoundtable-London — Q1</div><div class="asset-meta">Child · Event · EU AI Act</div></div></div><span class="badge badge-green">Ready</span></div>
+              <div class="asset-row">
+                <div class="asset-row-left"><div class="asset-icon">📁</div><div><div class="asset-name">Govern What You've Built — Q1 Launch</div><div class="asset-meta">Parent · Product Launch · $18M expected revenue</div></div></div>
+                <span class="badge badge-green">Ready</span>
+              </div>
+              <div class="asset-row">
+                <div class="asset-row-left"><div class="asset-icon">📄</div><div><div class="asset-name">AgentOps — NA — DemandGen — Q1</div><div class="asset-meta">Child · Email · Segment 1 · CRO/CCO/CIO/CTO</div></div></div>
+                <span class="badge badge-green">Ready</span>
+              </div>
+              <div class="asset-row">
+                <div class="asset-row-left"><div class="asset-icon">📄</div><div><div class="asset-name">AgentOps — EU — RegulatoryUrgency — Q1</div><div class="asset-meta">Child · Email · Segment 2 · EU AI Act</div></div></div>
+                <span class="badge badge-green">Ready</span>
+              </div>
+              <div class="asset-row">
+                <div class="asset-row-left"><div class="asset-icon">📄</div><div><div class="asset-name">AgentOps — APAC — MAS-Compliance — Q1</div><div class="asset-meta">Child · Email · Segment 3 · MAS/APRA</div></div></div>
+                <span class="badge badge-green">Ready</span>
+              </div>
+              <div class="asset-row">
+                <div class="asset-row-left"><div class="asset-icon">📄</div><div><div class="asset-name">AgentOps — Global — OpenPipeline — Q1</div><div class="asset-meta">Child · Direct Mail · Open Opportunities</div></div></div>
+                <span class="badge badge-green">Ready</span>
+              </div>
+              <div class="asset-row">
+                <div class="asset-row-left"><div class="asset-icon">📄</div><div><div class="asset-name">AgentOps — Global — CustomerExpansion — Q1</div><div class="asset-meta">Child · Other · Existing Customers</div></div></div>
+                <span class="badge badge-green">Ready</span>
+              </div>
+              <div class="asset-row">
+                <div class="asset-row-left"><div class="asset-icon">📄</div><div><div class="asset-name">AgentOps — Global — Webinar — Q1</div><div class="asset-meta">Child · Event · All Segments · 2,500 reg target</div></div></div>
+                <span class="badge badge-green">Ready</span>
+              </div>
+              <div class="asset-row">
+                <div class="asset-row-left"><div class="asset-icon">📄</div><div><div class="asset-name">AgentOps — NA — ExecRoundtable-NYC — Q1</div><div class="asset-meta">Child · Event · Segment 1 · Tier 1</div></div></div>
+                <span class="badge badge-green">Ready</span>
+              </div>
+              <div class="asset-row">
+                <div class="asset-row-left"><div class="asset-icon">📄</div><div><div class="asset-name">AgentOps — UK — ExecRoundtable-London — Q1</div><div class="asset-meta">Child · Event · Segment 2 · EU AI Act</div></div></div>
+                <span class="badge badge-green">Ready</span>
+              </div>
             </div>
           </div>
           <div>
             <div class="section-label">Campaign Members (38 contacts)</div>
             <div class="card">
-              <div class="kv-row"><span class="kv-key">Total contacts scored</span><span class="kv-val">75</span></div>
+              <div class="kv-row"><span class="kv-key">Total contacts evaluated</span><span class="kv-val">75</span></div>
               <div class="kv-row"><span class="kv-key">Matched to target list</span><span class="kv-val" style="color:var(--green)">38</span></div>
               <div class="kv-row"><span class="kv-key">Hard excluded</span><span class="kv-val" style="color:var(--red)">6 (2 DO NOT CONTACT)</span></div>
               <div class="kv-row"><span class="kv-key">Duplicates resolved</span><span class="kv-val" style="color:var(--amber)">3 pairs</span></div>
               <div class="kv-row"><span class="kv-key">Status: Open Opportunity</span><span class="kv-val">11</span></div>
               <div class="kv-row"><span class="kv-key">Status: Customer</span><span class="kv-val">4</span></div>
+              <div class="kv-row"><span class="kv-key">Status: Responded</span><span class="kv-val">7</span></div>
+              <div class="kv-row"><span class="kv-key">Status: Sent</span><span class="kv-val">16</span></div>
             </div>
             <div class="section-label">Audience Segment Rules (6)</div>
             <div class="card">
-              <div class="kv-row"><span class="kv-key">Seg 1 — NA Tier 1/2 CxO</span><span class="badge badge-green">18 contacts</span></div>
-              <div class="kv-row"><span class="kv-key">Seg 2 — UK/Europe EU AI Act</span><span class="badge badge-green">9 contacts</span></div>
-              <div class="kv-row"><span class="kv-key">Seg 3 — APAC MAS/APRA</span><span class="badge badge-green">7 contacts</span></div>
-              <div class="kv-row"><span class="kv-key">Seg 4 — Open Pipeline</span><span class="badge badge-green">11 contacts</span></div>
-              <div class="kv-row"><span class="kv-key">Seg 5 — Customer Expansion</span><span class="badge badge-green">4 contacts</span></div>
-              <div class="kv-row"><span class="kv-key">Seg 6 — VP Nurture</span><span class="badge badge-green">5 contacts</span></div>
+              <div class="kv-row"><span class="kv-key">Segment 1 — NA Tier 1/2 CxO</span><span class="badge badge-green">18 contacts</span></div>
+              <div class="kv-row"><span class="kv-key">Segment 2 — UK/Europe EU AI Act</span><span class="badge badge-green">9 contacts</span></div>
+              <div class="kv-row"><span class="kv-key">Segment 3 — APAC MAS/APRA</span><span class="badge badge-green">7 contacts</span></div>
+              <div class="kv-row"><span class="kv-key">Segment 4 — Open Pipeline</span><span class="badge badge-green">11 contacts</span></div>
+              <div class="kv-row"><span class="kv-key">Segment 5 — Customer Expansion</span><span class="badge badge-green">4 contacts</span></div>
+              <div class="kv-row"><span class="kv-key">Segment 6 — VP Nurture</span><span class="badge badge-green">5 contacts</span></div>
             </div>
           </div>
         </div>
@@ -776,36 +921,36 @@
           <div>
             <div class="section-label">Programs Generated (6)</div>
             <div class="asset-list">
-              <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">◈</div><div><div class="asset-name">AgentOps-Q1-NA-DemandGen</div><div class="asset-meta">Email · 6 persona streams</div></div></div><span class="badge badge-green">Ready</span></div>
-              <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">◈</div><div><div class="asset-name">AgentOps-Q1-EU-RegulatoryUrgency</div><div class="asset-meta">Email · EU AI Act variant</div></div></div><span class="badge badge-green">Ready</span></div>
-              <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">◈</div><div><div class="asset-name">AgentOps-Q1-APAC-MASCompliance</div><div class="asset-meta">Email · MAS/APRA variant</div></div></div><span class="badge badge-green">Ready</span></div>
+              <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">◈</div><div><div class="asset-name">AgentOps-Q1-NA-DemandGen</div><div class="asset-meta">Email · Segment 1 · 6 persona-specific streams</div></div></div><span class="badge badge-green">Ready</span></div>
+              <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">◈</div><div><div class="asset-name">AgentOps-Q1-EU-RegulatoryUrgency</div><div class="asset-meta">Email · Segment 2 · EU AI Act variant</div></div></div><span class="badge badge-green">Ready</span></div>
+              <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">◈</div><div><div class="asset-name">AgentOps-Q1-APAC-MASCompliance</div><div class="asset-meta">Email · Segment 3 · MAS/APRA variant</div></div></div><span class="badge badge-green">Ready</span></div>
               <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">◈</div><div><div class="asset-name">AgentOps-Q1-Webinar-Registration</div><div class="asset-meta">Event · All segments · 2,500 target</div></div></div><span class="badge badge-green">Ready</span></div>
-              <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">◈</div><div><div class="asset-name">AgentOps-Q1-VP-NurtureStream</div><div class="asset-meta">Nurture · VP/Director level</div></div></div><span class="badge badge-green">Ready</span></div>
-              <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">◈</div><div><div class="asset-name">AgentOps-Q1-PostAssessment-Pilot</div><div class="asset-meta">Trigger · Assessment → Pilot CTA</div></div></div><span class="badge badge-green">Ready</span></div>
+              <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">◈</div><div><div class="asset-name">AgentOps-Q1-VP-NurtureStream</div><div class="asset-meta">Nurture · Segment 6 · VP/Director level</div></div></div><span class="badge badge-green">Ready</span></div>
+              <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">◈</div><div><div class="asset-name">AgentOps-Q1-PostAssessment-Pilot</div><div class="asset-meta">Trigger · Assessment complete → pilot CTA</div></div></div><span class="badge badge-green">Ready</span></div>
             </div>
           </div>
           <div>
             <div class="section-label">Token Mapping (24 tokens)</div>
             <div class="card">
-              <div class="kv-row"><span class="kv-key mono">&#123;&#123;my.CampaignName&#125;&#125;</span><span class="kv-val" style="font-size:11px;">Govern What You've Built</span></div>
-              <div class="kv-row"><span class="kv-key mono">&#123;&#123;my.Product&#125;&#125;</span><span class="kv-val" style="font-size:11px;">Northstar AgentOps</span></div>
-              <div class="kv-row"><span class="kv-key mono">&#123;&#123;my.CTA_Text&#125;&#125;</span><span class="kv-val" style="font-size:11px;">Book Readiness Assessment</span></div>
-              <div class="kv-row"><span class="kv-key mono">&#123;&#123;my.CTA_URL&#125;&#125;</span><span class="kv-val" style="font-size:11px;">northstar.ai/assess</span></div>
-              <div class="kv-row"><span class="kv-key mono">&#123;&#123;my.Offer_Primary&#125;&#125;</span><span class="kv-val" style="font-size:11px;">AI Agent Governance Readiness Assessment</span></div>
-              <div class="kv-row"><span class="kv-key mono">&#123;&#123;my.Regulatory_Hook&#125;&#125;</span><span class="kv-val" style="font-size:11px;">[Per-segment: OCC / EU AI Act / MAS]</span></div>
+              <div class="kv-row"><span class="kv-key mono" style="font-size:11px;">{{my.CampaignName}}</span><span class="kv-val" style="font-size:11px;">Govern What You've Built</span></div>
+              <div class="kv-row"><span class="kv-key mono" style="font-size:11px;">{{my.Product}}</span><span class="kv-val" style="font-size:11px;">Northstar AgentOps</span></div>
+              <div class="kv-row"><span class="kv-key mono" style="font-size:11px;">{{my.CTA_Text}}</span><span class="kv-val" style="font-size:11px;">Book Readiness Assessment</span></div>
+              <div class="kv-row"><span class="kv-key mono" style="font-size:11px;">{{my.CTA_URL}}</span><span class="kv-val" style="font-size:11px;">northstar.ai/assess</span></div>
+              <div class="kv-row"><span class="kv-key mono" style="font-size:11px;">{{my.Offer_Primary}}</span><span class="kv-val" style="font-size:11px;">AI Agent Governance Readiness Assessment</span></div>
+              <div class="kv-row"><span class="kv-key mono" style="font-size:11px;">{{my.Regulatory_Hook}}</span><span class="kv-val" style="font-size:11px;">[Per-segment: OCC / EU AI Act / MAS]</span></div>
             </div>
           </div>
         </div>
       </div>
 
       <div id="sys-outreach" style="display:none;">
-        <div class="section-label">Sequences Generated (6) — Persona-mapped</div>
+        <div class="section-label">Sequences Generated (6) — Persona-mapped from Campaign DNA</div>
         <div class="asset-list">
-          <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">🔷</div><div><div class="asset-name">AgentOps — CRO — Regulatory Urgency — 5 touch</div><div class="asset-meta">"Your AI agents are running. Will you have the audit trail when OCC asks?"</div></div></div><span class="badge badge-green">Ready</span></div>
-          <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">🔷</div><div><div class="asset-name">AgentOps — CCO — Audit Automation — 5 touch</div><div class="asset-meta">"Turn a 6-week AI audit into 3 hours — here's how one global insurer did it"</div></div></div><span class="badge badge-green">Ready</span></div>
-          <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">🔷</div><div><div class="asset-name">AgentOps — CIO — Shadow AI — 5 touch</div><div class="asset-meta">"How many AI agents are running in your org right now? Most CIOs don't know."</div></div></div><span class="badge badge-green">Ready</span></div>
-          <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">🔷</div><div><div class="asset-name">AgentOps — CTO — 48hr Deploy — 4 touch</div><div class="asset-meta">"Deploy AI agent governance in 48 hours — no rip-and-replace"</div></div></div><span class="badge badge-green">Ready</span></div>
-          <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">🔷</div><div><div class="asset-name">AgentOps — EU — EU AI Act Urgency — 4 touch</div><div class="asset-meta">"EU AI Act enforcement is 14 months away. Is your AI agent program ready?"</div></div></div><span class="badge badge-green">Ready</span></div>
+          <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">🔷</div><div><div class="asset-name">AgentOps — CRO — Regulatory Urgency — 5 touch</div><div class="asset-meta">Subject: "Your AI agents are running. Will you have the audit trail when OCC asks?"</div></div></div><span class="badge badge-green">Ready</span></div>
+          <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">🔷</div><div><div class="asset-name">AgentOps — CCO — Audit Automation — 5 touch</div><div class="asset-meta">Subject: "Turn a 6-week AI audit into 3 hours — here's how one global insurer did it"</div></div></div><span class="badge badge-green">Ready</span></div>
+          <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">🔷</div><div><div class="asset-name">AgentOps — CIO — Shadow AI — 5 touch</div><div class="asset-meta">Subject: "How many AI agents are running in your org right now? Most CIOs don't know."</div></div></div><span class="badge badge-green">Ready</span></div>
+          <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">🔷</div><div><div class="asset-name">AgentOps — CTO — 48hr Deploy — 4 touch</div><div class="asset-meta">Subject: "Deploy AI agent governance in 48 hours — no rip-and-replace"</div></div></div><span class="badge badge-green">Ready</span></div>
+          <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">🔷</div><div><div class="asset-name">AgentOps — EU — EU AI Act Urgency — 4 touch</div><div class="asset-meta">Subject: "EU AI Act enforcement is 14 months away. Is your AI agent program ready?"</div></div></div><span class="badge badge-green">Ready</span></div>
           <div class="asset-row"><div class="asset-row-left"><div class="asset-icon">🔷</div><div><div class="asset-name">AgentOps — Post-Assessment — Pilot Activation — 3 touch</div><div class="asset-meta">Trigger: Assessment completed · CTA: Activate 30-Day Pilot</div></div></div><span class="badge badge-green">Ready</span></div>
         </div>
       </div>
@@ -820,93 +965,132 @@
       </div>
     </div>
 
-    <!-- ══ STEP 5 ══ -->
+
+    <!-- ══ STEP 5: INSTITUTIONAL MEMORY ══ -->
     <div class="step-panel" id="step-5">
       <div class="step-header">
-        <h1>🚀 Deployment Center</h1>
-        <p>Push generated assets to connected systems. Helix tracks deployment status across all activation spokes.</p>
+        <h1>🧠 Institutional Memory</h1>
+        <p>The Canonical GTM Model is a persistent customer-level asset, not a campaign artifact. Every campaign run through Helix adds confidence to field mappings, validates persona definitions, and extends the model. The first campaign is the most expensive to build. Every campaign after it starts from a higher baseline.</p>
       </div>
 
-      <div style="display:flex; align-items:center; gap:16px; padding:14px 18px; background:var(--green-lt); border:1px solid rgba(13,158,110,0.25); border-radius:10px; margin-bottom:18px;">
-        <div style="font-size:24px; color:var(--green);">✓</div>
+      <div class="summary-card" style="margin-bottom:18px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding: 4px 0 14px;">
+          <div>
+            <div style="font-size:11px; font-weight:600; letter-spacing:0.8px; text-transform:uppercase; color:var(--txt3); margin-bottom:4px;">CANONICAL GTM MODEL — NORTHSTAR AI</div>
+            <div style="font-size:14px; font-weight:700; color:var(--txt);">Active · Built from 1 campaign · Version 1.0</div>
+            <div style="font-size:12px; color:var(--txt3); margin-top:4px;">This model persists across campaigns. It does not reset.</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="conf-score">94%</div>
+            <div style="font-size:11px; color:var(--txt3);">Model Confidence</div>
+          </div>
+        </div>
+        <div class="three-col">
+          <div>
+            <div class="kv-row"><span class="kv-key">Field mappings validated</span><span class="kv-val">38</span></div>
+            <div class="kv-row"><span class="kv-key">Personas in library</span><span class="kv-val">6</span></div>
+          </div>
+          <div>
+            <div class="kv-row"><span class="kv-key">Segment templates stored</span><span class="kv-val">6</span></div>
+            <div class="kv-row"><span class="kv-key">Offer catalog entries</span><span class="kv-val">3</span></div>
+          </div>
+          <div>
+            <div class="kv-row"><span class="kv-key">Conflicts resolved</span><span class="kv-val" style="color:var(--green)">3 of 3</span></div>
+            <div class="kv-row"><span class="kv-key">Governance rules encoded</span><span class="kv-val">11</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="two-col">
         <div>
-          <div style="font-size:13px; font-weight:600; color:var(--green);">Canonical model validated. 38 assets ready for deployment.</div>
-          <div style="font-size:12px; color:var(--txt3);">9 Salesforce campaigns · 6 Marketo programs · 6 Outreach sequences · 3 LinkedIn audiences · All governance rules pass.</div>
+          <div class="section-label">Persona Library</div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Canonical Personas (6)</div><span class="badge badge-accent">Persistent</span></div>
+            <div class="kv-row"><span class="kv-key">CRO — Regulatory audit trail gaps</span><span class="badge badge-green">1 campaign</span></div>
+            <div class="kv-row"><span class="kv-key">CCO — Manual evidence collection</span><span class="badge badge-green">1 campaign</span></div>
+            <div class="kv-row"><span class="kv-key">CIO — Shadow AI / tool sprawl</span><span class="badge badge-green">1 campaign</span></div>
+            <div class="kv-row"><span class="kv-key">CTO — No real-time agent visibility</span><span class="badge badge-green">1 campaign</span></div>
+            <div class="kv-row"><span class="kv-key">Head of CX — Hallucination risk</span><span class="badge badge-green">1 campaign</span></div>
+            <div class="kv-row"><span class="kv-key">VP AI — Cannot prove board ROI</span><span class="badge badge-green">1 campaign</span></div>
+            <div style="margin-top:10px; padding:8px 10px; background:var(--surface2); border-radius:6px; font-size:11px; color:var(--txt3); border:1px solid var(--border);">Each campaign that references a persona increases confidence in its pain definitions, messaging angles, and offer affinities.</div>
+          </div>
+
+          <div class="section-label">Offer Catalog</div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Canonical Offers (3)</div><span class="badge badge-accent">Persistent</span></div>
+            <div class="kv-row"><span class="kv-key">Readiness Assessment</span><span class="kv-val" style="font-size:11px;">Top of funnel · Free</span></div>
+            <div class="kv-row"><span class="kv-key">30-Day Pilot</span><span class="kv-val" style="font-size:11px;">Mid funnel · $0 qualified</span></div>
+            <div class="kv-row"><span class="kv-key">Enterprise License</span><span class="kv-val" style="font-size:11px;">Bottom funnel · $180K–$450K ARR</span></div>
+          </div>
         </div>
-        <button class="btn btn-primary" style="margin-left:auto; white-space:nowrap;">⚡ Deploy All</button>
+
+        <div>
+          <div class="section-label">Field Mapping Confidence</div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Validated Mappings — Key Fields</div></div>
+            <div class="gauge-bars">
+              <div class="gauge-row">
+                <div class="gauge-label">Target_Persona__c ↔ persona.name</div>
+                <div class="gauge-bar-wrap"><div class="gauge-bar" style="width:97%"></div></div>
+                <div class="gauge-score">97</div>
+              </div>
+              <div class="gauge-row">
+                <div class="gauge-label">Campaign_Type__c ↔ campaign.type</div>
+                <div class="gauge-bar-wrap"><div class="gauge-bar" style="width:96%"></div></div>
+                <div class="gauge-score">96</div>
+              </div>
+              <div class="gauge-row">
+                <div class="gauge-label">ICP_Tier__c ↔ segment.tier</div>
+                <div class="gauge-bar-wrap"><div class="gauge-bar" style="width:94%"></div></div>
+                <div class="gauge-score">94</div>
+              </div>
+              <div class="gauge-row">
+                <div class="gauge-label">Primary_Offer__c ↔ offers.primary</div>
+                <div class="gauge-bar-wrap"><div class="gauge-bar" style="width:92%"></div></div>
+                <div class="gauge-score">92</div>
+              </div>
+              <div class="gauge-row">
+                <div class="gauge-label">{{my.Persona}} ↔ persona.name</div>
+                <div class="gauge-bar-wrap"><div class="gauge-bar" style="width:91%"></div></div>
+                <div class="gauge-score">91</div>
+              </div>
+              <div class="gauge-row">
+                <div class="gauge-label">Regulatory_Driver__c ↔ messaging</div>
+                <div class="gauge-bar-wrap"><div class="gauge-bar" style="width:89%"></div></div>
+                <div class="gauge-score">89</div>
+              </div>
+            </div>
+            <div style="margin-top:10px; padding:8px 10px; background:var(--surface2); border-radius:6px; font-size:11px; color:var(--txt3); border:1px solid var(--border);">Confidence increases with each campaign that validates a mapping without revision.</div>
+          </div>
+
+          <div class="section-label">What the Next Campaign Inherits</div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Pre-Resolved for Campaign 2</div><span class="badge badge-green">Automatic</span></div>
+            <div class="check-row"><span style="color:var(--green)">✓</span><span class="label">Naming convention — no re-derivation needed</span></div>
+            <div class="check-row"><span style="color:var(--green)">✓</span><span class="label">38 field mappings — already validated</span></div>
+            <div class="check-row"><span style="color:var(--green)">✓</span><span class="label">3 cross-system conflicts — already resolved</span></div>
+            <div class="check-row"><span style="color:var(--green)">✓</span><span class="label">6 personas — defined, not re-extracted</span></div>
+            <div class="check-row"><span style="color:var(--green)">✓</span><span class="label">6 segment templates — validated against CRM</span></div>
+            <div class="check-row"><span style="color:var(--green)">✓</span><span class="label">11 governance rules — active and enforced</span></div>
+            <div style="margin-top:10px; border-top:1px solid var(--border); padding-top:10px; font-size:12px; color:var(--txt2);">The next campaign introduces new strategy. The operating model is already known.</div>
+          </div>
+        </div>
       </div>
 
-      <div class="deploy-grid">
-        <div class="deploy-card ready">
-          <div class="deploy-card-header">
-            <div class="deploy-sys">☁ Salesforce</div>
-            <div class="deploy-status ready">● Ready</div>
-          </div>
-          <div class="deploy-assets">
-            <div class="deploy-asset-row"><span class="deploy-asset-name">Campaign records</span><span class="deploy-asset-count">9</span></div>
-            <div class="deploy-asset-row"><span class="deploy-asset-name">Campaign members</span><span class="deploy-asset-count">38</span></div>
-            <div class="deploy-asset-row"><span class="deploy-asset-name">Segment filter rules</span><span class="deploy-asset-count">6</span></div>
-            <div class="deploy-asset-row"><span class="deploy-asset-name">Naming compliance</span><span class="deploy-asset-count">100%</span></div>
-          </div>
-          <div style="display:flex; gap:6px;"><button class="btn btn-green" style="flex:1;">Deploy to Salesforce</button><button class="btn btn-ghost">↓ CSV</button></div>
-        </div>
-
-        <div class="deploy-card ready">
-          <div class="deploy-card-header">
-            <div class="deploy-sys">◈ Marketo</div>
-            <div class="deploy-status ready">● Ready</div>
-          </div>
-          <div class="deploy-assets">
-            <div class="deploy-asset-row"><span class="deploy-asset-name">Programs</span><span class="deploy-asset-count">6</span></div>
-            <div class="deploy-asset-row"><span class="deploy-asset-name">Smart lists</span><span class="deploy-asset-count">6</span></div>
-            <div class="deploy-asset-row"><span class="deploy-asset-name">Token values</span><span class="deploy-asset-count">24</span></div>
-            <div class="deploy-asset-row"><span class="deploy-asset-name">Nurture stream</span><span class="deploy-asset-count">1 (VP level)</span></div>
-          </div>
-          <div style="display:flex; gap:6px;"><button class="btn btn-green" style="flex:1;">Deploy to Marketo</button><button class="btn btn-ghost">↓ CSV</button></div>
-        </div>
-
-        <div class="deploy-card ready">
-          <div class="deploy-card-header">
-            <div class="deploy-sys">🔷 Outreach</div>
-            <div class="deploy-status ready">● Ready</div>
-          </div>
-          <div class="deploy-assets">
-            <div class="deploy-asset-row"><span class="deploy-asset-name">Sequences</span><span class="deploy-asset-count">6</span></div>
-            <div class="deploy-asset-row"><span class="deploy-asset-name">Persona-mapped steps</span><span class="deploy-asset-count">29 total</span></div>
-            <div class="deploy-asset-row"><span class="deploy-asset-name">Subject lines per persona</span><span class="deploy-asset-count">6</span></div>
-            <div class="deploy-asset-row"><span class="deploy-asset-name">Objection handlers</span><span class="deploy-asset-count">4</span></div>
-          </div>
-          <div style="display:flex; gap:6px;"><button class="btn btn-green" style="flex:1;">Deploy to Outreach</button><button class="btn btn-ghost">↓ JSON</button></div>
-        </div>
-
-        <div class="deploy-card partial">
-          <div class="deploy-card-header">
-            <div class="deploy-sys">◉ LinkedIn Ads</div>
-            <div class="deploy-status partial">⚠ Partial</div>
-          </div>
-          <div class="deploy-assets">
-            <div class="deploy-asset-row"><span class="deploy-asset-name">NA FS CxO audience</span><span class="deploy-asset-count" style="color:var(--green);">Ready</span></div>
-            <div class="deploy-asset-row"><span class="deploy-asset-name">EU FS CxO audience</span><span class="deploy-asset-count" style="color:var(--green);">Ready</span></div>
-            <div class="deploy-asset-row"><span class="deploy-asset-name">Top 200 ABM list</span><span class="deploy-asset-count" style="color:var(--amber);">Awaiting</span></div>
-          </div>
-          <div class="warn-row" style="margin-bottom:8px;"><span class="wicon">⚠</span><div class="wtext" style="font-size:11px;">Named account list required for ABM audience. Request from RevOps.</div></div>
-          <div style="display:flex; gap:6px;"><button class="btn btn-primary" style="flex:1;">Deploy 2 Audiences</button><button class="btn btn-ghost">Upload List</button></div>
-        </div>
-      </div>
-
-      <div class="section-label" style="margin-top:18px;">Deployment Log</div>
+      <div class="section-label">Segment Templates</div>
       <div class="card">
-        <div class="asset-row" style="margin-bottom:4px;">
-          <div class="asset-row-left"><div style="width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:8px;"></div><div><div class="asset-name">Canonical model validated — 16 objects resolved, 38 conflicts merged</div></div></div>
-          <span style="font-size:11px;color:var(--txt3);">2 min ago</span>
-        </div>
-        <div class="asset-row" style="margin-bottom:4px;">
-          <div class="asset-row-left"><div style="width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:8px;"></div><div><div class="asset-name">2 DO NOT CONTACT records excluded — C-020, C-074 flagged to compliance</div></div></div>
-          <span style="font-size:11px;color:var(--txt3);">2 min ago</span>
-        </div>
-        <div class="asset-row">
-          <div class="asset-row-left"><div style="width:7px;height:7px;border-radius:50%;background:var(--amber);margin-right:8px;"></div><div><div class="asset-name">Budget fields not populated — Budgeted_Cost__c requires manual input (9 campaigns)</div></div></div>
-          <span style="font-size:11px;color:var(--txt3);">2 min ago</span>
+        <div class="card-header"><div class="card-title">Canonical Segments (6)</div><span class="badge badge-accent">Reusable across campaigns</span></div>
+        <div class="two-col">
+          <div>
+            <div class="kv-row"><span class="kv-key">NA Tier 1/2 CxO — Financial Services</span><span class="kv-val mono">18 contacts validated</span></div>
+            <div class="kv-row"><span class="kv-key">UK/Europe — EU AI Act</span><span class="kv-val mono">9 contacts validated</span></div>
+            <div class="kv-row"><span class="kv-key">APAC — MAS/APRA Compliance</span><span class="kv-val mono">7 contacts validated</span></div>
+          </div>
+          <div>
+            <div class="kv-row"><span class="kv-key">Open Pipeline — All Regions</span><span class="kv-val mono">11 contacts validated</span></div>
+            <div class="kv-row"><span class="kv-key">Customer Expansion</span><span class="kv-val mono">4 contacts validated</span></div>
+            <div class="kv-row"><span class="kv-key">VP Nurture Stream</span><span class="kv-val mono">5 contacts validated</span></div>
+          </div>
         </div>
       </div>
     </div>
@@ -918,20 +1102,22 @@
   function showStep(n) {
     document.querySelectorAll('.step-btn').forEach((btn, i) => {
       btn.classList.remove('active');
-      btn.classList.remove('done');
       if (i < n - 1) btn.classList.add('done');
     });
-    document.querySelectorAll('.step-btn')[n-1].classList.add('active');
+    const btns = document.querySelectorAll('.step-btn');
+    btns[n-1].classList.remove('done');
+    btns[n-1].classList.add('active');
+
     document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
     document.getElementById('step-' + n).classList.add('active');
   }
 
-  function showSys(sys, el) {
+  function showSys(sys) {
     document.querySelectorAll('#sys-tabs .system-tab').forEach(t => t.classList.remove('active'));
-    el.classList.add('active');
+    event.target.closest('.system-tab').classList.add('active');
     ['salesforce','marketo','outreach','linkedin'].forEach(s => {
-      const d = document.getElementById('sys-' + s);
-      if (d) d.style.display = s === sys ? 'block' : 'none';
+      const el = document.getElementById('sys-' + s);
+      if (el) el.style.display = s === sys ? 'block' : 'none';
     });
   }
 </script>
