@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vector — Practice OS</title>
+<title>Vector — BD Command Center</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -448,7 +448,7 @@
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
     </div>
     <h2 style="font-size:22px;font-weight:700;margin-bottom:8px;">Vector</h2>
-    <p style="color:var(--txt2);margin-bottom:32px;font-size:14px;">Practice OS · Groundwork Consulting</p>
+    <p style="color:var(--txt2);margin-bottom:32px;font-size:14px;">BD Command Center · Groundwork Consulting</p>
     <div id="loginForm">
       <input id="loginEmail" type="email" placeholder="your@email.com" style="width:100%;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--txt);font-size:15px;margin-bottom:12px;outline:none;">
       <button onclick="sendMagicLink()" style="width:100%;padding:11px;background:var(--accent);border:none;border-radius:8px;color:white;font-size:15px;font-weight:600;cursor:pointer;">Send magic link</button>
@@ -473,7 +473,7 @@
 
     <div id="clientHomeStats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:32px;text-align:left"></div>
 
-    <button onclick="enterClientApp()" style="width:100%;padding:14px;background:var(--accent);border:none;border-radius:10px;color:white;font-size:16px;font-weight:600;cursor:pointer;margin-bottom:12px">Open my Practice OS →</button>
+    <button onclick="enterClientApp()" style="width:100%;padding:14px;background:var(--accent);border:none;border-radius:10px;color:white;font-size:16px;font-weight:600;cursor:pointer;margin-bottom:12px">Open my BD Command Center →</button>
     <button onclick="signOut()" style="background:none;border:none;color:var(--txt3);font-size:13px;cursor:pointer;text-decoration:underline">Sign out</button>
   </div>
 </div>
@@ -516,7 +516,7 @@
         </svg>
       </div>
       <span class="logo-text">Vector</span>
-      <span class="logo-tag">Practice OS</span>
+      <span class="logo-tag">BD Command Center</span>
     </div>
     <div class="topbar-divider"></div>
     <div class="context-pill">
@@ -567,7 +567,7 @@
   </button>
   <span class="step-arrow">›</span>
   <button class="step-btn locked" id="nav-6" onclick="showStep(6)">
-    <span class="snum"><span>7</span></span> Practice OS
+    <span class="snum"><span>7</span></span> BD Command Center
   </button>
 </div>
 
@@ -968,11 +968,11 @@
       </div>
     </div>
 
-    <!-- ═══ STEP 6: PRACTICE OS ═══ -->
+    <!-- ═══ STEP 6: BD COMMAND CENTER ═══ -->
     <div class="step-panel" id="panel-6">
       <div class="step-header">
-        <h1>Practice OS</h1>
-        <p>Everything assembled. Download individual artifacts or the full bundle.</p>
+        <h1>BD Command Center</h1>
+        <p>Your BD system, assembled. Track your 30-60-90 progress and download client deliverables.</p>
       </div>
 
       <div class="two-col">
@@ -998,6 +998,14 @@
         </div>
       </div>
 
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header">
+          <span class="card-title">30-60-90 Day Progress Tracker</span>
+          <span id="planProgressPct" style="font-size:12px;color:var(--accent);font-weight:600"></span>
+        </div>
+        <div id="planTracker" style="font-size:13px;color:var(--txt3);">Run the 30-60-90 Plan step to generate your build sequence.</div>
+      </div>
+
       <div class="card">
         <div class="card-header">
           <span class="card-title">Artifact Library</span>
@@ -1016,7 +1024,7 @@
           <div class="artifact-row"><div class="artifact-left"><span class="artifact-icon">🚀</span><div><div class="artifact-name">Kickoff Agenda</div><div class="artifact-meta">kickoff_agenda.md</div></div></div><button class="btn btn-ghost btn-sm" onclick="downloadArtifact('kickoff')">↓</button></div>
           <div class="artifact-row"><div class="artifact-left"><span class="artifact-icon">🔄</span><div><div class="artifact-name">Delivery Cadence Template</div><div class="artifact-meta">delivery_cadence.md</div></div></div><button class="btn btn-ghost btn-sm" onclick="downloadArtifact('cadence')">↓</button></div>
           <div class="artifact-row"><div class="artifact-left"><span class="artifact-icon">🏁</span><div><div class="artifact-name">Handoff Checklist</div><div class="artifact-meta">handoff_checklist.md</div></div></div><button class="btn btn-ghost btn-sm" onclick="downloadArtifact('handoff')">↓</button></div>
-          <div class="artifact-row"><div class="artifact-left"><span class="artifact-icon">📅</span><div><div class="artifact-name">30-60-90 Day Plan</div><div class="artifact-meta">plan_90day.md</div></div></div><button class="btn btn-ghost btn-sm" onclick="downloadArtifact('plan')">↓</button></div>
+          <div class="artifact-row"><div class="artifact-left"><span class="artifact-icon">📅</span><div><div class="artifact-name">30-60-90 Day Plan</div><div class="artifact-meta">Track progress in-app above ↑</div></div></div><button class="btn btn-ghost btn-sm" onclick="downloadArtifact('plan')">View</button></div>
         </div>
       </div>
     </div>
@@ -1203,7 +1211,7 @@ const VEC = {
   ref:  { contacts: [], generated: false },
   cred: { cases: [], placements: [], generated: false },
   ops:  { duration: '', cadence: '', refAsk: true, caseDraft: true, nps: false, generated: false },
-  plan: { generated: false }
+  plan: { generated: false, checked: {} }
 };
 let PHASE = 0;
 const STEP_MIN = [0, 1, 2, 3, 4, 5, 6];
@@ -1357,7 +1365,7 @@ function restoreUI() {
   document.getElementById('ops-case-draft').checked = ops.caseDraft !== false;
   document.getElementById('ops-nps').checked        = !!ops.nps;
   // Dynamic tables
-  renderContacts(); renderCases();
+  renderContacts(); renderCases(); renderPlanTracker();
   // Step nav unlock
   for (let i = 0; i <= 6; i++) {
     const btn = document.getElementById('nav-' + i);
@@ -1961,73 +1969,351 @@ function updatePracticeOS() {
   document.getElementById('nav-6').classList.add('done');
 }
 
+// ─── PLAN TRACKER ──────────────────────────────────────
+function navigateTo(n) { showStep(n); }
+
+const PLAN_MILESTONES = {
+  A: {
+    label: 'Discipline & Systematize',
+    phases: [
+      { title: 'Days 1–30: Foundation', items: [
+        { id:'a-1-1', task:'Lock final positioning one-line and share with 3 trusted peers for feedback' },
+        { id:'a-1-2', task:'Finalize all three offer one-pagers with real prices and durations' },
+        { id:'a-1-3', task:'Build contact roster — minimum 6 names, type and relationship noted' },
+        { id:'a-1-4', task:'Set up intake questionnaire and scoping document template' },
+        { id:'a-1-5', task:'Block one BD day per week (standing, non-negotiable)' },
+      ]},
+      { title: 'Days 31–60: Activation', items: [
+        { id:'a-2-1', task:'Make first referral ask with top 2 contacts (use your scripted language)' },
+        { id:'a-2-2', task:'Publish Meridian-style case study to LinkedIn' },
+        { id:'a-2-3', task:'Complete 2 referral conversations (Convo 1 with each priority contact)' },
+        { id:'a-2-4', task:'Submit case study to one trade association or industry publication' },
+        { id:'a-2-5', task:'Run first full BD day with structured agenda' },
+      ]},
+      { title: 'Days 61–90: Optimization', items: [
+        { id:'a-3-1', task:'Close or formally advance one referral-sourced opportunity' },
+        { id:'a-3-2', task:'Make second round of referral asks (Convo 2 or next contacts)' },
+        { id:'a-3-3', task:'Complete second case study draft (Lakeside or next engagement)' },
+        { id:'a-3-4', task:'Review and refine pricing based on prospect responses' },
+        { id:'a-3-5', task:'Schedule quarterly positioning review' },
+      ]}
+    ]
+  },
+  B: {
+    label: 'Build From Zero',
+    phases: [
+      { title: 'Days 1–30: Foundation', items: [
+        { id:'b-1-1', task:'Finalize positioning one-line for the new market' },
+        { id:'b-1-2', task:'Write first case study (even if anonymized) to establish proof' },
+        { id:'b-1-3', task:'Identify 3 credibility placement targets in the new market' },
+        { id:'b-1-4', task:'Build a 15-name prospect list — no shortcuts' },
+        { id:'b-1-5', task:'Draft all three offer one-pagers with new-market pricing' },
+      ]},
+      { title: 'Days 31–60: Activation', items: [
+        { id:'b-2-1', task:'Publish first piece of content to LinkedIn (case study or POV)' },
+        { id:'b-2-2', task:'Submit to trade association or industry event' },
+        { id:'b-2-3', task:'Begin outbound sequence — 5 targeted outreach attempts per week' },
+        { id:'b-2-4', task:'Attend one in-person industry event' },
+        { id:'b-2-5', task:'Request introductions from cross-market peers who know this space' },
+      ]},
+      { title: 'Days 61–90: Optimization', items: [
+        { id:'b-3-1', task:'Secure at least 3 qualified discovery conversations' },
+        { id:'b-3-2', task:'Publish second content piece or case study' },
+        { id:'b-3-3', task:'Adjust outbound messaging based on response data' },
+        { id:'b-3-4', task:'Submit to one podcast or newsletter for interview' },
+        { id:'b-3-5', task:'Review and refine ICP based on conversations' },
+      ]}
+    ]
+  },
+  C: {
+    label: 'Fix & Activate',
+    phases: [
+      { title: 'Days 1–30: Fix the Foundation', items: [
+        { id:'c-1-1', task:'Rewrite positioning one-line — kill all jargon, test on 3 people outside your industry' },
+        { id:'c-1-2', task:'Identify the single biggest positioning gap and document why it stalls you' },
+        { id:'c-1-3', task:'Audit current pipeline — which contacts are genuinely warm vs. just in the list' },
+        { id:'c-1-4', task:'Rebuild contact roster with honest relationship ratings' },
+        { id:'c-1-5', task:'Set a BD day cadence — even if just 4 hours per week' },
+      ]},
+      { title: 'Days 31–60: Activate', items: [
+        { id:'c-2-1', task:'Make one well-scripted referral ask to your highest-trust contact' },
+        { id:'c-2-2', task:'Finalize offer pricing and package names (no more TBD)' },
+        { id:'c-2-3', task:'Publish one proof point (case study excerpt or LinkedIn post)' },
+        { id:'c-2-4', task:'Have 2 structured BD conversations using intake framework' },
+        { id:'c-2-5', task:'Send one follow-up to a stalled prospect with a specific next step' },
+      ]},
+      { title: 'Days 61–90: Optimize', items: [
+        { id:'c-3-1', task:'Close or formally decline every open opportunity — clear the pipeline' },
+        { id:'c-3-2', task:'Make second referral ask (different contact or Convo 2)' },
+        { id:'c-3-3', task:'Publish full case study to LinkedIn' },
+        { id:'c-3-4', task:'Submit to one trade publication or association' },
+        { id:'c-3-5', task:'Set 90-day review: what worked, what to adjust next quarter' },
+      ]}
+    ]
+  }
+};
+
+function renderPlanTracker() {
+  const track = VEC.diag.track || 'A';
+  const plan = PLAN_MILESTONES[track] || PLAN_MILESTONES['A'];
+  const checked = VEC.plan.checked || {};
+  const allItems = plan.phases.flatMap(p => p.items);
+  const doneCount = allItems.filter(i => checked[i.id]).length;
+  const pct = allItems.length ? Math.round((doneCount / allItems.length) * 100) : 0;
+
+  const pctEl = document.getElementById('planProgressPct');
+  const trackerEl = document.getElementById('planTracker');
+  if (!pctEl || !trackerEl) return;
+
+  pctEl.textContent = `${doneCount}/${allItems.length} complete · ${pct}%`;
+
+  trackerEl.innerHTML = plan.phases.map(phase => `
+    <div style="margin-bottom:20px">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--accent);margin-bottom:10px">${phase.title}</div>
+      ${phase.items.map(item => `
+        <label style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--surface2);cursor:pointer">
+          <input type="checkbox" ${checked[item.id] ? 'checked' : ''} onchange="toggleMilestone('${item.id}', this.checked)"
+            style="margin-top:2px;accent-color:var(--accent);flex-shrink:0;width:14px;height:14px">
+          <span style="font-size:13px;color:${checked[item.id] ? 'var(--txt3)' : 'var(--txt)'};text-decoration:${checked[item.id] ? 'line-through' : 'none'};line-height:1.5">${item.task}</span>
+        </label>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+function toggleMilestone(id, checked) {
+  if (!VEC.plan.checked) VEC.plan.checked = {};
+  VEC.plan.checked[id] = checked;
+  saveState();
+  renderPlanTracker();
+}
+
 // ─── DOWNLOAD ARTIFACTS ────────────────────────────────
+function dlDoc(filename, title, htmlBody) {
+  const wordHtml = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head><meta charset='utf-8'><title>${title}</title>
+<style>
+  body { font-family: Calibri, 'Segoe UI', sans-serif; font-size: 11pt; color: #1a1a1a; max-width: 720px; margin: 40px auto; line-height: 1.6; }
+  h1 { font-size: 20pt; color: #0d4f4a; border-bottom: 2pt solid #0d9488; padding-bottom: 6pt; margin-bottom: 6pt; }
+  h2 { font-size: 13pt; color: #0d4f4a; margin-top: 18pt; margin-bottom: 4pt; }
+  h3 { font-size: 11pt; color: #374151; margin-top: 12pt; }
+  p { margin: 6pt 0; }
+  .meta { color: #6b7280; font-size: 9pt; margin-bottom: 18pt; }
+  .highlight { background: #ecfdf5; padding: 10pt 14pt; border-left: 4pt solid #0d9488; margin: 12pt 0; }
+  .label { font-size: 9pt; font-weight: bold; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5pt; }
+  table { width: 100%; border-collapse: collapse; margin: 12pt 0; }
+  td, th { border: 1pt solid #e5e7eb; padding: 7pt 10pt; font-size: 10pt; }
+  th { background: #f3f4f6; font-weight: bold; text-align: left; }
+  .footer { color: #9ca3af; font-size: 8pt; margin-top: 30pt; border-top: 1pt solid #e5e7eb; padding-top: 8pt; }
+  hr { border: none; border-top: 1pt solid #e5e7eb; margin: 16pt 0; }
+  ul { margin: 6pt 0; padding-left: 18pt; }
+  li { margin: 3pt 0; }
+</style></head>
+<body>${htmlBody}<div class="footer">Generated by Vector · Groundwork Consulting · ${new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}</div></body></html>`;
+  dlFile(filename, wordHtml, 'application/msword');
+  showToast('Downloading ' + filename);
+}
+
 function downloadArtifact(type) {
   const p = VEC.practice, d = VEC.diag, pos = VEC.pos, ops = VEC.ops;
   const slug = (p.name || 'practice').toLowerCase().replace(/\s+/g,'-');
-  let content, filename;
 
   if (type === 'positioning') {
-    content = `# Positioning Canvas\n**Practice:** ${p.name}\n**Founder:** ${p.founder}\n\n---\n\n## The Buyer\n${pos.buyer}\n\n## The Real Constraint\n${pos.constraint}\n\n## The One-Line\n> ${pos.oneline}\n\n## Proof Point\n${pos.proof}\n\n---\n*Generated by Vector — ${new Date().toLocaleDateString()}*`;
-    filename = `${slug}_positioning_canvas.md`;
-  } else if (type === 'offer1') {
-    const o = pos.offer1;
-    content = `# ${o.name || 'Entry Offer'}\n**Practice:** ${p.name}\n\n---\n\n**Price:** ${o.price}\n**Duration:** ${o.duration}\n\n## What You Get\n${o.desc}\n\n---\n### Why This Works\n${pos.oneline}\n\n*${pos.proof}*\n\n*Generated by Vector — ${new Date().toLocaleDateString()}*`;
-    filename = `${slug}_offer_entry.md`;
-  } else if (type === 'offer2') {
-    const o = pos.offer2;
-    content = `# ${o.name || 'Foundation Build'}\n**Practice:** ${p.name}\n\n---\n\n**Price:** ${o.price}\n**Duration:** ${o.duration}\n\n## What You Get\n${o.desc}\n\n---\n### Why This Works\n${pos.oneline}\n\n*${pos.proof}*\n\n*Generated by Vector — ${new Date().toLocaleDateString()}*`;
-    filename = `${slug}_offer_foundation.md`;
-  } else if (type === 'offer3') {
-    const o = pos.offer3;
-    content = `# ${o.name || 'Retained'}\n**Practice:** ${p.name}\n\n---\n\n**Price:** ${o.price}\n**Duration:** ${o.duration}\n\n## What You Get\n${o.desc}\n\n---\n### Why This Works\n${pos.oneline}\n\n*${pos.proof}*\n\n*Generated by Vector — ${new Date().toLocaleDateString()}*`;
-    filename = `${slug}_offer_retained.md`;
-  } else if (type === 'referral') {
-    const eligible = VEC.ref.contacts.filter(c => c.status !== 'in-delivery');
-    content = `# Referral Ask Scripts\n**Practice:** ${p.name}\n**Generated:** ${new Date().toLocaleDateString()}\n\n---\n\n${eligible.map(c => {
-      const relLine = c.rel === 'past-client' ? 'Because you\'ve seen our work firsthand' : c.rel === 'peer' ? 'Because you know the quality of what we do' : 'Given your understanding of our practice';
-      return `## ${c.name} — ${c.company}\n**Role:** ${c.role}\n**Relationship:** ${c.rel}\n**Based on:** ${c.value}\n\n### The Ask\n"${relLine}, I wanted to ask for two specific introductions — not warm leads, just conversations with people where what we do might matter. The first is ${c.convo1 || '[name TBD]'}. The second is ${c.convo2 || '[name TBD]'}. Would you be open to making those?"\n\n**Status:** ${c.status}\n`;
-    }).join('\n---\n\n')}`;
-    filename = `${slug}_referral_scripts.md`;
-  } else if (type === 'casestudies') {
-    content = `# Case Studies\n**Practice:** ${p.name}\n**Generated:** ${new Date().toLocaleDateString()}\n\n---\n\n${VEC.cred.cases.map(cs => `## ${cs.client} — ${cs.industry}\n\n### The Situation\n${cs.situation}\n\n### The Real Constraint\n${cs.constraint}\n\n### What We Did\n${cs.solution}\n\n### Result\n**${cs.result}**\n\n${cs.quote ? `> "${cs.quote}"\n` : ''}`).join('\n---\n\n')}`;
-    filename = `${slug}_case_studies.md`;
-  } else if (type === 'placement') {
-    const targets = VEC.cred.placements.map(p => `- [ ] ${p}`).join('\n') || '- [ ] (No placement targets selected)';
-    content = `# Credibility Placement Checklist\n**Practice:** ${p.name}\n**Generated:** ${new Date().toLocaleDateString()}\n\n---\n\n## Placement Targets\n${targets}\n\n## Sequence\n1. Publish case study to LinkedIn (anchor first)\n2. Submit to trade association (once LinkedIn version is live)\n3. Share in peer networks / Slack groups\n4. Pitch for newsletter feature\n5. Pursue podcast appearance\n\n## Rules\n- Do not place before the positioning is locked\n- LinkedIn must be first — it's where buyers verify you\n- One placement at a time; don't spray`;
-    filename = `${slug}_placement_checklist.md`;
-  } else if (type === 'intake') {
-    content = `# Intake Questionnaire\n**Practice:** ${p.name}\n**Generated:** ${new Date().toLocaleDateString()}\n\n---\n\nSend this questionnaire before the scoping call. It replaces the need to gather basics during the call itself.\n\n1. **Describe the situation** — What is happening right now that has you considering bringing in outside help?\n\n2. **What have you already tried?** — What approaches have you attempted? What happened?\n\n3. **What does success look like in 90 days?** — Be specific. What would you point to as evidence that this worked?\n\n4. **Who are the key stakeholders?** — Who must be aligned for this to succeed? Who can block it?\n\n5. **What is your timeline?** — Is there a deadline, event, or external forcing function?\n\n6. **Budget range** — Are you working within a defined range? We ask upfront so we don't waste each other's time.\n\n---\n*${p.name} uses these responses to prepare the Scoping Document before the first call.*`;
-    filename = `${slug}_intake_questionnaire.md`;
-  } else if (type === 'scoping') {
-    content = `# Scoping Document\n**Practice:** ${p.name}\n**Client:** [CLIENT NAME]\n**Date:** ${new Date().toLocaleDateString()}\n\n---\n\n## Engagement Overview\n**Engagement name:** [NAME]\n**Offer:** ${pos.offer2.name || '[Offer name]'}\n**Fee:** ${pos.offer2.price || '[Fee]'}\n**Duration:** ${ops.duration || pos.offer2.duration || '[Duration]'}\n**Start date:** [DATE]\n\n## Scope\n### In Scope\n- [DELIVERABLE 1]\n- [DELIVERABLE 2]\n- [DELIVERABLE 3]\n\n### Out of Scope\n- [EXCLUSION 1]\n- [EXCLUSION 2]\n\n## Assumptions\n- Client will provide access to [SYSTEMS/PEOPLE] within the first week\n- Key stakeholder availability for [N] hours per week\n- [OTHER ASSUMPTION]\n\n## Payment Terms\n- 50% due on contract signing\n- 50% due at [MILESTONE / week 6 / completion]\n\n## Signatures\n**${p.founder || p.name}:** _____________________ Date: _______\n\n**Client:** _____________________ Date: _______`;
-    filename = `${slug}_scoping_document.md`;
-  } else if (type === 'kickoff') {
-    content = `# Kickoff Agenda\n**Practice:** ${p.name}\n**Client:** [CLIENT NAME]\n**Duration:** 90 minutes\n\n---\n\n## Agenda\n\n**0:00 – 0:10 | Welcome & Introductions**\nBrief round of introductions. Who is in the room and why.\n\n**0:10 – 0:25 | Project Overview**\nReview the scoping document together. Confirm scope, exclusions, and timeline. Surface any changes since signing.\n\n**0:25 – 0:45 | Working Norms**\n- How we communicate (Slack / email / calls)\n- What constitutes an urgent escalation\n- How decisions get made on the client side\n- ${p.founder || p.name}'s availability and response time\n\n**0:45 – 1:05 | First-Week Deliverable**\nAlign on one concrete output due at end of week 1. Sets the pace and confirms we're moving.\n\n**1:05 – 1:20 | Open Questions**\nAnything unclear, unsettled, or concerning. Better now than week 6.\n\n**1:20 – 1:30 | Next Steps**\n- ${p.founder || p.name} sends recap email within 24 hours\n- First check-in scheduled before leaving this call\n- Client confirms internal point of contact\n\n---\n*${p.name} — ${new Date().toLocaleDateString()}*`;
-    filename = `${slug}_kickoff_agenda.md`;
-  } else if (type === 'cadence') {
-    const cadenceType = ops.cadence === 'weekly' ? 'Weekly' : ops.cadence === 'biweekly' ? 'Bi-Weekly' : 'Milestone-Based';
-    content = `# Delivery Cadence — ${cadenceType}\n**Practice:** ${p.name}\n**Generated:** ${new Date().toLocaleDateString()}\n\n---\n\n## Check-In Structure (${cadenceType})\n\n### Standing Agenda (45 minutes)\n1. **Status update** (10 min) — What moved since last call? What didn't?\n2. **Obstacle review** (10 min) — What is blocking progress? What needs a decision?\n3. **Next period plan** (15 min) — What are we committing to before the next call?\n4. **Open items** (10 min) — Anything else?\n\n### Status Categories\n- 🟢 **On track** — No intervention needed\n- 🟡 **Watch** — Potential risk; flagging early\n- 🔴 **Off track** — Needs immediate attention\n\n### Escalation Protocol\nIf a deliverable will be late or a risk materializes, ${p.founder || p.name} contacts the client sponsor **before** the next standing call — never let them be surprised on the call.\n\n### Check-In Notes Template\n**Date:** ___________\n**Status:** 🟢 / 🟡 / 🔴\n**What moved:** ___________\n**Obstacles:** ___________\n**Next period commitments:** ___________\n\n---\n*${p.name} — ${new Date().toLocaleDateString()}*`;
-    filename = `${slug}_delivery_cadence.md`;
-  } else if (type === 'handoff') {
-    const extras = [];
-    if (ops.refAsk) extras.push('- [ ] **Referral ask made** — Two specific introductions requested by name');
-    if (ops.caseDraft) extras.push('- [ ] **Case study draft shared with client** — Confirm accuracy before publishing');
-    if (ops.nps) extras.push('- [ ] **NPS survey sent** — Link sent and response received');
-    content = `# Handoff Checklist\n**Practice:** ${p.name}\n**Client:** [CLIENT NAME]\n**Date:** ${new Date().toLocaleDateString()}\n\n---\n\n## Delivery Confirmation\n- [ ] All deliverables from scoping document completed and accepted\n- [ ] Final deliverable walkthrough completed with client\n- [ ] Any open items documented and handed off\n\n## Knowledge Transfer\n- [ ] Client has access to all working files and outputs\n- [ ] Client knows where things live (${d.storage.join(', ') || 'file storage'})\n- [ ] Internal point of contact confirmed for post-engagement questions\n\n## Relationship\n${extras.join('\n')}\n- [ ] **Testimonial / quote requested** — For use in case study and marketing\n- [ ] **Retained offer presented** — ${pos.offer3.name || 'Retained offer'} at ${pos.offer3.price || '[price]'}\n- [ ] **Thank you sent** — Personal note from ${p.founder || p.name}\n\n## Internal\n- [ ] Engagement marked complete in pipeline\n- [ ] Invoice confirmed paid\n- [ ] Lessons learned documented\n\n---\n*${p.name} — Handoff date: ___________*`;
-    filename = `${slug}_handoff_checklist.md`;
-  } else if (type === 'plan') {
-    const track = VEC.diag.track || 'A';
-    content = `# 30-60-90 Day Plan — Track ${track}\n**Practice:** ${p.name}\n**Generated:** ${new Date().toLocaleDateString()}\n\n---\n\n${p.name}'s build sequence, based on Track ${track} (${track === 'A' ? 'Discipline & Systematize' : track === 'B' ? 'Build From Zero' : 'Fix & Activate'}).\n\n## Foundation — Days 1–30\nBuild the core artifacts. Do not distribute or activate until all Foundation tasks are complete.\n\n## Activation — Days 31–60\nBegin external execution. Referral asks, content placement, and intake refinement start here.\n\n## Optimization — Days 61–90\nMeasure, adjust, and expand. By day 90 you should have at least one referral cycle complete and one case study placed.\n\n---\n*See Practice OS for the full task-by-task sequence.*\n\n*Generated by Vector — ${new Date().toLocaleDateString()}*`;
-    filename = `${slug}_plan_90day.md`;
+    dlDoc(`${slug}_positioning_canvas.doc`, 'Positioning Canvas',
+      `<h1>Positioning Canvas</h1>
+      <p class="meta">${p.name} &nbsp;·&nbsp; ${p.founder}</p>
+      <h2>The Buyer</h2><p>${pos.buyer || '—'}</p>
+      <h2>The Real Constraint</h2><p>${pos.constraint || '—'}</p>
+      <h2>The One-Line</h2><div class="highlight"><p style="font-size:13pt;font-style:italic">${pos.oneline || '—'}</p></div>
+      <h2>Proof Point</h2><p>${pos.proof || '—'}</p>`);
+    return;
   }
 
-  if (content) {
-    dlFile(filename, content, 'text/markdown');
-    showToast('Downloading ' + filename);
-  } else {
-    showToast('Run the relevant step before downloading');
+  if (type === 'offer1' || type === 'offer2' || type === 'offer3') {
+    const offerKey = type;
+    const o = pos[offerKey] || {};
+    const labels = { offer1: 'Entry / Diagnostic Offer', offer2: 'Foundation Build / Core Offer', offer3: 'Retained Relationship' };
+    const fileNames = { offer1: 'offer_entry', offer2: 'offer_foundation', offer3: 'offer_retained' };
+    dlDoc(`${slug}_${fileNames[offerKey]}.doc`, o.name || labels[offerKey],
+      `<h1>${o.name || labels[offerKey]}</h1>
+      <p class="meta">${p.name} &nbsp;·&nbsp; ${labels[offerKey]}</p>
+      <table><tr><th>Price</th><th>Duration</th></tr><tr><td>${o.price || '—'}</td><td>${o.duration || '—'}</td></tr></table>
+      <h2>What You Get</h2><p>${o.desc || '—'}</p>
+      <hr>
+      <h2>Why This Works</h2>
+      <div class="highlight"><p style="font-style:italic">${pos.oneline || '—'}</p></div>
+      <p>${pos.proof || ''}</p>`);
+    return;
   }
+
+  if (type === 'referral') {
+    const eligible = VEC.ref.contacts.filter(c => c.status !== 'in-delivery');
+    dlDoc(`${slug}_referral_scripts.doc`, 'Referral Ask Scripts',
+      `<h1>Referral Ask Scripts</h1>
+      <p class="meta">${p.name} &nbsp;·&nbsp; ${eligible.length} contacts</p>
+      ${eligible.map(c => `
+        <h2>${c.name}${c.company ? ' — ' + c.company : ''}</h2>
+        <p><span class="label">Relationship:</span> ${c.type || c.rel || '—'}</p>
+        <p><span class="label">Value delivered:</span> ${c.value || c.notes || '—'}</p>
+        <h3>Conversation 1</h3><p>${c.convo1 || '(To be drafted after generating referral scripts)'}</p>
+        <h3>Conversation 2</h3><p>${c.convo2 || '(To be drafted after generating referral scripts)'}</p>
+        <p><span class="label">Status:</span> ${c.status || 'not-asked'}</p><hr>`).join('')}`);
+    return;
+  }
+
+  if (type === 'casestudies') {
+    dlDoc(`${slug}_case_studies.doc`, 'Case Study Drafts',
+      `<h1>Case Study Drafts</h1>
+      <p class="meta">${p.name}</p>
+      ${VEC.cred.cases.length ? VEC.cred.cases.map(cs => `
+        <h2>${cs.client} — ${cs.industry || ''}</h2>
+        <h3>The Situation</h3><p>${cs.situation || '—'}</p>
+        <h3>The Constraint</h3><p>${cs.constraint || '—'}</p>
+        <h3>What We Did</h3><p>${cs.solution || '—'}</p>
+        <h3>Result</h3><div class="highlight"><p><strong>${cs.result || '—'}</strong></p></div>
+        ${cs.quote ? `<p style="font-style:italic">"${cs.quote}"</p>` : ''}<hr>`).join('') :
+        '<p>No case studies added yet. Go to Credibility Presence to add them.</p>'}`);
+    return;
+  }
+
+  if (type === 'placement') {
+    const targets = VEC.cred.placements;
+    dlDoc(`${slug}_placement_checklist.doc`, 'Credibility Placement Checklist',
+      `<h1>Credibility Placement Checklist</h1>
+      <p class="meta">${p.name}</p>
+      <h2>Your Placement Targets</h2>
+      <ul>${targets.length ? targets.map(t => `<li>${t}</li>`).join('') : '<li>(No placement targets selected)</li>'}</ul>
+      <h2>Sequence</h2>
+      <ol><li>Publish case study to <strong>LinkedIn</strong> (anchor first)</li>
+      <li>Submit to <strong>Trade Association</strong> once LinkedIn version is live</li>
+      <li>Share in <strong>Peer Networks / Slack groups</strong></li>
+      <li>Pitch for <strong>Newsletter</strong> feature</li>
+      <li>Pursue <strong>Podcast</strong> appearance</li></ol>
+      <h2>Rules</h2>
+      <ul><li>Do not place before positioning is locked</li>
+      <li>LinkedIn must be first — it's where buyers verify you</li>
+      <li>One placement at a time; don't spray</li></ul>`);
+    return;
+  }
+
+  if (type === 'intake') {
+    dlDoc(`${slug}_intake_questionnaire.doc`, 'Client Intake Questionnaire',
+      `<h1>Client Intake Questionnaire</h1>
+      <p class="meta">${p.name} &nbsp;·&nbsp; Send before the scoping call</p>
+      <p>Please answer the following before our first call. Your answers let us prepare a proper scoping document — saving us 30 minutes of basics on the call itself.</p>
+      <h2>1. Describe the situation</h2><p>What is happening right now that has you considering bringing in outside help?</p>
+      <h2>2. What have you already tried?</h2><p>What approaches have you attempted? What happened?</p>
+      <h2>3. What does success look like in 90 days?</h2><p>Be specific. What would you point to as evidence that this worked?</p>
+      <h2>4. Who are the key stakeholders?</h2><p>Who must be aligned for this to succeed? Who can block it?</p>
+      <h2>5. What is your timeline?</h2><p>Is there a deadline, event, or external forcing function?</p>
+      <h2>6. Budget range</h2><p>Are you working within a defined range? We ask upfront so we don't waste each other's time.</p>`);
+    return;
+  }
+
+  if (type === 'scoping') {
+    dlDoc(`${slug}_scoping_document.doc`, 'Engagement Scoping Document',
+      `<h1>Engagement Scoping Document</h1>
+      <p class="meta">${p.name} &nbsp;·&nbsp; Client: [CLIENT NAME] &nbsp;·&nbsp; Date: ___________</p>
+      <h2>Engagement Overview</h2>
+      <table><tr><th>Field</th><th>Details</th></tr>
+      <tr><td>Offer</td><td>${pos.offer2?.name || '[Offer name]'}</td></tr>
+      <tr><td>Fee</td><td>${pos.offer2?.price || '[Fee]'}</td></tr>
+      <tr><td>Duration</td><td>${ops.duration || pos.offer2?.duration || '[Duration]'}</td></tr>
+      <tr><td>Start Date</td><td>___________</td></tr></table>
+      <h2>In Scope</h2><ul><li>[Deliverable 1]</li><li>[Deliverable 2]</li><li>[Deliverable 3]</li></ul>
+      <h2>Out of Scope</h2><ul><li>[Exclusion 1]</li><li>[Exclusion 2]</li></ul>
+      <h2>Assumptions</h2><ul><li>Client provides access to key systems and stakeholders within week 1</li><li>Key stakeholder availability for [N] hours per week</li></ul>
+      <h2>Payment Terms</h2><ul><li>50% due on contract signing</li><li>50% due at [milestone / week 6 / completion]</li></ul>
+      <h2>Signatures</h2>
+      <table><tr><th>${p.founder || p.name}</th><th>Client</th></tr>
+      <tr><td style="height:40pt">_____________________</td><td style="height:40pt">_____________________</td></tr>
+      <tr><td>Date: ___________</td><td>Date: ___________</td></tr></table>`);
+    return;
+  }
+
+  if (type === 'kickoff') {
+    dlDoc(`${slug}_kickoff_agenda.doc`, 'Kickoff Agenda',
+      `<h1>Kickoff Agenda</h1>
+      <p class="meta">${p.name} &nbsp;·&nbsp; Client: [CLIENT NAME] &nbsp;·&nbsp; Duration: 90 minutes</p>
+      <table>
+      <tr><th>Time</th><th>Topic</th><th>Owner</th></tr>
+      <tr><td>0:00–0:10</td><td><strong>Welcome &amp; Introductions</strong><br>Brief round of introductions. Who is in the room and why.</td><td>${p.founder || 'Founder'}</td></tr>
+      <tr><td>0:10–0:25</td><td><strong>Project Overview</strong><br>Review the scoping document. Confirm scope, exclusions, and timeline.</td><td>${p.founder || 'Founder'}</td></tr>
+      <tr><td>0:25–0:45</td><td><strong>Working Norms</strong><br>Communication channels, escalation protocol, decision rights.</td><td>Both</td></tr>
+      <tr><td>0:45–1:05</td><td><strong>First-Week Deliverable</strong><br>Align on one concrete output due end of week 1.</td><td>Both</td></tr>
+      <tr><td>1:05–1:20</td><td><strong>Open Questions</strong><br>Anything unclear, unsettled, or concerning.</td><td>Both</td></tr>
+      <tr><td>1:20–1:30</td><td><strong>Next Steps</strong><br>Recap email within 24h. First check-in scheduled before leaving.</td><td>${p.founder || 'Founder'}</td></tr>
+      </table>`);
+    return;
+  }
+
+  if (type === 'cadence') {
+    const cadenceType = ops.cadence === 'weekly' ? 'Weekly' : ops.cadence === 'biweekly' ? 'Bi-Weekly' : 'Milestone-Based';
+    dlDoc(`${slug}_delivery_cadence.doc`, `Delivery Cadence — ${cadenceType}`,
+      `<h1>Delivery Cadence — ${cadenceType}</h1>
+      <p class="meta">${p.name}</p>
+      <h2>Standing Agenda (45 minutes)</h2>
+      <table><tr><th>Time</th><th>Topic</th></tr>
+      <tr><td>10 min</td><td><strong>Status update</strong> — What moved since last call? What didn't?</td></tr>
+      <tr><td>10 min</td><td><strong>Obstacle review</strong> — What is blocking progress? What needs a decision?</td></tr>
+      <tr><td>15 min</td><td><strong>Next period plan</strong> — What are we committing to before the next call?</td></tr>
+      <tr><td>10 min</td><td><strong>Open items</strong> — Anything else?</td></tr></table>
+      <h2>Status Categories</h2>
+      <ul><li>&#x1F7E2; <strong>On track</strong> — No intervention needed</li>
+      <li>&#x1F7E1; <strong>Watch</strong> — Potential risk; flagging early</li>
+      <li>&#x1F534; <strong>Off track</strong> — Needs immediate attention</li></ul>
+      <h2>Escalation Protocol</h2>
+      <p>${p.founder || 'The engagement lead'} contacts the client sponsor <strong>before</strong> the next standing call if a deliverable will be late — never surprise them on the call.</p>
+      <h2>Check-In Notes Template</h2>
+      <table><tr><th>Field</th><th></th></tr>
+      <tr><td>Date</td><td>___________</td></tr>
+      <tr><td>Status</td><td>&#x1F7E2; / &#x1F7E1; / &#x1F534;</td></tr>
+      <tr><td>What moved</td><td></td></tr>
+      <tr><td>Obstacles</td><td></td></tr>
+      <tr><td>Next period commitments</td><td></td></tr></table>`);
+    return;
+  }
+
+  if (type === 'handoff') {
+    const extras = [];
+    if (ops.refAsk) extras.push('<li>&#9744; <strong>Referral ask made</strong> — Two specific introductions requested by name</li>');
+    if (ops.caseDraft) extras.push('<li>&#9744; <strong>Case study draft shared</strong> — Accuracy confirmed before publishing</li>');
+    if (ops.nps) extras.push('<li>&#9744; <strong>NPS survey sent</strong> — Response received</li>');
+    dlDoc(`${slug}_handoff_checklist.doc`, 'Client Handoff Checklist',
+      `<h1>Client Handoff Checklist</h1>
+      <p class="meta">${p.name} &nbsp;·&nbsp; Client: [CLIENT NAME] &nbsp;·&nbsp; Handoff Date: ___________</p>
+      <h2>Delivery Confirmation</h2>
+      <ul><li>&#9744; All scoping document deliverables completed and accepted</li>
+      <li>&#9744; Final deliverable walkthrough completed with client</li>
+      <li>&#9744; Open items documented and handed off</li></ul>
+      <h2>Knowledge Transfer</h2>
+      <ul><li>&#9744; Client has access to all working files and outputs</li>
+      <li>&#9744; Client knows where things live (${d.storage?.join(', ') || 'file storage'})</li>
+      <li>&#9744; Internal point of contact confirmed for post-engagement questions</li></ul>
+      <h2>Relationship</h2>
+      <ul>${extras.join('')}
+      <li>&#9744; <strong>Testimonial / quote requested</strong> — For use in case study and marketing</li>
+      <li>&#9744; <strong>Retained offer presented</strong> — ${pos.offer3?.name || 'Retained offer'} at ${pos.offer3?.price || '[price]'}</li>
+      <li>&#9744; <strong>Thank you sent</strong> — Personal note from ${p.founder || p.name}</li></ul>
+      <h2>Internal</h2>
+      <ul><li>&#9744; Engagement marked complete in pipeline</li>
+      <li>&#9744; Invoice confirmed paid</li>
+      <li>&#9744; Lessons learned documented</li></ul>`);
+    return;
+  }
+
+  if (type === 'plan') {
+    // Plan is now tracked in-app — navigate to BD Command Center and scroll to tracker
+    navigateTo(6);
+    setTimeout(() => {
+      const el = document.getElementById('planTracker');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 200);
+    showToast('Your 30-60-90 plan tracker is below ↓');
+    return;
+  }
+
+  showToast('Run the relevant step before downloading');
 }
 
 function downloadBundle() {
@@ -2205,6 +2491,9 @@ Return ONLY valid JSON matching this exact schema. Use null for anything not men
   "contacts": [
     { "name": "string", "company": "string or null", "type": "past-client|peer|prospect", "status": "not-asked" }
   ],
+  "cases": [
+    { "client": "string — client/company name", "industry": "string or null", "situation": "string — what was happening", "constraint": "string — the real problem", "solution": "string — what was done", "result": "string — the outcome/metric", "quote": "string or null — any quote from the client" }
+  ],
   "ops": {
     "duration": "string — typical engagement length or null",
     "refAsk": true,
@@ -2219,6 +2508,7 @@ Rules:
 - motion: "referral" if referrals are primary; "outbound" if cold outreach; "content" if LinkedIn/writing drives inbound; "mixed" if no dominant source
 - crm/pm/storage/comms: only include tools explicitly mentioned
 - contacts: extract ALL people named — past clients, referral sources, collaborators, prospects
+- cases: extract any client engagements described with before/after context, results, or outcomes — especially if metrics are mentioned
 - pos.oneline: draft a plain-language one-liner from what they said about what they do and for whom — no jargon, no buzzwords
 - pos.offer1/2/3: infer 3 packaged offers from what they described — entry diagnostic, core engagement, and retainer. Use their actual engagement scope, duration ($150K–$250K range for core), and delivery model. If they didn't discuss retainers, make offer3 null.
 - Return ONLY the JSON object, no explanation`;
@@ -2432,6 +2722,11 @@ function confirmPopulate() {
     const fresh = incoming.filter(c => !existingNames.has(c.name.toLowerCase()));
     VEC.ref.contacts = [...VEC.ref.contacts, ...fresh];
   }
+  if (d.cases && d.cases.length) {
+    const existingClients = new Set(VEC.cred.cases.map(c => c.client?.toLowerCase()));
+    const freshCases = d.cases.filter(c => !existingClients.has(c.client?.toLowerCase()));
+    VEC.cred.cases = [...VEC.cred.cases, ...freshCases];
+  }
 
   // Advance phase past diagnostic since we ran it
   PHASE = Math.max(PHASE, 1);
@@ -2571,7 +2866,7 @@ function adminNewClient() {
   document.getElementById('adminHome').style.display = 'none';
   document.getElementById('btnBackAdmin').style.display = '';
   // Clear current VEC state for fresh client
-  Object.assign(VEC, { practice:{name:'',founder:'',email:'',website:''}, diag:{size:'',who:'',market:'',motion:'',constraint:'',crm:[],pm:[],storage:[],comms:[],track:'',weights:{}}, pos:{buyer:'',constraint:'',oneline:'',proof:'',offer1:{},offer2:{},offer3:{},generated:false}, ref:{contacts:[],scripts:[],generated:false}, cred:{placements:[],cases:[],generated:false}, ops:{duration:'',refAsk:true,caseDraft:true,nps:false,cadence:'weekly',generated:false}, plan:{generated:false} });
+  Object.assign(VEC, { practice:{name:'',founder:'',email:'',website:''}, diag:{size:'',who:'',market:'',motion:'',constraint:'',crm:[],pm:[],storage:[],comms:[],track:'',weights:{}}, pos:{buyer:'',constraint:'',oneline:'',proof:'',offer1:{},offer2:{},offer3:{},generated:false}, ref:{contacts:[],scripts:[],generated:false}, cred:{placements:[],cases:[],generated:false}, ops:{duration:'',refAsk:true,caseDraft:true,nps:false,cadence:'weekly',generated:false}, plan:{generated:false,checked:{}} });
   PHASE = 0; restoreUI(); updateSidebar();
   openTranscriptImport();
 }
