@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Vector — Practice OS</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -424,6 +425,26 @@
 </head>
 <body>
 
+<!-- ── LOGIN SCREEN ── -->
+<div id="loginScreen" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:48px 40px;max-width:420px;width:100%;text-align:center;">
+    <div style="width:48px;height:48px;background:linear-gradient(135deg,#0d9488,#10b981);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    </div>
+    <h2 style="font-size:22px;font-weight:700;margin-bottom:8px;">Vector</h2>
+    <p style="color:var(--txt2);margin-bottom:32px;font-size:14px;">Practice OS · Groundwork Consulting</p>
+    <div id="loginForm">
+      <input id="loginEmail" type="email" placeholder="your@email.com" style="width:100%;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--txt);font-size:15px;margin-bottom:12px;outline:none;">
+      <button onclick="sendMagicLink()" style="width:100%;padding:11px;background:var(--accent);border:none;border-radius:8px;color:white;font-size:15px;font-weight:600;cursor:pointer;">Send magic link</button>
+    </div>
+    <div id="loginSent" style="display:none;">
+      <p style="color:var(--green);font-size:15px;">✓ Check your email for a sign-in link</p>
+      <p style="color:var(--txt3);font-size:13px;margin-top:8px;">You can close this tab — click the link in your email to open Vector.</p>
+    </div>
+    <p id="loginError" style="color:var(--red);font-size:13px;margin-top:10px;display:none;"></p>
+  </div>
+</div>
+
 <!-- ── TOP BAR ── -->
 <div class="topbar">
   <div class="topbar-left">
@@ -450,6 +471,9 @@
     <button class="btn btn-ghost" style="padding:4px 11px;font-size:12px" onclick="importInstance()" title="Load a previously exported practice instance">↑ Import</button>
     <button class="btn btn-ghost" style="padding:4px 11px;font-size:12px;color:var(--txt3)" onclick="if(confirm('Clear all data and start a new practice?')) clearState()">New</button>
     <input type="file" id="importInput" accept=".json" style="display:none" onchange="handleImport(event)" />
+    <div class="topbar-divider"></div>
+    <span id="userEmail" style="font-size:12px;color:var(--txt3);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+    <button class="btn btn-ghost" style="padding:4px 11px;font-size:12px;color:var(--txt3)" onclick="signOut()">Sign out</button>
   </div>
 </div>
 
@@ -1060,12 +1084,49 @@ function setActiveStep(n) {
   if (btn) btn.classList.add('active');
 }
 
+// ─── SUPABASE ──────────────────────────────────────────
+const SUPA_URL = 'https://ilhljjkiijmjpwinovzj.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsaGxqamtpaWptanB3aW5vdnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MTk4MjIsImV4cCI6MjA5OTE5NTgyMn0.w8asDSA-rXuaDfujC2dr4J-EKCzlCVABOuq3VQeeFsE';
+const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+let currentUser = null;
+
+async function sendMagicLink() {
+  const email = document.getElementById('loginEmail').value.trim();
+  if (!email) return;
+  document.getElementById('loginError').style.display = 'none';
+  const { error } = await supa.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin + window.location.pathname } });
+  if (error) { document.getElementById('loginError').textContent = error.message; document.getElementById('loginError').style.display = 'block'; return; }
+  document.getElementById('loginForm').style.display = 'none';
+  document.getElementById('loginSent').style.display = 'block';
+}
+
+async function signOut() {
+  await supa.auth.signOut();
+  location.reload();
+}
+
+async function cloudSave() {
+  if (!currentUser) return;
+  await supa.from('practices').upsert({ email: currentUser.email, practice_name: VEC.practice.name || null, state: { VEC, PHASE }, updated_at: new Date().toISOString() }, { onConflict: 'email' });
+}
+
+async function cloudLoad() {
+  if (!currentUser) return false;
+  const { data } = await supa.from('practices').select('state').eq('email', currentUser.email).single();
+  if (!data || !data.state || !data.state.VEC) return false;
+  Object.assign(VEC, data.state.VEC);
+  PHASE = data.state.PHASE || 0;
+  return true;
+}
+
 // ─── PERSISTENCE ───────────────────────────────────────
 function saveState() {
   try { localStorage.setItem('vec_v1', JSON.stringify({ VEC, PHASE })); } catch(e) {}
+  cloudSave(); // async fire-and-forget
 }
 function clearState() {
   try { localStorage.removeItem('vec_v1'); } catch(e) {}
+  if (currentUser) supa.from('practices').delete().eq('email', currentUser.email);
   location.reload();
 }
 function exportInstance() {
@@ -1866,11 +1927,29 @@ function downloadBundle() {
 }
 
 // ─── INIT ──────────────────────────────────────────────
-if (restoreFromSave()) {
-  restoreUI();
-} else {
-  updateSidebar();
-}
+const loginScreen = document.getElementById('loginScreen');
+
+supa.auth.onAuthStateChange(async (event, session) => {
+  if (session) {
+    currentUser = session.user;
+    document.getElementById('userEmail').textContent = currentUser.email;
+    loginScreen.style.display = 'none';
+    // Try cloud first, fall back to localStorage
+    const fromCloud = await cloudLoad();
+    if (fromCloud) {
+      restoreUI();
+      showToast('Practice loaded from cloud');
+    } else if (restoreFromSave()) {
+      restoreUI();
+      cloudSave(); // push local data up
+    } else {
+      updateSidebar();
+    }
+  } else {
+    currentUser = null;
+    loginScreen.style.display = 'flex';
+  }
+});
 </script>
 </body>
 </html>
