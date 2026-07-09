@@ -2064,6 +2064,18 @@ function readTranscriptFile(file) {
   reader.readAsText(file);
 }
 
+function showOverlay(msg) {
+  const overlay = document.getElementById('procOverlay');
+  document.getElementById('procPhase').textContent = 'AI';
+  document.getElementById('procTitle').textContent = msg || 'Working…';
+  document.getElementById('procMsg').textContent = '';
+  document.getElementById('procBar').style.width = '60%';
+  overlay.classList.add('active');
+}
+function hideOverlay() {
+  document.getElementById('procOverlay').classList.remove('active');
+}
+
 async function runTranscriptParse() {
   const text = (_pendingTranscriptText || document.getElementById('transcriptPaste').value).trim();
   if (!text) { showToast('Paste or upload a transcript first'); return; }
