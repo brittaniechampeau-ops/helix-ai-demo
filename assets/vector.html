@@ -1094,7 +1094,7 @@ async function sendMagicLink() {
   const email = document.getElementById('loginEmail').value.trim();
   if (!email) return;
   document.getElementById('loginError').style.display = 'none';
-  const { error } = await supa.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin + window.location.pathname } });
+  const { error } = await supa.auth.signInWithOtp({ email, options: { emailRedirectTo: 'https://vector.brittbowman.ai' } });
   if (error) { document.getElementById('loginError').textContent = error.message; document.getElementById('loginError').style.display = 'block'; return; }
   document.getElementById('loginForm').style.display = 'none';
   document.getElementById('loginSent').style.display = 'block';
