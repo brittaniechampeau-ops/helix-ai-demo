@@ -467,6 +467,7 @@
     <span class="badge badge-accent" id="trackBadge" style="display:none"></span>
     <span class="badge badge-amber" id="phaseBadge">Diagnostic</span>
     <div class="topbar-divider"></div>
+    <button class="btn btn-primary" style="padding:4px 13px;font-size:12px;gap:5px" onclick="openTranscriptImport()">📋 Transcript</button>
     <button class="btn btn-ghost" style="padding:4px 11px;font-size:12px" onclick="exportInstance()" title="Download this practice as a JSON file to share with your client">↓ Export</button>
     <button class="btn btn-ghost" style="padding:4px 11px;font-size:12px" onclick="importInstance()" title="Load a previously exported practice instance">↑ Import</button>
     <button class="btn btn-ghost" style="padding:4px 11px;font-size:12px;color:var(--txt3)" onclick="if(confirm('Clear all data and start a new practice?')) clearState()">New</button>
@@ -1049,6 +1050,86 @@
 <!-- ── TOAST ── -->
 <div class="toast" id="toast"></div>
 
+<!-- ── API KEY MODAL ── -->
+<div class="modal-overlay" id="apiKeyModal">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <span class="modal-title">Anthropic API Key</span>
+      <button class="modal-close" onclick="closeModal('apiKeyModal')">×</button>
+    </div>
+    <p style="font-size:13px;color:var(--txt2);margin-bottom:14px">Enter your Anthropic API key to enable transcript parsing. Stored only in your browser.</p>
+    <input id="apiKeyInput" type="password" placeholder="sk-ant-api03-..." style="width:100%;padding:9px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--txt);font-size:14px;font-family:monospace;margin-bottom:4px">
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('apiKeyModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveApiKey()">Save & Continue</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TRANSCRIPT IMPORT MODAL ── -->
+<div class="modal-overlay" id="transcriptModal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <span class="modal-title">Import Zoom Transcript</span>
+      <button class="modal-close" onclick="closeModal('transcriptModal')">×</button>
+    </div>
+    <p style="font-size:13px;color:var(--txt2);margin-bottom:16px">Upload a .vtt or .txt transcript from your client intake call. Claude will extract all the intake answers automatically.</p>
+    <div id="transcriptDropZone" onclick="document.getElementById('transcriptFileInput').click()" ondragover="event.preventDefault();this.style.borderColor='var(--accent)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleTranscriptDrop(event)" style="border:2px dashed var(--border);border-radius:10px;padding:32px;text-align:center;cursor:pointer;margin-bottom:14px;transition:border-color .2s">
+      <div style="font-size:28px;margin-bottom:8px">📄</div>
+      <div style="font-size:14px;font-weight:600;color:var(--txt);margin-bottom:4px">Drop transcript file here</div>
+      <div style="font-size:12px;color:var(--txt3)">.vtt or .txt · or click to browse</div>
+    </div>
+    <input type="file" id="transcriptFileInput" accept=".vtt,.txt" style="display:none" onchange="handleTranscriptFile(event)">
+    <div style="text-align:center;font-size:12px;color:var(--txt3);margin-bottom:10px">— or paste text —</div>
+    <textarea id="transcriptPaste" placeholder="Paste transcript text here..." style="width:100%;height:120px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--txt);font-size:13px;resize:vertical;font-family:monospace"></textarea>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('transcriptModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="runTranscriptParse()">Parse with Claude</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── VALIDATION MODAL ── -->
+<div class="modal-overlay" id="validationModal" style="align-items:flex-start;padding:20px;overflow-y:auto">
+  <div class="modal" style="max-width:660px;width:100%;margin:auto">
+    <div class="modal-header" style="position:sticky;top:0;background:var(--surface2);z-index:1;padding-bottom:14px;border-bottom:1px solid var(--border);margin-bottom:20px">
+      <div>
+        <span class="modal-title">Review Extracted Data</span>
+        <div style="font-size:12px;color:var(--txt3);margin-top:2px">Edit anything Claude got wrong before populating Vector</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('validationModal')">×</button>
+    </div>
+    <div id="validationBody"></div>
+    <div class="modal-footer" style="position:sticky;bottom:0;background:var(--surface2);padding-top:14px;border-top:1px solid var(--border);margin-top:20px">
+      <button class="btn btn-ghost" onclick="closeModal('validationModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmPopulate()">✓ Confirm &amp; Populate Vector</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── CLIENT READY MODAL ── -->
+<div class="modal-overlay" id="clientReadyModal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <span class="modal-title" style="color:var(--green)">✓ Client Ready</span>
+      <button class="modal-close" onclick="closeModal('clientReadyModal')">×</button>
+    </div>
+    <p style="font-size:13px;color:var(--txt2);margin-bottom:16px">Vector is populated and saved to the cloud. Send your client this link — they'll log in with their email and find everything ready.</p>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-family:monospace;font-size:14px;color:var(--accent);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:8px">
+      <span>https://vector.brittbowman.ai</span>
+      <button onclick="navigator.clipboard.writeText('https://vector.brittbowman.ai');showToast('Copied!')" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:12px;color:var(--txt2);cursor:pointer">Copy</button>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:13px;color:var(--txt2);line-height:1.6">
+      <div style="font-size:11px;color:var(--txt3);font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">Email template</div>
+      <div id="clientEmailTemplate"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="copyEmailTemplate()">Copy email</button>
+      <button class="btn btn-primary" onclick="closeModal('clientReadyModal')">Done</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ─── STATE ─────────────────────────────────────────────
 const VEC = {
@@ -1302,6 +1383,7 @@ document.addEventListener('change', function(e) {
 function openContactModal() { document.getElementById('contactModal').classList.add('open'); }
 function openCaseModal()    { document.getElementById('caseModal').classList.add('open'); }
 function closeModal(id)     { document.getElementById(id).classList.remove('open'); }
+function openModal(id)      { document.getElementById(id).classList.add('open'); }
 
 // ─── CONTACTS ──────────────────────────────────────────
 function saveContact() {
@@ -1924,6 +2006,329 @@ function downloadBundle() {
   ];
   dlFile(`${slug}_vector_bundle.md`, lines.join('\n'), 'text/markdown');
   showToast('Downloading full bundle');
+}
+
+// ─── TRANSCRIPT IMPORT ─────────────────────────────────
+const ANTHROPIC_KEY_STORAGE = 'vec_anthropic_key';
+let _pendingTranscriptText = null;
+let _extractedData = null;
+
+function getApiKey() {
+  return localStorage.getItem(ANTHROPIC_KEY_STORAGE);
+}
+function saveApiKey() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (!key.startsWith('sk-ant-')) { showToast('Invalid key format'); return; }
+  localStorage.setItem(ANTHROPIC_KEY_STORAGE, key);
+  closeModal('apiKeyModal');
+  if (_pendingTranscriptText) runTranscriptParse();
+}
+
+function openTranscriptImport() {
+  if (!getApiKey()) {
+    openModal('apiKeyModal');
+    return;
+  }
+  document.getElementById('transcriptPaste').value = '';
+  document.getElementById('transcriptDropZone').style.borderColor = 'var(--border)';
+  openModal('transcriptModal');
+}
+
+function handleTranscriptDrop(e) {
+  e.preventDefault();
+  e.currentTarget.style.borderColor = 'var(--border)';
+  const file = e.dataTransfer.files[0];
+  if (file) readTranscriptFile(file);
+}
+function handleTranscriptFile(e) {
+  const file = e.target.files[0];
+  if (file) readTranscriptFile(file);
+}
+function readTranscriptFile(file) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById('transcriptPaste').value = ev.target.result;
+    document.getElementById('transcriptDropZone').innerHTML = `<div style="font-size:22px;margin-bottom:6px">✓</div><div style="font-size:13px;font-weight:600;color:var(--green)">${file.name}</div>`;
+  };
+  reader.readAsText(file);
+}
+
+async function runTranscriptParse() {
+  const text = document.getElementById('transcriptPaste').value.trim();
+  if (!text) { showToast('Paste or upload a transcript first'); return; }
+  const key = getApiKey();
+  if (!key) { _pendingTranscriptText = text; openModal('apiKeyModal'); return; }
+
+  closeModal('transcriptModal');
+  _pendingTranscriptText = null;
+  showOverlay('Parsing transcript with Claude…');
+
+  const systemPrompt = `You are extracting structured client intake data from a consulting discovery call transcript.
+Return ONLY valid JSON matching this exact schema. Use null for anything not mentioned.
+
+{
+  "practice": {
+    "name": "string or null",
+    "founder": "string or null",
+    "email": "string or null",
+    "website": "string or null"
+  },
+  "diag": {
+    "size": "solo|small|mid|large or null",
+    "who": "string description of ideal client or null",
+    "market": "string or null",
+    "motion": "referral|outbound|inbound|mixed or null",
+    "constraint": "string — #1 growth bottleneck or null",
+    "crm": ["hubspot","salesforce","pipedrive","none"],
+    "pm": ["asana","monday","notion","clickup","basecamp"],
+    "storage": ["gdrive","dropbox","sharepoint","notion","box"],
+    "comms": ["slack","teams","email"],
+    "calendly": true
+  },
+  "pos": {
+    "buyer": "string — ideal client profile or null",
+    "constraint": "string — core problem they solve or null",
+    "proof": "string — key result/case mentioned or null"
+  },
+  "contacts": [
+    { "name": "string", "company": "string or null", "type": "past-client|peer|prospect", "status": "not-asked" }
+  ],
+  "ops": {
+    "duration": "string or null",
+    "refAskComfort": true,
+    "hasCaseDraft": false
+  }
+}
+
+Rules:
+- size: solo=1 person, small=2-5, mid=6-15, large=16+
+- motion: if they mention referrals as primary → "referral"; outbound/cold → "outbound"; content/inbound → "inbound"; mixed signals → "mixed"
+- crm/pm/storage/comms: only include tools explicitly mentioned
+- contacts: extract any person they name as a past client or referral source
+- Return ONLY the JSON object, no explanation`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 2048,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: `Here is the transcript:\n\n${text.slice(0, 60000)}` }]
+      })
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error?.message || 'API error');
+    }
+
+    const result = await response.json();
+    const raw = result.content[0].text.trim();
+    const jsonStr = raw.startsWith('{') ? raw : raw.match(/\{[\s\S]*\}/)?.[0];
+    if (!jsonStr) throw new Error('No JSON in response');
+    _extractedData = JSON.parse(jsonStr);
+    hideOverlay();
+    showValidationModal(_extractedData);
+  } catch(err) {
+    hideOverlay();
+    showToast('Parse error: ' + err.message);
+  }
+}
+
+function showValidationModal(data) {
+  const p = data.practice || {};
+  const d = data.diag || {};
+  const pos = data.pos || {};
+  const ops = data.ops || {};
+
+  const field = (label, key, val, hint='') => `
+    <div style="margin-bottom:12px">
+      <label style="font-size:11px;font-weight:600;color:var(--txt3);letter-spacing:.4px;text-transform:uppercase;display:block;margin-bottom:4px">${label}${hint ? ` <span style="font-weight:400;color:var(--txt3);text-transform:none">${hint}</span>` : ''}</label>
+      <input data-key="${key}" value="${(val||'').replace(/"/g,'&quot;')}" style="width:100%;padding:8px 10px;background:var(--surface3);border:1px solid var(--border);border-radius:6px;color:var(--txt);font-size:14px">
+    </div>`;
+
+  const radio = (label, key, options, val) => `
+    <div style="margin-bottom:12px">
+      <label style="font-size:11px;font-weight:600;color:var(--txt3);letter-spacing:.4px;text-transform:uppercase;display:block;margin-bottom:6px">${label}</label>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        ${options.map(o => `<label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;background:var(--surface3);border:1px solid ${val===o?'var(--accent)':'var(--border)'};border-radius:6px;padding:5px 10px">
+          <input type="radio" name="val_${key}" value="${o}" ${val===o?'checked':''} style="accent-color:var(--accent)"> ${o}
+        </label>`).join('')}
+      </div>
+    </div>`;
+
+  const checkboxGroup = (label, key, options, vals=[]) => `
+    <div style="margin-bottom:12px">
+      <label style="font-size:11px;font-weight:600;color:var(--txt3);letter-spacing:.4px;text-transform:uppercase;display:block;margin-bottom:6px">${label}</label>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        ${options.map(o => `<label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;background:var(--surface3);border:1px solid ${vals.includes(o)?'var(--accent)':'var(--border)'};border-radius:6px;padding:5px 10px">
+          <input type="checkbox" name="chk_${key}" value="${o}" ${vals.includes(o)?'checked':''} style="accent-color:var(--accent)"> ${o}
+        </label>`).join('')}
+      </div>
+    </div>`;
+
+  const section = (title, icon, content) => `
+    <div style="margin-bottom:24px">
+      <div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:12px;display:flex;align-items:center;gap:6px">${icon} ${title}</div>
+      ${content}
+    </div>`;
+
+  const contactsHtml = (data.contacts||[]).length ? `
+    <div style="margin-bottom:12px">
+      <label style="font-size:11px;font-weight:600;color:var(--txt3);letter-spacing:.4px;text-transform:uppercase;display:block;margin-bottom:6px">Contacts extracted</label>
+      ${(data.contacts||[]).map((c,i) => `<div style="display:flex;gap:8px;margin-bottom:6px;align-items:center">
+        <input data-key="contact_name_${i}" value="${(c.name||'').replace(/"/g,'&quot;')}" placeholder="Name" style="flex:1;padding:6px 8px;background:var(--surface3);border:1px solid var(--border);border-radius:6px;color:var(--txt);font-size:13px">
+        <input data-key="contact_company_${i}" value="${(c.company||'').replace(/"/g,'&quot;')}" placeholder="Company" style="flex:1;padding:6px 8px;background:var(--surface3);border:1px solid var(--border);border-radius:6px;color:var(--txt);font-size:13px">
+        <select data-key="contact_type_${i}" style="padding:6px 8px;background:var(--surface3);border:1px solid var(--border);border-radius:6px;color:var(--txt);font-size:13px">
+          ${['past-client','peer','prospect','current-client'].map(t=>`<option value="${t}" ${c.type===t?'selected':''}>${t}</option>`).join('')}
+        </select>
+      </div>`).join('')}
+    </div>` : '<p style="font-size:13px;color:var(--txt3);margin-bottom:12px">No contacts extracted — you can add them in Step 2.</p>';
+
+  document.getElementById('validationBody').innerHTML =
+    section('Practice Basics', '🏢',
+      field('Practice Name ⚠️', 'practice.name', p.name) +
+      field('Founder / Contact', 'practice.founder', p.founder) +
+      field('Client Email (their login)', 'practice.email', p.email, '— double-check this') +
+      field('Website', 'practice.website', p.website)
+    ) +
+    section('Diagnostic', '🔬',
+      radio('Firm Size', 'diag.size', ['solo','small','mid','large'], d.size) +
+      field('Who they sell to', 'diag.who', d.who) +
+      field('Market focus', 'diag.market', d.market) +
+      radio('Primary Motion', 'diag.motion', ['referral','outbound','inbound','mixed'], d.motion) +
+      field('Top constraint', 'diag.constraint', d.constraint)
+    ) +
+    section('Martech Stack', '🔧',
+      checkboxGroup('CRM', 'crm', ['hubspot','salesforce','pipedrive','none'], d.crm) +
+      checkboxGroup('Project Management', 'pm', ['asana','monday','notion','clickup','basecamp'], d.pm) +
+      checkboxGroup('Storage', 'storage', ['gdrive','dropbox','sharepoint','notion','box'], d.storage) +
+      checkboxGroup('Comms', 'comms', ['slack','teams','email'], d.comms)
+    ) +
+    section('Positioning Seeds', '🎯',
+      field('Ideal buyer description', 'pos.buyer', pos.buyer) +
+      field('Core constraint they solve', 'pos.constraint', pos.constraint) +
+      field('Proof / key result mentioned', 'pos.proof', pos.proof)
+    ) +
+    section('Referral Contacts', '👥', contactsHtml);
+
+  openModal('validationModal');
+}
+
+function confirmPopulate() {
+  const modal = document.getElementById('validationModal');
+
+  // Text/email inputs
+  modal.querySelectorAll('input[data-key]').forEach(el => {
+    const keys = el.dataset.key.split('.');
+    const contactMatch = el.dataset.key.match(/^contact_(name|company)_(\d+)$/);
+    const contactTypeMatch = el.dataset.key.match(/^contact_type_(\d+)$/);
+    if (contactMatch) {
+      const idx = parseInt(contactMatch[2]);
+      if (!_extractedData.contacts) _extractedData.contacts = [];
+      if (!_extractedData.contacts[idx]) _extractedData.contacts[idx] = {};
+      _extractedData.contacts[idx][contactMatch[1]] = el.value;
+    } else if (!contactTypeMatch) {
+      let obj = _extractedData;
+      for (let i = 0; i < keys.length - 1; i++) obj = obj[keys[i]] = obj[keys[i]] || {};
+      obj[keys[keys.length-1]] = el.value;
+    }
+  });
+
+  // Selects (contact type)
+  modal.querySelectorAll('select[data-key]').forEach(el => {
+    const m = el.dataset.key.match(/^contact_type_(\d+)$/);
+    if (m && _extractedData.contacts) _extractedData.contacts[parseInt(m[1])].type = el.value;
+  });
+
+  // Radio buttons
+  ['diag.size','diag.motion'].forEach(key => {
+    const checked = modal.querySelector(`input[name="val_${key}"]:checked`);
+    if (checked) {
+      const keys = key.split('.');
+      let obj = _extractedData;
+      for (let i = 0; i < keys.length - 1; i++) obj = obj[keys[i]] = obj[keys[i]] || {};
+      obj[keys[keys.length-1]] = checked.value;
+    }
+  });
+
+  // Checkboxes
+  ['crm','pm','storage','comms'].forEach(k => {
+    const checked = [...modal.querySelectorAll(`input[name="chk_${k}"]:checked`)].map(el => el.value);
+    if (!_extractedData.diag) _extractedData.diag = {};
+    _extractedData.diag[k] = checked;
+  });
+
+  // Apply to VEC
+  const d = _extractedData;
+  if (d.practice) Object.assign(VEC.practice, d.practice);
+  if (d.diag) {
+    Object.assign(VEC.diag, d.diag);
+    // Determine track from motion
+    const m = VEC.diag.motion;
+    VEC.diag.track = m === 'referral' ? 'A' : m === 'outbound' ? 'B' : 'C';
+    VEC.diag.tier = 'tier1';
+  }
+  if (d.pos) Object.assign(VEC.pos, d.pos);
+  if (d.contacts && d.contacts.length) {
+    VEC.ref.contacts = d.contacts.map((c,i) => ({
+      id: Date.now() + i, name: c.name||'', company: c.company||'',
+      type: c.type||'past-client', status: c.status||'not-asked', notes: ''
+    }));
+  }
+
+  // Advance phase past diagnostic since we ran it
+  PHASE = Math.max(PHASE, 1);
+  closeModal('validationModal');
+  restoreUI();
+  updateSidebar();
+
+  // Save under client email if Britt is operating
+  cloudSaveForClient().then(() => {
+    showClientReadyModal();
+    showToast('Vector populated from transcript');
+  });
+}
+
+async function cloudSaveForClient() {
+  if (!currentUser) return;
+  const clientEmail = VEC.practice.email;
+  const saveEmail = clientEmail && clientEmail !== currentUser.email ? clientEmail : currentUser.email;
+  await supa.from('practices').upsert({
+    email: saveEmail,
+    practice_name: VEC.practice.name || null,
+    state: { VEC, PHASE },
+    updated_at: new Date().toISOString()
+  }, { onConflict: 'email' });
+  // Also save under Britt's own session
+  saveState();
+}
+
+function showClientReadyModal() {
+  const name = VEC.practice.name || 'your client';
+  const email = VEC.practice.email || '(no email captured)';
+  document.getElementById('clientEmailTemplate').innerHTML = `
+    Hi ${VEC.practice.founder || 'there'},<br><br>
+    Your Vector practice OS is ready. Use the link below to log in — enter <strong>${email}</strong> and you'll get a magic link in your inbox.<br><br>
+    <strong>Your link:</strong> https://vector.brittbowman.ai<br><br>
+    Everything from our intake session is already loaded. Let me know if you have any questions.<br><br>
+    — Britt`;
+  openModal('clientReadyModal');
+}
+
+function copyEmailTemplate() {
+  const name = VEC.practice.founder || 'there';
+  const email = VEC.practice.email || '';
+  const text = `Hi ${name},\n\nYour Vector practice OS is ready. Use the link below to log in — enter ${email} and you'll get a magic link in your inbox.\n\nYour link: https://vector.brittbowman.ai\n\nEverything from our intake session is already loaded. Let me know if you have any questions.\n\n— Britt`;
+  navigator.clipboard.writeText(text);
+  showToast('Email copied to clipboard');
 }
 
 // ─── INIT ──────────────────────────────────────────────
