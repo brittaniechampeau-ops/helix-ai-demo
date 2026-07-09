@@ -6,6 +6,18 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["serve", "-s", "assets", "-l", "3131"],
       "port": 3131
+    },
+    {
+      "name": "vector-demo",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "assets", "-l", "3133"],
+      "port": 3133
+    },
+    {
+      "name": "signal",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "3132", "--directory", "/Users/brittbowman/signal"],
+      "port": 3132
     }
   ]
 }
