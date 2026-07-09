@@ -461,6 +461,23 @@
   </div>
 </div>
 
+<!-- ── CLIENT HOME ── -->
+<div id="clientHome" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:200;overflow-y:auto">
+  <div style="max-width:620px;margin:0 auto;padding:64px 24px 80px;text-align:center">
+    <div style="width:56px;height:56px;background:linear-gradient(135deg,#0d9488,#10b981);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 24px">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    </div>
+    <p style="font-size:12px;font-weight:700;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:10px">Welcome back</p>
+    <h1 id="clientHomeName" style="font-size:28px;font-weight:700;color:var(--txt);margin-bottom:8px">Your Practice</h1>
+    <p id="clientHomeEmail" style="font-size:14px;color:var(--txt3);margin-bottom:40px"></p>
+
+    <div id="clientHomeStats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:32px;text-align:left"></div>
+
+    <button onclick="enterClientApp()" style="width:100%;padding:14px;background:var(--accent);border:none;border-radius:10px;color:white;font-size:16px;font-weight:600;cursor:pointer;margin-bottom:12px">Open my Practice OS →</button>
+    <button onclick="signOut()" style="background:none;border:none;color:var(--txt3);font-size:13px;cursor:pointer;text-decoration:underline">Sign out</button>
+  </div>
+</div>
+
 <!-- ── ADMIN HOME ── -->
 <div id="adminHome" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:200;overflow-y:auto">
   <div style="max-width:860px;margin:0 auto;padding:48px 24px 80px">
@@ -1224,9 +1241,16 @@ async function sendMagicLink() {
   document.getElementById('loginError').style.display = 'none';
   const { error } = await supa.auth.signInWithOtp({ email, options: { emailRedirectTo: 'https://vector.brittbowman.ai' } });
   if (error) { document.getElementById('loginError').textContent = error.message; document.getElementById('loginError').style.display = 'block'; return; }
+  localStorage.setItem('vec_last_email', email);
   document.getElementById('loginForm').style.display = 'none';
   document.getElementById('loginSent').style.display = 'block';
 }
+
+// Pre-fill email on load
+(function() {
+  const saved = localStorage.getItem('vec_last_email');
+  if (saved) { const el = document.getElementById('loginEmail'); if (el) el.value = saved; }
+})();
 
 async function signOut() {
   await supa.auth.signOut();
@@ -2456,6 +2480,27 @@ function copyEmailTemplate() {
   showToast('Email copied to clipboard');
 }
 
+// ─── CLIENT HOME ────────────────────────────────────────
+function showClientHome() {
+  const name = VEC.practice.name || 'Your Practice';
+  document.getElementById('clientHomeName').textContent = name;
+  document.getElementById('clientHomeEmail').textContent = currentUser.email;
+  const track = VEC.diag.track;
+  const phase = PHASE;
+  const phaseLabel = ['Diagnostic','Positioning','Referral Engine','Credibility','Intake','Plan','Practice OS'][phase] || 'Getting started';
+  const contacts = VEC.ref.contacts.length;
+  document.getElementById('clientHomeStats').innerHTML = [
+    track ? `<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px"><div style="font-size:11px;font-weight:700;letter-spacing:.5px;color:var(--txt3);text-transform:uppercase;margin-bottom:6px">Track</div><div style="font-size:20px;font-weight:700;color:var(--accent)">Track ${track}</div></div>` : '',
+    `<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px"><div style="font-size:11px;font-weight:700;letter-spacing:.5px;color:var(--txt3);text-transform:uppercase;margin-bottom:6px">Current step</div><div style="font-size:15px;font-weight:600;color:var(--txt)">${phaseLabel}</div></div>`,
+    contacts ? `<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px"><div style="font-size:11px;font-weight:700;letter-spacing:.5px;color:var(--txt3);text-transform:uppercase;margin-bottom:6px">Contacts</div><div style="font-size:20px;font-weight:700;color:var(--txt)">${contacts}</div></div>` : '',
+  ].filter(Boolean).join('');
+  document.getElementById('clientHome').style.display = 'block';
+}
+
+function enterClientApp() {
+  document.getElementById('clientHome').style.display = 'none';
+}
+
 // ─── ADMIN ──────────────────────────────────────────────
 const ADMIN_EMAILS = ['britt@brittbowman.ai', 'brittanie.champeau@gmail.com'];
 let _allClients = [];
@@ -2543,13 +2588,14 @@ supa.auth.onAuthStateChange(async (event, session) => {
       showAdminHome();
     } else {
       const fromCloud = await cloudLoad();
-      if (fromCloud) { restoreUI(); showToast('Practice loaded from cloud'); }
-      else if (restoreFromSave()) { restoreUI(); cloudSave(); }
+      if (fromCloud) { restoreUI(); showClientHome(); }
+      else if (restoreFromSave()) { restoreUI(); cloudSave(); showClientHome(); }
       else { updateSidebar(); }
     }
   } else {
     currentUser = null;
     document.getElementById('adminHome').style.display = 'none';
+    document.getElementById('clientHome').style.display = 'none';
     document.getElementById('btnBackAdmin').style.display = 'none';
     loginScreen.style.display = 'flex';
   }
