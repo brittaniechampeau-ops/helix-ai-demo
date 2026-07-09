@@ -2021,17 +2021,28 @@ function saveApiKey() {
   if (!key.startsWith('sk-ant-')) { showToast('Invalid key format'); return; }
   localStorage.setItem(ANTHROPIC_KEY_STORAGE, key);
   closeModal('apiKeyModal');
-  if (_pendingTranscriptText) runTranscriptParse();
+  if (_pendingTranscriptText) {
+    // Resume a parse that was interrupted by missing key
+    runTranscriptParse();
+  } else {
+    // Fresh key setup — open the transcript modal now
+    _openTranscriptModal();
+  }
+}
+
+function _openTranscriptModal() {
+  document.getElementById('transcriptPaste').value = '';
+  document.getElementById('transcriptDropZone').innerHTML = '<div style="font-size:28px;margin-bottom:8px">📄</div><div style="font-size:14px;font-weight:600;color:var(--txt);margin-bottom:4px">Drop transcript file here</div><div style="font-size:12px;color:var(--txt3)">.vtt or .txt · or click to browse</div>';
+  document.getElementById('transcriptDropZone').style.borderColor = 'var(--border)';
+  openModal('transcriptModal');
 }
 
 function openTranscriptImport() {
   if (!getApiKey()) {
     openModal('apiKeyModal');
-    return;
+    return; // saveApiKey() will open transcript modal after key is saved
   }
-  document.getElementById('transcriptPaste').value = '';
-  document.getElementById('transcriptDropZone').style.borderColor = 'var(--border)';
-  openModal('transcriptModal');
+  _openTranscriptModal();
 }
 
 function handleTranscriptDrop(e) {
