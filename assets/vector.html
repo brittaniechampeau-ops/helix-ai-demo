@@ -363,26 +363,42 @@
 
   /* ── PROCESSING OVERLAY ── */
   .proc-overlay {
-    position: fixed; inset: 0; background: rgba(13,15,26,0.94); z-index: 500;
+    position: fixed; inset: 0; background: #080b14; z-index: 500;
     display: flex; align-items: center; justify-content: center;
-    backdrop-filter: blur(10px); opacity: 0; pointer-events: none; transition: opacity 0.28s ease;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
   }
   .proc-overlay.active { opacity: 1; pointer-events: all; }
-  .proc-inner { text-align: center; max-width: 360px; padding: 20px; }
-  .proc-anim { display: flex; justify-content: center; margin-bottom: 24px; }
-  @keyframes vec-pulse { 0%,100%{ transform: scale(1); opacity: 0.6; } 50%{ transform: scale(1.15); opacity: 1; } }
-  .vec-logo-proc {
-    width: 56px; height: 56px;
-    background: linear-gradient(135deg, #0d9488 0%, #10b981 100%);
-    border-radius: 14px; display: flex; align-items: center; justify-content: center;
-    animation: vec-pulse 1.4s ease-in-out infinite;
-    box-shadow: 0 0 30px rgba(13,148,136,0.4);
+  .proc-inner { text-align: center; max-width: 400px; padding: 20px; position: relative; z-index: 1; }
+  .proc-anim { display: flex; justify-content: center; margin-bottom: 32px; }
+  @keyframes vec-draw {
+    0%   { stroke-dashoffset: 200; opacity: 0.4; }
+    50%  { opacity: 1; }
+    100% { stroke-dashoffset: 0; opacity: 0.9; }
   }
-  .proc-phase-lbl  { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--txt3); margin-bottom: 8px; }
-  .proc-title-lbl  { font-size: 21px; font-weight: 700; color: var(--txt); margin-bottom: 6px; line-height: 1.25; }
-  .proc-msg-lbl    { font-size: 13px; color: var(--txt2); min-height: 22px; margin-bottom: 22px; transition: opacity 0.18s; }
-  .proc-bar-wrap   { background: var(--surface2); border-radius: 4px; height: 4px; width: 260px; margin: 0 auto; overflow: hidden; }
-  .proc-bar        { height: 4px; border-radius: 4px; background: linear-gradient(90deg, var(--accent), var(--green)); width: 0%; transition: width 0.42s cubic-bezier(0.4,0,0.2,1); }
+  @keyframes vec-scan {
+    0%,100% { transform: translateY(-40px); opacity: 0; }
+    20%,80% { opacity: 0.6; }
+    50% { transform: translateY(40px); }
+  }
+  @keyframes vec-glow { 0%,100%{ filter: drop-shadow(0 0 8px #0d9488); } 50%{ filter: drop-shadow(0 0 22px #0d9488) drop-shadow(0 0 40px #10b981); } }
+  .vec-mark-proc {
+    animation: vec-glow 2s ease-in-out infinite;
+  }
+  .vec-mark-proc .v-path {
+    stroke-dasharray: 200;
+    animation: vec-draw 1.8s ease-in-out infinite alternate;
+  }
+  .proc-scanline {
+    position: absolute; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, #0d9488, transparent);
+    animation: vec-scan 2.4s ease-in-out infinite;
+    top: 50%; pointer-events: none;
+  }
+  .proc-phase-lbl  { font-size: 10px; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase; color: #0d9488; margin-bottom: 10px; }
+  .proc-title-lbl  { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 8px; line-height: 1.25; letter-spacing: -0.3px; }
+  .proc-msg-lbl    { font-size: 12px; color: rgba(255,255,255,0.35); min-height: 20px; margin-bottom: 28px; letter-spacing: 0.3px; }
+  .proc-bar-wrap   { background: rgba(255,255,255,0.06); height: 2px; width: 240px; margin: 0 auto; overflow: hidden; }
+  .proc-bar        { height: 2px; background: linear-gradient(90deg, #0d9488, #10b981); width: 0%; transition: width 0.5s cubic-bezier(0.4,0,0.2,1); }
 
   /* ── MODAL ── */
   .modal-overlay {
@@ -964,13 +980,15 @@
 
 <!-- ── PROCESSING OVERLAY ── -->
 <div class="proc-overlay" id="procOverlay">
+  <div class="proc-scanline"></div>
   <div class="proc-inner">
     <div class="proc-anim">
-      <div class="vec-logo-proc">
-        <svg width="26" height="26" viewBox="0 0 18 18" fill="none">
-          <path d="M3 9 L12 9 M9 4.5 L14.5 9 L9 13.5" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
+      <svg class="vec-mark-proc" width="80" height="72" viewBox="0 0 80 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Outer V -->
+        <path class="v-path" d="M4 4 L40 68 L76 4" stroke="#0d9488" stroke-width="6" stroke-linecap="square" stroke-linejoin="miter"/>
+        <!-- Inner notch -->
+        <path class="v-path" d="M28 36 L40 58 L52 36" stroke="#10b981" stroke-width="4" stroke-linecap="square" stroke-linejoin="miter" style="animation-delay:0.2s"/>
+      </svg>
     </div>
     <div class="proc-phase-lbl" id="procPhase">Processing</div>
     <div class="proc-title-lbl" id="procTitle">Analyzing...</div>
@@ -2103,9 +2121,11 @@ Return ONLY valid JSON matching this exact schema. Use null for anything not men
   },
   "diag": {
     "size": "solo|small|mid|large or null",
+    "bdRole": "founder-only|founder-plus|dedicated|team-bd or null",
+    "marketState": "warm|transitioning|cold or null",
     "who": "string description of ideal client or null",
-    "market": "string or null",
-    "motion": "referral|outbound|inbound|mixed or null",
+    "market": "string — geographic or sector focus or null",
+    "motion": "referral|outbound|content|mixed or null",
     "constraint": "string — #1 growth bottleneck or null",
     "crm": ["hubspot","salesforce","pipedrive","none"],
     "pm": ["asana","monday","notion","clickup","basecamp"],
@@ -2116,23 +2136,27 @@ Return ONLY valid JSON matching this exact schema. Use null for anything not men
   "pos": {
     "buyer": "string — ideal client profile or null",
     "constraint": "string — core problem they solve or null",
+    "oneline": "string — draft 1-line positioning statement (what you do + for whom, plain language, no jargon) or null",
     "proof": "string — key result/case mentioned or null"
   },
   "contacts": [
     { "name": "string", "company": "string or null", "type": "past-client|peer|prospect", "status": "not-asked" }
   ],
   "ops": {
-    "duration": "string or null",
-    "refAskComfort": true,
-    "hasCaseDraft": false
+    "duration": "string — typical engagement length or null",
+    "refAsk": true,
+    "caseDraft": false
   }
 }
 
 Rules:
 - size: solo=1 person, small=2-5, mid=6-15, large=16+
-- motion: if they mention referrals as primary → "referral"; outbound/cold → "outbound"; content/inbound → "inbound"; mixed signals → "mixed"
+- bdRole: "founder-only" if founder does all BD alone and stops when busy; "founder-plus" if one other person helps; "dedicated" if there's a BD hire; "team-bd" if distributed
+- marketState: "warm" if they have a strong referral network and are known in their niche; "transitioning" if entering a new market/geography; "cold" if no reputation there yet
+- motion: "referral" if referrals are primary; "outbound" if cold outreach; "content" if LinkedIn/writing drives inbound; "mixed" if no dominant source
 - crm/pm/storage/comms: only include tools explicitly mentioned
-- contacts: extract any person they name as a past client or referral source
+- contacts: extract ALL people named — past clients, referral sources, collaborators, prospects
+- pos.oneline: draft a plain-language one-liner from what they said about what they do and for whom — no jargon, no buzzwords
 - Return ONLY the JSON object, no explanation`;
 
   try {
@@ -2229,9 +2253,11 @@ function showValidationModal(data) {
     ) +
     section('Diagnostic', '🔬',
       radio('Firm Size', 'diag.size', ['solo','small','mid','large'], d.size) +
+      radio('Who runs BD', 'diag.bdRole', ['founder-only','founder-plus','dedicated','team-bd'], d.bdRole) +
+      radio('Market State', 'diag.marketState', ['warm','transitioning','cold'], d.marketState) +
+      radio('Primary Motion', 'diag.motion', ['referral','outbound','content','mixed'], d.motion) +
       field('Who they sell to', 'diag.who', d.who) +
-      field('Market focus', 'diag.market', d.market) +
-      radio('Primary Motion', 'diag.motion', ['referral','outbound','inbound','mixed'], d.motion) +
+      field('Geographic / sector focus', 'diag.market', d.market) +
       field('Top constraint', 'diag.constraint', d.constraint)
     ) +
     section('Martech Stack', '🔧',
@@ -2277,7 +2303,7 @@ function confirmPopulate() {
   });
 
   // Radio buttons
-  ['diag.size','diag.motion'].forEach(key => {
+  ['diag.size','diag.bdRole','diag.marketState','diag.motion'].forEach(key => {
     const checked = modal.querySelector(`input[name="val_${key}"]:checked`);
     if (checked) {
       const keys = key.split('.');
@@ -2299,12 +2325,30 @@ function confirmPopulate() {
   if (d.practice) Object.assign(VEC.practice, d.practice);
   if (d.diag) {
     Object.assign(VEC.diag, d.diag);
-    // Determine track from motion
-    const m = VEC.diag.motion;
-    VEC.diag.track = m === 'referral' ? 'A' : m === 'outbound' ? 'B' : 'C';
-    VEC.diag.tier = 'tier1';
+    // Map extracted bdRole/marketState to radio-button field names
+    if (d.diag.bdRole)      VEC.diag.who    = d.diag.bdRole;
+    if (d.diag.marketState) VEC.diag.market = d.diag.marketState;
+    // Determine track using same logic as runDiag
+    const mkt = VEC.diag.market, mot = VEC.diag.motion;
+    let track, weights;
+    if (mkt === 'warm' && (mot === 'referral' || mot === 'content')) {
+      track = 'A';
+      weights = { 'Positioning & Offers': 30, 'Referral Engine': 35, 'Credibility Presence': 20, 'Intake & Delivery': 15 };
+    } else if (mkt === 'cold' || mot === 'outbound') {
+      track = 'B';
+      weights = { 'Positioning & Offers': 25, 'Referral Engine': 15, 'Credibility Presence': 40, 'Intake & Delivery': 20 };
+    } else {
+      track = 'C';
+      weights = { 'Positioning & Offers': 35, 'Referral Engine': 25, 'Credibility Presence': 20, 'Intake & Delivery': 20 };
+    }
+    VEC.diag.track = track; VEC.diag.weights = weights; VEC.diag.tier = 'tier1';
   }
   if (d.pos) Object.assign(VEC.pos, d.pos);
+  if (d.ops) {
+    if (d.ops.duration) VEC.ops.duration = d.ops.duration;
+    if (d.ops.refAsk !== undefined) VEC.ops.refAsk = d.ops.refAsk;
+    if (d.ops.caseDraft !== undefined) VEC.ops.caseDraft = d.ops.caseDraft;
+  }
   if (d.contacts && d.contacts.length) {
     VEC.ref.contacts = d.contacts.map((c,i) => ({
       id: Date.now() + i, name: c.name||'', company: c.company||'',
