@@ -2137,7 +2137,10 @@ Return ONLY valid JSON matching this exact schema. Use null for anything not men
     "buyer": "string — ideal client profile or null",
     "constraint": "string — core problem they solve or null",
     "oneline": "string — draft 1-line positioning statement (what you do + for whom, plain language, no jargon) or null",
-    "proof": "string — key result/case mentioned or null"
+    "proof": "string — key result/case mentioned or null",
+    "offer1": { "name": "string — entry/diagnostic offer name or null", "price": "string or null", "duration": "string or null", "desc": "string — what they get or null" },
+    "offer2": { "name": "string — core/foundation offer name or null", "price": "string or null", "duration": "string or null", "desc": "string — what they get or null" },
+    "offer3": { "name": "string — retained/ongoing offer name or null", "price": "string or null", "duration": "string or null", "desc": "string — what they get or null" }
   },
   "contacts": [
     { "name": "string", "company": "string or null", "type": "past-client|peer|prospect", "status": "not-asked" }
@@ -2157,6 +2160,7 @@ Rules:
 - crm/pm/storage/comms: only include tools explicitly mentioned
 - contacts: extract ALL people named — past clients, referral sources, collaborators, prospects
 - pos.oneline: draft a plain-language one-liner from what they said about what they do and for whom — no jargon, no buzzwords
+- pos.offer1/2/3: infer 3 packaged offers from what they described — entry diagnostic, core engagement, and retainer. Use their actual engagement scope, duration ($150K–$250K range for core), and delivery model. If they didn't discuss retainers, make offer3 null.
 - Return ONLY the JSON object, no explanation`;
 
   try {
@@ -2343,7 +2347,16 @@ function confirmPopulate() {
     }
     VEC.diag.track = track; VEC.diag.weights = weights; VEC.diag.tier = 'tier1';
   }
-  if (d.pos) Object.assign(VEC.pos, d.pos);
+  if (d.pos) {
+    // Clear stale demo/prior offers before applying transcript data
+    VEC.pos.offer1 = {}; VEC.pos.offer2 = {}; VEC.pos.offer3 = {};
+    VEC.pos.generated = false;
+    Object.assign(VEC.pos, d.pos);
+    // Apply extracted offers if present
+    if (d.pos.offer1) VEC.pos.offer1 = d.pos.offer1;
+    if (d.pos.offer2) VEC.pos.offer2 = d.pos.offer2;
+    if (d.pos.offer3) VEC.pos.offer3 = d.pos.offer3;
+  }
   if (d.ops) {
     if (d.ops.duration) VEC.ops.duration = d.ops.duration;
     if (d.ops.refAsk !== undefined) VEC.ops.refAsk = d.ops.refAsk;
