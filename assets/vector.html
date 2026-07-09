@@ -2054,10 +2054,15 @@ function readTranscriptFile(file) {
 }
 
 async function runTranscriptParse() {
-  const text = document.getElementById('transcriptPaste').value.trim();
+  const text = (_pendingTranscriptText || document.getElementById('transcriptPaste').value).trim();
   if (!text) { showToast('Paste or upload a transcript first'); return; }
   const key = getApiKey();
-  if (!key) { _pendingTranscriptText = text; openModal('apiKeyModal'); return; }
+  if (!key) {
+    _pendingTranscriptText = text;
+    closeModal('transcriptModal');
+    openModal('apiKeyModal');
+    return;
+  }
 
   closeModal('transcriptModal');
   _pendingTranscriptText = null;
