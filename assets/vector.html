@@ -2069,6 +2069,11 @@ function handleTranscriptDrop(e) {
   const file = e.dataTransfer.files[0];
   if (file) readTranscriptFile(file);
 }
+function clearTranscriptFile() {
+  document.getElementById('transcriptFileInput').value = '';
+  document.getElementById('transcriptPaste').value = '';
+  document.getElementById('transcriptDropZone').innerHTML = '<div style="font-size:28px;margin-bottom:8px">📄</div><div style="font-size:14px;font-weight:600;color:var(--txt);margin-bottom:4px">Drop transcript file here</div><div style="font-size:12px;color:var(--txt3)">.vtt or .txt · or click to browse</div>';
+}
 function handleTranscriptFile(e) {
   const file = e.target.files[0];
   if (file) readTranscriptFile(file);
@@ -2077,7 +2082,9 @@ function readTranscriptFile(file) {
   const reader = new FileReader();
   reader.onload = ev => {
     document.getElementById('transcriptPaste').value = ev.target.result;
-    document.getElementById('transcriptDropZone').innerHTML = `<div style="font-size:22px;margin-bottom:6px">✓</div><div style="font-size:13px;font-weight:600;color:var(--green)">${file.name}</div>`;
+    document.getElementById('transcriptDropZone').innerHTML = `<div style="font-size:22px;margin-bottom:6px">✓</div><div style="font-size:13px;font-weight:600;color:var(--green)">${file.name}</div><div style="font-size:12px;color:var(--txt3);margin-top:6px;cursor:pointer;text-decoration:underline" onclick="event.stopPropagation();clearTranscriptFile()">Remove & upload different file</div>`;
+    // Reset input so the same file can be re-selected
+    document.getElementById('transcriptFileInput').value = '';
   };
   reader.readAsText(file);
 }
@@ -2363,10 +2370,14 @@ function confirmPopulate() {
     if (d.ops.caseDraft !== undefined) VEC.ops.caseDraft = d.ops.caseDraft;
   }
   if (d.contacts && d.contacts.length) {
-    VEC.ref.contacts = d.contacts.map((c,i) => ({
+    const incoming = d.contacts.map((c,i) => ({
       id: Date.now() + i, name: c.name||'', company: c.company||'',
       type: c.type||'past-client', status: c.status||'not-asked', notes: ''
     }));
+    // Merge: keep existing contacts not already present by name
+    const existingNames = new Set(VEC.ref.contacts.map(c => c.name.toLowerCase()));
+    const fresh = incoming.filter(c => !existingNames.has(c.name.toLowerCase()));
+    VEC.ref.contacts = [...VEC.ref.contacts, ...fresh];
   }
 
   // Advance phase past diagnostic since we ran it
