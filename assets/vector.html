@@ -461,6 +461,34 @@
   </div>
 </div>
 
+<!-- ── ADMIN HOME ── -->
+<div id="adminHome" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:200;overflow-y:auto">
+  <div style="max-width:860px;margin:0 auto;padding:48px 24px 80px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:40px">
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <div class="logo-mark"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 9 L12 9 M9 4.5 L14.5 9 L9 13.5" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <span style="font-size:20px;font-weight:700;color:var(--txt)">Vector</span>
+          <span style="font-size:12px;font-weight:600;background:var(--accent);color:white;padding:2px 8px;border-radius:4px;letter-spacing:.5px">ADMIN</span>
+        </div>
+        <p style="font-size:13px;color:var(--txt3)">Groundwork Consulting · Client Workspace</p>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn btn-primary" style="gap:6px" onclick="adminNewClient()">+ New Client</button>
+        <button class="btn btn-ghost" style="font-size:12px;color:var(--txt3)" onclick="signOut()">Sign out</button>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;margin-bottom:28px">
+      <input id="adminSearch" type="text" placeholder="Search clients…" oninput="filterAdminClients(this.value)"
+        style="flex:1;padding:9px 13px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--txt);font-size:14px;outline:none">
+    </div>
+
+    <div id="adminClientList" style="display:grid;gap:10px"></div>
+    <p id="adminEmpty" style="color:var(--txt3);font-size:14px;text-align:center;padding:48px 0;display:none">No clients yet — click <strong>+ New Client</strong> to get started.</p>
+  </div>
+</div>
+
 <!-- ── TOP BAR ── -->
 <div class="topbar">
   <div class="topbar-left">
@@ -483,6 +511,7 @@
     <span class="badge badge-accent" id="trackBadge" style="display:none"></span>
     <span class="badge badge-amber" id="phaseBadge">Diagnostic</span>
     <div class="topbar-divider"></div>
+    <button id="btnBackAdmin" class="btn btn-ghost" style="padding:4px 11px;font-size:12px;display:none" onclick="showAdminHome()">← Clients</button>
     <button class="btn btn-primary" style="padding:4px 13px;font-size:12px;gap:5px" onclick="openTranscriptImport()">📋 Transcript</button>
     <button class="btn btn-ghost" style="padding:4px 11px;font-size:12px" onclick="exportInstance()" title="Download this practice as a JSON file to share with your client">↓ Export</button>
     <button class="btn btn-ghost" style="padding:4px 11px;font-size:12px" onclick="importInstance()" title="Load a previously exported practice instance">↑ Import</button>
@@ -2427,6 +2456,81 @@ function copyEmailTemplate() {
   showToast('Email copied to clipboard');
 }
 
+// ─── ADMIN ──────────────────────────────────────────────
+const ADMIN_EMAILS = ['britt@brittbowman.ai', 'brittanie.champeau@gmail.com'];
+let _allClients = [];
+
+function isAdmin() { return currentUser && ADMIN_EMAILS.includes(currentUser.email); }
+
+async function loadAdminHome() {
+  const { data, error } = await supa.from('practices').select('email,practice_name,updated_at,state').order('updated_at', { ascending: false });
+  if (error) { showToast('Could not load clients'); return; }
+  _allClients = (data || []).filter(r => !ADMIN_EMAILS.includes(r.email));
+  renderAdminClients(_allClients);
+}
+
+function renderAdminClients(clients) {
+  const list = document.getElementById('adminClientList');
+  const empty = document.getElementById('adminEmpty');
+  if (!clients.length) { list.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  list.innerHTML = clients.map(c => {
+    const st = c.state || {};
+    const track = st.VEC?.diag?.track || '—';
+    const phase = st.PHASE != null ? `Phase ${st.PHASE}` : '—';
+    const updated = c.updated_at ? new Date(c.updated_at).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) : '—';
+    const founder = st.VEC?.practice?.founder || '';
+    return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 20px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'" onclick="loadClientIntoApp('${c.email}')">
+      <div style="width:40px;height:40px;background:var(--surface2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">${track !== '—' ? `<span style="font-size:11px;font-weight:800;color:var(--accent)">TRK ${track}</span>` : '🏢'}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;font-size:15px;color:var(--txt);margin-bottom:2px">${c.practice_name || '(unnamed practice)'}</div>
+        <div style="font-size:12px;color:var(--txt3)">${founder ? founder + ' · ' : ''}${c.email}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-size:12px;color:var(--txt2);margin-bottom:4px">${phase}</div>
+        <div style="font-size:11px;color:var(--txt3)">Updated ${updated}</div>
+      </div>
+      <div style="color:var(--txt3);font-size:18px;flex-shrink:0">›</div>
+    </div>`;
+  }).join('');
+}
+
+function filterAdminClients(q) {
+  const lq = q.toLowerCase();
+  renderAdminClients(q ? _allClients.filter(c =>
+    (c.practice_name||'').toLowerCase().includes(lq) ||
+    c.email.toLowerCase().includes(lq) ||
+    (c.state?.VEC?.practice?.founder||'').toLowerCase().includes(lq)
+  ) : _allClients);
+}
+
+function showAdminHome() {
+  document.getElementById('adminHome').style.display = 'block';
+  document.getElementById('btnBackAdmin').style.display = 'none';
+  loadAdminHome();
+}
+
+async function loadClientIntoApp(email) {
+  const { data } = await supa.from('practices').select('state').eq('email', email).single();
+  if (data?.state?.VEC) {
+    Object.assign(VEC, data.state.VEC);
+    PHASE = data.state.PHASE ?? 0;
+    restoreUI(); updateSidebar();
+  }
+  document.getElementById('adminHome').style.display = 'none';
+  document.getElementById('btnBackAdmin').style.display = '';
+}
+
+function adminNewClient() {
+  // Reset to blank slate, close admin home, open transcript import
+  document.getElementById('adminHome').style.display = 'none';
+  document.getElementById('btnBackAdmin').style.display = '';
+  // Clear current VEC state for fresh client
+  Object.assign(VEC, { practice:{name:'',founder:'',email:'',website:''}, diag:{size:'',who:'',market:'',motion:'',constraint:'',crm:[],pm:[],storage:[],comms:[],track:'',weights:{}}, pos:{buyer:'',constraint:'',oneline:'',proof:'',offer1:{},offer2:{},offer3:{},generated:false}, ref:{contacts:[],scripts:[],generated:false}, cred:{placements:[],cases:[],generated:false}, ops:{duration:'',refAsk:true,caseDraft:true,nps:false,cadence:'weekly',generated:false}, plan:{generated:false} });
+  PHASE = 0; restoreUI(); updateSidebar();
+  openTranscriptImport();
+}
+
 // ─── INIT ──────────────────────────────────────────────
 const loginScreen = document.getElementById('loginScreen');
 
@@ -2435,19 +2539,18 @@ supa.auth.onAuthStateChange(async (event, session) => {
     currentUser = session.user;
     document.getElementById('userEmail').textContent = currentUser.email;
     loginScreen.style.display = 'none';
-    // Try cloud first, fall back to localStorage
-    const fromCloud = await cloudLoad();
-    if (fromCloud) {
-      restoreUI();
-      showToast('Practice loaded from cloud');
-    } else if (restoreFromSave()) {
-      restoreUI();
-      cloudSave(); // push local data up
+    if (isAdmin()) {
+      showAdminHome();
     } else {
-      updateSidebar();
+      const fromCloud = await cloudLoad();
+      if (fromCloud) { restoreUI(); showToast('Practice loaded from cloud'); }
+      else if (restoreFromSave()) { restoreUI(); cloudSave(); }
+      else { updateSidebar(); }
     }
   } else {
     currentUser = null;
+    document.getElementById('adminHome').style.display = 'none';
+    document.getElementById('btnBackAdmin').style.display = 'none';
     loginScreen.style.display = 'flex';
   }
 });
