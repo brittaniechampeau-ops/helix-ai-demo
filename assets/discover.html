@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Discover — Platform Readiness Assessment</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07090C;--panel:#0E1218;--card:#131920;--card2:#171F2A;
+  --teal:#3BBFA3;--teal-dim:#1E6B5E;--teal-bg:#0D2E27;
+  --text:#E8EDF3;--muted:#6B7A8D;--faint:#1C2535;--faint2:#243040;
+  --border:#1C2535;--border2:#243040;
+  --cyan:#4DE8FF;--cyan-bg:rgba(77,232,255,.07);--cyan-border:rgba(77,232,255,.2);
+  --blue:#5B8CFF;--blue-bg:rgba(91,140,255,.07);--blue-border:rgba(91,140,255,.2);
+  --purple:#8B7FEC;--purple-bg:rgba(139,127,236,.07);--purple-border:rgba(139,127,236,.2);
+  --orange:#FF8A3D;--orange-bg:rgba(255,138,61,.07);--orange-border:rgba(255,138,61,.2);
+  --sidebar:260px;
+  --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-serif;
+  --mono:'SF Mono','Fira Code',monospace;
+}
+html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--text);overflow:hidden}
+
+/* ── LOGIN ── */
+#loginScreen{
+  position:fixed;inset:0;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  z-index:999;
+}
+.login-box{
+  width:100%;max-width:380px;padding:0 24px;
+  display:flex;flex-direction:column;align-items:center;gap:24px;
+}
+.login-logo{
+  width:60px;height:60px;border-radius:15px;
+  background:var(--teal-bg);border:1.5px solid var(--teal-dim);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;font-weight:700;color:var(--teal);letter-spacing:-.5px;
+}
+.login-head{text-align:center}
+.login-head h1{font-size:22px;font-weight:700;letter-spacing:-.03em;margin-bottom:6px}
+.login-head p{font-size:13px;color:var(--muted)}
+.login-form{width:100%;display:flex;flex-direction:column;gap:10px}
+.login-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px}
+.login-input{
+  height:44px;background:var(--card);border:1px solid var(--border2);
+  border-radius:8px;padding:0 14px;color:var(--text);font-size:14px;
+  outline:none;width:100%;
+}
+.login-input:focus{border-color:var(--teal-dim)}
+.login-btn{
+  height:44px;background:var(--teal);border:none;border-radius:8px;
+  color:#07090C;font-size:14px;font-weight:600;cursor:pointer;
+  width:100%;
+}
+.login-btn:hover{background:#2ea68f}
+.login-sent{display:none;text-align:center;font-size:13px;color:var(--muted);line-height:1.6}
+.login-sent strong{color:var(--teal)}
+.login-error{display:none;font-size:12px;color:#e05555;padding:8px 12px;background:rgba(224,85,85,.1);border-radius:6px;border:1px solid rgba(224,85,85,.2)}
+.login-secure{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px;justify-content:center}
+
+/* ── APP SHELL ── */
+#app{display:none;height:100vh;display:none;grid-template-columns:var(--sidebar) 1fr;grid-template-rows:54px 1fr}
+
+/* ── TOPBAR ── */
+.topbar{
+  grid-column:1/-1;
+  background:var(--panel);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 20px;gap:16px;
+}
+.tb-logo{display:flex;align-items:center;gap:10px}
+.tb-mark{
+  width:30px;height:30px;border-radius:8px;
+  background:var(--teal-bg);border:1px solid var(--teal-dim);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;color:var(--teal);
+}
+.tb-name{font-size:15px;font-weight:700;letter-spacing:-.02em}
+.tb-sep{width:1px;height:18px;background:var(--border2)}
+.tb-practice{font-size:12px;color:var(--muted)}
+.tb-practice span{color:var(--text);font-weight:500}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.tb-phase{
+  font-size:11px;font-weight:600;letter-spacing:.08em;
+  padding:4px 10px;border-radius:5px;
+}
+.phase-assess{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border)}
+.phase-results{background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-dim)}
+.tb-save{
+  height:32px;padding:0 14px;background:var(--teal);color:#07090C;
+  font-size:12px;font-weight:600;border:none;border-radius:7px;cursor:pointer;
+  display:none;
+}
+.tb-save:hover{background:#2ea68f}
+.tb-user{
+  height:30px;padding:0 12px;background:var(--card);border:1px solid var(--border2);
+  border-radius:6px;font-size:12px;color:var(--muted);cursor:pointer;
+}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  background:var(--panel);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.sidebar-org{padding:20px 20px 14px;border-bottom:1px solid var(--faint)}
+.org-name{font-size:14px;font-weight:600;margin-bottom:3px}
+.org-meta{font-size:11px;color:var(--muted)}
+.sidebar-sections{flex:1;overflow-y:auto;padding:12px 0}
+.sec-item{
+  display:flex;align-items:center;padding:10px 20px;gap:12px;
+  cursor:pointer;border-left:2px solid transparent;
+  transition:all .15s;
+}
+.sec-item:hover{background:var(--card)}
+.sec-item.active{background:var(--card);border-left-color:var(--teal)}
+.sec-item.done{opacity:.7}
+.sec-dot{
+  width:28px;height:28px;border-radius:8px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;
+}
+.sec-info{flex:1;min-width:0}
+.sec-label{font-size:12px;font-weight:600}
+.sec-sublabel{font-size:10px;color:var(--muted);margin-top:1px}
+.sec-score{font-size:11px;font-weight:700;font-family:var(--mono)}
+.sidebar-totals{padding:16px 20px;border-top:1px solid var(--faint)}
+.total-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.total-label{font-size:11px;color:var(--muted)}
+.total-bars{display:flex;flex-direction:column;gap:6px}
+.mini-bar-wrap{display:flex;align-items:center;gap:8px}
+.mini-bar-label{font-size:10px;color:var(--muted);width:60px;flex-shrink:0}
+.mini-bar-track{flex:1;height:3px;background:var(--faint2);border-radius:2px}
+.mini-bar-fill{height:100%;border-radius:2px;transition:width .4s ease}
+.mini-bar-val{font-size:10px;font-weight:600;font-family:var(--mono);width:24px;text-align:right;flex-shrink:0}
+
+/* ── MAIN CONTENT ── */
+.main{display:flex;flex-direction:column;overflow:hidden}
+.content-area{flex:1;overflow-y:auto;padding:32px 40px}
+
+/* ── ORG CONTEXT STEP ── */
+.step-header{margin-bottom:28px}
+.step-eyebrow{
+  font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  margin-bottom:10px;
+}
+.step-title{font-size:24px;font-weight:700;letter-spacing:-.03em;margin-bottom:8px}
+.step-desc{font-size:14px;color:var(--muted);line-height:1.6;max-width:540px}
+.field-group{display:flex;flex-direction:column;gap:6px;margin-bottom:20px}
+.field-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+.field-input{
+  height:44px;background:var(--card);border:1px solid var(--border2);
+  border-radius:8px;padding:0 14px;color:var(--text);font-size:14px;
+  outline:none;max-width:480px;width:100%;
+}
+.field-input:focus{border-color:var(--teal-dim)}
+.field-select{
+  height:44px;background:var(--card);border:1px solid var(--border2);
+  border-radius:8px;padding:0 14px;color:var(--text);font-size:14px;
+  outline:none;max-width:480px;width:100%;cursor:pointer;
+  appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7A8D' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center;
+}
+.field-select:focus{border-color:var(--teal-dim)}
+.chips-wrap{display:flex;flex-wrap:wrap;gap:8px;max-width:520px}
+.chip{
+  height:32px;padding:0 14px;border-radius:16px;font-size:12px;font-weight:500;
+  border:1px solid var(--border2);color:var(--muted);background:var(--card);
+  cursor:pointer;transition:all .15s;
+}
+.chip:hover{border-color:var(--border2);color:var(--text)}
+.chip.sel{background:var(--teal-bg);border-color:var(--teal-dim);color:var(--teal)}
+
+/* ── QUESTION SECTION ── */
+.section-panel{display:none}
+.section-panel.active{display:block}
+.question-list{display:flex;flex-direction:column;gap:16px;max-width:620px}
+.question-card{
+  background:var(--card);border:1px solid var(--border2);border-radius:10px;
+  padding:18px 20px;
+}
+.question-text{font-size:14px;font-weight:500;line-height:1.5;margin-bottom:14px}
+.answer-row{display:flex;gap:8px}
+.ans-btn{
+  flex:1;height:36px;border-radius:7px;font-size:12px;font-weight:600;
+  border:1px solid var(--border2);background:var(--card2);color:var(--muted);
+  cursor:pointer;transition:all .15s;
+}
+.ans-btn:hover{color:var(--text);border-color:var(--border2)}
+.ans-btn.sel-yes{background:var(--teal-bg);border-color:var(--teal-dim);color:var(--teal)}
+.ans-btn.sel-some{background:#1A1A10;border-color:#3A3A20;color:#C8B84A}
+.ans-btn.sel-no{background:#1A0E0E;border-color:#3A1E1E;color:#C85A5A}
+
+/* ── NAV FOOTER ── */
+.step-footer{
+  padding:16px 40px;border-top:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;
+  background:var(--panel);
+}
+.footer-hint{font-size:12px;color:var(--muted)}
+.footer-btns{display:flex;gap:10px}
+.btn-back{
+  height:38px;padding:0 18px;background:transparent;
+  border:1px solid var(--border2);color:var(--muted);
+  font-size:13px;border-radius:8px;cursor:pointer;
+}
+.btn-back:hover{color:var(--text);border-color:var(--text)}
+.btn-next{
+  height:38px;padding:0 22px;background:var(--teal);color:#07090C;
+  font-size:13px;font-weight:600;border:none;border-radius:8px;cursor:pointer;
+}
+.btn-next:hover{background:#2ea68f}
+.btn-next:disabled{background:var(--faint2);color:var(--muted);cursor:default}
+
+/* ── RESULTS ── */
+#resultsPanel{display:none}
+.results-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px}
+.readiness-card{
+  background:var(--card);border:1px solid var(--border2);border-radius:10px;
+  padding:20px;
+}
+.rc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.rc-name{font-size:12px;font-weight:700;letter-spacing:.08em}
+.rc-score{font-size:20px;font-weight:700;font-family:var(--mono)}
+.rc-bar-track{height:5px;background:var(--faint2);border-radius:3px;margin-bottom:10px}
+.rc-bar-fill{height:100%;border-radius:3px;transition:width .8s ease}
+.rc-level{font-size:11px;font-weight:600;padding:3px 8px;border-radius:4px;align-self:flex-start;display:inline-block;margin-bottom:8px}
+.rc-recommendation{font-size:12px;color:var(--muted);line-height:1.5}
+
+.roadmap-wrap{
+  background:var(--card);border:1px solid var(--border2);border-radius:10px;
+  padding:24px;margin-bottom:24px;
+}
+.roadmap-title{font-size:13px;font-weight:600;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.roadmap-title::before{content:'';width:3px;height:13px;background:var(--teal);border-radius:2px;display:block}
+.roadmap-steps{display:flex;flex-direction:column;gap:0}
+.roadmap-step{
+  display:flex;align-items:flex-start;gap:16px;padding:16px 0;
+  border-bottom:1px solid var(--faint);
+}
+.roadmap-step:last-child{border-bottom:none;padding-bottom:0}
+.rs-num{
+  width:32px;height:32px;border-radius:9px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;
+}
+.rs-body{flex:1}
+.rs-tool{font-size:11px;font-weight:700;letter-spacing:.08em;margin-bottom:3px}
+.rs-action{font-size:13px;font-weight:600;margin-bottom:4px}
+.rs-detail{font-size:12px;color:var(--muted);line-height:1.5}
+.rs-weeks{
+  font-size:10px;font-weight:600;font-family:var(--mono);
+  padding:3px 8px;background:var(--faint2);border-radius:4px;
+  color:var(--muted);align-self:flex-start;flex-shrink:0;margin-top:4px;
+}
+
+.module-pills{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px}
+.module-pill{
+  display:flex;align-items:center;gap:8px;padding:10px 16px;
+  border-radius:10px;border:1px solid;font-size:12px;font-weight:600;
+}
+.module-pill .pill-icon{font-size:16px}
+.pill-locked{
+  background:var(--card);border-color:var(--border2);color:var(--muted);
+  opacity:.5;
+}
+
+.first30{
+  background:var(--teal-bg);border:1px solid var(--teal-dim);border-radius:10px;
+  padding:20px 24px;
+}
+.f30-title{font-size:12px;font-weight:700;color:var(--teal);letter-spacing:.08em;margin-bottom:12px}
+.f30-items{display:flex;flex-direction:column;gap:8px}
+.f30-item{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--text)}
+.f30-item::before{content:'→';color:var(--teal);flex-shrink:0;margin-top:1px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">D</div>
+    <div class="login-head">
+      <h1>Discover</h1>
+      <p>Platform Readiness Assessment · Britt Bowman LLC</p>
+    </div>
+    <div class="login-form">
+      <div id="loginForm" style="display:flex;flex-direction:column;gap:10px">
+        <div>
+          <div class="login-label">Work email</div>
+          <input class="login-input" id="loginEmail" type="email" placeholder="you@yourfirm.com" onkeydown="if(event.key==='Enter')sendMagicLink()">
+        </div>
+        <div id="loginError" class="login-error"></div>
+        <button class="login-btn" onclick="sendMagicLink()">Send magic link</button>
+      </div>
+      <div id="loginSent" class="login-sent">
+        <strong>Check your inbox.</strong><br>
+        We sent a magic link — click it to open the assessment.
+      </div>
+    </div>
+    <div class="login-secure">✦ No passwords — secure magic link only</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none;height:100vh;display:none;grid-template-columns:var(--sidebar) 1fr;grid-template-rows:54px 1fr">
+
+  <!-- TOPBAR -->
+  <nav class="topbar">
+    <div class="tb-logo">
+      <div class="tb-mark">D</div>
+      <span class="tb-name">Discover</span>
+    </div>
+    <div class="tb-sep"></div>
+    <div class="tb-practice">Assessment for <span id="tbPracticeName">—</span></div>
+    <div class="tb-right">
+      <div class="tb-phase phase-assess" id="tbPhase">Assessment</div>
+      <button class="tb-save" id="tbSaveBtn" onclick="saveToSupabase()">Save to record</button>
+      <button class="tb-user" onclick="signOut()" id="tbUser">Sign out</button>
+    </div>
+  </nav>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-org">
+      <div class="org-name" id="sideOrgName">New assessment</div>
+      <div class="org-meta" id="sideOrgMeta">Complete context to begin</div>
+    </div>
+    <div class="sidebar-sections" id="sidebarSections">
+      <div class="sec-item active" onclick="goToSection(0)" id="secnav-0">
+        <div class="sec-dot" style="background:#1A1A2E;color:var(--purple)">◎</div>
+        <div class="sec-info">
+          <div class="sec-label">Org Context</div>
+          <div class="sec-sublabel">Practice basics</div>
+        </div>
+      </div>
+      <div class="sec-item" onclick="goToSection(1)" id="secnav-1">
+        <div class="sec-dot" style="background:var(--cyan-bg);color:var(--cyan)">T</div>
+        <div class="sec-info">
+          <div class="sec-label">Taxonomy</div>
+          <div class="sec-sublabel">Language + segments</div>
+        </div>
+        <div class="sec-score" id="score-label-0" style="color:var(--cyan)">—</div>
+      </div>
+      <div class="sec-item" onclick="goToSection(2)" id="secnav-2">
+        <div class="sec-dot" style="background:var(--blue-bg);color:var(--blue)">S</div>
+        <div class="sec-info">
+          <div class="sec-label">Signal</div>
+          <div class="sec-sublabel">Data + intelligence</div>
+        </div>
+        <div class="sec-score" id="score-label-1" style="color:var(--blue)">—</div>
+      </div>
+      <div class="sec-item" onclick="goToSection(3)" id="secnav-3">
+        <div class="sec-dot" style="background:var(--teal-bg);color:var(--teal)">V</div>
+        <div class="sec-info">
+          <div class="sec-label">Strategy</div>
+          <div class="sec-sublabel">Positioning + offers</div>
+        </div>
+        <div class="sec-score" id="score-label-2" style="color:var(--teal)">—</div>
+      </div>
+      <div class="sec-item" onclick="goToSection(4)" id="secnav-4">
+        <div class="sec-dot" style="background:var(--orange-bg);color:var(--orange)">H</div>
+        <div class="sec-info">
+          <div class="sec-label">Execution</div>
+          <div class="sec-sublabel">Content + delivery</div>
+        </div>
+        <div class="sec-score" id="score-label-3" style="color:var(--orange)">—</div>
+      </div>
+    </div>
+    <div class="sidebar-totals">
+      <div class="total-bars" id="totalBars">
+        <div class="mini-bar-wrap">
+          <div class="mini-bar-label" style="color:var(--cyan)">Taxonomy</div>
+          <div class="mini-bar-track"><div class="mini-bar-fill" id="bar-0" style="width:0%;background:var(--cyan)"></div></div>
+          <div class="mini-bar-val" id="barval-0" style="color:var(--cyan)">0/8</div>
+        </div>
+        <div class="mini-bar-wrap">
+          <div class="mini-bar-label" style="color:var(--blue)">Signal</div>
+          <div class="mini-bar-track"><div class="mini-bar-fill" id="bar-1" style="width:0%;background:var(--blue)"></div></div>
+          <div class="mini-bar-val" id="barval-1" style="color:var(--blue)">0/8</div>
+        </div>
+        <div class="mini-bar-wrap">
+          <div class="mini-bar-label" style="color:var(--teal)">Strategy</div>
+          <div class="mini-bar-track"><div class="mini-bar-fill" id="bar-2" style="width:0%;background:var(--teal)"></div></div>
+          <div class="mini-bar-val" id="barval-2" style="color:var(--teal)">0/8</div>
+        </div>
+        <div class="mini-bar-wrap">
+          <div class="mini-bar-label" style="color:var(--orange)">Execution</div>
+          <div class="mini-bar-track"><div class="mini-bar-fill" id="bar-3" style="width:0%;background:var(--orange)"></div></div>
+          <div class="mini-bar-val" id="barval-3" style="color:var(--orange)">0/8</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="content-area" id="contentArea">
+
+      <!-- STEP 0: ORG CONTEXT -->
+      <div class="section-panel active" id="panel-0">
+        <div class="step-header">
+          <div class="step-eyebrow" style="color:var(--purple)">Getting started</div>
+          <div class="step-title">Tell us about the organization</div>
+          <div class="step-desc">This becomes the header for their readiness report. Take 60 seconds to fill it in accurately.</div>
+        </div>
+        <div class="field-group">
+          <div class="field-label">Organization name</div>
+          <input class="field-input" id="orgName" placeholder="Clearfield Advisory" oninput="updateOrgDisplay()">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Primary industry</div>
+          <select class="field-select" id="orgIndustry">
+            <option value="">Select industry…</option>
+            <option>Financial services / advisory</option>
+            <option>Management consulting</option>
+            <option>Marketing / creative agency</option>
+            <option>Technology / SaaS</option>
+            <option>Professional services (law, HR, ops)</option>
+            <option>Real estate / development</option>
+            <option>Healthcare / life sciences</option>
+            <option>Manufacturing / industrial</option>
+            <option>Non-profit / association</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <div class="field-label">Team size</div>
+          <div class="chips-wrap" id="teamChips">
+            <div class="chip" onclick="selectChip('team','1-5',this)">1–5</div>
+            <div class="chip" onclick="selectChip('team','6-20',this)">6–20</div>
+            <div class="chip" onclick="selectChip('team','21-50',this)">21–50</div>
+            <div class="chip" onclick="selectChip('team','51-200',this)">51–200</div>
+            <div class="chip" onclick="selectChip('team','200+',this)">200+</div>
+          </div>
+        </div>
+        <div class="field-group">
+          <div class="field-label">Annual revenue (approximate)</div>
+          <div class="chips-wrap" id="revChips">
+            <div class="chip" onclick="selectChip('rev','<$500K',this)">&lt;$500K</div>
+            <div class="chip" onclick="selectChip('rev','$500K–$2M',this)">$500K–$2M</div>
+            <div class="chip" onclick="selectChip('rev','$2M–$10M',this)">$2M–$10M</div>
+            <div class="chip" onclick="selectChip('rev','$10M–$50M',this)">$10M–$50M</div>
+            <div class="chip" onclick="selectChip('rev','$50M+',this)">$50M+</div>
+          </div>
+        </div>
+        <div class="field-group">
+          <div class="field-label">Primary growth challenge</div>
+          <select class="field-select" id="orgChallenge">
+            <option value="">Select…</option>
+            <option>Not enough inbound leads</option>
+            <option>Referral network is inconsistent</option>
+            <option>Positioning is unclear or generic</option>
+            <option>Content exists but doesn't convert</option>
+            <option>No system — everything is ad hoc</option>
+            <option>Scaling what's already working</option>
+            <option>Breaking into a new market or segment</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- STEP 1: TAXONOMY -->
+      <div class="section-panel" id="panel-1">
+        <div class="step-header">
+          <div class="step-eyebrow" style="color:var(--cyan)">Fuse — Taxonomy readiness</div>
+          <div class="step-title">Vocabulary + segmentation</div>
+          <div class="step-desc">How clearly defined is their language for who they serve and what they do? This determines whether Fuse is a foundation or a refinement.</div>
+        </div>
+        <div class="question-list" id="qlist-0"></div>
+      </div>
+
+      <!-- STEP 2: SIGNAL -->
+      <div class="section-panel" id="panel-2">
+        <div class="step-header">
+          <div class="step-eyebrow" style="color:var(--blue)">Signal — Data readiness</div>
+          <div class="step-title">Intelligence + tracking</div>
+          <div class="step-desc">How much usable data do they have? Signal is most valuable when there's existing engagement and pipeline data worth analyzing.</div>
+        </div>
+        <div class="question-list" id="qlist-1"></div>
+      </div>
+
+      <!-- STEP 3: STRATEGY -->
+      <div class="section-panel" id="panel-3">
+        <div class="step-header">
+          <div class="step-eyebrow" style="color:var(--teal)">Vector — Strategy readiness</div>
+          <div class="step-title">Positioning + offers</div>
+          <div class="step-desc">How developed is their growth strategy? A low score means Vector is urgent core work. A high score means Vector refines and activates what's already solid.</div>
+        </div>
+        <div class="question-list" id="qlist-2"></div>
+      </div>
+
+      <!-- STEP 4: EXECUTION -->
+      <div class="section-panel" id="panel-4">
+        <div class="step-header">
+          <div class="step-eyebrow" style="color:var(--orange)">Helix — Execution readiness</div>
+          <div class="step-title">Content + delivery</div>
+          <div class="step-desc">Do they have the infrastructure to execute? Helix accelerates orgs that are already in motion — it doesn't create motion from nothing.</div>
+        </div>
+        <div class="question-list" id="qlist-3"></div>
+      </div>
+
+      <!-- RESULTS -->
+      <div id="resultsPanel" style="display:none">
+        <div class="step-header">
+          <div class="step-eyebrow" style="color:var(--teal)">Readiness report</div>
+          <div class="step-title" id="resTitle">Platform recommendation</div>
+          <div class="step-desc" id="resDesc"></div>
+        </div>
+
+        <div style="margin-bottom:16px">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--muted);margin-bottom:12px">RECOMMENDED MODULES</div>
+          <div class="module-pills" id="modulePills"></div>
+        </div>
+
+        <div class="results-grid" id="resultsGrid"></div>
+
+        <div class="roadmap-wrap" id="roadmapWrap">
+          <div class="roadmap-title">Implementation sequence</div>
+          <div class="roadmap-steps" id="roadmapSteps"></div>
+        </div>
+
+        <div class="first30" id="first30Wrap">
+          <div class="f30-title">FIRST 30 DAYS</div>
+          <div class="f30-items" id="first30Items"></div>
+        </div>
+      </div>
+
+    </div><!-- /content-area -->
+
+    <!-- FOOTER NAV -->
+    <div class="step-footer" id="stepFooter">
+      <div class="footer-hint" id="footerHint">Fill in org details to begin assessment</div>
+      <div class="footer-btns">
+        <button class="btn-back" id="btnBack" onclick="navBack()" style="display:none">← Back</button>
+        <button class="btn-next" id="btnNext" onclick="navNext()">Continue →</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<script>
+const SUPA_URL = 'https://ilhljjkiijmjpwinovzj.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsaGxqamtpaWptanB3aW5vdnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MTk4MjIsImV4cCI6MjA5OTE5NTgyMn0.w8asDSA-rXuaDfujC2dr4J-EKCzlCVABOuq3VQeeFsE';
+const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+let currentUser = null;
+let currentPracticeId = null;
+
+// ── AUTH ──────────────────────────────────────────────
+async function sendMagicLink() {
+  const email = document.getElementById('loginEmail').value.trim();
+  if (!email) return;
+  document.getElementById('loginError').style.display = 'none';
+  const { error } = await supa.auth.signInWithOtp({
+    email,
+    options: { emailRedirectTo: window.location.href }
+  });
+  if (error) {
+    document.getElementById('loginError').textContent = error.message;
+    document.getElementById('loginError').style.display = 'block';
+    return;
+  }
+  localStorage.setItem('disc_last_email', email);
+  document.getElementById('loginForm').style.display = 'none';
+  document.getElementById('loginSent').style.display = 'block';
+}
+
+async function initAuth() {
+  const { data: { session } } = await supa.auth.getSession();
+  if (session) {
+    currentUser = session.user;
+    showApp();
+  } else {
+    const saved = localStorage.getItem('disc_last_email');
+    if (saved) document.getElementById('loginEmail').value = saved;
+    document.getElementById('loginScreen').style.display = 'flex';
+  }
+  supa.auth.onAuthStateChange((event, session) => {
+    if (session && !currentUser) {
+      currentUser = session.user;
+      showApp();
+    }
+  });
+}
+
+function showApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  const app = document.getElementById('app');
+  app.style.display = 'grid';
+  document.getElementById('tbUser').textContent = currentUser.email.split('@')[0];
+}
+
+async function signOut() {
+  await supa.auth.signOut();
+  window.location.reload();
+}
+
+// ── STATE ──────────────────────────────────────────────
+const state = {
+  orgName: '', orgIndustry: '', orgTeam: '', orgRev: '', orgChallenge: '',
+  answers: [[null,null,null,null],[null,null,null,null],[null,null,null,null],[null,null,null,null]],
+  scores: [0,0,0,0]
+};
+let currentStep = 0; // 0=context, 1-4=questions, 5=results
+
+const chipSelections = { team: null, rev: null };
+
+function selectChip(group, val, el) {
+  document.querySelectorAll(`#${group}Chips .chip`).forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+  chipSelections[group] = val;
+  if (group === 'team') state.orgTeam = val;
+  if (group === 'rev') state.orgRev = val;
+  updateOrgDisplay();
+}
+
+function updateOrgDisplay() {
+  const name = document.getElementById('orgName').value.trim();
+  state.orgName = name;
+  document.getElementById('sideOrgName').textContent = name || 'New assessment';
+  document.getElementById('tbPracticeName').textContent = name || '—';
+  const rev = state.orgRev;
+  const team = state.orgTeam;
+  const meta = [team ? `${team} people` : null, rev || null].filter(Boolean).join(' · ');
+  document.getElementById('sideOrgMeta').textContent = meta || 'Complete context to begin';
+  updateFooterHint();
+}
+
+// ── QUESTIONS ──────────────────────────────────────────
+const QUESTIONS = [
+  // Taxonomy (Fuse)
+  [
+    'Do you have defined audience segments with clear names and criteria?',
+    'Does your team use consistent language to describe your ideal client?',
+    'Are your content categories and tags standardized across channels?',
+    'Could a new hire describe exactly who you serve from existing materials alone?',
+  ],
+  // Signal (data)
+  [
+    'Do you have a CRM with at least 6 months of contact and interaction history?',
+    'Do you track which content, campaigns, or outreach activities convert to pipeline?',
+    'Can you see conversion rates at each stage of your funnel?',
+    'Do you know which channels or referral sources generate your highest-value clients?',
+  ],
+  // Strategy (Vector)
+  [
+    'Do you have clearly defined service offers with names and published pricing?',
+    'Do you have a positioning statement you would share confidently with a prospect?',
+    'Is there an active referral or partner channel consistently generating leads?',
+    'Do you know which client archetype generates the highest lifetime value?',
+  ],
+  // Execution (Helix)
+  [
+    'Do you publish content on a consistent cadence — weekly or more?',
+    'Do you have templates or playbooks that make content creation repeatable?',
+    'Is someone on your team explicitly accountable for content production?',
+    'Are you connected to a marketing automation or CRM platform for delivery?',
+  ],
+];
+
+const SECTION_COLORS = ['var(--cyan)','var(--blue)','var(--teal)','var(--orange)'];
+
+function buildQuestions() {
+  QUESTIONS.forEach((qs, si) => {
+    const list = document.getElementById(`qlist-${si}`);
+    list.innerHTML = '';
+    qs.forEach((q, qi) => {
+      const card = document.createElement('div');
+      card.className = 'question-card';
+      card.innerHTML = `
+        <div class="question-text">${q}</div>
+        <div class="answer-row">
+          <button class="ans-btn" onclick="setAnswer(${si},${qi},2,this)">Yes</button>
+          <button class="ans-btn" onclick="setAnswer(${si},${qi},1,this)">Somewhat</button>
+          <button class="ans-btn" onclick="setAnswer(${si},${qi},0,this)">No</button>
+        </div>`;
+      list.appendChild(card);
+    });
+  });
+}
+
+function setAnswer(si, qi, val, btn) {
+  state.answers[si][qi] = val;
+  const row = btn.parentElement;
+  row.querySelectorAll('.ans-btn').forEach(b => b.className = 'ans-btn');
+  if (val === 2) btn.classList.add('sel-yes');
+  else if (val === 1) btn.classList.add('sel-some');
+  else btn.classList.add('sel-no');
+  recalcScore(si);
+}
+
+function recalcScore(si) {
+  const answers = state.answers[si];
+  const score = answers.reduce((s, v) => s + (v ?? 0), 0);
+  state.scores[si] = score;
+  document.getElementById(`score-label-${si}`).textContent = `${score}/8`;
+  document.getElementById(`bar-${si}`).style.width = `${(score/8)*100}%`;
+  document.getElementById(`barval-${si}`).textContent = `${score}/8`;
+}
+
+// ── NAVIGATION ──────────────────────────────────────────
+function updateFooterHint() {
+  const hints = [
+    state.orgName ? `Assessing ${state.orgName}` : 'Enter practice name to continue',
+    'Answer all 4 questions to continue',
+    'Answer all 4 questions to continue',
+    'Answer all 4 questions to continue',
+    'Answer all 4 questions to see the recommendation',
+  ];
+  document.getElementById('footerHint').textContent = hints[currentStep] || '';
+}
+
+function navNext() {
+  if (currentStep < 4) {
+    document.getElementById(`panel-${currentStep}`).classList.remove('active');
+    currentStep++;
+    document.getElementById(`panel-${currentStep}`).classList.add('active');
+    updateSidebar();
+    updateFooter();
+    document.getElementById('contentArea').scrollTop = 0;
+  } else {
+    showResults();
+  }
+}
+
+function navBack() {
+  if (currentStep > 0) {
+    document.getElementById(`panel-${currentStep}`).classList.remove('active');
+    currentStep--;
+    if (currentStep === 0) {
+      document.getElementById('panel-0').classList.add('active');
+    } else {
+      document.getElementById(`panel-${currentStep}`).classList.add('active');
+    }
+    updateSidebar();
+    updateFooter();
+    document.getElementById('contentArea').scrollTop = 0;
+  }
+}
+
+function goToSection(n) {
+  if (n === currentStep) return;
+  document.getElementById(`panel-${Math.min(currentStep,4)}`).classList.remove('active');
+  currentStep = n;
+  document.getElementById(`panel-${n}`).classList.add('active');
+  document.getElementById('resultsPanel').style.display = 'none';
+  updateSidebar();
+  updateFooter();
+  document.getElementById('contentArea').scrollTop = 0;
+}
+
+function updateSidebar() {
+  for (let i = 0; i <= 4; i++) {
+    const el = document.getElementById(`secnav-${i}`);
+    el.classList.toggle('active', i === currentStep);
+  }
+}
+
+function updateFooter() {
+  const btnBack = document.getElementById('btnBack');
+  const btnNext = document.getElementById('btnNext');
+  btnBack.style.display = currentStep > 0 ? 'block' : 'none';
+  if (currentStep === 0) {
+    btnNext.textContent = 'Start assessment →';
+    btnNext.disabled = !state.orgName;
+  } else if (currentStep <= 4) {
+    const sectionAnswered = state.answers[currentStep-1].every(v => v !== null);
+    btnNext.textContent = currentStep === 4 ? 'See recommendation →' : 'Next section →';
+    btnNext.disabled = !sectionAnswered;
+  }
+  updateFooterHint();
+}
+
+// ── RESULTS ──────────────────────────────────────────────
+const SECTION_META = [
+  { name: 'Taxonomy', tool: 'FUSE', color: 'var(--cyan)', bg: 'var(--cyan-bg)', border: 'var(--cyan-border)' },
+  { name: 'Signal', tool: 'SIGNAL', color: 'var(--blue)', bg: 'var(--blue-bg)', border: 'var(--blue-border)' },
+  { name: 'Strategy', tool: 'VECTOR', color: 'var(--teal)', bg: 'var(--teal-bg)', border: 'var(--teal-dim)' },
+  { name: 'Execution', tool: 'HELIX', color: 'var(--orange)', bg: 'var(--orange-bg)', border: 'var(--orange-border)' },
+];
+
+function levelFor(score) {
+  if (score <= 3) return { label: 'Low', bg: '#1A0E0E', color: '#C85A5A', border: '#3A1E1E' };
+  if (score <= 5) return { label: 'Medium', bg: '#1A1A10', color: '#C8B84A', border: '#3A3A20' };
+  return { label: 'High', bg: 'var(--teal-bg)', color: 'var(--teal)', border: 'var(--teal-dim)' };
+}
+
+const RECS = [
+  // Taxonomy
+  [
+    'Fuse is essential — vocabulary and segmentation need to be built from scratch before anything else.',
+    'Fuse will sharpen segmentation and standardize language across the team — high-value early step.',
+    'Taxonomy is solid. Fuse can be a refinement exercise or skipped — Vector can start immediately.',
+  ],
+  // Signal
+  [
+    'Signal isn\'t ready yet — not enough data in the system. Revisit after 90 days of active tracking.',
+    'Signal is worth activating. There\'s enough data to surface meaningful patterns and funnel insights.',
+    'Signal is a strong fit. Rich data exists — activate it early to inform positioning and content strategy.',
+  ],
+  // Strategy
+  [
+    'Vector is the core engagement — major positioning and offer work needed before anything else moves.',
+    'Vector will sharpen and systematize an emerging strategy. 2–3 months of focused work expected.',
+    'Strategy is developed. Vector accelerates refinement and activates the growth motion quickly.',
+  ],
+  // Execution
+  [
+    'Helix is premature — execution infrastructure needs to be built first. Not recommended this cycle.',
+    'Helix is a solid Phase 2. Get the strategy locked first, then activate the content engine.',
+    'Helix is ready to activate. Content infrastructure exists — plug it in and scale what\'s working.',
+  ],
+];
+
+function moduleConfig(tool, included) {
+  const configs = {
+    FUSE:   { icon:'◈', label:'Fuse',   color:'var(--cyan)',   bg:'var(--cyan-bg)',   border:'var(--cyan-border)' },
+    SIGNAL: { icon:'◉', label:'Signal', color:'var(--blue)',   bg:'var(--blue-bg)',   border:'var(--blue-border)' },
+    VECTOR: { icon:'◆', label:'Vector', color:'var(--teal)',   bg:'var(--teal-bg)',   border:'var(--teal-dim)' },
+    HELIX:  { icon:'◇', label:'Helix',  color:'var(--orange)', bg:'var(--orange-bg)', border:'var(--orange-border)' },
+  };
+  const c = configs[tool];
+  return { ...c, included };
+}
+
+function buildRoadmap(scores) {
+  const [tx, sig, str, ex] = scores;
+  const steps = [];
+  const modules = ['vector'];
+
+  if (tx < 6) {
+    modules.unshift('fuse');
+    steps.push({
+      tool: 'FUSE', color: 'var(--cyan)', bg: 'var(--cyan-bg)', border: 'var(--cyan-border)',
+      action: 'Build taxonomy foundation',
+      detail: 'Define audience segments, standardize vocabulary, and map content categories. This feeds positioning language directly into Vector.',
+      weeks: tx <= 3 ? '3–4 wks' : '1–2 wks',
+    });
+  }
+
+  if (sig >= 4) {
+    modules.push('signal');
+    steps.push({
+      tool: 'SIGNAL', color: 'var(--blue)', bg: 'var(--blue-bg)', border: 'var(--blue-border)',
+      action: 'Activate intelligence layer',
+      detail: 'Connect CRM and engagement data. Signal surfaces which channels, content, and client archetypes are already working — so Vector positioning is grounded in evidence.',
+      weeks: '2–3 wks',
+    });
+  }
+
+  steps.push({
+    tool: 'VECTOR', color: 'var(--teal)', bg: 'var(--teal-bg)', border: 'var(--teal-dim)',
+    action: str <= 3 ? 'Build growth strategy' : str <= 5 ? 'Sharpen and systematize strategy' : 'Activate and refine growth motion',
+    detail: 'Run the full Vector diagnostic — positioning, offers, referral engine, credibility assets, intake system, and 30-60-90 activation plan.',
+    weeks: str <= 3 ? '4–6 wks' : str <= 5 ? '2–4 wks' : '1–2 wks',
+  });
+
+  if (ex >= 4) {
+    modules.push('helix');
+    steps.push({
+      tool: 'HELIX', color: 'var(--orange)', bg: 'var(--orange-bg)', border: 'var(--orange-border)',
+      action: 'Launch content engine',
+      detail: 'Take Vector\'s positioning and offer framework into Helix — generate campaign plans, content assets, and wire into the delivery stack (HubSpot, CRM, etc.).',
+      weeks: ex >= 6 ? '2–4 wks' : '4–6 wks',
+    });
+  }
+
+  return { steps, modules };
+}
+
+function first30Items(scores, modules) {
+  const [tx, sig, str, ex] = scores;
+  const items = [];
+  if (modules.includes('fuse')) items.push('Complete Fuse taxonomy session — audience segments, vocabulary, content categories');
+  if (modules.includes('signal')) items.push('Connect CRM to Signal and run first engagement analysis');
+  items.push('Run Vector diagnostic — complete all 6 steps with the practice');
+  items.push('Finalize offer language and pricing from Vector\'s Positioning & Offers output');
+  items.push('Send first 5 warm intro requests from Vector\'s Referral Engine');
+  if (modules.includes('helix')) items.push('Brief Helix on positioning — generate first campaign plan and content batch');
+  else items.push('Revisit Helix eligibility after first 90 days of Vector activation');
+  return items.slice(0,5);
+}
+
+function pathLabel(modules) {
+  if (modules.length === 4) return 'Full stack';
+  if (modules.includes('fuse') && modules.includes('helix')) return 'Growth stack';
+  if (!modules.includes('fuse') && !modules.includes('helix')) return 'Vector core';
+  if (modules.includes('fuse') && !modules.includes('helix')) return 'Foundation + Strategy';
+  if (!modules.includes('fuse') && modules.includes('helix')) return 'Strategy + Execution';
+  return 'Custom stack';
+}
+
+function showResults() {
+  // Hide all panels, show results
+  for (let i = 0; i <= 4; i++) {
+    document.getElementById(`panel-${i}`).classList.remove('active');
+  }
+  document.getElementById('resultsPanel').style.display = 'block';
+  currentStep = 5;
+
+  // Update header phase
+  document.getElementById('tbPhase').textContent = 'Recommendation ready';
+  document.getElementById('tbPhase').className = 'tb-phase phase-results';
+  document.getElementById('tbSaveBtn').style.display = 'block';
+
+  // Update sidebar
+  updateSidebar();
+  document.getElementById('btnNext').style.display = 'none';
+  document.getElementById('btnBack').style.display = 'block';
+  document.getElementById('btnBack').onclick = () => {
+    document.getElementById('resultsPanel').style.display = 'none';
+    currentStep = 4;
+    document.getElementById('panel-4').classList.add('active');
+    document.getElementById('tbPhase').textContent = 'Assessment';
+    document.getElementById('tbPhase').className = 'tb-phase phase-assess';
+    document.getElementById('tbSaveBtn').style.display = 'none';
+    document.getElementById('btnNext').style.display = 'block';
+    document.getElementById('btnNext').textContent = 'See recommendation →';
+    document.getElementById('btnBack').onclick = navBack;
+    updateSidebar();
+    updateFooterHint();
+  };
+
+  const scores = state.scores;
+  const { steps, modules } = buildRoadmap(scores);
+
+  // Title
+  const path = pathLabel(modules);
+  document.getElementById('resTitle').textContent = `${state.orgName || 'This org'} — ${path}`;
+  document.getElementById('resDesc').textContent =
+    `Based on the readiness assessment, we recommend a ${modules.length}-tool engagement in the sequence below. This becomes the scope for your proposal.`;
+
+  // Module pills
+  const pillsEl = document.getElementById('modulePills');
+  pillsEl.innerHTML = '';
+  ['FUSE','SIGNAL','VECTOR','HELIX'].forEach(tool => {
+    const included = modules.includes(tool.toLowerCase());
+    const c = moduleConfig(tool, included);
+    const pill = document.createElement('div');
+    pill.className = `module-pill${included ? '' : ' pill-locked'}`;
+    pill.style.cssText = included
+      ? `background:${c.bg};border-color:${c.border};color:${c.color}`
+      : '';
+    pill.innerHTML = `<span class="pill-icon">${c.icon}</span><span>${c.label}</span>${included ? '' : '<span style="font-size:10px;opacity:.6;margin-left:4px">not yet</span>'}`;
+    pillsEl.appendChild(pill);
+  });
+
+  // Readiness cards
+  const grid = document.getElementById('resultsGrid');
+  grid.innerHTML = '';
+  SECTION_META.forEach((sm, i) => {
+    const score = scores[i];
+    const lvl = levelFor(score);
+    const recIdx = score <= 3 ? 0 : score <= 5 ? 1 : 2;
+    const card = document.createElement('div');
+    card.className = 'readiness-card';
+    card.innerHTML = `
+      <div class="rc-header">
+        <div class="rc-name" style="color:${sm.color}">${sm.tool} — ${sm.name}</div>
+        <div class="rc-score" style="color:${sm.color}">${score}<span style="font-size:13px;color:var(--muted)">/8</span></div>
+      </div>
+      <div class="rc-bar-track">
+        <div class="rc-bar-fill" style="width:${(score/8)*100}%;background:${sm.color}"></div>
+      </div>
+      <div class="rc-level" style="background:${lvl.bg};color:${lvl.color};border:1px solid ${lvl.border}">${lvl.label}</div>
+      <div class="rc-recommendation">${RECS[i][recIdx]}</div>`;
+    grid.appendChild(card);
+  });
+
+  // Roadmap
+  const stepsEl = document.getElementById('roadmapSteps');
+  stepsEl.innerHTML = '';
+  steps.forEach((s, i) => {
+    const row = document.createElement('div');
+    row.className = 'roadmap-step';
+    row.innerHTML = `
+      <div class="rs-num" style="background:${s.bg};color:${s.color};border:1px solid ${s.border}">${i+1}</div>
+      <div class="rs-body">
+        <div class="rs-tool" style="color:${s.color}">${s.tool}</div>
+        <div class="rs-action">${s.action}</div>
+        <div class="rs-detail">${s.detail}</div>
+      </div>
+      <div class="rs-weeks">${s.weeks}</div>`;
+    stepsEl.appendChild(row);
+  });
+
+  // First 30 days
+  const f30 = document.getElementById('first30Items');
+  f30.innerHTML = '';
+  first30Items(scores, modules).forEach(item => {
+    const el = document.createElement('div');
+    el.className = 'f30-item';
+    el.textContent = item;
+    f30.appendChild(el);
+  });
+
+  document.getElementById('contentArea').scrollTop = 0;
+}
+
+// ── SAVE TO SUPABASE ──────────────────────────────────
+async function saveToSupabase() {
+  if (!currentUser) return;
+  const { steps, modules } = buildRoadmap(state.scores);
+  const readiness = {
+    taxonomy: state.scores[0],
+    signal:   state.scores[1],
+    strategy: state.scores[2],
+    execution: state.scores[3],
+    assessed_at: new Date().toISOString(),
+    org_name: state.orgName,
+    org_industry: document.getElementById('orgIndustry').value,
+    org_team: state.orgTeam,
+    org_rev: state.orgRev,
+    org_challenge: document.getElementById('orgChallenge').value,
+    path: pathLabel(modules),
+  };
+
+  const btn = document.getElementById('tbSaveBtn');
+  btn.textContent = 'Saving…';
+  btn.disabled = true;
+
+  try {
+    // Upsert practice record (match by org name + user)
+    const { data, error } = await supa
+      .from('practices')
+      .upsert({
+        user_id: currentUser.id,
+        name: state.orgName || 'Unnamed',
+        readiness,
+        modules_unlocked: modules,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'user_id,name' })
+      .select('id')
+      .single();
+
+    if (error) throw error;
+    currentPracticeId = data?.id;
+    btn.textContent = '✓ Saved';
+    setTimeout(() => { btn.textContent = 'Save to record'; btn.disabled = false; }, 2000);
+  } catch (e) {
+    console.error(e);
+    btn.textContent = 'Save failed — retry';
+    btn.disabled = false;
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────
+buildQuestions();
+updateFooter();
+initAuth();
+
+// Watch org name to re-enable Continue
+document.getElementById('orgName').addEventListener('input', () => {
+  updateFooter();
+});
+</script>
+</body>
+</html>
