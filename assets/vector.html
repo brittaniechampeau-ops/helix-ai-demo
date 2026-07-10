@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vector — BD Command Center</title>
+<title>Vector — Growth Command Center</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -448,7 +448,7 @@
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
     </div>
     <h2 style="font-size:22px;font-weight:700;margin-bottom:8px;">Vector</h2>
-    <p style="color:var(--txt2);margin-bottom:32px;font-size:14px;">BD Command Center · Britt Bowman LLC</p>
+    <p style="color:var(--txt2);margin-bottom:32px;font-size:14px;">Growth Command Center · Britt Bowman LLC</p>
     <div id="loginForm">
       <input id="loginEmail" type="email" placeholder="your@email.com" style="width:100%;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--txt);font-size:15px;margin-bottom:12px;outline:none;">
       <button onclick="sendMagicLink()" style="width:100%;padding:11px;background:var(--accent);border:none;border-radius:8px;color:white;font-size:15px;font-weight:600;cursor:pointer;">Send magic link</button>
@@ -473,7 +473,7 @@
 
     <div id="clientHomeStats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:32px;text-align:left"></div>
 
-    <button onclick="enterClientApp()" style="width:100%;padding:14px;background:var(--accent);border:none;border-radius:10px;color:white;font-size:16px;font-weight:600;cursor:pointer;margin-bottom:12px">Open my BD Command Center →</button>
+    <button onclick="enterClientApp()" style="width:100%;padding:14px;background:var(--accent);border:none;border-radius:10px;color:white;font-size:16px;font-weight:600;cursor:pointer;margin-bottom:12px">Open my Growth Command Center →</button>
     <button onclick="signOut()" style="background:none;border:none;color:var(--txt3);font-size:13px;cursor:pointer;text-decoration:underline">Sign out</button>
   </div>
 </div>
@@ -529,7 +529,7 @@
         </svg>
       </div>
       <span class="logo-text">Vector</span>
-      <span class="logo-tag">BD Command Center</span>
+      <span class="logo-tag">Growth Command Center</span>
     </div>
     <div class="topbar-divider"></div>
     <div class="context-pill">
@@ -580,7 +580,7 @@
   </button>
   <span class="step-arrow">›</span>
   <button class="step-btn locked" id="nav-6" onclick="showStep(6)">
-    <span class="snum"><span>7</span></span> BD Command Center
+    <span class="snum"><span>7</span></span> Growth Command Center
   </button>
 </div>
 
@@ -660,18 +660,18 @@
           <label class="radio-row"><input type="radio" name="size" value="solo" /> Solo — founder only, no delivery support</label>
           <label class="radio-row"><input type="radio" name="size" value="small" /> Small — 2–3 people, founder still sells</label>
           <label class="radio-row"><input type="radio" name="size" value="team" /> Team — 4–10 people, some delivery separation</label>
-          <label class="radio-row"><input type="radio" name="size" value="firm" /> Firm — 10+ people, BD and delivery are distinct</label>
+          <label class="radio-row"><input type="radio" name="size" value="firm" /> Firm — 10+ people, Growth and delivery are distinct</label>
         </div>
       </div>
 
-      <!-- Q2: Who runs BD -->
+      <!-- Q2: Who drives Growth -->
       <div class="card">
         <div class="card-header"><span class="card-title">Q2 — Who Runs Business Development</span></div>
         <div class="radio-group" id="q-who">
-          <label class="radio-row"><input type="radio" name="who" value="founder-only" /> Founder only — BD stops when delivery gets heavy</label>
+          <label class="radio-row"><input type="radio" name="who" value="founder-only" /> Founder only — Growth stops when delivery gets heavy</label>
           <label class="radio-row"><input type="radio" name="who" value="founder-plus" /> Founder + 1 — partial hand-off but founder still closes</label>
-          <label class="radio-row"><input type="radio" name="who" value="dedicated" /> Dedicated BD person — founder is mostly off the pitch</label>
-          <label class="radio-row"><input type="radio" name="who" value="team-bd" /> Team-driven — distributed BD with process and reporting</label>
+          <label class="radio-row"><input type="radio" name="who" value="dedicated" /> Dedicated Growth person — founder is mostly off the pitch</label>
+          <label class="radio-row"><input type="radio" name="who" value="team-bd" /> Team-driven — distributed Growth with process and reporting</label>
         </div>
       </div>
 
@@ -687,7 +687,7 @@
 
       <!-- Q4: Current motion -->
       <div class="card">
-        <div class="card-header"><span class="card-title">Q4 — Current BD Motion</span></div>
+        <div class="card-header"><span class="card-title">Q4 — Current Growth Motion</span></div>
         <div class="radio-group" id="q-motion">
           <label class="radio-row"><input type="radio" name="motion" value="referral" /> Referral-first — almost all pipeline comes from introductions</label>
           <label class="radio-row"><input type="radio" name="motion" value="content" /> Content-first — LinkedIn / writing drives inbound</label>
@@ -1027,11 +1027,11 @@
       </div>
     </div>
 
-    <!-- ═══ STEP 6: BD COMMAND CENTER ═══ -->
+    <!-- ═══ STEP 6: GROWTH COMMAND CENTER ═══ -->
     <div class="step-panel" id="panel-6">
       <div class="step-header">
-        <h1>BD Command Center</h1>
-        <p>Your BD system, assembled. Track your 30-60-90 progress and download client deliverables.</p>
+        <h1>Growth Command Center</h1>
+        <p>Your Growth system, assembled. Track your 30-60-90 progress and download client deliverables.</p>
       </div>
 
       <!-- Discovery Prep — shown only when no diagnostic data yet -->
@@ -1199,8 +1199,8 @@
         <div class="form-group"><label class="form-label">Client / Company Name</label><input class="form-input" id="dp-name" placeholder="Muoro"></div>
         <div class="form-group"><label class="form-label">Industry</label><input class="form-input" id="dp-industry" placeholder="e.g. Talent Acquisition, L&D, HR Tech"></div>
       </div>
-      <div class="form-group" style="margin-bottom:12px"><label class="form-label">What do you know so far? (leave blank if nothing)</label><textarea class="form-textarea" id="dp-context" placeholder="e.g. Mid-size recruitment firm, founder-led, mostly referral-based, wants to systemize their BD. Heard about them through a mutual connection." style="min-height:70px"></textarea></div>
-      <div class="form-group" style="margin-bottom:20px"><label class="form-label">Your goal for this engagement</label><input class="form-input" id="dp-goal" placeholder="e.g. Build a repeatable BD system they can hand to the team"></div>
+      <div class="form-group" style="margin-bottom:12px"><label class="form-label">What do you know so far? (leave blank if nothing)</label><textarea class="form-textarea" id="dp-context" placeholder="e.g. Mid-size recruitment firm, founder-led, mostly referral-based, wants to systemize their Growth. Heard about them through a mutual connection." style="min-height:70px"></textarea></div>
+      <div class="form-group" style="margin-bottom:20px"><label class="form-label">Your goal for this engagement</label><input class="form-input" id="dp-goal" placeholder="e.g. Build a repeatable Growth system they can hand to the team"></div>
       <button class="btn btn-primary" style="width:100%" onclick="runDiscoveryPrep()">▶ Generate Discovery Guide</button>
     </div>
     <div id="discoveryPrepResult" style="display:none">
@@ -1927,7 +1927,7 @@ function runDiagnostic() {
   VEC.diag.track = track; VEC.diag.weights = weights;
 
   runProcessing('Diagnostic', 'Analyzing practice profile',
-    ['Reading size and BD ownership signals...', 'Mapping market state to motion type...', 'Computing foundation weights...', 'Selecting build sequence...', 'Generating track recommendation...'],
+    ['Reading size and Growth ownership signals...', 'Mapping market state to motion type...', 'Computing foundation weights...', 'Selecting build sequence...', 'Generating track recommendation...'],
     () => {
       const weightRows = Object.entries(weights).map(([k, v]) => `
         <div class="weight-row">
@@ -2171,12 +2171,12 @@ function generatePlan() {
       ['Activation', 'DO',   'Referral Engine','Begin referral asks with updated framing and offer names'],
       ['Activation', 'DO',   'Credibility',    'Reframe existing case studies using new positioning language and re-publish'],
       ['Activation', 'DO',   'Intake',         'Fix the top intake drop-off point identified in week 4'],
-      ['Activation', 'WAIT', 'Referral Engine','Hold retained offer expansion until BD motion shows momentum'],
+      ['Activation', 'WAIT', 'Referral Engine','Hold retained offer expansion until Growth motion shows momentum'],
       ['Optimization','DO',  'Referral Engine','Third referral cycle — measure intro-to-conversation conversion rate'],
       ['Optimization','DO',  'Intake',         'Run second intake audit — measure improvement from Activation fixes'],
       ['Optimization','DO',  'Credibility',    'Submit case study to one new placement channel'],
       ['Optimization','DO',  'Positioning',    'Quarterly positioning review — has market language shifted?'],
-      ['Optimization','WAIT','Intake',         'Hold on team BD hand-off until engagement pipeline is consistent for 60 days'],
+      ['Optimization','WAIT','Intake',         'Hold on team Growth hand-off until engagement pipeline is consistent for 60 days'],
     ]
   };
 
@@ -2237,11 +2237,11 @@ function updatePracticeOS() {
       { label: 'Custom Fields on Contact', items: [`Relationship_Type__c (Picklist: Past Client, Peer, Prospect)`, `Referral_Status__c (Picklist)`, `Value_Delivered__c (Long Text)`] },
     ]});
     if (VEC.diag.pm.includes('notion')) cards.push({ name: 'Notion', icon: '⬜', sections: [
-      { label: 'Pages to Create', items: [`BD Pipeline (table: Name, Company, Offer, Stage, Next Step, Date)`, `Referral Roster (table: Name, Company, Type, Convo 1, Convo 2, Status)`, `Case Study Library (gallery: Client, Result, Published?)`, `Positioning Canvas (copy from Vector download)`] },
-      { label: 'Database Properties', items: [`BD Pipeline → Status select: Warm / Scoping / Proposal / Active / Closed`, `Referral Roster → Relationship Type, Ask Date`, `Case Studies → Industry, Proof Point, Published (checkbox)`] },
+      { label: 'Pages to Create', items: [`Growth Pipeline (table: Name, Company, Offer, Stage, Next Step, Date)`, `Referral Roster (table: Name, Company, Type, Convo 1, Convo 2, Status)`, `Case Study Library (gallery: Client, Result, Published?)`, `Positioning Canvas (copy from Vector download)`] },
+      { label: 'Database Properties', items: [`Growth Pipeline → Status select: Warm / Scoping / Proposal / Active / Closed`, `Referral Roster → Relationship Type, Ask Date`, `Case Studies → Industry, Proof Point, Published (checkbox)`] },
     ]});
     if (VEC.diag.pm.includes('monday')) cards.push({ name: 'Monday.com', icon: '🟡', sections: [
-      { label: 'Boards to Create', items: [`BD Pipeline board — Groups: Referral Track / Active Scoping / Proposal Sent / Won / Lost`, `Referral Roster board — Columns: Name, Company, Type, Status, Convo 1, Convo 2`, `Active Engagements board — Groups by client`] },
+      { label: 'Boards to Create', items: [`Growth Pipeline board — Groups: Referral Track / Active Scoping / Proposal Sent / Won / Lost`, `Referral Roster board — Columns: Name, Company, Type, Status, Convo 1, Convo 2`, `Active Engagements board — Groups by client`] },
     ]});
     if (VEC.diag.storage.includes('gdrive')) cards.push({ name: 'Google Drive', icon: '🟢', sections: [
       { label: 'Folder Structure to Create', items: [`/Vector/${VEC.practice.name || 'Practice'}/`, `├── /Positioning/ → positioning_canvas.doc, offer one-pagers`, `├── /Credibility/ → case studies, placement checklist`, `├── /Referral Engine/ → referral scripts, contact roster`, `└── /Delivery Templates/ → scoping doc, kickoff agenda, cadence, handoff`] },
@@ -2249,7 +2249,7 @@ function updatePracticeOS() {
     ]});
     if (VEC.diag.comms.includes('slack')) cards.push({ name: 'Slack', icon: '💬', sections: [
       { label: 'Channels to Create', items: [`#bd-pipeline — weekly status updates on open opportunities`, `#referral-asks — log each ask with date and contact name`, `#content-wins — track case study placements and LinkedIn posts`] },
-      { label: 'Recurring Reminders to Set', items: [`Every Monday: "BD day today — what's the one referral action this week?"`, `Every Friday: "Did you log this week's BD activity?"`, `Monthly: "Review referral roster — who needs a Convo 2?"`] },
+      { label: 'Recurring Reminders to Set', items: [`Every Monday: "Growth day today — what's the one referral action this week?"`, `Every Friday: "Did you log this week's Growth activity?"`, `Monthly: "Review referral roster — who needs a Convo 2?"`] },
     ]});
     if (VEC.diag.comms.includes('calendly')) cards.push({ name: 'Calendly', icon: '📅', sections: [
       { label: 'Event Types to Set Up', items: [`"${o1.name || 'Intro Call'}" — 30 min, intake questions pre-filled`, `"${o2.name || 'Scoping Call'}" — 60 min, for post-diagnostic prospects`, `"Existing Client Check-in" — 45 min, recurring-friendly`] },
@@ -2285,14 +2285,14 @@ const PLAN_MILESTONES = {
         { id:'a-1-2', task:'Finalize all three offer one-pagers with real prices and durations' },
         { id:'a-1-3', task:'Build contact roster — minimum 6 names, type and relationship noted' },
         { id:'a-1-4', task:'Set up intake questionnaire and scoping document template' },
-        { id:'a-1-5', task:'Block one BD day per week (standing, non-negotiable)' },
+        { id:'a-1-5', task:'Block one Growth day per week (standing, non-negotiable)' },
       ]},
       { title: 'Days 31–60: Activation', items: [
         { id:'a-2-1', task:'Make first referral ask with top 2 contacts (use your scripted language)' },
         { id:'a-2-2', task:'Publish Meridian-style case study to LinkedIn' },
         { id:'a-2-3', task:'Complete 2 referral conversations (Convo 1 with each priority contact)' },
         { id:'a-2-4', task:'Submit case study to one trade association or industry publication' },
-        { id:'a-2-5', task:'Run first full BD day with structured agenda' },
+        { id:'a-2-5', task:'Run first full Growth day with structured agenda' },
       ]},
       { title: 'Days 61–90: Optimization', items: [
         { id:'a-3-1', task:'Close or formally advance one referral-sourced opportunity' },
@@ -2337,13 +2337,13 @@ const PLAN_MILESTONES = {
         { id:'c-1-2', task:'Identify the single biggest positioning gap and document why it stalls you' },
         { id:'c-1-3', task:'Audit current pipeline — which contacts are genuinely warm vs. just in the list' },
         { id:'c-1-4', task:'Rebuild contact roster with honest relationship ratings' },
-        { id:'c-1-5', task:'Set a BD day cadence — even if just 4 hours per week' },
+        { id:'c-1-5', task:'Set a Growth day cadence — even if just 4 hours per week' },
       ]},
       { title: 'Days 31–60: Activate', items: [
         { id:'c-2-1', task:'Make one well-scripted referral ask to your highest-trust contact' },
         { id:'c-2-2', task:'Finalize offer pricing and package names (no more TBD)' },
         { id:'c-2-3', task:'Publish one proof point (case study excerpt or LinkedIn post)' },
-        { id:'c-2-4', task:'Have 2 structured BD conversations using intake framework' },
+        { id:'c-2-4', task:'Have 2 structured Growth conversations using intake framework' },
         { id:'c-2-5', task:'Send one follow-up to a stalled prospect with a specific next step' },
       ]},
       { title: 'Days 61–90: Optimize', items: [
@@ -2575,9 +2575,9 @@ async function runDiscoveryPrep() {
 
   const systemPrompt = `You are a business development strategist helping a consultant prepare for a first discovery call.
 
-Your job is to generate a structured discovery interview guide. The questions must map directly to the data model the consultant's tool (Vector) uses to build a BD system. Vector needs to know:
+Your job is to generate a structured discovery interview guide. The questions must map directly to the data model the consultant's tool (Vector) uses to build a Growth system. Vector needs to know:
 - Company context (what they sell, who buys it, team size, deal size)
-- BD motion (how they find clients today — referral, inbound, outbound, events)
+- Growth motion (how they find clients today — referral, inbound, outbound, events)
 - Market warmth (is their pipeline mostly warm relationships or cold outreach?)
 - Positioning (their current one-liner, ideal client, key differentiator)
 - Credibility assets (case studies, testimonials, speaking, press)
@@ -2604,7 +2604,7 @@ Generate 5–6 sections, 3–4 questions each. Questions should be open-ended an
   const userMsg = `Client: ${name}
 Industry: ${industry || 'unknown'}
 Context: ${context || 'No prior information — cold start.'}
-Engagement goal: ${goal || 'Build a repeatable BD system'}
+Engagement goal: ${goal || 'Build a repeatable Growth system'}
 
 Generate the discovery guide.`;
 
@@ -2957,7 +2957,7 @@ function downloadArtifact(type) {
   }
 
   if (type === 'plan') {
-    // Plan is now tracked in-app — navigate to BD Command Center and scroll to tracker
+    // Plan is now tracked in-app — navigate to Growth Command Center and scroll to tracker
     navigateTo(6);
     setTimeout(() => {
       const el = document.getElementById('planTracker');
@@ -2976,8 +2976,8 @@ function downloadBundle() {
   const slug = (p.name || 'practice').toLowerCase().replace(/\s+/g,'-');
   const o1 = pos.offer1||{}, o2 = pos.offer2||{}, o3 = pos.offer3||{};
   const offerRow = (o, label) => o.name ? `<tr><td><strong>${o.name}</strong><br><span style="font-size:9pt;color:#6b7280">${label}</span></td><td>${o.price||'—'}</td><td>${o.duration||'—'}</td><td>${o.desc||'—'}</td></tr>` : '';
-  dlDoc(`${slug}_vector_bd_bundle.doc`, `${p.name || 'Practice'} — BD System`,
-    `<h1>${p.name || 'Practice'} — BD System</h1>
+  dlDoc(`${slug}_vector_growth_bundle.doc`, `${p.name || 'Practice'} — Growth System`,
+    `<h1>${p.name || 'Practice'} — Growth System</h1>
     <p class="meta">Founder: ${p.founder||'—'} &nbsp;·&nbsp; Track ${d.track||'—'} &nbsp;·&nbsp; ${new Date().toLocaleDateString()}</p>
 
     <h2>Positioning Canvas</h2>
@@ -3215,7 +3215,7 @@ Return ONLY valid JSON. Use null for anything not mentioned.
 
 Rules:
 - size: solo=1, small=2-5, mid=6-15, large=16+
-- bdRole: "founder-only" if founder does all BD alone; "founder-plus" if one other helps; "dedicated" if BD hire exists; "team-bd" if distributed
+- bdRole: "founder-only" if founder drives Growth alone; "founder-plus" if one other helps; "dedicated" if Growth hire exists; "team-bd" if distributed
 - marketState: "warm"=strong referral network in niche; "transitioning"=entering new market; "cold"=no reputation there yet
 - motion: "referral"|"outbound"|"content"|"mixed"
 - crm/pm/storage/comms: only tools explicitly mentioned
@@ -3404,7 +3404,7 @@ function showValidationModal(data) {
     ) +
     section('Diagnostic', '🔬',
       radio('Firm Size', 'diag.size', ['solo','small','mid','large'], d.size) +
-      radio('Who runs BD', 'diag.bdRole', ['founder-only','founder-plus','dedicated','team-bd'], d.bdRole) +
+      radio('Who drives Growth', 'diag.bdRole', ['founder-only','founder-plus','dedicated','team-bd'], d.bdRole) +
       radio('Market State', 'diag.marketState', ['warm','transitioning','cold'], d.marketState) +
       radio('Primary Motion', 'diag.motion', ['referral','outbound','content','mixed'], d.motion) +
       field('Who they sell to', 'diag.who', d.who) +
