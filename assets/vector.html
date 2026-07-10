@@ -1065,6 +1065,18 @@
         <div id="planTracker" style="font-size:13px;color:var(--txt3);">Run the 30-60-90 Plan step to generate your build sequence.</div>
       </div>
 
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header">
+          <span class="card-title">Session Notes</span>
+          <span style="font-size:11px;color:var(--txt3)" id="notesSavedHint"></span>
+        </div>
+        <p style="font-size:12px;color:var(--txt3);margin-bottom:10px">Notes from your last call, what's blocked, next action. Saved automatically.</p>
+        <textarea id="practiceNotes"
+          placeholder="e.g. Covered referral engine. Sarah is blocked on drafting the case study — she needs a writing session. Follow up in 2 weeks to check on LinkedIn post."
+          style="width:100%;min-height:90px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--txt);font-size:13px;resize:vertical;font-family:inherit;line-height:1.6;outline:none"
+          oninput="saveNotes(this.value)"></textarea>
+      </div>
+
       <div class="card">
         <div class="card-header">
           <span class="card-title">Artifact Library</span>
@@ -1323,7 +1335,8 @@ const VEC = {
   ref:  { contacts: [], generated: false },
   cred: { cases: [], placements: [], generated: false },
   ops:  { duration: '', cadence: '', refAsk: true, caseDraft: true, nps: false, generated: false },
-  plan: { generated: false, checked: {} }
+  plan: { generated: false, checked: {} },
+  notes: ''
 };
 let PHASE = 0;
 const STEP_MIN = [0, 1, 2, 3, 4, 5, 6];
@@ -2105,6 +2118,10 @@ function updatePracticeOS() {
   statusEl('fs-ops',  VEC.ops.generated);
   statusEl('fs-plan', VEC.plan.generated);
 
+  // Notes
+  const notesEl = document.getElementById('practiceNotes');
+  if (notesEl && notesEl.value !== (VEC.notes || '')) notesEl.value = VEC.notes || '';
+
   // Integration hub
   if (VEC.diag.crm.length || VEC.diag.pm.length || VEC.diag.storage.length) {
     const cards = [];
@@ -2273,6 +2290,18 @@ function toggleMilestone(id, checked) {
   VEC.plan.checked[id] = checked;
   saveState();
   renderPlanTracker();
+}
+
+let _notesSaveTimer = null;
+function saveNotes(val) {
+  VEC.notes = val;
+  const hint = document.getElementById('notesSavedHint');
+  if (hint) hint.textContent = '';
+  clearTimeout(_notesSaveTimer);
+  _notesSaveTimer = setTimeout(() => {
+    saveState();
+    if (hint) { hint.textContent = 'Saved'; setTimeout(() => { if (hint) hint.textContent = ''; }, 1500); }
+  }, 800);
 }
 
 // ─── DOWNLOAD ARTIFACTS ────────────────────────────────
@@ -3181,6 +3210,17 @@ async function loadAdminHome() {
   renderAdminClients(_allClients);
 }
 
+function getPlanProgress(vec) {
+  const track = vec?.diag?.track || 'A';
+  const plan = PLAN_MILESTONES?.[track];
+  if (!plan) return { done: 0, total: 0, pct: 0, nextTask: null };
+  const checked = vec?.plan?.checked || {};
+  const allItems = plan.phases.flatMap(p => p.items);
+  const done = allItems.filter(i => checked[i.id]).length;
+  const nextTask = allItems.find(i => !checked[i.id]);
+  return { done, total: allItems.length, pct: allItems.length ? Math.round((done / allItems.length) * 100) : 0, nextTask: nextTask?.task || null };
+}
+
 function renderAdminClients(clients) {
   const list = document.getElementById('adminClientList');
   const empty = document.getElementById('adminEmpty');
@@ -3188,21 +3228,33 @@ function renderAdminClients(clients) {
   empty.style.display = 'none';
   list.innerHTML = clients.map(c => {
     const st = c.state || {};
-    const track = st.VEC?.diag?.track || '—';
-    const phase = st.PHASE != null ? `Phase ${st.PHASE}` : '—';
-    const updated = c.updated_at ? new Date(c.updated_at).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) : '—';
-    const founder = st.VEC?.practice?.founder || '';
-    return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 20px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'" onclick="loadClientIntoApp('${c.email}')">
-      <div style="width:40px;height:40px;background:var(--surface2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">${track !== '—' ? `<span style="font-size:11px;font-weight:800;color:var(--accent)">TRK ${track}</span>` : '🏢'}</div>
-      <div style="flex:1;min-width:0">
-        <div style="font-weight:600;font-size:15px;color:var(--txt);margin-bottom:2px">${c.practice_name || '(unnamed practice)'}</div>
-        <div style="font-size:12px;color:var(--txt3)">${founder ? founder + ' · ' : ''}${c.email}</div>
+    const vec = st.VEC || {};
+    const track = vec.diag?.track || '—';
+    const updated = c.updated_at ? new Date(c.updated_at).toLocaleDateString('en-US', { month:'short', day:'numeric' }) : '—';
+    const founder = vec.practice?.founder || '';
+    const notes = (vec.notes || '').trim();
+    const { done, total, pct, nextTask } = getPlanProgress(vec);
+    const hasPlan = total > 0;
+    const trackColor = track === 'A' ? 'var(--accent)' : track === 'B' ? '#5AABF0' : '#F0A832';
+
+    return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 20px;cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'" onclick="loadClientIntoApp('${c.email}')">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div style="width:38px;height:38px;background:var(--surface2);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          ${track !== '—' ? `<span style="font-size:10px;font-weight:800;color:${trackColor}">TRK<br style="line-height:.5">${track}</span>` : '<span style="font-size:16px">🏢</span>'}
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600;font-size:14px;color:var(--txt);margin-bottom:2px">${c.practice_name || '(unnamed practice)'}</div>
+          <div style="font-size:11px;color:var(--txt3)">${founder ? founder + ' · ' : ''}${c.email}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          ${hasPlan ? `<div style="font-size:12px;font-weight:600;color:${pct === 100 ? 'var(--accent)' : 'var(--txt2)'};margin-bottom:2px">${pct}%</div>
+          <div style="font-size:10px;color:var(--txt3)">${done}/${total} tasks</div>` : `<div style="font-size:11px;color:var(--txt3)">Updated ${updated}</div>`}
+        </div>
+        <div style="color:var(--txt3);font-size:18px;flex-shrink:0">›</div>
       </div>
-      <div style="text-align:right;flex-shrink:0">
-        <div style="font-size:12px;color:var(--txt2);margin-bottom:4px">${phase}</div>
-        <div style="font-size:11px;color:var(--txt3)">Updated ${updated}</div>
-      </div>
-      <div style="color:var(--txt3);font-size:18px;flex-shrink:0">›</div>
+      ${hasPlan ? `<div style="margin-top:10px;height:3px;background:var(--surface2);border-radius:2px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${trackColor};border-radius:2px;transition:width .3s"></div></div>` : ''}
+      ${nextTask ? `<div style="margin-top:8px;font-size:11px;color:var(--txt3);display:flex;gap:6px;align-items:flex-start"><span style="color:var(--accent);flex-shrink:0">→</span><span>Next: ${nextTask}</span></div>` : ''}
+      ${notes ? `<div style="margin-top:8px;padding:8px 10px;background:var(--surface2);border-radius:6px;font-size:11px;color:var(--txt2);line-height:1.5;border-left:2px solid var(--border)">${notes.length > 120 ? notes.slice(0, 120) + '…' : notes}</div>` : ''}
     </div>`;
   }).join('');
 }
