@@ -1034,6 +1034,17 @@
         <p>Your BD system, assembled. Track your 30-60-90 progress and download client deliverables.</p>
       </div>
 
+      <!-- Discovery Prep — shown only when no diagnostic data yet -->
+      <div id="discoveryPrepCard" class="card" style="margin-bottom:20px;border:1px solid rgba(13,148,136,.3);display:none">
+        <div class="card-header">
+          <div>
+            <span class="card-title">Pre-Call Discovery Prep</span>
+            <div style="font-size:12px;color:var(--txt3);margin-top:2px">No diagnostic data yet — generate a structured discovery guide before your first call.</div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openDiscoveryPrep()">Generate Guide</button>
+        </div>
+      </div>
+
       <div class="two-col">
         <div>
           <div class="card">
@@ -1169,6 +1180,35 @@
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('contactModal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveContact()">Add Contact</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── DISCOVERY PREP MODAL ── -->
+<div class="modal-overlay" id="discoveryPrepModal" style="align-items:flex-start;padding:20px;overflow-y:auto">
+  <div class="modal" style="max-width:680px;width:100%;margin:auto">
+    <div class="modal-header" style="position:sticky;top:0;background:var(--surface2);z-index:1;padding-bottom:14px;border-bottom:1px solid var(--border);margin-bottom:20px">
+      <div>
+        <span class="modal-title">Pre-Call Discovery Guide</span>
+        <div style="font-size:12px;color:var(--txt3);margin-top:2px">Tell Vector what you know — it generates the questions for your first call.</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('discoveryPrepModal')">×</button>
+    </div>
+    <div id="discoveryPrepForm">
+      <div class="two-col" style="margin-bottom:12px">
+        <div class="form-group"><label class="form-label">Client / Company Name</label><input class="form-input" id="dp-name" placeholder="Muoro"></div>
+        <div class="form-group"><label class="form-label">Industry</label><input class="form-input" id="dp-industry" placeholder="e.g. Talent Acquisition, L&D, HR Tech"></div>
+      </div>
+      <div class="form-group" style="margin-bottom:12px"><label class="form-label">What do you know so far? (leave blank if nothing)</label><textarea class="form-textarea" id="dp-context" placeholder="e.g. Mid-size recruitment firm, founder-led, mostly referral-based, wants to systemize their BD. Heard about them through a mutual connection." style="min-height:70px"></textarea></div>
+      <div class="form-group" style="margin-bottom:20px"><label class="form-label">Your goal for this engagement</label><input class="form-input" id="dp-goal" placeholder="e.g. Build a repeatable BD system they can hand to the team"></div>
+      <button class="btn btn-primary" style="width:100%" onclick="runDiscoveryPrep()">▶ Generate Discovery Guide</button>
+    </div>
+    <div id="discoveryPrepResult" style="display:none">
+      <div id="discoveryPrepOutput"></div>
+      <div class="modal-footer" style="position:sticky;bottom:0;background:var(--surface2);padding-top:14px;border-top:1px solid var(--border);margin-top:20px">
+        <button class="btn btn-ghost" onclick="resetDiscoveryPrep()">← Start Over</button>
+        <button class="btn btn-primary" onclick="downloadDiscoveryGuide()">↓ Download as Doc</button>
+      </div>
     </div>
   </div>
 </div>
@@ -2172,6 +2212,10 @@ function updatePracticeOS() {
   statusEl('fs-ops',  VEC.ops.generated);
   statusEl('fs-plan', VEC.plan.generated);
 
+  // Discovery prep card — show when no diagnostic run yet
+  const dpCard = document.getElementById('discoveryPrepCard');
+  if (dpCard) dpCard.style.display = VEC.diag.track ? 'none' : '';
+
   // Stakeholders, session log, artifact library
   renderStakeholders();
   renderSessionLog();
@@ -2495,6 +2539,129 @@ function deleteStakeholder(i) {
   VEC.stakeholders.splice(i, 1);
   renderStakeholders();
   saveState();
+}
+
+// ─── DISCOVERY PREP ────────────────────────────────────
+let _discoveryGuideData = null;
+
+function openDiscoveryPrep() {
+  const name = VEC.practice.name || '';
+  document.getElementById('dp-name').value = name;
+  document.getElementById('dp-industry').value = '';
+  document.getElementById('dp-context').value = '';
+  document.getElementById('dp-goal').value = '';
+  resetDiscoveryPrep();
+  openModal('discoveryPrepModal');
+}
+
+function resetDiscoveryPrep() {
+  document.getElementById('discoveryPrepForm').style.display = '';
+  document.getElementById('discoveryPrepResult').style.display = 'none';
+  _discoveryGuideData = null;
+}
+
+async function runDiscoveryPrep() {
+  const name     = document.getElementById('dp-name').value.trim() || 'the client';
+  const industry = document.getElementById('dp-industry').value.trim();
+  const context  = document.getElementById('dp-context').value.trim();
+  const goal     = document.getElementById('dp-goal').value.trim();
+
+  const key = getApiKey();
+  if (!key) { showToast('Add your Anthropic API key first'); return; }
+
+  const btn = document.querySelector('#discoveryPrepForm .btn-primary');
+  btn.disabled = true; btn.textContent = '⏳ Generating…';
+
+  const systemPrompt = `You are a business development strategist helping a consultant prepare for a first discovery call.
+
+Your job is to generate a structured discovery interview guide. The questions must map directly to the data model the consultant's tool (Vector) uses to build a BD system. Vector needs to know:
+- Company context (what they sell, who buys it, team size, deal size)
+- BD motion (how they find clients today — referral, inbound, outbound, events)
+- Market warmth (is their pipeline mostly warm relationships or cold outreach?)
+- Positioning (their current one-liner, ideal client, key differentiator)
+- Credibility assets (case studies, testimonials, speaking, press)
+- Process & ops (intake process, follow-up cadence, CRM usage)
+- What's broken (what's not working, what they've tried, why now)
+- Engagement goals (what success looks like in 90 days)
+
+Return a JSON object with this exact structure:
+{
+  "client": "string — client name",
+  "sections": [
+    {
+      "title": "string — section name",
+      "purpose": "string — one sentence on why these questions matter for Vector",
+      "questions": [
+        { "q": "string — the question", "why": "string — what Vector field/signal this fills (6 words max)" }
+      ]
+    }
+  ]
+}
+
+Generate 5–6 sections, 3–4 questions each. Questions should be open-ended and conversational, not survey-style. Tailor them to the industry and context provided.`;
+
+  const userMsg = `Client: ${name}
+Industry: ${industry || 'unknown'}
+Context: ${context || 'No prior information — cold start.'}
+Engagement goal: ${goal || 'Build a repeatable BD system'}
+
+Generate the discovery guide.`;
+
+  try {
+    const data = await callClaude('claude-haiku-4-5-20251001', systemPrompt, userMsg, 1800);
+    const parsed = JSON.parse(data);
+    _discoveryGuideData = { name, industry, goal, ...parsed };
+    renderDiscoveryGuide(parsed);
+    document.getElementById('discoveryPrepForm').style.display = 'none';
+    document.getElementById('discoveryPrepResult').style.display = '';
+  } catch(e) {
+    showToast('Error generating guide — check API key');
+    console.error(e);
+  } finally {
+    btn.disabled = false; btn.textContent = '▶ Generate Discovery Guide';
+  }
+}
+
+function renderDiscoveryGuide(data) {
+  const out = document.getElementById('discoveryPrepOutput');
+  out.innerHTML = `
+    <div style="margin-bottom:20px">
+      <div style="font-size:18px;font-weight:700;color:var(--txt);margin-bottom:4px">Discovery Guide — ${data.client || 'Client'}</div>
+      <div style="font-size:12px;color:var(--txt3)">Use this in your first call. Each question feeds a specific signal into Vector.</div>
+    </div>
+    ${(data.sections || []).map((s, si) => `
+      <div style="margin-bottom:24px">
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px">
+          <span style="font-size:11px;font-weight:800;color:var(--accent);letter-spacing:.06em;text-transform:uppercase">${si + 1}. ${s.title}</span>
+          <span style="font-size:11px;color:var(--txt3)">${s.purpose || ''}</span>
+        </div>
+        ${(s.questions || []).map(q => `
+          <div style="padding:10px 14px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px">
+            <div style="font-size:13px;color:var(--txt);line-height:1.5;margin-bottom:4px">${q.q}</div>
+            <div style="font-size:10px;color:var(--accent);font-weight:600;letter-spacing:.03em">→ ${q.why}</div>
+          </div>`).join('')}
+      </div>`).join('')}`;
+}
+
+function downloadDiscoveryGuide() {
+  if (!_discoveryGuideData) return;
+  const d = _discoveryGuideData;
+  const body = (d.sections || []).map((s, si) => `
+    <h2>${si + 1}. ${s.title}</h2>
+    <p style="color:#666;font-style:italic;font-size:10pt">${s.purpose || ''}</p>
+    ${(s.questions || []).map(q => `
+      <div style="margin-bottom:14pt;padding:10pt;border:1pt solid #e5e7eb;border-radius:4pt">
+        <p style="margin:0 0 6pt 0"><strong>${q.q}</strong></p>
+        <p style="margin:0;font-size:9pt;color:#0d9488">→ ${q.why}</p>
+        <p style="margin:8pt 0 0 0;color:#9ca3af;font-size:9pt">Notes: _______________________________________________</p>
+      </div>`).join('')}`).join('');
+  dlDoc(
+    `discovery_guide_${(d.client||'client').toLowerCase().replace(/\s+/g,'_')}.doc`,
+    `Discovery Guide — ${d.client || 'Client'}`,
+    `<h1>Discovery Guide — ${d.client || 'Client'}</h1>
+     <p>Engagement goal: ${d.goal || '—'}</p>
+     ${body}`
+  );
 }
 
 // ─── ARTIFACT LIBRARY ──────────────────────────────────
