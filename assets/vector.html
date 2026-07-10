@@ -2544,16 +2544,45 @@ function readTranscriptFile(file) {
   reader.readAsText(file);
 }
 
-function showOverlay(msg) {
+function showOverlay(msg, pct) {
   const overlay = document.getElementById('procOverlay');
   document.getElementById('procPhase').textContent = 'AI';
   document.getElementById('procTitle').textContent = msg || 'Working…';
   document.getElementById('procMsg').textContent = '';
-  document.getElementById('procBar').style.width = '60%';
+  document.getElementById('procBar').style.width = (pct != null ? pct : 60) + '%';
   overlay.classList.add('active');
 }
 function hideOverlay() {
   document.getElementById('procOverlay').classList.remove('active');
+}
+
+// ─── LAYER 5: CLAUDE AGENT HELPER ──────────────────────
+async function callClaude(systemPrompt, userContent, { maxTokens = 1024, model = 'claude-sonnet-4-6' } = {}) {
+  const key = getApiKey();
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: maxTokens,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userContent }]
+    })
+  });
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error?.message || 'API error');
+  }
+  const result = await response.json();
+  const raw = result.content[0].text.trim();
+  const jsonStr = raw.startsWith('{') ? raw : raw.startsWith('[') ? raw : (raw.match(/\{[\s\S]*\}/) || raw.match(/\[[\s\S]*\]/) || [])[0];
+  if (!jsonStr) throw new Error('No JSON in response from agent');
+  return JSON.parse(jsonStr);
 }
 
 // ─── LAYER 3: KNOWLEDGE RETRIEVAL ──────────────────────
@@ -2608,112 +2637,157 @@ async function runTranscriptParse() {
 
   closeModal('transcriptModal');
   _pendingTranscriptText = null;
-  showOverlay('Reading transcript…');
 
-  // Infer coarse signals then retrieve calibration examples from knowledge base
-  const signals = inferSignalsFromText(text);
-  const [posExamples, offerExamples, caseExamples] = await Promise.all([
-    retrieveKnowledge('positioning', signals, 3),
-    retrieveKnowledge('offers',      signals, 3),
-    retrieveKnowledge('case_study',  { industry: signals.industry }, 2),
-  ]);
+  try {
+    // ── STAGE 1: Signal Extractor ───────────────────────────
+    showOverlay('Signal Extractor — reading transcript…', 10);
+    const signals = inferSignalsFromText(text);
 
-  const examplesBlock = [
-    posExamples.length ? `EXAMPLE POSITIONING ONE-LINERS from similar practices:\n${posExamples.map(e => `- "${e.content}"`).join('\n')}` : '',
-    offerExamples.length ? `EXAMPLE OFFER STRUCTURES from similar practices:\n${offerExamples.map(e => e.content).join('\n\n')}` : '',
-    caseExamples.length ? `EXAMPLE CASE STUDY RESULTS from similar practices (for calibrating result specificity):\n${caseExamples.map(e => e.content).join('\n\n')}` : '',
-  ].filter(Boolean).join('\n\n');
-
-  showOverlay('Parsing transcript with Claude…');
-
-  const systemPrompt = `You are extracting structured client intake data from a consulting discovery call transcript.
-Return ONLY valid JSON matching this exact schema. Use null for anything not mentioned.
-${examplesBlock ? `\n${examplesBlock}\n\nUse these examples only for calibration — match the specificity and format, not the content.` : ''}
+    const signalData = await callClaude(
+      `You are extracting raw facts from a consulting discovery call transcript.
+Return ONLY valid JSON. Use null for anything not mentioned.
 
 {
-  "practice": {
-    "name": "string or null",
-    "founder": "string or null",
-    "email": "string or null",
-    "website": "string or null"
-  },
+  "practice": { "name": "string or null", "founder": "string or null", "email": "string or null", "website": "string or null" },
   "diag": {
     "size": "solo|small|mid|large or null",
     "bdRole": "founder-only|founder-plus|dedicated|team-bd or null",
     "marketState": "warm|transitioning|cold or null",
-    "who": "string description of ideal client or null",
+    "who": "string — ideal client description or null",
     "market": "string — geographic or sector focus or null",
     "motion": "referral|outbound|content|mixed or null",
     "constraint": "string — #1 growth bottleneck or null",
-    "crm": ["hubspot","salesforce","pipedrive","none"],
-    "pm": ["asana","monday","notion","clickup","basecamp"],
-    "storage": ["gdrive","dropbox","sharepoint","notion","box"],
-    "comms": ["slack","teams","email"],
-    "calendly": true
+    "crm": [], "pm": [], "storage": [], "comms": [], "calendly": false
   },
-  "pos": {
-    "buyer": "string — ideal client profile or null",
-    "constraint": "string — core problem they solve or null",
-    "oneline": "string — draft 1-line positioning statement (what you do + for whom, plain language, no jargon) or null",
-    "proof": "string — key result/case mentioned or null",
-    "offer1": { "name": "string — entry/diagnostic offer name or null", "price": "string or null", "duration": "string or null", "desc": "string — what they get or null" },
-    "offer2": { "name": "string — core/foundation offer name or null", "price": "string or null", "duration": "string or null", "desc": "string — what they get or null" },
-    "offer3": { "name": "string — retained/ongoing offer name or null", "price": "string or null", "duration": "string or null", "desc": "string — what they get or null" }
-  },
-  "contacts": [
-    { "name": "string", "company": "string or null", "type": "past-client|peer|prospect", "status": "not-asked" }
-  ],
-  "cases": [
-    { "client": "string — client/company name", "industry": "string or null", "situation": "string — what was happening", "constraint": "string — the real problem", "solution": "string — what was done", "result": "string — the outcome/metric", "quote": "string or null — any quote from the client" }
-  ],
-  "ops": {
-    "duration": "string — typical engagement length or null",
-    "refAsk": true,
-    "caseDraft": false
-  }
+  "contacts": [{ "name": "string", "company": "string or null", "type": "past-client|peer|prospect", "status": "not-asked" }],
+  "rawCases": [{ "client": "string", "industry": "string or null", "situation": "string", "rawResult": "string — any outcome or metric mentioned" }],
+  "ops": { "duration": "string or null", "budget": "string or null", "urgency": "string or null" }
 }
 
 Rules:
-- size: solo=1 person, small=2-5, mid=6-15, large=16+
-- bdRole: "founder-only" if founder does all BD alone and stops when busy; "founder-plus" if one other person helps; "dedicated" if there's a BD hire; "team-bd" if distributed
-- marketState: "warm" if they have a strong referral network and are known in their niche; "transitioning" if entering a new market/geography; "cold" if no reputation there yet
-- motion: "referral" if referrals are primary; "outbound" if cold outreach; "content" if LinkedIn/writing drives inbound; "mixed" if no dominant source
-- crm/pm/storage/comms: only include tools explicitly mentioned
-- contacts: extract ALL people named — past clients, referral sources, collaborators, prospects
-- cases: extract any client engagements described with before/after context, results, or outcomes — especially if metrics are mentioned
-- pos.oneline: draft a plain-language one-liner from what they said about what they do and for whom — no jargon, no buzzwords
-- pos.offer1/2/3: always generate all three offers. offer1 = entry/diagnostic (shorter, lower price, scoped to assessment). offer2 = core engagement (their main service, use the scope/price/duration they described). offer3 = retained relationship (ongoing advisory, even if not discussed — infer a monthly fee ~10-15% of core price, 3-mo minimum). Never return null for these.
-- Return ONLY the JSON object, no explanation`;
+- size: solo=1, small=2-5, mid=6-15, large=16+
+- bdRole: "founder-only" if founder does all BD alone; "founder-plus" if one other helps; "dedicated" if BD hire exists; "team-bd" if distributed
+- marketState: "warm"=strong referral network in niche; "transitioning"=entering new market; "cold"=no reputation there yet
+- motion: "referral"|"outbound"|"content"|"mixed"
+- crm/pm/storage/comms: only tools explicitly mentioned
+- contacts: ALL people named — past clients, referral sources, collaborators, prospects
+- rawCases: any client engagements described — even partial, even unnamed
+- Return ONLY the JSON object`,
+      `Transcript:\n\n${text.slice(0, 60000)}`,
+      { maxTokens: 1200, model: 'claude-haiku-4-5-20251001' }
+    );
 
-  try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
+    // ── STAGE 2: Parallel — Positioning Agent + Case Study Drafter ──
+    showOverlay('Positioning Agent + Case Study Drafter running…', 40);
+
+    const [posExamples, offerExamples, caseExamples] = await Promise.all([
+      retrieveKnowledge('positioning', signals, 3),
+      retrieveKnowledge('offers',      signals, 3),
+      retrieveKnowledge('case_study',  { industry: signals.industry }, 2),
+    ]);
+
+    const [posData, casesData] = await Promise.all([
+
+      // Positioning Agent
+      callClaude(
+        `You are a positioning specialist for small B2B consulting firms.
+Given intake signals about a practice, craft a sharp positioning statement and buyer profile.
+Return ONLY valid JSON.
+${posExamples.length ? `\nEXAMPLE POSITIONING from similar practices (match specificity, not content):\n${posExamples.map(e => `- "${e.content}"`).join('\n')}` : ''}
+
+{
+  "buyer": "string — ideal client profile (role, company type, situation)",
+  "constraint": "string — the core problem this firm solves",
+  "oneline": "string — one plain-language sentence: what they do + for whom. No jargon, no buzzwords.",
+  "proof": "string or null — strongest result or credential mentioned"
+}
+
+Rules:
+- oneline must be a complete sentence a stranger would immediately understand
+- buyer should be specific: not just 'CEOs' but 'founders of 10-50 person professional services firms entering a new market'
+- constraint should name the pain, not the solution`,
+        `Practice signals:\n${JSON.stringify(signalData, null, 2)}`,
+        { maxTokens: 600 }
+      ),
+
+      // Case Study Drafter
+      callClaude(
+        `You are a case study writer for B2B consulting firms.
+Structure raw case notes into compelling before/after narratives.
+Return ONLY valid JSON array (may be empty []).
+${caseExamples.length ? `\nEXAMPLE CASE STUDY FORMAT from similar practices:\n${caseExamples.map(e => e.content).join('\n\n')}` : ''}
+
+[{
+  "client": "string — company or persona name",
+  "industry": "string or null",
+  "situation": "string — what was happening before engagement",
+  "constraint": "string — the real underlying problem",
+  "solution": "string — what was done, concisely",
+  "result": "string — specific outcome or metric. If none stated, infer a plausible range based on the situation.",
+  "quote": "string or null — any quote from the transcript"
+}]
+
+Rules:
+- result must be specific — numbers, timeframes, percentages where mentioned
+- If the transcript mentions a result vaguely, make it concrete (e.g. 'reduced time' → '~40% reduction in time')
+- Return [] if no case material found`,
+        `Raw case notes from transcript:\n${JSON.stringify(signalData.rawCases || [], null, 2)}\n\nFull context:\n${text.slice(0, 20000)}`,
+        { maxTokens: 800 }
+      )
+    ]);
+
+    // ── STAGE 3: Offer Architect ────────────────────────────
+    showOverlay('Offer Architect — designing 3 offers…', 75);
+
+    const offersData = await callClaude(
+      `You are an offer architect for small B2B consulting firms.
+Design exactly 3 tiered offers based on what you know about this practice.
+Return ONLY valid JSON.
+${offerExamples.length ? `\nEXAMPLE OFFER STRUCTURES from similar practices:\n${offerExamples.map(e => e.content).join('\n\n')}` : ''}
+
+{
+  "offer1": { "name": "string — entry/diagnostic offer name", "price": "string", "duration": "string", "desc": "string — what the client gets, 1-2 sentences" },
+  "offer2": { "name": "string — core engagement name", "price": "string", "duration": "string", "desc": "string — what the client gets, 1-2 sentences" },
+  "offer3": { "name": "string — retained advisory name", "price": "string/month", "duration": "string — minimum commitment", "desc": "string — what the client gets, 1-2 sentences" }
+}
+
+Rules:
+- offer1: scoped entry point — assessment, audit, or sprint. Lower risk, faster decision. Price: 20-30% of offer2.
+- offer2: their core service as described. Use actual scope/price/duration from the transcript if mentioned.
+- offer3: ongoing retained relationship. Even if not discussed — infer a monthly fee ~10-15% of offer2 price, 3-month minimum.
+- Names should be distinctive, not generic. Not "Consulting Package" — more like "Revenue Architecture Sprint"
+- Never return null for any field`,
+      `Practice positioning:\n${JSON.stringify(posData, null, 2)}\n\nPractice signals:\n${JSON.stringify({ diag: signalData.diag, ops: signalData.ops }, null, 2)}`,
+      { maxTokens: 700 }
+    );
+
+    // ── Assemble final extracted data ───────────────────────
+    showOverlay('Done — review your data…', 95);
+
+    _extractedData = {
+      practice: signalData.practice || {},
+      diag:     signalData.diag || {},
+      pos: {
+        buyer:      posData.buyer      || null,
+        constraint: posData.constraint || null,
+        oneline:    posData.oneline    || null,
+        proof:      posData.proof      || null,
+        offer1:     offersData.offer1  || {},
+        offer2:     offersData.offer2  || {},
+        offer3:     offersData.offer3  || {},
       },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 2048,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: `Here is the transcript:\n\n${text.slice(0, 60000)}` }]
-      })
-    });
+      contacts: signalData.contacts || [],
+      cases:    Array.isArray(casesData) ? casesData : [],
+      ops: {
+        duration: signalData.ops?.duration || null,
+        refAsk:   true,
+        caseDraft: false,
+      }
+    };
 
-    if (!response.ok) {
-      const err = await response.json();
-      throw new Error(err.error?.message || 'API error');
-    }
-
-    const result = await response.json();
-    const raw = result.content[0].text.trim();
-    const jsonStr = raw.startsWith('{') ? raw : raw.match(/\{[\s\S]*\}/)?.[0];
-    if (!jsonStr) throw new Error('No JSON in response');
-    _extractedData = JSON.parse(jsonStr);
     hideOverlay();
     showValidationModal(_extractedData);
+
   } catch(err) {
     hideOverlay();
     showToast('Parse error: ' + err.message);
