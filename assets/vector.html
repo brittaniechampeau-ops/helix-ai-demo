@@ -496,13 +496,26 @@
       </div>
     </div>
 
-    <div style="display:flex;gap:12px;margin-bottom:28px">
-      <input id="adminSearch" type="text" placeholder="Search clients…" oninput="filterAdminClients(this.value)"
-        style="flex:1;padding:9px 13px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--txt);font-size:14px;outline:none">
+    <!-- Tab bar -->
+    <div style="display:flex;gap:4px;margin-bottom:24px;border-bottom:1px solid var(--border);padding-bottom:0">
+      <button id="adminTabClients" onclick="switchAdminTab('clients')" style="padding:8px 16px;font-size:13px;font-weight:600;border:none;background:none;color:var(--accent);border-bottom:2px solid var(--accent);cursor:pointer;margin-bottom:-1px">Clients</button>
+      <button id="adminTabAnalytics" onclick="switchAdminTab('analytics')" style="padding:8px 16px;font-size:13px;font-weight:600;border:none;background:none;color:var(--txt3);border-bottom:2px solid transparent;cursor:pointer;margin-bottom:-1px">Analytics</button>
     </div>
 
-    <div id="adminClientList" style="display:grid;gap:10px"></div>
-    <p id="adminEmpty" style="color:var(--txt3);font-size:14px;text-align:center;padding:48px 0;display:none">No clients yet — click <strong>+ New Client</strong> to get started.</p>
+    <!-- Clients tab -->
+    <div id="adminPanelClients">
+      <div style="display:flex;gap:12px;margin-bottom:28px">
+        <input id="adminSearch" type="text" placeholder="Search clients…" oninput="filterAdminClients(this.value)"
+          style="flex:1;padding:9px 13px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--txt);font-size:14px;outline:none">
+      </div>
+      <div id="adminClientList" style="display:grid;gap:10px"></div>
+      <p id="adminEmpty" style="color:var(--txt3);font-size:14px;text-align:center;padding:48px 0;display:none">No clients yet — click <strong>+ New Client</strong> to get started.</p>
+    </div>
+
+    <!-- Analytics tab -->
+    <div id="adminPanelAnalytics" style="display:none">
+      <div id="analyticsContent" style="color:var(--txt3);font-size:14px;text-align:center;padding:48px 0">Loading analytics…</div>
+    </div>
   </div>
 </div>
 
@@ -1272,6 +1285,8 @@ function showStep(n) {
   document.querySelectorAll('.step-btn').forEach((b, i) => b.classList.toggle('active', i === n));
   currentStep = n;
   if (n === 6) updatePracticeOS();
+  const stepNames = ['Diagnostic','Positioning','Referral Engine','Credibility','Intake','Plan','Practice OS'];
+  logEvent('step_visited', { step: n, name: stepNames[n] || n });
 }
 function unlockStep(n) {
   if (PHASE < n) PHASE = n;
@@ -1820,6 +1835,7 @@ function runPositioning() {
     document.getElementById('nav-1').classList.add('done');
     updateSidebar(); updatePracticeOS(); saveState();
     showToast('Positioning generated — 4 artifacts ready');
+    logEvent('positioning_generated', { oneline: VEC.pos.oneline, offer1: VEC.pos.offer1?.name, offer2: VEC.pos.offer2?.name, offer3: VEC.pos.offer3?.name });
   });
 }
 
@@ -1849,6 +1865,7 @@ function runReferralEngine() {
       document.getElementById('nav-2').classList.add('done');
       updateSidebar(); updatePracticeOS(); saveState();
       showToast('Referral scripts generated');
+      logEvent('referral_scripts_generated', { count: eligible.length, contact_types: eligible.map(c => c.type || c.rel) });
     });
 }
 
@@ -1906,6 +1923,7 @@ function runCredibility() {
       document.getElementById('nav-3').classList.add('done');
       updateSidebar(); updatePracticeOS(); saveState();
       showToast('Credibility assets generated');
+      logEvent('credibility_run', { case_count: VEC.cred.cases.length, placements: VEC.cred.placements });
     });
 }
 
@@ -2231,6 +2249,7 @@ function dlDoc(filename, title, htmlBody) {
 }
 
 function downloadArtifact(type) {
+  logEvent('artifact_downloaded', { type });
   const p = VEC.practice, d = VEC.diag, pos = VEC.pos, ops = VEC.ops;
   const slug = (p.name || 'practice').toLowerCase().replace(/\s+/g,'-');
 
@@ -2449,6 +2468,7 @@ function downloadArtifact(type) {
 }
 
 function downloadBundle() {
+  logEvent('artifact_downloaded', { type: 'bundle' });
   const p = VEC.practice, pos = VEC.pos, d = VEC.diag;
   const slug = (p.name || 'practice').toLowerCase().replace(/\s+/g,'-');
   const o1 = pos.offer1||{}, o2 = pos.offer2||{}, o3 = pos.offer3||{};
@@ -2583,6 +2603,19 @@ async function callClaude(systemPrompt, userContent, { maxTokens = 1024, model =
   const jsonStr = raw.startsWith('{') ? raw : raw.startsWith('[') ? raw : (raw.match(/\{[\s\S]*\}/) || raw.match(/\[[\s\S]*\]/) || [])[0];
   if (!jsonStr) throw new Error('No JSON in response from agent');
   return JSON.parse(jsonStr);
+}
+
+// ─── LAYER 7: OBSERVABILITY ────────────────────────────
+async function logEvent(type, payload = {}) {
+  if (!supa || !currentUser) return;
+  try {
+    await supa.from('events').insert({
+      client_email: VEC.practice.email || currentUser.email,
+      admin_email:  currentUser.email,
+      type,
+      payload
+    });
+  } catch { /* silent — table may not exist yet */ }
 }
 
 // ─── LAYER 3: KNOWLEDGE RETRIEVAL ──────────────────────
@@ -2976,6 +3009,28 @@ function confirmPopulate() {
     VEC.cred.cases = [...VEC.cred.cases, ...freshCases];
   }
 
+  // Track transcript parse — capture whether offers were edited vs. accepted
+  const origOffers = _extractedData?.pos || {};
+  const offerEdits = ['offer1','offer2','offer3'].reduce((acc, k) => {
+    const orig = origOffers[k] || {};
+    const final = VEC.pos[k] || {};
+    acc[k + '_name_edited']  = orig.name  !== final.name  && !!final.name;
+    acc[k + '_price_edited'] = orig.price !== final.price && !!final.price;
+    return acc;
+  }, {});
+  logEvent('transcript_parsed', {
+    track:        VEC.diag.track,
+    market_state: VEC.diag.market,
+    motion:       VEC.diag.motion,
+    industry:     VEC.diag.who,
+    contacts_extracted: (d.contacts||[]).length,
+    cases_extracted:    (d.cases||[]).length,
+    offer1_name: VEC.pos.offer1?.name,
+    offer2_name: VEC.pos.offer2?.name,
+    offer3_name: VEC.pos.offer3?.name,
+    ...offerEdits
+  });
+
   // Advance phase past diagnostic since we ran it
   PHASE = Math.max(PHASE, 1);
   closeModal('validationModal');
@@ -3092,9 +3147,85 @@ function filterAdminClients(q) {
   ) : _allClients);
 }
 
+function switchAdminTab(tab) {
+  const isClients = tab === 'clients';
+  document.getElementById('adminPanelClients').style.display   = isClients ? '' : 'none';
+  document.getElementById('adminPanelAnalytics').style.display = isClients ? 'none' : '';
+  document.getElementById('adminTabClients').style.color        = isClients ? 'var(--accent)' : 'var(--txt3)';
+  document.getElementById('adminTabClients').style.borderBottomColor   = isClients ? 'var(--accent)' : 'transparent';
+  document.getElementById('adminTabAnalytics').style.color      = isClients ? 'var(--txt3)' : 'var(--accent)';
+  document.getElementById('adminTabAnalytics').style.borderBottomColor = isClients ? 'transparent' : 'var(--accent)';
+  if (!isClients) loadAnalytics();
+}
+
+async function loadAnalytics() {
+  const el = document.getElementById('analyticsContent');
+  el.innerHTML = '<div style="color:var(--txt3);text-align:center;padding:32px">Loading…</div>';
+  if (!supa) { el.innerHTML = '<div style="color:var(--txt3);text-align:center;padding:32px">Supabase not connected.</div>'; return; }
+
+  const { data, error } = await supa.from('events').select('type,payload,client_email,created_at').order('created_at', { ascending: false }).limit(500);
+  if (error) {
+    el.innerHTML = `<div style="color:var(--txt3);text-align:center;padding:32px">Events table not found — run <code>data/migrate-events.sql</code> in Supabase to enable analytics.</div>`;
+    return;
+  }
+  if (!data.length) {
+    el.innerHTML = '<div style="color:var(--txt3);text-align:center;padding:32px">No events yet — events appear after clients start using Vector.</div>';
+    return;
+  }
+
+  // Aggregate
+  const byType = {}, clients = new Set(), artifacts = {};
+  let offerEdits = 0, offerTotal = 0;
+  data.forEach(e => {
+    byType[e.type] = (byType[e.type] || 0) + 1;
+    if (e.client_email) clients.add(e.client_email);
+    if (e.type === 'artifact_downloaded') artifacts[e.payload?.type || 'unknown'] = (artifacts[e.payload?.type || 'unknown'] || 0) + 1;
+    if (e.type === 'transcript_parsed') {
+      ['offer1','offer2','offer3'].forEach(k => {
+        offerTotal++;
+        if (e.payload?.[k + '_name_edited']) offerEdits++;
+      });
+    }
+  });
+
+  const statBox = (label, value) => `<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px 20px;text-align:center">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.5px;color:var(--txt3);text-transform:uppercase;margin-bottom:6px">${label}</div>
+    <div style="font-size:24px;font-weight:700;color:var(--accent)">${value}</div>
+  </div>`;
+
+  const tableRow = (label, count) => `<tr><td style="padding:8px 0;font-size:13px;color:var(--txt)">${label}</td><td style="padding:8px 0;font-size:13px;color:var(--accent);text-align:right;font-weight:600">${count}</td></tr>`;
+
+  const artifactRows = Object.entries(artifacts).sort((a,b) => b[1]-a[1]).map(([k,v]) => tableRow(k, v)).join('');
+  const editRate = offerTotal ? Math.round((offerEdits / offerTotal) * 100) : 0;
+
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:28px">
+      ${statBox('Total Events', data.length)}
+      ${statBox('Active Clients', clients.size)}
+      ${statBox('Transcripts Parsed', byType['transcript_parsed'] || 0)}
+      ${statBox('Offer Name Edit Rate', editRate + '%')}
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px">
+        <div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:12px">Event Breakdown</div>
+        <table style="width:100%;border-collapse:collapse">
+          ${Object.entries(byType).sort((a,b)=>b[1]-a[1]).map(([k,v])=>tableRow(k.replace(/_/g,' '),v)).join('')}
+        </table>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px">
+        <div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:12px">Artifact Downloads</div>
+        ${artifactRows ? `<table style="width:100%;border-collapse:collapse">${artifactRows}</table>` : '<div style="color:var(--txt3);font-size:13px">No downloads yet</div>'}
+      </div>
+    </div>
+
+    <div style="margin-top:12px;font-size:11px;color:var(--txt3);text-align:right">Last ${data.length} events · ${clients.size} client${clients.size !== 1 ? 's' : ''}</div>`;
+}
+
 function showAdminHome() {
   document.getElementById('adminHome').style.display = 'block';
   document.getElementById('btnBackAdmin').style.display = 'none';
+  switchAdminTab('clients');
   loadAdminHome();
 }
 
