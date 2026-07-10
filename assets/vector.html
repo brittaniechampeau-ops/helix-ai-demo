@@ -2224,6 +2224,7 @@ function updatePracticeOS() {
   // Integration hub
   if (VEC.diag.crm.length || VEC.diag.pm.length || VEC.diag.storage.length) {
     const cards = [];
+    const pos = VEC.pos || {};
     const o1 = pos.offer1 || {}, o2 = pos.offer2 || {}, o3 = pos.offer3 || {};
     const contacts = VEC.ref.contacts;
     if (VEC.diag.crm.includes('hubspot')) cards.push({ name: 'HubSpot', icon: '🟠', sections: [
@@ -2243,7 +2244,7 @@ function updatePracticeOS() {
       { label: 'Boards to Create', items: [`BD Pipeline board — Groups: Referral Track / Active Scoping / Proposal Sent / Won / Lost`, `Referral Roster board — Columns: Name, Company, Type, Status, Convo 1, Convo 2`, `Active Engagements board — Groups by client`] },
     ]});
     if (VEC.diag.storage.includes('gdrive')) cards.push({ name: 'Google Drive', icon: '🟢', sections: [
-      { label: 'Folder Structure to Create', items: [`/Vector/${p.name || 'Practice'}/`, `├── /Positioning/ → positioning_canvas.doc, offer one-pagers`, `├── /Credibility/ → case studies, placement checklist`, `├── /Referral Engine/ → referral scripts, contact roster`, `└── /Delivery Templates/ → scoping doc, kickoff agenda, cadence, handoff`] },
+      { label: 'Folder Structure to Create', items: [`/Vector/${VEC.practice.name || 'Practice'}/`, `├── /Positioning/ → positioning_canvas.doc, offer one-pagers`, `├── /Credibility/ → case studies, placement checklist`, `├── /Referral Engine/ → referral scripts, contact roster`, `└── /Delivery Templates/ → scoping doc, kickoff agenda, cadence, handoff`] },
       { label: 'Share With Clients', items: [`Create /Clients/[Name]/ for each engagement`, `Share scoping doc + kickoff agenda at engagement start`, `Share deliverables folder at handoff`] },
     ]});
     if (VEC.diag.comms.includes('slack')) cards.push({ name: 'Slack', icon: '💬', sections: [
