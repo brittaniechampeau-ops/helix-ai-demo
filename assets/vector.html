@@ -1350,9 +1350,15 @@
 <div class="modal-overlay" id="validationModal" style="align-items:flex-start;padding:20px;overflow-y:auto">
   <div class="modal" style="max-width:660px;width:100%;margin:auto">
     <div class="modal-header" style="position:sticky;top:0;background:var(--surface2);z-index:1;padding-bottom:14px;border-bottom:1px solid var(--border);margin-bottom:20px">
-      <div>
+      <div style="flex:1">
         <span class="modal-title">Review Extracted Data</span>
         <div style="font-size:12px;color:var(--txt3);margin-top:2px">Edit anything Claude got wrong before populating Vector</div>
+        <div style="display:flex;gap:6px;margin-top:10px">
+          <button id="intakeModeInitial" onclick="setIntakeMode('initial')"
+            style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer">Initial Intake</button>
+          <button id="intakeModeFollowup" onclick="setIntakeMode('followup')"
+            style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--txt3);cursor:pointer">Follow-up (merge)</button>
+        </div>
       </div>
       <button class="modal-close" onclick="closeModal('validationModal')">×</button>
     </div>
@@ -3205,6 +3211,24 @@ function showValidationModal(data) {
     (data.ops?.notes ? `<div style="background:rgba(240,168,50,.08);border:1px solid rgba(240,168,50,.25);border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:12px;color:var(--txt2);line-height:1.6"><strong style="color:#F0A832">⚠ Conflict flagged by Signal Extractor:</strong><br>${data.ops.notes}</div>` : '');
 
   openModal('validationModal');
+  // Default to follow-up mode if VEC already has data
+  const hasExistingData = !!(VEC.practice.name || VEC.pos.buyer);
+  setIntakeMode(hasExistingData ? 'followup' : 'initial');
+}
+
+let _intakeMode = 'initial';
+function setIntakeMode(mode) {
+  _intakeMode = mode;
+  const btnInitial   = document.getElementById('intakeModeInitial');
+  const btnFollowup  = document.getElementById('intakeModeFollowup');
+  if (!btnInitial) return;
+  if (mode === 'initial') {
+    btnInitial.style.background  = 'var(--accent)'; btnInitial.style.color  = '#fff'; btnInitial.style.borderColor = 'var(--accent)';
+    btnFollowup.style.background = 'transparent';   btnFollowup.style.color = 'var(--txt3)'; btnFollowup.style.borderColor = 'var(--border)';
+  } else {
+    btnFollowup.style.background = 'var(--accent)'; btnFollowup.style.color = '#fff'; btnFollowup.style.borderColor = 'var(--accent)';
+    btnInitial.style.background  = 'transparent';   btnInitial.style.color  = 'var(--txt3)'; btnInitial.style.borderColor = 'var(--border)';
+  }
 }
 
 function confirmPopulate() {
@@ -3253,36 +3277,56 @@ function confirmPopulate() {
 
   // Apply to VEC
   const d = _extractedData;
-  if (d.practice) Object.assign(VEC.practice, d.practice);
-  if (d.diag) {
-    Object.assign(VEC.diag, d.diag);
-    // Map extracted bdRole/marketState to radio-button field names
-    if (d.diag.bdRole)      VEC.diag.who    = d.diag.bdRole;
-    if (d.diag.marketState) VEC.diag.market = d.diag.marketState;
-    // Determine track using same logic as runDiag
-    const mkt = VEC.diag.market, mot = VEC.diag.motion;
-    let track, weights;
-    if (mkt === 'warm' && (mot === 'referral' || mot === 'content')) {
-      track = 'A';
-      weights = { 'Positioning & Offers': 30, 'Referral Engine': 35, 'Credibility Presence': 20, 'Intake & Delivery': 15 };
-    } else if (mkt === 'cold' || mot === 'outbound') {
-      track = 'B';
-      weights = { 'Positioning & Offers': 25, 'Referral Engine': 15, 'Credibility Presence': 40, 'Intake & Delivery': 20 };
+  const isFollowup = _intakeMode === 'followup';
+
+  if (d.practice) {
+    if (isFollowup) {
+      // Only fill fields that are currently blank
+      Object.entries(d.practice).forEach(([k, v]) => { if (v && !VEC.practice[k]) VEC.practice[k] = v; });
     } else {
-      track = 'C';
-      weights = { 'Positioning & Offers': 35, 'Referral Engine': 25, 'Credibility Presence': 20, 'Intake & Delivery': 20 };
+      Object.assign(VEC.practice, d.practice);
     }
-    VEC.diag.track = track; VEC.diag.weights = weights; VEC.diag.tier = 'tier1';
+  }
+  if (d.diag) {
+    if (isFollowup) {
+      // Only update blank diag fields; never overwrite track on follow-up
+      ['bdRole','marketState','motion','size'].forEach(k => {
+        const vecKey = k === 'bdRole' ? 'who' : k === 'marketState' ? 'market' : k;
+        if (d.diag[k] && !VEC.diag[vecKey]) VEC.diag[vecKey] = d.diag[k];
+      });
+      if (d.diag.crm?.length  && !VEC.diag.crm.length)     VEC.diag.crm     = d.diag.crm;
+      if (d.diag.pm?.length   && !VEC.diag.pm.length)      VEC.diag.pm      = d.diag.pm;
+      if (d.diag.storage?.length && !VEC.diag.storage.length) VEC.diag.storage = d.diag.storage;
+      if (d.diag.comms?.length && !VEC.diag.comms.length)  VEC.diag.comms   = d.diag.comms;
+    } else {
+      Object.assign(VEC.diag, d.diag);
+      if (d.diag.bdRole)      VEC.diag.who    = d.diag.bdRole;
+      if (d.diag.marketState) VEC.diag.market = d.diag.marketState;
+      const mkt = VEC.diag.market, mot = VEC.diag.motion;
+      let track, weights;
+      if (mkt === 'warm' && (mot === 'referral' || mot === 'content')) {
+        track = 'A'; weights = { 'Positioning & Offers': 30, 'Referral Engine': 35, 'Credibility Presence': 20, 'Intake & Delivery': 15 };
+      } else if (mkt === 'cold' || mot === 'outbound') {
+        track = 'B'; weights = { 'Positioning & Offers': 25, 'Referral Engine': 15, 'Credibility Presence': 40, 'Intake & Delivery': 20 };
+      } else {
+        track = 'C'; weights = { 'Positioning & Offers': 35, 'Referral Engine': 25, 'Credibility Presence': 20, 'Intake & Delivery': 20 };
+      }
+      VEC.diag.track = track; VEC.diag.weights = weights; VEC.diag.tier = 'tier1';
+    }
   }
   if (d.pos) {
-    // Clear stale demo/prior offers before applying transcript data
-    VEC.pos.offer1 = {}; VEC.pos.offer2 = {}; VEC.pos.offer3 = {};
-    VEC.pos.generated = false;
-    Object.assign(VEC.pos, d.pos);
-    // Apply extracted offers if present
-    if (d.pos.offer1) VEC.pos.offer1 = d.pos.offer1;
-    if (d.pos.offer2) VEC.pos.offer2 = d.pos.offer2;
-    if (d.pos.offer3) VEC.pos.offer3 = d.pos.offer3;
+    if (isFollowup) {
+      // Only fill blank positioning fields; never clear existing offers
+      ['buyer','constraint','oneline','proof'].forEach(k => { if (d.pos[k] && !VEC.pos[k]) VEC.pos[k] = d.pos[k]; });
+      ['offer1','offer2','offer3'].forEach(k => { if (d.pos[k]?.name && !VEC.pos[k]?.name) VEC.pos[k] = d.pos[k]; });
+    } else {
+      VEC.pos.offer1 = {}; VEC.pos.offer2 = {}; VEC.pos.offer3 = {};
+      VEC.pos.generated = false;
+      Object.assign(VEC.pos, d.pos);
+      if (d.pos.offer1) VEC.pos.offer1 = d.pos.offer1;
+      if (d.pos.offer2) VEC.pos.offer2 = d.pos.offer2;
+      if (d.pos.offer3) VEC.pos.offer3 = d.pos.offer3;
+    }
   }
   if (d.ops) {
     if (d.ops.duration) VEC.ops.duration = d.ops.duration;
