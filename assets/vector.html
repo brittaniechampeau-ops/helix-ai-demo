@@ -1199,23 +1199,76 @@
 
 <!-- ── TRANSCRIPT IMPORT MODAL ── -->
 <div class="modal-overlay" id="transcriptModal">
-  <div class="modal" style="max-width:520px">
+  <div class="modal" style="max-width:580px">
     <div class="modal-header">
-      <span class="modal-title">Import Zoom Transcript</span>
+      <div>
+        <span class="modal-title">Import Source Materials</span>
+        <div style="font-size:12px;color:var(--txt3);margin-top:2px">Add any combination — transcript, deck, proposal, case studies, LinkedIn</div>
+      </div>
       <button class="modal-close" onclick="closeModal('transcriptModal')">×</button>
     </div>
-    <p style="font-size:13px;color:var(--txt2);margin-bottom:16px">Upload a .vtt or .txt transcript from your client intake call. Claude will extract all the intake answers automatically.</p>
-    <div id="transcriptDropZone" onclick="document.getElementById('transcriptFileInput').click()" ondragover="event.preventDefault();this.style.borderColor='var(--accent)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleTranscriptDrop(event)" style="border:2px dashed var(--border);border-radius:10px;padding:32px;text-align:center;cursor:pointer;margin-bottom:14px;transition:border-color .2s">
-      <div style="font-size:28px;margin-bottom:8px">📄</div>
-      <div style="font-size:14px;font-weight:600;color:var(--txt);margin-bottom:4px">Drop transcript file here</div>
-      <div style="font-size:12px;color:var(--txt3)">.vtt or .txt · or click to browse</div>
+
+    <!-- Source type chips -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+      <button class="btn btn-ghost btn-sm" onclick="triggerSourceUpload('transcript')" id="chip-transcript">+ Transcript</button>
+      <button class="btn btn-ghost btn-sm" onclick="triggerSourceUpload('deck')" id="chip-deck">+ Pitch deck</button>
+      <button class="btn btn-ghost btn-sm" onclick="triggerSourceUpload('proposal')" id="chip-proposal">+ Proposal / SOW</button>
+      <button class="btn btn-ghost btn-sm" onclick="triggerSourceUpload('case')" id="chip-case">+ Case studies</button>
+      <button class="btn btn-ghost btn-sm" onclick="triggerSourceUpload('other')" id="chip-other">+ Other doc</button>
     </div>
-    <input type="file" id="transcriptFileInput" accept=".vtt,.txt" style="display:none" onchange="handleTranscriptFile(event)">
-    <div style="text-align:center;font-size:12px;color:var(--txt3);margin-bottom:10px">— or paste text —</div>
-    <textarea id="transcriptPaste" placeholder="Paste transcript text here..." style="width:100%;height:120px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--txt);font-size:13px;resize:vertical;font-family:monospace"></textarea>
+
+    <!-- Hidden file input (shared) -->
+    <input type="file" id="intakeFileInput" accept=".vtt,.txt,.pdf,.docx" style="display:none" onchange="handleIntakeFile(event)">
+
+    <!-- Drop zone -->
+    <div id="intakeDropZone"
+      ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
+      ondragleave="this.style.borderColor='var(--border)'"
+      ondrop="handleIntakeDrop(event)"
+      style="border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;margin-bottom:12px;transition:border-color .2s">
+      <div style="font-size:13px;font-weight:600;color:var(--txt2);margin-bottom:4px">Drop files here</div>
+      <div style="font-size:11px;color:var(--txt3)">.vtt · .txt · .pdf · .docx</div>
+    </div>
+
+    <!-- LinkedIn URL row -->
+    <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
+      <input id="intakeLinkedInUrl" type="url" placeholder="linkedin.com/in/founder — paste profile URL"
+        style="flex:1;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--txt);font-size:12px;font-family:inherit;outline:none"
+        onkeydown="if(event.key==='Enter')addLinkedInSource()">
+      <button class="btn btn-ghost btn-sm" onclick="addLinkedInSource()">+ Add URL</button>
+    </div>
+
+    <!-- Paste area (collapsed by default, expands when "other" or no file available) -->
+    <div id="intakePasteWrap" style="display:none;margin-bottom:12px">
+      <textarea id="transcriptPaste" placeholder="Paste text here…"
+        style="width:100%;height:100px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--txt);font-size:12px;resize:vertical;font-family:monospace"></textarea>
+      <div style="display:flex;gap:8px;margin-top:6px;align-items:center">
+        <select id="pasteTypeSelect" style="padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--txt);font-size:12px;font-family:inherit">
+          <option value="transcript">Transcript</option>
+          <option value="deck">Pitch deck</option>
+          <option value="proposal">Proposal / SOW</option>
+          <option value="case">Case studies</option>
+          <option value="other">Other</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" onclick="addPastedSource()">Add this text</button>
+        <button class="btn btn-ghost btn-sm" style="margin-left:auto;color:var(--txt3)" onclick="document.getElementById('intakePasteWrap').style.display='none'">Hide</button>
+      </div>
+    </div>
+    <div style="margin-bottom:12px">
+      <button class="btn btn-ghost btn-sm" style="font-size:11px;color:var(--txt3)" onclick="document.getElementById('intakePasteWrap').style.display=document.getElementById('intakePasteWrap').style.display==='none'?'block':'none'">Paste text instead ↓</button>
+    </div>
+
+    <!-- Sources list -->
+    <div id="intakeSourcesList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;min-height:0"></div>
+
+    <!-- Conflict notice -->
+    <div id="intakeConflictBanner" style="display:none;background:rgba(240,168,50,.08);border:1px solid rgba(240,168,50,.25);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--txt2);margin-bottom:12px;line-height:1.5">
+      ⚠ <strong style="color:#F0A832">Pricing conflict detected</strong> — sources disagree on fee. You'll choose which to use in the review step.
+    </div>
+
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('transcriptModal')">Cancel</button>
-      <button class="btn btn-primary" onclick="runTranscriptParse()">Parse with Claude</button>
+      <button class="btn btn-primary" id="intakeRunBtn" onclick="runTranscriptParse()" disabled>Analyze sources</button>
     </div>
   </div>
 </div>
@@ -2524,9 +2577,7 @@ function saveApiKey() {
 }
 
 function _openTranscriptModal() {
-  document.getElementById('transcriptPaste').value = '';
-  document.getElementById('transcriptDropZone').innerHTML = '<div style="font-size:28px;margin-bottom:8px">📄</div><div style="font-size:14px;font-weight:600;color:var(--txt);margin-bottom:4px">Drop transcript file here</div><div style="font-size:12px;color:var(--txt3)">.vtt or .txt · or click to browse</div>';
-  document.getElementById('transcriptDropZone').style.borderColor = 'var(--border)';
+  resetIntakeModal();
   openModal('transcriptModal');
 }
 
@@ -2658,8 +2709,18 @@ function inferSignalsFromText(text) {
 }
 
 async function runTranscriptParse() {
-  const text = (_pendingTranscriptText || document.getElementById('transcriptPaste').value).trim();
-  if (!text) { showToast('Paste or upload a transcript first'); return; }
+  // Build bundle from multi-source intake, falling back to legacy single paste
+  let text = _pendingTranscriptText || '';
+  if (!text) {
+    if (_intakeSources.length > 0) {
+      text = bundleSources();
+    } else {
+      const pasted = document.getElementById('transcriptPaste').value.trim();
+      if (pasted) text = pasted;
+    }
+  }
+  if (!text) { showToast('Add at least one source before running analysis'); return; }
+
   const key = getApiKey();
   if (!key) {
     _pendingTranscriptText = text;
@@ -2671,13 +2732,18 @@ async function runTranscriptParse() {
   closeModal('transcriptModal');
   _pendingTranscriptText = null;
 
+  const sourceCount = _intakeSources.length || 1;
+  const sourceLabel = sourceCount > 1 ? `${sourceCount} sources` : (_intakeSources[0]?.label || 'transcript');
+
   try {
     // ── STAGE 1: Signal Extractor ───────────────────────────
-    showOverlay('Signal Extractor — reading transcript…', 10);
+    showOverlay(`Signal Extractor — reading ${sourceLabel}…`, 10);
     const signals = inferSignalsFromText(text);
 
     const signalData = await callClaude(
-      `You are extracting raw facts from a consulting discovery call transcript.
+      `You are extracting raw facts from consulting intake materials.
+Sources are separated by === SECTION HEADERS === — extract signal from all sections.
+Where values conflict across sources (e.g. different prices), use the transcript value and note the discrepancy in ops.notes.
 Return ONLY valid JSON. Use null for anything not mentioned.
 
 {
@@ -2694,7 +2760,7 @@ Return ONLY valid JSON. Use null for anything not mentioned.
   },
   "contacts": [{ "name": "string", "company": "string or null", "type": "past-client|peer|prospect", "status": "not-asked" }],
   "rawCases": [{ "client": "string", "industry": "string or null", "situation": "string", "rawResult": "string — any outcome or metric mentioned" }],
-  "ops": { "duration": "string or null", "budget": "string or null", "urgency": "string or null" }
+  "ops": { "duration": "string or null", "budget": "string or null", "urgency": "string or null", "notes": "string or null — conflicts between sources, e.g. 'transcript says $20k, proposal says $35k'" }
 }
 
 Rules:
@@ -2703,10 +2769,11 @@ Rules:
 - marketState: "warm"=strong referral network in niche; "transitioning"=entering new market; "cold"=no reputation there yet
 - motion: "referral"|"outbound"|"content"|"mixed"
 - crm/pm/storage/comms: only tools explicitly mentioned
-- contacts: ALL people named — past clients, referral sources, collaborators, prospects
-- rawCases: any client engagements described — even partial, even unnamed
+- contacts: ALL people named across ALL sources — past clients, referral sources, collaborators, prospects
+- rawCases: any client engagements described across ALL sources — even partial, even unnamed
+- If sources conflict on a value, prefer the transcript section; note the discrepancy in ops.notes
 - Return ONLY the JSON object`,
-      `Transcript:\n\n${text.slice(0, 60000)}`,
+      `Source materials:\n\n${text.slice(0, 60000)}`,
       { maxTokens: 1200, model: 'claude-haiku-4-5-20251001' }
     );
 
@@ -2757,14 +2824,15 @@ ${caseExamples.length ? `\nEXAMPLE CASE STUDY FORMAT from similar practices:\n${
   "constraint": "string — the real underlying problem",
   "solution": "string — what was done, concisely",
   "result": "string — specific outcome or metric. If none stated, infer a plausible range based on the situation.",
-  "quote": "string or null — any quote from the transcript"
+  "quote": "string or null — any quote from the source materials"
 }]
 
 Rules:
 - result must be specific — numbers, timeframes, percentages where mentioned
-- If the transcript mentions a result vaguely, make it concrete (e.g. 'reduced time' → '~40% reduction in time')
+- If a result is vague, make it concrete (e.g. 'reduced time' → '~40% reduction in time')
+- Draw case material from ALL source sections, not just the transcript
 - Return [] if no case material found`,
-        `Raw case notes from transcript:\n${JSON.stringify(signalData.rawCases || [], null, 2)}\n\nFull context:\n${text.slice(0, 20000)}`,
+        `Raw case notes from materials:\n${JSON.stringify(signalData.rawCases || [], null, 2)}\n\nFull context:\n${text.slice(0, 20000)}`,
         { maxTokens: 800 }
       )
     ]);
@@ -2904,7 +2972,8 @@ function showValidationModal(data) {
       field('Core constraint they solve', 'pos.constraint', pos.constraint) +
       field('Proof / key result mentioned', 'pos.proof', pos.proof)
     ) +
-    section('Referral Contacts', '👥', contactsHtml);
+    section('Referral Contacts', '👥', contactsHtml) +
+    (data.ops?.notes ? `<div style="background:rgba(240,168,50,.08);border:1px solid rgba(240,168,50,.25);border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:12px;color:var(--txt2);line-height:1.6"><strong style="color:#F0A832">⚠ Conflict flagged by Signal Extractor:</strong><br>${data.ops.notes}</div>` : '');
 
   openModal('validationModal');
 }
@@ -3274,6 +3343,168 @@ supa.auth.onAuthStateChange(async (event, session) => {
     loginScreen.style.display = 'flex';
   }
 });
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script>
+// ─── MULTI-SOURCE INTAKE ────────────────────────────────
+// _intakeSources: [{ type, label, filename, text }]
+let _intakeSources = [];
+let _intakePendingType = null;
+
+const SOURCE_META = {
+  transcript: { label: 'Transcript',     icon: '🎙' },
+  deck:       { label: 'Pitch deck',     icon: '📊' },
+  proposal:   { label: 'Proposal / SOW', icon: '📄' },
+  case:       { label: 'Case studies',   icon: '⭐' },
+  linkedin:   { label: 'LinkedIn',       icon: '🔗' },
+  other:      { label: 'Document',       icon: '📎' },
+};
+
+function triggerSourceUpload(type) {
+  _intakePendingType = type;
+  const input = document.getElementById('intakeFileInput');
+  input.value = '';
+  input.click();
+}
+
+function handleIntakeFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const type = _intakePendingType || guessTypeFromFilename(file.name);
+  readIntakeFile(file, type);
+}
+
+function handleIntakeDrop(e) {
+  e.preventDefault();
+  document.getElementById('intakeDropZone').style.borderColor = 'var(--border)';
+  const file = e.dataTransfer.files[0];
+  if (!file) return;
+  readIntakeFile(file, guessTypeFromFilename(file.name));
+}
+
+function guessTypeFromFilename(name) {
+  const n = name.toLowerCase();
+  if (/transcript|call|meeting|zoom|recording/.test(n)) return 'transcript';
+  if (/deck|pitch|capability|pres/.test(n)) return 'deck';
+  if (/proposal|sow|scope|contract/.test(n)) return 'proposal';
+  if (/case|study|client/.test(n)) return 'case';
+  return 'other';
+}
+
+async function readIntakeFile(file, type) {
+  const ext = file.name.split('.').pop().toLowerCase();
+  let text = '';
+  try {
+    if (ext === 'pdf') {
+      text = await extractPdfText(file);
+    } else if (ext === 'docx') {
+      text = await extractDocxText(file);
+    } else {
+      text = await file.text();
+    }
+    addIntakeSource({ type, label: SOURCE_META[type]?.label || 'Document', filename: file.name, text });
+  } catch(err) {
+    showToast('Could not read ' + file.name + ' — try saving as .txt');
+  }
+}
+
+async function extractPdfText(file) {
+  if (typeof pdfjsLib === 'undefined') throw new Error('PDF.js not loaded');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  const ab = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+  const pages = [];
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    pages.push(content.items.map(it => it.str).join(' '));
+  }
+  return pages.join('\n\n');
+}
+
+async function extractDocxText(file) {
+  if (typeof mammoth === 'undefined') throw new Error('mammoth.js not loaded');
+  const ab = await file.arrayBuffer();
+  const result = await mammoth.extractRawText({ arrayBuffer: ab });
+  return result.value;
+}
+
+function addLinkedInSource() {
+  const url = document.getElementById('intakeLinkedInUrl').value.trim();
+  if (!url) return;
+  addIntakeSource({ type: 'linkedin', label: 'LinkedIn', filename: url, text: `LinkedIn profile URL: ${url}\n(Signal Extractor: fetch public profile context from this URL — founder name, current one-liner, work history, proof points)` });
+  document.getElementById('intakeLinkedInUrl').value = '';
+}
+
+function addPastedSource() {
+  const text = document.getElementById('transcriptPaste').value.trim();
+  if (!text) { showToast('Nothing to add — paste some text first'); return; }
+  const type = document.getElementById('pasteTypeSelect').value;
+  addIntakeSource({ type, label: SOURCE_META[type]?.label || 'Document', filename: 'pasted text', text });
+  document.getElementById('transcriptPaste').value = '';
+}
+
+function addIntakeSource(src) {
+  _intakeSources.push(src);
+  renderIntakeSources();
+}
+
+function removeIntakeSource(idx) {
+  _intakeSources.splice(idx, 1);
+  renderIntakeSources();
+}
+
+function renderIntakeSources() {
+  const list = document.getElementById('intakeSourcesList');
+  const runBtn = document.getElementById('intakeRunBtn');
+  const conflict = document.getElementById('intakeConflictBanner');
+
+  if (_intakeSources.length === 0) {
+    list.innerHTML = '<div style="font-size:12px;color:var(--txt3);padding:4px 0">No sources yet — use the buttons above or drop a file</div>';
+    runBtn.disabled = true;
+    runBtn.textContent = 'Analyze sources';
+    conflict.style.display = 'none';
+    return;
+  }
+
+  list.innerHTML = _intakeSources.map((s, i) => {
+    const meta = SOURCE_META[s.type] || SOURCE_META.other;
+    const size = s.text ? Math.round(s.text.length / 1000) + 'k chars' : '';
+    return `<div style="display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px">
+      <span style="font-size:16px">${meta.icon}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:600;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.filename}</div>
+        <div style="font-size:11px;color:var(--txt3);margin-top:1px">${meta.label}${size ? ' · ' + size : ''}</div>
+      </div>
+      <span style="font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px;background:var(--surface3);color:var(--txt3);letter-spacing:.04em;text-transform:uppercase">${s.type}</span>
+      <button style="background:none;border:none;cursor:pointer;color:var(--txt3);font-size:16px;padding:0 2px;line-height:1" onclick="removeIntakeSource(${i})">×</button>
+    </div>`;
+  }).join('');
+
+  const hasConflict = _intakeSources.some(s => s.type === 'transcript') &&
+                      _intakeSources.some(s => s.type === 'proposal');
+  conflict.style.display = hasConflict ? 'block' : 'none';
+
+  runBtn.disabled = false;
+  runBtn.textContent = `Analyze ${_intakeSources.length} source${_intakeSources.length > 1 ? 's' : ''}`;
+}
+
+function bundleSources() {
+  return _intakeSources.map(s => {
+    const header = `=== ${(SOURCE_META[s.type]?.label || 'Document').toUpperCase()}: ${s.filename} ===`;
+    return `${header}\n\n${s.text}`;
+  }).join('\n\n\n');
+}
+
+function resetIntakeModal() {
+  _intakeSources = [];
+  _intakePendingType = null;
+  document.getElementById('intakeLinkedInUrl').value = '';
+  document.getElementById('transcriptPaste').value = '';
+  document.getElementById('intakePasteWrap').style.display = 'none';
+  renderIntakeSources();
+}
 </script>
 </body>
 </html>
