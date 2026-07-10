@@ -2556,6 +2556,45 @@ function hideOverlay() {
   document.getElementById('procOverlay').classList.remove('active');
 }
 
+// ─── LAYER 3: KNOWLEDGE RETRIEVAL ──────────────────────
+async function retrieveKnowledge(type, filters = {}, limit = 4) {
+  if (!supa) return [];
+  try {
+    let q = supa.from('knowledge').select('content, metadata, type').eq('type', type);
+    if (filters.track)        q = q.eq('metadata->>track', filters.track);
+    if (filters.market_state) q = q.eq('metadata->>market_state', filters.market_state);
+    if (filters.industry)     q = q.eq('metadata->>industry', filters.industry);
+    q = q.neq('source', 'client-generated').limit(limit);
+    const { data, error } = await q;
+    if (error) return [];
+    return data || [];
+  } catch { return []; }
+}
+
+// Infer coarse signals from raw transcript text before the full parse
+function inferSignalsFromText(text) {
+  const t = text.toLowerCase();
+  const warm   = /referral|referred|introduced|word of mouth|past client|former client|network|warm/i.test(text);
+  const cold   = /cold outreach|cold email|prospecting|no reputation|new market|new geography/i.test(text);
+  const market_state = cold ? 'cold' : warm ? 'warm' : null;
+  const industries = {
+    'manufacturing':          /manufactur|factory|plant|production|assembly|ERP/i,
+    'professional-services':  /consulting|advisory|agency|professional services|fractional/i,
+    'healthcare':             /healthcare|medical|physician|clinic|hospital|patient|ASC/i,
+    'tech-saas':              /saas|software|startup|tech|product|ARR|MRR/i,
+    'financial-services':     /financial|finance|wealth|RIA|investment|banking|credit union/i,
+    'food-beverage':          /food|beverage|CPG|restaurant|distributor|co-packer/i,
+    'nonprofit':              /nonprofit|non-profit|foundation|grant|board|mission/i,
+    'private-equity':         /private equity|PE|portfolio|exit|deal|EBITDA/i,
+    'real-estate-construction':/real estate|construction|developer|GC|project manager|building/i,
+  };
+  let industry = null;
+  for (const [k, rx] of Object.entries(industries)) {
+    if (rx.test(text)) { industry = k; break; }
+  }
+  return { market_state, industry };
+}
+
 async function runTranscriptParse() {
   const text = (_pendingTranscriptText || document.getElementById('transcriptPaste').value).trim();
   if (!text) { showToast('Paste or upload a transcript first'); return; }
@@ -2569,10 +2608,27 @@ async function runTranscriptParse() {
 
   closeModal('transcriptModal');
   _pendingTranscriptText = null;
+  showOverlay('Reading transcript…');
+
+  // Infer coarse signals then retrieve calibration examples from knowledge base
+  const signals = inferSignalsFromText(text);
+  const [posExamples, offerExamples, caseExamples] = await Promise.all([
+    retrieveKnowledge('positioning', signals, 3),
+    retrieveKnowledge('offers',      signals, 3),
+    retrieveKnowledge('case_study',  { industry: signals.industry }, 2),
+  ]);
+
+  const examplesBlock = [
+    posExamples.length ? `EXAMPLE POSITIONING ONE-LINERS from similar practices:\n${posExamples.map(e => `- "${e.content}"`).join('\n')}` : '',
+    offerExamples.length ? `EXAMPLE OFFER STRUCTURES from similar practices:\n${offerExamples.map(e => e.content).join('\n\n')}` : '',
+    caseExamples.length ? `EXAMPLE CASE STUDY RESULTS from similar practices (for calibrating result specificity):\n${caseExamples.map(e => e.content).join('\n\n')}` : '',
+  ].filter(Boolean).join('\n\n');
+
   showOverlay('Parsing transcript with Claude…');
 
   const systemPrompt = `You are extracting structured client intake data from a consulting discovery call transcript.
 Return ONLY valid JSON matching this exact schema. Use null for anything not mentioned.
+${examplesBlock ? `\n${examplesBlock}\n\nUse these examples only for calibration — match the specificity and format, not the content.` : ''}
 
 {
   "practice": {
