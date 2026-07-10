@@ -437,9 +437,55 @@
   ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  /* ── PLATFORM NAV ── */
+  .pnav {
+    height: 36px; flex-shrink: 0;
+    background: #050709;
+    border-bottom: 1px solid #0E1218;
+    display: flex; align-items: center;
+    padding: 0 16px; gap: 4px;
+    z-index: 10000;
+  }
+  .pnav-brand {
+    font-size: 13px; font-weight: 700; color: var(--teal);
+    letter-spacing: -.01em; margin-right: 10px; flex-shrink: 0;
+  }
+  .pnav-sep { width: 1px; height: 14px; background: #1C2535; margin: 0 6px; flex-shrink: 0; }
+  .pnav-tool {
+    display: flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 6px;
+    font-size: 12px; font-weight: 500; color: #4A5270;
+    text-decoration: none; transition: all .15s; white-space: nowrap;
+  }
+  .pnav-tool:hover { background: #0E1218; color: var(--txt); }
+  .pnav-tool.pnav-active { background: #0E1218; color: var(--txt); }
+  .pnav-tool.pnav-locked { opacity: .3; pointer-events: none; cursor: default; }
+  .pnav-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 </style>
 </head>
 <body>
+
+<!-- ── PLATFORM NAV ── -->
+<div class="pnav">
+  <span class="pnav-brand">✦</span>
+  <div class="pnav-sep"></div>
+  <a class="pnav-tool" href="/discover.html">
+    <span class="pnav-dot" style="background:#8B7FEC"></span>Discover
+  </a>
+  <a class="pnav-tool pnav-locked" href="#">
+    <span class="pnav-dot" style="background:#4DE8FF"></span>Fuse
+  </a>
+  <a class="pnav-tool pnav-locked" href="#">
+    <span class="pnav-dot" style="background:#5B8CFF"></span>Signal
+  </a>
+  <a class="pnav-tool pnav-active" href="/vector.html">
+    <span class="pnav-dot" style="background:#3BBFA3"></span>Vector
+  </a>
+  <a class="pnav-tool pnav-locked" href="#">
+    <span class="pnav-dot" style="background:#FF8A3D"></span>Helix
+  </a>
+</div>
 
 <!-- ── LOGIN SCREEN ── -->
 <div id="loginScreen" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;">

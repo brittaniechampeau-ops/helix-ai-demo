@@ -24,7 +24,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 
 /* ── LOGIN ── */
 #loginScreen{
-  position:fixed;inset:0;background:var(--bg);
+  position:fixed;inset:0;top:36px;background:var(--bg);
   display:flex;align-items:center;justify-content:center;
   z-index:999;
 }
@@ -61,7 +61,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 .login-secure{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px;justify-content:center}
 
 /* ── APP SHELL ── */
-#app{display:none;height:100vh;display:none;grid-template-columns:var(--sidebar) 1fr;grid-template-rows:54px 1fr}
+#app{display:none;height:calc(100vh - 36px);margin-top:36px;display:none;grid-template-columns:var(--sidebar) 1fr;grid-template-rows:54px 1fr}
 
 /* ── TOPBAR ── */
 .topbar{
@@ -273,9 +273,47 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 .f30-items{display:flex;flex-direction:column;gap:8px}
 .f30-item{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--text)}
 .f30-item::before{content:'→';color:var(--teal);flex-shrink:0;margin-top:1px}
+
+/* ── PLATFORM NAV ── */
+.pnav{
+  height:36px;background:#050709;border-bottom:1px solid #0E1218;
+  display:flex;align-items:center;padding:0 16px;gap:4px;
+  position:fixed;top:0;left:0;right:0;z-index:10000;
+}
+.pnav-brand{font-size:13px;font-weight:700;color:var(--teal);letter-spacing:-.01em;margin-right:10px;flex-shrink:0}
+.pnav-sep{width:1px;height:14px;background:#1C2535;margin:0 6px;flex-shrink:0}
+.pnav-tool{
+  display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:6px;
+  font-size:12px;font-weight:500;color:#4A5270;text-decoration:none;transition:all .15s;white-space:nowrap;
+}
+.pnav-tool:hover{background:#0E1218;color:var(--text)}
+.pnav-tool.pnav-active{background:#0E1218;color:var(--text)}
+.pnav-tool.pnav-locked{opacity:.3;pointer-events:none;cursor:default}
+.pnav-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 </style>
 </head>
 <body>
+
+<!-- PLATFORM NAV -->
+<div class="pnav">
+  <span class="pnav-brand">✦</span>
+  <div class="pnav-sep"></div>
+  <a class="pnav-tool pnav-active" href="/discover.html">
+    <span class="pnav-dot" style="background:#8B7FEC"></span>Discover
+  </a>
+  <a class="pnav-tool pnav-locked" href="#">
+    <span class="pnav-dot" style="background:#4DE8FF"></span>Fuse
+  </a>
+  <a class="pnav-tool pnav-locked" href="#">
+    <span class="pnav-dot" style="background:#5B8CFF"></span>Signal
+  </a>
+  <a class="pnav-tool" href="/vector.html">
+    <span class="pnav-dot" style="background:#3BBFA3"></span>Vector
+  </a>
+  <a class="pnav-tool pnav-locked" href="#">
+    <span class="pnav-dot" style="background:#FF8A3D"></span>Helix
+  </a>
+</div>
 
 <!-- LOGIN -->
 <div id="loginScreen">
