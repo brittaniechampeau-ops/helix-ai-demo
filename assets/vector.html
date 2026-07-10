@@ -875,15 +875,61 @@
       </div>
 
       <div class="card">
-        <div class="card-header"><span class="card-title">Placement Targets</span></div>
-        <p style="font-size:13px;color:var(--txt3);margin-bottom:12px;">Where does your sector look? Check all that apply.</p>
-        <div class="check-inline-group">
-          <label class="check-inline"><input type="checkbox" id="place-linkedin" /> LinkedIn</label>
-          <label class="check-inline"><input type="checkbox" id="place-assoc" /> Trade Associations</label>
-          <label class="check-inline"><input type="checkbox" id="place-events" /> Industry Events</label>
-          <label class="check-inline"><input type="checkbox" id="place-peer" /> Peer Networks / Slack groups</label>
-          <label class="check-inline"><input type="checkbox" id="place-newsletter" /> Newsletters</label>
-          <label class="check-inline"><input type="checkbox" id="place-podcast" /> Podcasts</label>
+        <div class="card-header"><span class="card-title">Activation Channels</span></div>
+        <p style="font-size:13px;color:var(--txt3);margin-bottom:16px;">Check every channel this practice uses or wants to use. Vector will build a prioritized placement sequence around them.</p>
+
+        <div style="margin-bottom:14px">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--txt3);margin-bottom:8px">Social Media</div>
+          <div class="check-inline-group">
+            <label class="check-inline"><input type="checkbox" id="place-linkedin" /> LinkedIn</label>
+            <label class="check-inline"><input type="checkbox" id="place-instagram" /> Instagram</label>
+            <label class="check-inline"><input type="checkbox" id="place-x" /> X / Twitter</label>
+            <label class="check-inline"><input type="checkbox" id="place-facebook" /> Facebook</label>
+            <label class="check-inline"><input type="checkbox" id="place-youtube" /> YouTube</label>
+            <label class="check-inline"><input type="checkbox" id="place-tiktok" /> TikTok</label>
+          </div>
+        </div>
+
+        <div style="margin-bottom:14px">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--txt3);margin-bottom:8px">Owned Content</div>
+          <div class="check-inline-group">
+            <label class="check-inline"><input type="checkbox" id="place-blog" /> Blog / Website</label>
+            <label class="check-inline"><input type="checkbox" id="place-substack" /> Substack / Newsletter</label>
+            <label class="check-inline"><input type="checkbox" id="place-webinar" /> Webinars / Virtual Events</label>
+            <label class="check-inline"><input type="checkbox" id="place-email" /> Email List / Drip</label>
+          </div>
+        </div>
+
+        <div style="margin-bottom:14px">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--txt3);margin-bottom:8px">Earned / PR</div>
+          <div class="check-inline-group">
+            <label class="check-inline"><input type="checkbox" id="place-speaking" /> Speaking Engagements</label>
+            <label class="check-inline"><input type="checkbox" id="place-podcast" /> Podcast Guest</label>
+            <label class="check-inline"><input type="checkbox" id="place-byline" /> Guest Articles / Bylines</label>
+            <label class="check-inline"><input type="checkbox" id="place-pr" /> PR / Media Mentions</label>
+            <label class="check-inline"><input type="checkbox" id="place-assoc" /> Trade Associations</label>
+            <label class="check-inline"><input type="checkbox" id="place-newsletter" /> Newsletter Features</label>
+          </div>
+        </div>
+
+        <div style="margin-bottom:14px">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--txt3);margin-bottom:8px">Community</div>
+          <div class="check-inline-group">
+            <label class="check-inline"><input type="checkbox" id="place-peer" /> Slack / Peer Groups</label>
+            <label class="check-inline"><input type="checkbox" id="place-discord" /> Discord Communities</label>
+            <label class="check-inline"><input type="checkbox" id="place-reddit" /> Reddit / Forums</label>
+            <label class="check-inline"><input type="checkbox" id="place-fbgroups" /> Facebook Groups</label>
+            <label class="check-inline"><input type="checkbox" id="place-events" /> Industry Events</label>
+          </div>
+        </div>
+
+        <div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--txt3);margin-bottom:8px">Outreach & Partners</div>
+          <div class="check-inline-group">
+            <label class="check-inline"><input type="checkbox" id="place-coldemail" /> Cold Email</label>
+            <label class="check-inline"><input type="checkbox" id="place-partners" /> Strategic Partners</label>
+            <label class="check-inline"><input type="checkbox" id="place-comarket" /> Co-marketing</label>
+          </div>
         </div>
       </div>
 
@@ -1343,8 +1389,25 @@ function restoreUI() {
   setChecks('q-crm', d.crm); setChecks('q-pm', d.pm);
   setChecks('q-storage', d.storage); setChecks('q-comms', d.comms);
   // Placement targets
+  const placeLabelToId = {
+    'LinkedIn':'place-linkedin','Instagram':'place-instagram','X / Twitter':'place-x',
+    'Facebook':'place-facebook','YouTube':'place-youtube','TikTok':'place-tiktok',
+    'Blog / Website':'place-blog','Substack / Newsletter':'place-substack',
+    'Webinars / Virtual Events':'place-webinar','Email List / Drip':'place-email',
+    'Speaking Engagements':'place-speaking','Podcast Guest':'place-podcast',
+    'Guest Articles / Bylines':'place-byline','PR / Media Mentions':'place-pr',
+    'Trade Associations':'place-assoc','Newsletter Features':'place-newsletter',
+    'Slack / Peer Groups':'place-peer','Discord Communities':'place-discord',
+    'Reddit / Forums':'place-reddit','Facebook Groups':'place-fbgroups',
+    'Industry Events':'place-events','Cold Email':'place-coldemail',
+    'Strategic Partners':'place-partners','Co-marketing':'place-comarket',
+    // legacy ID-style fallbacks
+    'linkedin':'place-linkedin','assoc':'place-assoc','events':'place-events',
+    'peer':'place-peer','newsletter':'place-newsletter','podcast':'place-podcast'
+  };
   (VEC.cred.placements || []).forEach(v => {
-    const el = document.getElementById('place-' + v);
+    const elId = placeLabelToId[v] || ('place-' + v);
+    const el = document.getElementById(elId);
     if (el) { el.checked = true; const row = el.closest('.check-inline'); if (row) row.classList.add('selected'); }
   });
   // Positioning
@@ -1639,7 +1702,7 @@ function loadDemo() {
   renderCases();
 
   // Placement targets
-  ['place-linkedin','place-assoc','place-events'].forEach(id => {
+  ['place-linkedin','place-peer','place-assoc','place-events','place-podcast'].forEach(id => {
     const el = document.getElementById(id);
     if (el) { el.checked = true; el.dispatchEvent(new Event('change', {bubbles:true})); }
   });
@@ -1792,9 +1855,29 @@ function runReferralEngine() {
 // ─── STEP 3: CREDIBILITY ───────────────────────────────
 function runCredibility() {
   if (!VEC.cred.cases.length) { showToast('Add at least one case study before generating'); return; }
-  VEC.cred.placements = ['place-linkedin','place-assoc','place-events','place-peer','place-newsletter','place-podcast']
-    .filter(id => document.getElementById(id).checked)
-    .map(id => id.replace('place-',''));
+  VEC.cred.placements = [
+    'place-linkedin','place-instagram','place-x','place-facebook','place-youtube','place-tiktok',
+    'place-blog','place-substack','place-webinar','place-email',
+    'place-speaking','place-podcast','place-byline','place-pr','place-assoc','place-newsletter',
+    'place-peer','place-discord','place-reddit','place-fbgroups','place-events',
+    'place-coldemail','place-partners','place-comarket'
+  ].filter(id => { const el = document.getElementById(id); return el && el.checked; })
+   .map(id => {
+     const labels = {
+       'place-linkedin':'LinkedIn','place-instagram':'Instagram','place-x':'X / Twitter',
+       'place-facebook':'Facebook','place-youtube':'YouTube','place-tiktok':'TikTok',
+       'place-blog':'Blog / Website','place-substack':'Substack / Newsletter',
+       'place-webinar':'Webinars / Virtual Events','place-email':'Email List / Drip',
+       'place-speaking':'Speaking Engagements','place-podcast':'Podcast Guest',
+       'place-byline':'Guest Articles / Bylines','place-pr':'PR / Media Mentions',
+       'place-assoc':'Trade Associations','place-newsletter':'Newsletter Features',
+       'place-peer':'Slack / Peer Groups','place-discord':'Discord Communities',
+       'place-reddit':'Reddit / Forums','place-fbgroups':'Facebook Groups',
+       'place-events':'Industry Events','place-coldemail':'Cold Email',
+       'place-partners':'Strategic Partners','place-comarket':'Co-marketing'
+     };
+     return labels[id] || id.replace('place-','');
+   });
 
   runProcessing('Foundation 3', 'Building Credibility Assets',
     ['Structuring case study narratives...', 'Extracting quantified outcomes...', 'Mapping to placement targets...', 'Generating placement checklist...', 'Finalizing credibility package...'],
@@ -2211,21 +2294,37 @@ function downloadArtifact(type) {
 
   if (type === 'placement') {
     const targets = VEC.cred.placements;
-    dlDoc(`${slug}_placement_checklist.doc`, 'Credibility Placement Checklist',
-      `<h1>Credibility Placement Checklist</h1>
-      <p class="meta">${p.name}</p>
-      <h2>Your Placement Targets</h2>
-      <ul>${targets.length ? targets.map(t => `<li>${t}</li>`).join('') : '<li>(No placement targets selected)</li>'}</ul>
-      <h2>Sequence</h2>
-      <ol><li>Publish case study to <strong>LinkedIn</strong> (anchor first)</li>
-      <li>Submit to <strong>Trade Association</strong> once LinkedIn version is live</li>
-      <li>Share in <strong>Peer Networks / Slack groups</strong></li>
-      <li>Pitch for <strong>Newsletter</strong> feature</li>
-      <li>Pursue <strong>Podcast</strong> appearance</li></ol>
+    const social = targets.filter(t => ['LinkedIn','Instagram','X / Twitter','Facebook','YouTube','TikTok'].includes(t));
+    const owned  = targets.filter(t => ['Blog / Website','Substack / Newsletter','Webinars / Virtual Events','Email List / Drip'].includes(t));
+    const earned = targets.filter(t => ['Speaking Engagements','Podcast Guest','Guest Articles / Bylines','PR / Media Mentions','Trade Associations','Newsletter Features'].includes(t));
+    const community = targets.filter(t => ['Slack / Peer Groups','Discord Communities','Reddit / Forums','Facebook Groups','Industry Events'].includes(t));
+    const outreach  = targets.filter(t => ['Cold Email','Strategic Partners','Co-marketing'].includes(t));
+    const section = (label, items) => items.length ? `<h2>${label}</h2><ul>${items.map(t=>`<li>${t}</li>`).join('')}</ul>` : '';
+    dlDoc(`${slug}_placement_checklist.doc`, 'Activation Channel Checklist',
+      `<h1>Activation Channel Checklist</h1>
+      <p class="meta">${p.name} &nbsp;·&nbsp; ${targets.length} channels selected</p>
+      ${targets.length ? `
+      ${section('Social Media', social)}
+      ${section('Owned Content', owned)}
+      ${section('Earned / PR', earned)}
+      ${section('Community', community)}
+      ${section('Outreach & Partners', outreach)}
+      <h2>Sequencing Rules</h2>
+      <ol>
+        ${social.includes('LinkedIn') ? '<li><strong>LinkedIn first</strong> — anchor all case studies here before placing anywhere else. Buyers will search you.</li>' : ''}
+        ${owned.length ? `<li><strong>Owned channels next</strong> (${owned.join(', ')}) — content you control, no gatekeepers.</li>` : ''}
+        ${earned.length ? `<li><strong>Earned placements</strong> (${earned.join(', ')}) — pitch once LinkedIn version is live so there's something to link to.</li>` : ''}
+        ${community.length ? `<li><strong>Community sharing</strong> (${community.join(', ')}) — share after the piece is published, not as a draft.</li>` : ''}
+        ${outreach.length ? `<li><strong>Outreach channels</strong> (${outreach.join(', ')}) — use published proof points as the hook.</li>` : ''}
+      </ol>
       <h2>Rules</h2>
-      <ul><li>Do not place before positioning is locked</li>
-      <li>LinkedIn must be first — it's where buyers verify you</li>
-      <li>One placement at a time; don't spray</li></ul>`);
+      <ul>
+        <li>Do not place before positioning is locked</li>
+        <li>One new channel per week — spreading too thin kills all of them</li>
+        <li>Every piece of content should drive back to one CTA (scoping call or offer one-pager)</li>
+        <li>Repurpose before creating new — one case study can feed 6+ channels</li>
+      </ul>` : '<p>No channels selected. Go back to Step 3 and check your activation channels.</p>'}
+      `);
     return;
   }
 
