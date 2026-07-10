@@ -1,0 +1,923 @@
+{
+  "meta": {
+    "version": "1.0",
+    "generated": "2026-07-10",
+    "description": "Vector knowledge base seed data — 18 anonymized practice archetypes across 3 tracks and 12 industries",
+    "tracks": {
+      "A": "Warm market, referral-dominant — 10 practices",
+      "B": "Cold market or active pivot — 4 practices",
+      "C": "Mixed motion, positioning stalling — 4 practices"
+    },
+    "item_counts": {
+      "positioning": 18,
+      "offers": 18,
+      "case_study": 36,
+      "referral_script": 18,
+      "methodology": 7,
+      "total": 97
+    }
+  },
+
+  "practices": [
+    { "id": "p01", "archetype": "Manufacturing Operations", "track": "A", "size": "small", "market_state": "warm", "motion": "referral", "industry_served": "manufacturing", "geography": "regional" },
+    { "id": "p02", "archetype": "Fractional CFO", "track": "A", "size": "solo", "market_state": "warm", "motion": "referral", "industry_served": "professional-services", "geography": "national" },
+    { "id": "p03", "archetype": "HR & Org Design", "track": "A", "size": "small", "market_state": "warm", "motion": "referral", "industry_served": "tech-saas", "geography": "national" },
+    { "id": "p04", "archetype": "Healthcare Operations", "track": "A", "size": "small", "market_state": "warm", "motion": "referral", "industry_served": "healthcare", "geography": "regional" },
+    { "id": "p05", "archetype": "Executive Coaching", "track": "A", "size": "solo", "market_state": "warm", "motion": "referral", "industry_served": "cross-sector", "geography": "national" },
+    { "id": "p06", "archetype": "Supply Chain", "track": "A", "size": "small", "market_state": "warm", "motion": "referral", "industry_served": "manufacturing-distribution", "geography": "regional" },
+    { "id": "p07", "archetype": "Private Equity Operations", "track": "A", "size": "small", "market_state": "warm", "motion": "referral", "industry_served": "private-equity", "geography": "national" },
+    { "id": "p08", "archetype": "Construction Project Management", "track": "A", "size": "small", "market_state": "warm", "motion": "referral", "industry_served": "real-estate-construction", "geography": "regional" },
+    { "id": "p09", "archetype": "Food & Beverage Operations", "track": "A", "size": "solo", "market_state": "warm", "motion": "referral", "industry_served": "food-beverage", "geography": "regional" },
+    { "id": "p10", "archetype": "Change Management", "track": "A", "size": "small", "market_state": "warm", "motion": "referral", "industry_served": "enterprise-cross-sector", "geography": "national" },
+    { "id": "p11", "archetype": "IT & Digital Transformation", "track": "B", "size": "small", "market_state": "cold", "motion": "outbound", "industry_served": "manufacturing-logistics", "geography": "regional-new" },
+    { "id": "p12", "archetype": "Marketing Strategy", "track": "B", "size": "solo", "market_state": "transitioning", "motion": "content", "industry_served": "professional-services-saas", "geography": "national" },
+    { "id": "p13", "archetype": "Revenue Operations", "track": "B", "size": "small", "market_state": "cold", "motion": "outbound", "industry_served": "b2b-saas", "geography": "national" },
+    { "id": "p14", "archetype": "Real Estate Advisory", "track": "B", "size": "solo", "market_state": "transitioning", "motion": "mixed", "industry_served": "commercial-real-estate", "geography": "regional" },
+    { "id": "p15", "archetype": "Legal & Compliance Advisory", "track": "C", "size": "small", "market_state": "warm", "motion": "mixed", "industry_served": "financial-services-healthcare", "geography": "regional" },
+    { "id": "p16", "archetype": "Nonprofit Strategy", "track": "C", "size": "small", "market_state": "warm", "motion": "mixed", "industry_served": "nonprofit", "geography": "regional" },
+    { "id": "p17", "archetype": "Learning & Development", "track": "C", "size": "solo", "market_state": "warm", "motion": "content", "industry_served": "cross-sector", "geography": "national" },
+    { "id": "p18", "archetype": "Financial Services Operations", "track": "C", "size": "small", "market_state": "transitioning", "motion": "mixed", "industry_served": "wealth-management-ria", "geography": "national" }
+  ],
+
+  "knowledge_items": [
+
+    {
+      "id": "k-p01-pos",
+      "practice_id": "p01",
+      "type": "positioning",
+      "content": "We help mid-market manufacturers build the operational infrastructure to support growth — without hiring a VP of Ops they can't yet afford.",
+      "metadata": { "track": "A", "industry": "manufacturing", "firm_size": "small", "market_state": "warm", "motion": "referral", "buyer": "COO / VP Operations at 200–800 employee manufacturer" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p02-pos",
+      "practice_id": "p02",
+      "type": "positioning",
+      "content": "Fractional CFO for professional services and agency founders who need a real finance partner — not a bookkeeper who shows up monthly.",
+      "metadata": { "track": "A", "industry": "professional-services", "firm_size": "solo", "market_state": "warm", "motion": "referral", "buyer": "Founder / CEO of $1M–$10M services firm" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p03-pos",
+      "practice_id": "p03",
+      "type": "positioning",
+      "content": "We help post-acquisition and fast-growth companies build the people infrastructure before the friction gets expensive.",
+      "metadata": { "track": "A", "industry": "tech-saas", "firm_size": "small", "market_state": "warm", "motion": "referral", "buyer": "CHRO / CEO at 50–300 person growth-stage company" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p04-pos",
+      "practice_id": "p04",
+      "type": "positioning",
+      "content": "We help specialty medical practices and ambulatory surgery centers build the operational infrastructure to grow beyond what one physician can manage.",
+      "metadata": { "track": "A", "industry": "healthcare", "firm_size": "small", "market_state": "warm", "motion": "referral", "buyer": "Managing Physician / Practice Administrator at specialty practice or ASC group" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p05-pos",
+      "practice_id": "p05",
+      "type": "positioning",
+      "content": "Executive coaching for first-time and newly promoted C-suite leaders who are running bigger than they've ever run before — and feel it.",
+      "metadata": { "track": "A", "industry": "cross-sector", "firm_size": "solo", "market_state": "warm", "motion": "referral", "buyer": "Newly promoted C-suite or VP-level leader" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p06-pos",
+      "practice_id": "p06",
+      "type": "positioning",
+      "content": "We help mid-market manufacturers and distributors cut supply chain costs and lead times — without adding headcount.",
+      "metadata": { "track": "A", "industry": "manufacturing-distribution", "firm_size": "small", "market_state": "warm", "motion": "referral", "buyer": "VP Supply Chain / COO at 200–1000 employee manufacturer or distributor" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p07-pos",
+      "practice_id": "p07",
+      "type": "positioning",
+      "content": "We help private equity firms build operational value in portfolio companies — the work between deal close and exit.",
+      "metadata": { "track": "A", "industry": "private-equity", "firm_size": "small", "market_state": "warm", "motion": "referral", "buyer": "Operating Partner / Deal Partner at lower-middle-market PE firm" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p08-pos",
+      "practice_id": "p08",
+      "type": "positioning",
+      "content": "We help real estate developers and general contractors deliver complex projects on time — before the cost overruns eat the return.",
+      "metadata": { "track": "A", "industry": "real-estate-construction", "firm_size": "small", "market_state": "warm", "motion": "referral", "buyer": "Real estate developer or owner with projects $20M–$100M" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p09-pos",
+      "practice_id": "p09",
+      "type": "positioning",
+      "content": "We help emerging food brands and regional distributors build the supply chain and production operations to scale without breaking.",
+      "metadata": { "track": "A", "industry": "food-beverage", "firm_size": "solo", "market_state": "warm", "motion": "referral", "buyer": "Founder / COO at emerging CPG brand or regional food distributor" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p10-pos",
+      "practice_id": "p10",
+      "type": "positioning",
+      "content": "We help large organizations make change land — not just launch. The people side of transformation that technology firms and strategy consultants leave behind.",
+      "metadata": { "track": "A", "industry": "enterprise-cross-sector", "firm_size": "small", "market_state": "warm", "motion": "referral", "buyer": "CHRO / Change Sponsor at 500+ employee organization" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p11-pos",
+      "practice_id": "p11",
+      "type": "positioning",
+      "content": "We help mid-market companies in traditional industries run digital transformation without the disruption a large firm brings — and the drift a generalist consultant leaves.",
+      "metadata": { "track": "B", "industry": "manufacturing-logistics", "firm_size": "small", "market_state": "cold", "motion": "outbound", "buyer": "COO / CIO at 100–500 employee company in manufacturing or logistics" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p12-pos",
+      "practice_id": "p12",
+      "type": "positioning",
+      "content": "B2B marketing strategy for professional services and SaaS companies that have outgrown their founder's marketing instincts.",
+      "metadata": { "track": "B", "industry": "professional-services-saas", "firm_size": "solo", "market_state": "transitioning", "motion": "content", "buyer": "Founder / CEO of $1M–$15M B2B services or SaaS company" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p13-pos",
+      "practice_id": "p13",
+      "type": "positioning",
+      "content": "RevOps for B2B SaaS companies between $2M and $20M ARR — the systems, data, and process that let your sales team stop losing to friction.",
+      "metadata": { "track": "B", "industry": "b2b-saas", "firm_size": "small", "market_state": "cold", "motion": "outbound", "buyer": "VP Sales / CEO at $2M–$20M ARR SaaS company" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p14-pos",
+      "practice_id": "p14",
+      "type": "positioning",
+      "content": "Operational advisory for commercial real estate owners and operators navigating repositioning, distress, or a first institutional partnership.",
+      "metadata": { "track": "B", "industry": "commercial-real-estate", "firm_size": "solo", "market_state": "transitioning", "motion": "mixed", "buyer": "Private real estate owner or family office with commercial assets" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p15-pos",
+      "practice_id": "p15",
+      "type": "positioning",
+      "content": "Regulatory compliance advisory for financial services and healthcare companies that need deep expertise without a law firm's overhead.",
+      "metadata": { "track": "C", "industry": "financial-services-healthcare", "firm_size": "small", "market_state": "warm", "motion": "mixed", "buyer": "CCO / CEO at regional financial institution or healthcare organization" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p16-pos",
+      "practice_id": "p16",
+      "type": "positioning",
+      "content": "Strategic planning and organizational development for nonprofits navigating leadership transition, growth, or a shift in their funding landscape.",
+      "metadata": { "track": "C", "industry": "nonprofit", "firm_size": "small", "market_state": "warm", "motion": "mixed", "buyer": "Executive Director or Board Chair at $2M–$20M nonprofit" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p17-pos",
+      "practice_id": "p17",
+      "type": "positioning",
+      "content": "Custom learning programs for companies that have outgrown off-the-shelf training — managers who need real skills, not certificates.",
+      "metadata": { "track": "C", "industry": "cross-sector", "firm_size": "solo", "market_state": "warm", "motion": "content", "buyer": "CHRO / VP People at 100–500 person company" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p18-pos",
+      "practice_id": "p18",
+      "type": "positioning",
+      "content": "Operations and technology advisory for wealth management firms and RIAs navigating growth, acquisition, or a platform transition.",
+      "metadata": { "track": "C", "industry": "wealth-management-ria", "firm_size": "small", "market_state": "transitioning", "motion": "mixed", "buyer": "Managing Partner / COO at $200M–$2B AUM RIA" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+
+    {
+      "id": "k-p01-offers",
+      "practice_id": "p01",
+      "type": "offers",
+      "content": "OFFER 1 — Operations Diagnostic | $12,000 | 3 weeks | Current-state assessment across five operational dimensions; identifies the three highest-leverage fixes with a prioritized action plan and ROI estimate.\n\nOFFER 2 — Operations Build | $175,000 | 16 weeks | Full implementation: process redesign, cross-functional team alignment, new facility setup, or post-acquisition integration. Weekly on-site presence.\n\nOFFER 3 — Retained Operations Partner | $6,500/mo | 3-month minimum | Monthly strategy session plus on-call access for decisions, escalations, and implementation questions as conditions change.",
+      "metadata": { "track": "A", "industry": "manufacturing", "firm_size": "small", "price_range": "12k-175k", "entry_type": "diagnostic" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p02-offers",
+      "practice_id": "p02",
+      "type": "offers",
+      "content": "OFFER 1 — Financial Clarity Assessment | $4,500 | 2 weeks | Full review of financials, cash position, pricing model, and owner compensation structure. Delivers a 90-day financial roadmap.\n\nOFFER 2 — Fractional CFO Engagement | $8,500/mo | 6-month minimum | Weekly touchpoint, cash flow management, scenario modeling, banker and investor relationship management, board prep.\n\nOFFER 3 — Finance Function Build | $35,000 | 10 weeks | Stand up the finance function: hire bookkeeper, implement reporting stack, build budget model, document processes for a future full-time CFO.",
+      "metadata": { "track": "A", "industry": "professional-services", "firm_size": "solo", "price_range": "4.5k-8.5k/mo", "entry_type": "assessment" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p03-offers",
+      "practice_id": "p03",
+      "type": "offers",
+      "content": "OFFER 1 — People Architecture Audit | $8,000 | 2 weeks | Assessment of org structure, compensation bands, performance framework, and culture health. Delivers a priority action plan.\n\nOFFER 2 — People Infrastructure Build | $95,000 | 14 weeks | Design and implement: role clarity, leveling framework, performance management system, manager enablement, onboarding redesign.\n\nOFFER 3 — HR Advisory Retainer | $4,500/mo | 3-month minimum | Ongoing strategic HR partner: 2 sessions per month plus on-call access for offers, PIPs, culture issues, and critical people decisions.",
+      "metadata": { "track": "A", "industry": "tech-saas", "firm_size": "small", "price_range": "8k-95k", "entry_type": "audit" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p04-offers",
+      "practice_id": "p04",
+      "type": "offers",
+      "content": "OFFER 1 — Practice Operations Assessment | $9,500 | 3 weeks | Operational audit: scheduling efficiency, billing cycle, staff utilization, patient throughput — benchmarked against top-quartile practices in the specialty.\n\nOFFER 2 — Operations Transformation | $140,000 | 18 weeks | End-to-end redesign: staffing model, patient flow, revenue cycle, technology stack alignment, compliance documentation.\n\nOFFER 3 — Ops Advisory Retainer | $5,500/mo | ongoing | Monthly strategic session plus support on operational decisions, expansion planning, and compliance-adjacent issues.",
+      "metadata": { "track": "A", "industry": "healthcare", "firm_size": "small", "price_range": "9.5k-140k", "entry_type": "assessment" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p05-offers",
+      "practice_id": "p05",
+      "type": "offers",
+      "content": "OFFER 1 — Leadership Clarity Session | $2,500 | single session (3 hours) | Structured diagnostic: current role demands vs. current leadership approach. Identifies 3 development priorities with a 90-day focus plan.\n\nOFFER 2 — Executive Coaching Engagement | $3,500/mo | 6-month minimum | Bi-weekly 90-minute sessions plus on-call access. Covers leadership presence, decision-making, team dynamics, and board relationships.\n\nOFFER 3 — Team Effectiveness Add-on | $12,000 | 6 weeks | Coaching the leader and their direct reports as a system: team assessment, 2 facilitated sessions, individual debrief for each team member.",
+      "metadata": { "track": "A", "industry": "cross-sector", "firm_size": "solo", "price_range": "2.5k-3.5k/mo", "entry_type": "session" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p06-offers",
+      "practice_id": "p06",
+      "type": "offers",
+      "content": "OFFER 1 — Supply Chain Diagnostic | $14,000 | 3 weeks | End-to-end supply chain mapping. Identifies top 5 cost and lead-time improvement opportunities with ROI estimates.\n\nOFFER 2 — Supply Chain Optimization | $180,000 | 20 weeks | Full implementation: carrier rationalization, inventory model redesign, supplier consolidation, demand planning process, team training.\n\nOFFER 3 — Retained Ops Partner | $7,000/mo | ongoing | Monthly supply chain review plus on-call access for supplier escalations, disruption response, and contract negotiations.",
+      "metadata": { "track": "A", "industry": "manufacturing-distribution", "firm_size": "small", "price_range": "14k-180k", "entry_type": "diagnostic" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p07-offers",
+      "practice_id": "p07",
+      "type": "offers",
+      "content": "OFFER 1 — 100-Day Ops Plan | $22,000 | 4 weeks | Post-close operational assessment. Delivers a prioritized 100-day value creation plan aligned to the investment thesis.\n\nOFFER 2 — Portfolio Ops Engagement | $225,000 | 24 weeks | Embedded operations: implement the value creation plan, build management reporting, install the ops cadence, develop internal leadership.\n\nOFFER 3 — Ops Advisory Retainer | $9,000/mo | ongoing | Ongoing portfolio company support as a strategic ops partner through exit prep, add-on integrations, and leadership transitions.",
+      "metadata": { "track": "A", "industry": "private-equity", "firm_size": "small", "price_range": "22k-225k", "entry_type": "plan" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p08-offers",
+      "practice_id": "p08",
+      "type": "offers",
+      "content": "OFFER 1 — Project Recovery Assessment | $11,000 | 2 weeks | Diagnosis of a distressed project: schedule analysis, subcontractor status, budget variance, change order review. Delivers recovery plan.\n\nOFFER 2 — Owner's Representative Engagement | $160,000 | varies by project | Full owner's rep: subcontractor management, schedule oversight, budget control, lender reporting, punch list management.\n\nOFFER 3 — Project Controls Retainer | $6,500/mo | ongoing | Monthly project review plus on-call access for escalations, lender questions, change order disputes, and subcontractor issues.",
+      "metadata": { "track": "A", "industry": "real-estate-construction", "firm_size": "small", "price_range": "11k-160k", "entry_type": "assessment" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p09-offers",
+      "practice_id": "p09",
+      "type": "offers",
+      "content": "OFFER 1 — Scale Readiness Assessment | $10,000 | 2 weeks | Operations audit across production, procurement, distribution, and compliance. Identifies what breaks first when volume doubles.\n\nOFFER 2 — Scale Operations Build | $120,000 | 16 weeks | End-to-end operations design: co-packer selection and onboarding, distribution model, demand planning, food safety documentation.\n\nOFFER 3 — Ops Advisory Retainer | $5,000/mo | ongoing | Monthly ops review plus on-call access for supplier crises, retailer compliance requirements, and production decision-making.",
+      "metadata": { "track": "A", "industry": "food-beverage", "firm_size": "solo", "price_range": "10k-120k", "entry_type": "assessment" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p10-offers",
+      "practice_id": "p10",
+      "type": "offers",
+      "content": "OFFER 1 — Change Readiness Assessment | $15,000 | 3 weeks | Stakeholder analysis, change capacity audit, resistance mapping. Delivers adoption risk score and mitigation plan.\n\nOFFER 2 — Change Enablement Program | $200,000 | 20 weeks | Full change program: communication architecture, manager enablement, adoption measurement, resistance management, executive coaching.\n\nOFFER 3 — Embedded Change Partner | $10,000/mo | ongoing | On-call change advisor supporting leadership through major initiative phases, board communication, and adoption plateaus.",
+      "metadata": { "track": "A", "industry": "enterprise-cross-sector", "firm_size": "small", "price_range": "15k-200k", "entry_type": "assessment" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p11-offers",
+      "practice_id": "p11",
+      "type": "offers",
+      "content": "OFFER 1 — Digital Readiness Assessment | $16,000 | 3 weeks | Technology landscape audit, process-technology gap analysis, change capacity assessment. Delivers a sequenced transformation roadmap.\n\nOFFER 2 — Digital Transformation Program | $250,000 | 24 weeks | Workstream management across technology, process, and people. Vendor selection and management. Progress reporting to leadership.\n\nOFFER 3 — Digital Advisory Retainer | $10,000/mo | ongoing | Strategic technology advisor: evaluate vendor proposals, guide build-vs-buy decisions, maintain transformation momentum across initiatives.",
+      "metadata": { "track": "B", "industry": "manufacturing-logistics", "firm_size": "small", "price_range": "16k-250k", "entry_type": "assessment" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p12-offers",
+      "practice_id": "p12",
+      "type": "offers",
+      "content": "OFFER 1 — Marketing Audit & Strategy | $9,500 | 2 weeks | Full audit: positioning, channel performance, content, ICP definition. Delivers a 12-month marketing strategy with prioritized initiatives.\n\nOFFER 2 — Fractional CMO Engagement | $12,000/mo | 6-month minimum | Own the marketing roadmap, manage internal and external resources, run the measurement system, own channel performance.\n\nOFFER 3 — Campaign Build | $35,000 | 8 weeks | Design and launch one high-priority campaign: ICP-targeted content series, demand generation sequence, or market entry campaign.",
+      "metadata": { "track": "B", "industry": "professional-services-saas", "firm_size": "solo", "price_range": "9.5k-12k/mo", "entry_type": "audit" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p13-offers",
+      "practice_id": "p13",
+      "type": "offers",
+      "content": "OFFER 1 — RevOps Audit | $8,000 | 2 weeks | CRM audit, pipeline hygiene analysis, process gap identification, reporting quality review. Delivers prioritized fix list with effort/impact matrix.\n\nOFFER 2 — RevOps Build | $18,000/mo | 3-month minimum | Full RevOps function: CRM configuration, pipeline process design, sales playbook, forecasting model, dashboard build.\n\nOFFER 3 — RevOps Advisory Retainer | $5,500/mo | ongoing | Fractional RevOps lead: quarterly planning support, ongoing CRM and process optimization, sales team enablement.",
+      "metadata": { "track": "B", "industry": "b2b-saas", "firm_size": "small", "price_range": "8k-18k/mo", "entry_type": "audit" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p14-offers",
+      "practice_id": "p14",
+      "type": "offers",
+      "content": "OFFER 1 — Asset Operations Assessment | $12,000 | 2 weeks | Property-level operational audit: occupancy trends, expense benchmarking, management quality, cap rate scenario analysis.\n\nOFFER 2 — Repositioning Advisory | $85,000 | 16 weeks | Full repositioning: operator replacement or improvement, capital plan development, leasing strategy, lender and partner communication.\n\nOFFER 3 — Asset Management Retainer | $4,500/mo | ongoing | Monthly asset review plus support on lease negotiations, capex approval, operator management, and disposition planning.",
+      "metadata": { "track": "B", "industry": "commercial-real-estate", "firm_size": "solo", "price_range": "12k-85k", "entry_type": "assessment" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p15-offers",
+      "practice_id": "p15",
+      "type": "offers",
+      "content": "OFFER 1 — Compliance Gap Assessment | $13,000 | 3 weeks | Regulatory gap analysis against current requirements. Prioritized remediation roadmap with effort and risk ratings.\n\nOFFER 2 — Compliance Program Build | $150,000 | 18 weeks | Design and implement: policies, training, monitoring, incident response, board reporting. Prepares for examination.\n\nOFFER 3 — Compliance Advisory Retainer | $7,000/mo | ongoing | Fractional CCO: regulatory change monitoring, exam preparation, policy maintenance, board advisory on compliance matters.",
+      "metadata": { "track": "C", "industry": "financial-services-healthcare", "firm_size": "small", "price_range": "13k-150k", "entry_type": "assessment" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p16-offers",
+      "practice_id": "p16",
+      "type": "offers",
+      "content": "OFFER 1 — Strategic Planning Facilitation | $18,000 | 8 weeks | Full strategic planning process: environmental scan, stakeholder engagement, board/staff alignment sessions, written plan with implementation calendar.\n\nOFFER 2 — Organizational Effectiveness Program | $75,000 | 16 weeks | Org design, role clarity, governance review, leadership development plan, culture assessment, and implementation support.\n\nOFFER 3 — Board Development Retainer | $3,500/mo | ongoing | Ongoing board governance support: meeting facilitation, new board member onboarding, board-staff relationship management.",
+      "metadata": { "track": "C", "industry": "nonprofit", "firm_size": "small", "price_range": "18k-75k", "entry_type": "facilitation" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p17-offers",
+      "practice_id": "p17",
+      "type": "offers",
+      "content": "OFFER 1 — Learning Needs Assessment | $7,000 | 2 weeks | Skills gap analysis tied to business outcomes. Competency framework design. Prioritized curriculum roadmap.\n\nOFFER 2 — Manager Development Program | $65,000 | 12 weeks | Custom manager effectiveness program: 6 learning modules, peer cohort design, 1:1 coaching integration, 90-day behavior application plan.\n\nOFFER 3 — L&D Advisory Retainer | $3,000/mo | ongoing | Ongoing L&D partner: curriculum updates, new hire program design, facilitator coaching, measurement framework maintenance.",
+      "metadata": { "track": "C", "industry": "cross-sector", "firm_size": "solo", "price_range": "7k-65k", "entry_type": "assessment" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p18-offers",
+      "practice_id": "p18",
+      "type": "offers",
+      "content": "OFFER 1 — Ops & Tech Assessment | $14,000 | 3 weeks | Current-state assessment of operations, technology stack, and staff utilization. Benchmarked against peer firms. Prioritized fix list.\n\nOFFER 2 — Platform Transition Program | $175,000 | 20 weeks | Full custodial or tech platform transition: data migration, workflow redesign, staff training, client communication management.\n\nOFFER 3 — Ops Advisory Retainer | $6,500/mo | ongoing | Ongoing ops partner: technology decisions, M&A integration support, compliance-adjacent operations, capacity planning.",
+      "metadata": { "track": "C", "industry": "wealth-management-ria", "firm_size": "small", "price_range": "14k-175k", "entry_type": "assessment" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+
+    {
+      "id": "k-p01-cs1",
+      "practice_id": "p01",
+      "type": "case_study",
+      "content": "CLIENT: 350-employee food manufacturer, family-owned, expanding from 2 facilities to 3.\nSITUATION: ERP implementation 7 months behind schedule; new facility GM had never run a multi-site operation; cash position tightening.\nCONSTRAINT: The GM gap was the real problem — implementation was behind because the team running it didn't have the decision-making authority to resolve cross-functional conflicts.\nSOLUTION: Restructured project governance, clarified GM authority, redesigned ERP workstream ownership, rebuilt 13-week cash flow model.\nRESULT: Implementation completed in 11 months vs. projected 18. $400K in avoided costs. New facility live and running independently within 90 days of go-live.",
+      "metadata": { "track": "A", "industry": "manufacturing", "result_type": "time-compression", "metric": "$400K avoided costs, 7-month schedule reduction" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p01-cs2",
+      "practice_id": "p01",
+      "type": "case_study",
+      "content": "CLIENT: 200-employee auto parts distributor, PE-backed, post-acquisition integration.\nSITUATION: Two operating systems, two cultures, one P&L — 4 months post-close and still running as two separate businesses.\nCONSTRAINT: The acquiring company's processes were actually worse in 3 of 5 areas — imposing them would have caused attrition.\nSOLUTION: Designed a neutral third operating model with buy-in from both legacy leadership teams. Ran a 6-week parallel operation before full cutover.\nRESULT: Single operating model live in 60 days. 94% staff retention through integration. PE sponsor cited ops integration as ahead of plan at 6-month board meeting.",
+      "metadata": { "track": "A", "industry": "manufacturing", "result_type": "integration", "metric": "94% retention, 60-day integration" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p02-cs1",
+      "practice_id": "p02",
+      "type": "case_study",
+      "content": "CLIENT: 12-person strategy consultancy, $3.2M revenue, founder doing her own bookkeeping.\nSITUATION: Cash always tight despite strong revenue. Couldn't explain why to her bank.\nCONSTRAINT: DSO was 68 days — billing was relationship-driven and inconsistent. Clients were paying late because no one was asking.\nSOLUTION: Restructured billing to milestone-based, implemented a collections cadence, renegotiated retainer payment terms with top 3 clients.\nRESULT: DSO dropped from 68 to 22 days within 90 days. $180K freed in working capital. Founder stopped paying herself late.",
+      "metadata": { "track": "A", "industry": "professional-services", "result_type": "cash-flow", "metric": "$180K freed, DSO from 68 to 22 days" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p02-cs2",
+      "practice_id": "p02",
+      "type": "case_study",
+      "content": "CLIENT: Agency founder, $4.8M revenue, raising first outside capital.\nSITUATION: Had never built an investor-grade financial model. Three business models in one P&L — investors couldn't read the narrative.\nCONSTRAINT: Revenue was real but unclear — retainer, project, and SaaS revenue were blended. No investor could size the recurring base.\nSOLUTION: Restructured P&L into three clear segments, built 3-year model with scenario analysis, prepared board materials and FAQ deck.\nRESULT: Closed $1.8M seed round. Investor described the financial model as 'one of the cleaner packages we've seen at this stage.'",
+      "metadata": { "track": "A", "industry": "professional-services", "result_type": "capital-raise", "metric": "$1.8M seed closed" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p03-cs1",
+      "practice_id": "p03",
+      "type": "case_study",
+      "content": "CLIENT: 80-person SaaS company, 3 months post-acquisition, hemorrhaging talent.\nSITUATION: Attrition spiking — 3 engineers had given notice, 2 more were looking. Acquirer blamed culture; acquired team blamed the acquirer.\nCONSTRAINT: The acquirer had imposed their HR processes without adaptation. High performers felt like they'd been downgraded overnight.\nSOLUTION: Designed a hybrid HR framework that preserved acquired company culture markers while meeting parent company compliance requirements.\nRESULT: Attrition dropped from 28% to 9% in 6 months. 3 engineers who had drafted resignation letters stayed through the following year.",
+      "metadata": { "track": "A", "industry": "tech-saas", "result_type": "retention", "metric": "Attrition 28% → 9%, 3 key engineers retained" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p03-cs2",
+      "practice_id": "p03",
+      "type": "case_study",
+      "content": "CLIENT: Founder-led consultancy scaling from 8 to 22 people in 18 months.\nSITUATION: No management layer. Founder still in every decision. Team frustrated; founder exhausted.\nCONSTRAINT: Three senior contributors had been promoted to manager titles without any manager preparation — same job, new name, added reports.\nSOLUTION: Built leveling framework and manager role definition. Promoted 3 senior contributors properly with a 90-day first-time manager program.\nRESULT: Founder removed from 4 standing meetings within 8 weeks. 'I took my first real vacation in three years' — founder, 10 weeks after engagement close.",
+      "metadata": { "track": "A", "industry": "professional-services", "result_type": "founder-delegation", "metric": "Founder out of 4 meetings in 8 weeks" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p04-cs1",
+      "practice_id": "p04",
+      "type": "case_study",
+      "content": "CLIENT: 6-physician orthopedic practice, capacity maxed, 11-week patient waitlist.\nSITUATION: Turning away new patients. Had considered hiring a 7th physician at $450K/year.\nCONSTRAINT: Scheduling was physician-centered, not patient-flow-centered. Gaps and overtime were happening simultaneously in different parts of the day.\nSOLUTION: Rebuilt scheduling templates, cross-trained MAs, redesigned patient communication to reduce no-shows.\nRESULT: Throughput increased 22%. Waitlist cut to 4 weeks. No new physician hire needed — saved $450K in year-one labor cost.",
+      "metadata": { "track": "A", "industry": "healthcare", "result_type": "capacity", "metric": "22% throughput increase, 4-week waitlist, $450K labor saved" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p04-cs2",
+      "practice_id": "p04",
+      "type": "case_study",
+      "content": "CLIENT: 3-site ASC group preparing for PE partnership.\nSITUATION: Each site had evolved differently over 8 years. No standard playbook. Acquirer's ops team flagged it in diligence.\nCONSTRAINT: The inconsistency wasn't just operational — it reflected real clinical disagreements between site medical directors that had never been resolved.\nSOLUTION: Documented SOPs, built a quality metrics dashboard, aligned supply chain purchasing across sites, facilitated medical director alignment sessions.\nRESULT: PE deal closed at 1.2x original valuation. Operations standardization cited by acquirer as a key value driver in the diligence close memo.",
+      "metadata": { "track": "A", "industry": "healthcare", "result_type": "transaction", "metric": "1.2x valuation premium, ops cited in diligence" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p05-cs1",
+      "practice_id": "p05",
+      "type": "case_study",
+      "content": "CLIENT: First-time CEO, 3 months into role, inherited a divided leadership team.\nSITUATION: Two factions on the leadership team. One legacy executive actively undermining her in staff meetings.\nCONSTRAINT: Her natural style — collaborative and process-oriented — was reading as indecisive to a team that had been led by a directive predecessor.\nSOLUTION: Developed a 'decisive collaboration' approach — built clear decision signals that didn't require abandoning her natural style. Managed the legacy executive conversation.\nRESULT: 6-month engagement survey: leadership confidence +31 points. Closed company's largest contract ever in month 4. Legacy executive transitioned out without incident.",
+      "metadata": { "track": "A", "industry": "cross-sector", "result_type": "leadership-transition", "metric": "+31pt confidence survey, largest contract closed" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p05-cs2",
+      "practice_id": "p05",
+      "type": "case_study",
+      "content": "CLIENT: COO promoted from VP of Ops, suddenly managing former peers — 2 of whom had expected the promotion.\nSITUATION: Active resentment from 2 direct reports. Team meetings tense. One high performer going quiet.\nCONSTRAINT: He was managing the resentment by over-explaining his decisions — which was making it worse.\nSOLUTION: Peer-to-leader transition coaching. Facilitated direct individual conversations with each report. Built a new operating cadence giving each leader more autonomy.\nRESULT: Formerly resentful report became his strongest internal advocate. COO: 'That one conversation unlocked everything for me.'",
+      "metadata": { "track": "A", "industry": "cross-sector", "result_type": "team-dynamics", "metric": "Peer-to-leader transition, team stability restored" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p06-cs1",
+      "practice_id": "p06",
+      "type": "case_study",
+      "content": "CLIENT: 400-employee specialty chemical distributor, freight costs up 34% in 2 years.\nSITUATION: Customers threatening to switch to competitors. Margin compressing. 14 carriers being managed by 2 people.\nCONSTRAINT: No leverage with any individual carrier — volume spread too thin for negotiating power.\nSOLUTION: Consolidated to 4 primary carriers, negotiated lane-by-lane pricing, built a carrier scorecard with quarterly business reviews.\nRESULT: Freight costs reduced 19% in year one — $2.4M savings on $12.7M freight spend. Margin restored. Carrier relationships now actively managed.",
+      "metadata": { "track": "A", "industry": "manufacturing-distribution", "result_type": "cost-reduction", "metric": "$2.4M saved, 19% freight cost reduction" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p06-cs2",
+      "practice_id": "p06",
+      "type": "case_study",
+      "content": "CLIENT: Industrial equipment manufacturer, 90-day lead times losing deals to offshore competitors.\nSITUATION: Lost 3 major accounts in 12 months. Sales team demoralized. Leadership blaming manufacturing.\nCONSTRAINT: Inventory model built for 2019 demand patterns — wrong SKUs in stock, right SKUs always backordered.\nSOLUTION: Rebuilt demand planning model, shifted safety stock to top 20% of SKUs by revenue, consolidated suppliers from 47 to 19.\nRESULT: Lead times dropped from 90 to 34 days. Won back 3 lost accounts. Sales team closed 2 new accounts specifically citing lead time improvement.",
+      "metadata": { "track": "A", "industry": "manufacturing", "result_type": "lead-time", "metric": "90 → 34 day lead time, 3 accounts won back" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p07-cs1",
+      "practice_id": "p07",
+      "type": "case_study",
+      "content": "CLIENT: PE firm, regional logistics company acquired at 6x EBITDA. Thesis: operational improvement to 9x.\nSITUATION: Management team loyal but thin. No one below the CEO had ever built a reporting system.\nCONSTRAINT: The CEO was the only person who knew how the business actually worked — not a scalable dependency.\nSOLUTION: Built management reporting from scratch, installed monthly ops review, developed two internal managers to run the operating cadence independently.\nRESULT: EBITDA multiple reached 8.7x at exit 3 years later. Operations cited in buyer's diligence as a primary value driver. CEO no longer the single point of knowledge failure.",
+      "metadata": { "track": "A", "industry": "private-equity", "result_type": "value-creation", "metric": "6x → 8.7x EBITDA at exit" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p07-cs2",
+      "practice_id": "p07",
+      "type": "case_study",
+      "content": "CLIENT: Healthcare services portfolio company, 3 bolt-on acquisitions in 18 months, operationally fraying.\nSITUATION: Each acquisition kept its own system. Customer service inconsistent. GPs getting nervous.\nCONSTRAINT: No integration playbook. Each prior acquisition had been handled ad hoc — nobody owned the process.\nSOLUTION: Designed integration playbook, sequenced the 3 integrations over 12 months, standardized the management operating system across all entities.\nRESULT: All 3 integrations completed. Zero customer attrition through integration. Management team retained through exit. GP called it 'the cleanest portfolio company we've run.'",
+      "metadata": { "track": "A", "industry": "private-equity", "result_type": "integration", "metric": "3 integrations, 0 customer attrition, full retention" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p08-cs1",
+      "practice_id": "p08",
+      "type": "case_study",
+      "content": "CLIENT: $42M mixed-use development, 4 months behind schedule. GC threatening to abandon the contract.\nSITUATION: Owner had no direct relationships with subcontractors. Lender starting to ask questions. GC using schedule as leverage.\nCONSTRAINT: The owner had ceded all project intelligence to the GC — no independent view of what was actually happening on site.\nSOLUTION: Established direct subcontractor relationships, rebuilt schedule from the slab up, negotiated a completion bonus structure with the GC.\nRESULT: Project completed 6 weeks after original substantial completion date — vs. the 6-month slip the GC was projecting. Lender satisfied. GC relationship preserved.",
+      "metadata": { "track": "A", "industry": "real-estate-construction", "result_type": "schedule-recovery", "metric": "6-week vs. 6-month projected slip" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p08-cs2",
+      "practice_id": "p08",
+      "type": "case_study",
+      "content": "CLIENT: Institutional owner developing their first ground-up building, no in-house construction expertise.\nSITUATION: Architect and GC operating as a unit. Owner felt outnumbered in every meeting.\nCONSTRAINT: Change orders were being approved without scrutiny — owner trusted the GC's framing because they had no independent reference point.\nSOLUTION: Installed weekly owner's meetings, reviewed all change orders before approval, flagged $900K in change orders as improper or inflated.\nRESULT: Project completed within 4% of original budget. $900K in flagged change orders reduced or rejected. Owner retained the practice for two subsequent projects.",
+      "metadata": { "track": "A", "industry": "real-estate-construction", "result_type": "budget-control", "metric": "$900K in flagged change orders, within 4% of budget" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p09-cs1",
+      "practice_id": "p09",
+      "type": "case_study",
+      "content": "CLIENT: Regional hot sauce brand, landed first national retailer. 30 days to ship 10x normal volume.\nSITUATION: Co-packer couldn't scale. No backup. Retailer ship date non-negotiable or shelf space gone.\nCONSTRAINT: Founder had one co-packer relationship and had never negotiated with a second one. No time to run a normal sourcing process.\nSOLUTION: Sourced and onboarded a second co-packer in 18 days, managed the dual-source production schedule, oversaw QC on the first run.\nRESULT: On-time delivery to retailer. Shelf placement retained. Second co-packer now serves as primary. Brand has since expanded to 3 additional regional retailers.",
+      "metadata": { "track": "A", "industry": "food-beverage", "result_type": "scale-crisis", "metric": "18-day co-packer onboard, on-time delivery, shelf retained" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p09-cs2",
+      "practice_id": "p09",
+      "type": "case_study",
+      "content": "CLIENT: Regional juice distributor expanding from 3 to 9 states. Margin collapsing with distance.\nSITUATION: Gross margin fell from 24% to 18% in 12 months as they expanded. Leadership didn't understand why.\nCONSTRAINT: Pricing model was built for local routes. Every new state was being sold at a loss when freight was fully loaded.\nSOLUTION: Rebuilt pricing model with freight-loaded margin by lane, renegotiated 6 retail contracts, eliminated 3 unprofitable SKUs entirely.\nRESULT: Gross margin improved from 18% to 27% in 12 months. Expansion continued but profitably. Three SKU exits done without losing shelf space.",
+      "metadata": { "track": "A", "industry": "food-beverage", "result_type": "margin-recovery", "metric": "18% → 27% gross margin" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p10-cs1",
+      "practice_id": "p10",
+      "type": "case_study",
+      "content": "CLIENT: 3,000-person financial services firm. ERP going live in 4 months. Prior system adoption historically poor.\nSITUATION: IT owns the implementation. No one owns the people side. Leadership worried but not acting.\nCONSTRAINT: The last system rollout had 31% Day 1 adoption. Leadership was repeating the same approach and hoping for different results.\nSOLUTION: 90-day pre-launch change program. Trained 40 managers as change champions. Built resistance escalation process. Ran targeted communication by user segment.\nRESULT: Day 1 adoption 71% vs. 31% on prior system. Helpdesk ticket volume 40% below projection. CFO described it as 'the first clean go-live in 10 years.'",
+      "metadata": { "track": "A", "industry": "financial-services", "result_type": "adoption", "metric": "31% → 71% Day 1 adoption, 40% fewer helpdesk tickets" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p10-cs2",
+      "practice_id": "p10",
+      "type": "case_study",
+      "content": "CLIENT: Healthcare system, 18 months post-merger, employees still identifying with legacy organizations.\nSITUATION: 'We vs. they' culture persisting despite leadership messaging. Survey scores declining.\nCONSTRAINT: Leadership had been avoiding the culture work hoping time would fix it — it was getting worse, not better.\nSOLUTION: Culture integration program anchored in shared patient care identity, not merger messaging. 12 cross-site cohort sessions. New manager rituals connecting legacy teams.\nRESULT: Culture survey: +34 points on 'we vs. they' measure in 6 months. Two formerly hostile department heads now co-lead a cross-site clinical working group.",
+      "metadata": { "track": "A", "industry": "healthcare", "result_type": "culture-integration", "metric": "+34pt culture survey improvement" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p11-cs1",
+      "practice_id": "p11",
+      "type": "case_study",
+      "content": "CLIENT: Regional insurance company, 200 employees. Losing business to digitally-enabled competitors. Board demanding action.\nSITUATION: 4 vendors had already been evaluated over 2 years. Decision paralysis. IT and business couldn't agree.\nCONSTRAINT: The real problem was not vendor selection but decision governance — no one had authority to make the call.\nSOLUTION: Built a vendor evaluation framework with explicit scoring weights, ran a 6-week structured selection process, managed stakeholder alignment before the final vote.\nRESULT: Vendor selected and under contract 8 weeks later. Implementation launched on schedule. First board update in 2 years where CEO could say 'we decided something.'",
+      "metadata": { "track": "B", "industry": "insurance", "result_type": "decision-acceleration", "metric": "2-year paralysis resolved in 8 weeks" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p11-cs2",
+      "practice_id": "p11",
+      "type": "case_study",
+      "content": "CLIENT: 150-person logistics company. Manual dispatch running on spreadsheets. Scaling impossible.\nSITUATION: The dispatcher — 22 years with the company — was the system. No documentation. No backup. She was planning to retire in 18 months.\nCONSTRAINT: The company couldn't move off spreadsheets without losing her institutional knowledge. She was reluctant to document because it felt like they were replacing her.\nSOLUTION: Framed documentation as a promotion — she became the system designer, not the thing being replaced. Selected and implemented a TMS with her as lead. 6-week parallel operation.\nRESULT: Dispatcher transitioned to Dispatch Supervisor overseeing the new system. System now handles 3x prior volume. She stayed past retirement date voluntarily.",
+      "metadata": { "track": "B", "industry": "logistics", "result_type": "digital-transition", "metric": "3x volume capacity, key employee retained" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p12-cs1",
+      "practice_id": "p12",
+      "type": "case_study",
+      "content": "CLIENT: 22-person IT services firm. All revenue from founder referrals. Wanted pipeline independent of founder.\nSITUATION: Tried blogging, tried LinkedIn, tried ads. Nothing converted. 'Marketing doesn't work for us.'\nCONSTRAINT: They were marketing to 'businesses' — ICP undefined. Every piece of content was for everyone, which meant it resonated with no one.\nSOLUTION: Identified 3 ICPs through client data analysis, selected one (mid-market law firms), built a 6-piece content series around law firm IT pain points.\nRESULT: 4 qualified inbound leads in 90 days from a market they had never penetrated. First new client signed at month 4 — $85K/year managed services contract.",
+      "metadata": { "track": "B", "industry": "professional-services", "result_type": "pipeline-build", "metric": "4 qualified leads in 90 days, $85K contract" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p12-cs2",
+      "practice_id": "p12",
+      "type": "case_study",
+      "content": "CLIENT: SaaS founder, $2M ARR, plateaued for 18 months. Wanted to grow to $5M.\nSITUATION: No marketing function. Founder doing everything himself. 3 different value propositions depending on who he was talking to.\nCONSTRAINT: The product genuinely served 3 different buyers. Choosing one felt like leaving money on the table. But serving all 3 meant serving none well.\nSOLUTION: Ran a positioning sprint using cohort analysis — identified the buyer segment with shortest sales cycle and highest NRR. Rebuilt website and all outbound around one message.\nRESULT: Demo request conversion +38%. Sales cycle shortened 3 weeks. Reached $3.1M ARR in the following 12 months — not $5M, but the fastest growth since founding.",
+      "metadata": { "track": "B", "industry": "b2b-saas", "result_type": "positioning", "metric": "+38% demo conversion, 3-week shorter sales cycle" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p13-cs1",
+      "practice_id": "p13",
+      "type": "case_study",
+      "content": "CLIENT: 35-person SaaS company, $4.5M ARR. CRM a mess. Forecasting unreliable.\nSITUATION: CEO going into every board meeting not knowing what the quarter would close at. Sales team blaming each other for missed targets.\nCONSTRAINT: 4 reps used 4 different stage definitions. Pipeline was a fiction — everyone padded their numbers differently.\nSOLUTION: Rebuilt stage definitions with exit criteria, ran 2 weeks of rep training with deal-by-deal calibration, built a forecast model tied to stage probabilities.\nRESULT: Forecast accuracy: 52% → 81% in one quarter. CEO stopped dreading board meetings. Two reps who'd been on a PIP were found to have been carrying pipeline correctly — the model had been wrong about them.",
+      "metadata": { "track": "B", "industry": "b2b-saas", "result_type": "forecasting", "metric": "52% → 81% forecast accuracy" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p13-cs2",
+      "practice_id": "p13",
+      "type": "case_study",
+      "content": "CLIENT: B2B software company, high inbound volume but low close rate. AEs missing quota by 30%.\nSITUATION: Leadership assumed AEs weren't skilled enough. Was planning to replace 2 of them.\nCONSTRAINT: SDRs were handing off leads that weren't qualified. AEs spending 40% of time on deals that had no chance.\nSOLUTION: Built an ICP scoring model, implemented a qualification gate between SDR and AE, redesigned the handoff process with a minimum qualification bar.\nRESULT: Qualified pipeline volume fell 30% but close rate increased 2.4x. Net revenue impact positive in 60 days. The 2 AEs leadership wanted to fire ended up in the top half of the team.",
+      "metadata": { "track": "B", "industry": "b2b-saas", "result_type": "pipeline-quality", "metric": "Close rate 2.4x, positive revenue impact in 60 days" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p14-cs1",
+      "practice_id": "p14",
+      "type": "case_study",
+      "content": "CLIENT: Family office with 4 retail strip centers. Pandemic-era vacancy never recovered.\nSITUATION: Portfolio at 71% occupancy vs. 93% pre-pandemic. Cash distributions to family members had been suspended for 2 years.\nCONSTRAINT: The property manager had been in place for 11 years and was a family friend — owner couldn't bring himself to replace them despite consistent underperformance.\nSOLUTION: Built a formal performance case using comparative market data (removed the personal element), managed the manager transition, implemented new leasing protocol with incentive structure.\nRESULT: Portfolio occupancy: 71% → 89% in 14 months. Cash distributions resumed at month 8. Owner's comment: 'I wish I'd done this 3 years ago.'",
+      "metadata": { "track": "B", "industry": "commercial-real-estate", "result_type": "occupancy", "metric": "71% → 89% occupancy, distributions resumed" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p14-cs2",
+      "practice_id": "p14",
+      "type": "case_study",
+      "content": "CLIENT: Private operator bringing first institutional LP into a multifamily deal. Had always run with friends-and-family capital.\nSITUATION: LP requiring quarterly reports and a specific financial model format. Operator had never produced either.\nCONSTRAINT: The operator's reporting was cash-basis and informal — not wrong, but unreadable to an institutional investor's team.\nSOLUTION: Built a quarterly reporting package in LP's required format, implemented accrual tracking in the property management software, prepared the first LP meeting deck.\nRESULT: LP committed. Letter of intent signed within 3 weeks of first meeting. LP's comment: 'Your reporting quality is better than most of our sponsors.'",
+      "metadata": { "track": "B", "industry": "commercial-real-estate", "result_type": "capital-access", "metric": "First institutional LP committed" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p15-cs1",
+      "practice_id": "p15",
+      "type": "case_study",
+      "content": "CLIENT: Regional credit union, $800M assets. Examination approaching. Compliance function understaffed.\nSITUATION: One compliance officer covering compliance, BSA, and staff training — impossible coverage.\nCONSTRAINT: Leadership knew it was under-resourced but had been deferring the hire. Examination was 5 months out.\nSOLUTION: Triaged examination risk by area, built a targeted remediation schedule, ran a 6-week BSA training program for frontline staff.\nRESULT: Examination completed with no findings requiring corrective action. Regulator noted the compliance program as 'significantly improved from prior cycle.'",
+      "metadata": { "track": "C", "industry": "financial-services", "result_type": "exam-prep", "metric": "Clean exam, regulator cited improvement" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p15-cs2",
+      "practice_id": "p15",
+      "type": "case_study",
+      "content": "CLIENT: Specialty pharmacy, expanding to 9 new states. Each state adding licensing and compliance complexity.\nSITUATION: Compliance tracked in spreadsheets. Deadlines missed twice in the prior year — one near-miss with a license lapse.\nCONSTRAINT: No centralized tracking. State requirements were being managed by the pharmacist-in-charge at each location — inconsistently.\nSOLUTION: Built a compliance calendar and monitoring system, documented state-specific requirements for all 12 states, trained pharmacy managers on their compliance obligations.\nRESULT: 100% on-time license renewals in year one. Zero compliance-related license issues. CEO: 'We can actually expand now without worrying about this.'",
+      "metadata": { "track": "C", "industry": "healthcare", "result_type": "compliance-system", "metric": "100% on-time renewals, zero license issues" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p16-cs1",
+      "practice_id": "p16",
+      "type": "case_study",
+      "content": "CLIENT: Community health nonprofit, $6M budget. New Executive Director. Board divided on strategic direction.\nSITUATION: Three board members wanted to expand programs. Three wanted to shore up operations first. Paralysis for 8 months.\nCONSTRAINT: Both factions were right — the divide wasn't about values, it was about sequencing. Nobody had named that.\nSOLUTION: Facilitated a priority-setting process that separated the 'what' from the 'when.' Built a 3-year plan sequencing operational strengthening in year 1, expansion in years 2–3.\nRESULT: Unanimous board vote on plan — first unanimous strategic decision in 3 years. ED: 'The board is more aligned now than at any point since I've been here.'",
+      "metadata": { "track": "C", "industry": "nonprofit", "result_type": "governance", "metric": "Unanimous board vote, 3-year paralysis resolved" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p16-cs2",
+      "practice_id": "p16",
+      "type": "case_study",
+      "content": "CLIENT: Regional arts organization, pandemic-era audience loss, major funder pulling $400K grant.\nSITUATION: 80% foundation-dependent. The board had never had to think about earned revenue.\nCONSTRAINT: The board was in denial — hoping the funder would reverse course rather than building an alternative.\nSOLUTION: Facilitated board strategy session on revenue diversification. Identified 3 earned revenue opportunities. Built a 2-year transition plan with board ownership of each initiative.\nRESULT: Earned revenue grew from 9% to 24% of budget in 18 months. Organization survived the funder exit. Two board members who had been disengaged became active revenue champions.",
+      "metadata": { "track": "C", "industry": "nonprofit", "result_type": "revenue-diversification", "metric": "Earned revenue 9% → 24%, survived major funder exit" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p17-cs1",
+      "practice_id": "p17",
+      "type": "case_study",
+      "content": "CLIENT: 200-person financial services firm. Promoted 8 individual contributors to manager in one year. All struggling.\nSITUATION: Performance reviews showing new managers below expectations across the board. Employees complaining.\nCONSTRAINT: The company had defined 'manager' as 'senior IC with reports' — no role redesign, no manager preparation, no support.\nSOLUTION: Designed a 12-week manager effectiveness cohort program. Reframed the manager role. Built a weekly practice structure connecting the program to real work.\nRESULT: 90-day follow-up: 6 of 8 managers rated 'meeting or exceeding expectations' vs. 2 of 8 before the program. Two managers specifically credited the cohort with saving their careers.",
+      "metadata": { "track": "C", "industry": "financial-services", "result_type": "manager-development", "metric": "2/8 → 6/8 managers performing, within 90 days" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p17-cs2",
+      "practice_id": "p17",
+      "type": "case_study",
+      "content": "CLIENT: PE-backed software company, sales team missing quota despite strong talent. Leadership blaming training.\nSITUATION: Quota attainment at 61%. Sales training was product-focused. Reps knew the product but lost in executive conversations.\nCONSTRAINT: The buyers were CEOs and CFOs. The reps had been trained to demo features, not to have business-outcome conversations.\nSOLUTION: Designed a 6-module 'business acumen for sales' program. Facilitated cohort sessions. Built manager reinforcement tools for the 30 days post-training.\nRESULT: Average deal size +28% in the quarter following training. Quota attainment improved from 61% to 79%. Two reps who had been on a PIP closed their largest deals ever.",
+      "metadata": { "track": "C", "industry": "b2b-saas", "result_type": "sales-performance", "metric": "+28% deal size, 61% → 79% quota attainment" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p18-cs1",
+      "practice_id": "p18",
+      "type": "case_study",
+      "content": "CLIENT: $400M AUM independent RIA. Custodian transition forced by custodian exit. 6 months to move 340 accounts.\nSITUATION: 2 ops staff for 340 accounts, a hard deadline, and a custodian who was actively trying to retain assets. Tension.\nCONSTRAINT: The ops team had never run a transition before. The custodian's 'help' was slowing things down.\nSOLUTION: Built a transition project plan, brought in temporary ops support for 8 weeks, managed the custodian relationship independently of the client team.\nRESULT: 100% of accounts transferred on time. 3 client complaints — industry benchmark for a transition this size is 15–20. Ops team described it as 'the smoothest project we've ever run.'",
+      "metadata": { "track": "C", "industry": "wealth-management-ria", "result_type": "platform-transition", "metric": "340 accounts, 3 complaints vs. 15-20 benchmark" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p18-cs2",
+      "practice_id": "p18",
+      "type": "case_study",
+      "content": "CLIENT: RIA aggregator, 3 acquired firms, 18 months to integrate all onto one platform.\nSITUATION: Each acquired firm had different client service standards. Clients nervous about what 'integration' meant for them.\nCONSTRAINT: The aggregator's instinct was to standardize everything immediately. That would have felt like a downgrade to clients of the acquired firms.\nSOLUTION: Built a client service framework that preserved each acquired firm's brand standards at the client layer while running on the shared platform underneath.\nRESULT: Client retention rate 97% across all 3 integrations. AUM growth continued through integration — no defensive outflows. One acquired firm's lead advisor called it 'the best acquisition experience I've seen in 20 years.'",
+      "metadata": { "track": "C", "industry": "wealth-management-ria", "result_type": "acquisition-integration", "metric": "97% client retention across 3 integrations" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+
+    {
+      "id": "k-p01-script",
+      "practice_id": "p01",
+      "type": "referral_script",
+      "content": "You've seen us operate up close over the last [X months]. I want to ask you directly — if you know one or two people navigating what you were navigating when we started, I'd love an introduction. I'm not asking you to vouch for me to someone who's not ready. But if you're ever in a room with a COO or operations leader who's hit a wall — growing faster than their systems can handle, or about to bring on a new facility — I'd like to be the name you mention. Not a pitch. Just a conversation.",
+      "metadata": { "track": "A", "industry": "manufacturing", "relationship_type": "past-client", "tone": "direct" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p02-script",
+      "practice_id": "p02",
+      "type": "referral_script",
+      "content": "My best clients come through accountants, attorneys, and advisors who are already working with founders — people who see the financial stress before the founder admits it. If you have clients who are growing but always seem cash-thin, or who are getting ready to raise and don't have the financial story together yet — that's exactly who I help. I'd love to be a resource you can send that kind of client to. Not a formal arrangement, just someone you know you can refer with confidence.",
+      "metadata": { "track": "A", "industry": "professional-services", "relationship_type": "peer", "tone": "collaborative" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p03-script",
+      "practice_id": "p03",
+      "type": "referral_script",
+      "content": "The clients who come to me most naturally are post-acquisition companies where the people friction is starting to show up in the numbers — attrition spiking, managers not managing, key people going quiet. M&A advisors and growth-stage investors usually see this before the company does. If you're involved in a deal that's closed and the integration is getting wobbly on the people side, I'd like to be the first call you make. You can tell them exactly what we did here.",
+      "metadata": { "track": "A", "industry": "tech-saas", "relationship_type": "peer", "tone": "specific" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p04-script",
+      "practice_id": "p04",
+      "type": "referral_script",
+      "content": "Practice management consultants, healthcare attorneys, and medical accountants are usually the first people to know when a practice is maxed out or about to grow into something it's not built to handle. That's my moment. If you work with practices that are turning away patients, preparing for a partnership, or just grinding and not knowing why — I'd love to be someone you mention. You've seen what we did here. That's the kind of practice I can help.",
+      "metadata": { "track": "A", "industry": "healthcare", "relationship_type": "peer", "tone": "specific" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p05-script",
+      "practice_id": "p05",
+      "type": "referral_script",
+      "content": "I work best at the moment of transition — someone just got promoted, just took on a new role, just inherited a team they didn't build. Executive search firms and investors who've just placed a leader often know exactly who that person is before the coaching conversation starts. If you've just made a key leadership move and you want to protect the investment you made in that person, that's my moment. I'd like to be the name you reach for.",
+      "metadata": { "track": "A", "industry": "cross-sector", "relationship_type": "peer", "tone": "positioning" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p06-script",
+      "practice_id": "p06",
+      "type": "referral_script",
+      "content": "The best conversations start with a CFO or COO saying 'our supply chain is costing us more than it should' — and not being able to say exactly why. If you're in the room when that frustration comes up, I'd like to be the next call. You've seen what a clean supply chain diagnostic can surface. That's what I do for companies at this size and stage. A warm introduction is all I need — I'll take it from there.",
+      "metadata": { "track": "A", "industry": "manufacturing-distribution", "relationship_type": "past-client", "tone": "direct" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p07-script",
+      "practice_id": "p07",
+      "type": "referral_script",
+      "content": "Deal lawyers, accountants, and operating partners are usually the first to know when a portfolio company is going to need real operational work post-close — not just a 100-day plan that sits on a shelf. If you're involved in a deal and the ops thesis needs someone to actually run it, I'd like to be that conversation. You've seen how this kind of engagement actually works. That's the referral I'm asking for.",
+      "metadata": { "track": "A", "industry": "private-equity", "relationship_type": "peer", "tone": "direct" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p08-script",
+      "practice_id": "p08",
+      "type": "referral_script",
+      "content": "I work best when someone says 'this owner is in over their head and needs someone in their corner.' Lenders, real estate attorneys, and brokers are usually the first to see that. If you're watching an owner get outmaneuvered by a GC, or carrying a project that's starting to slip, I'd like to be who you call. You've seen what having an independent eye on a project actually does for the outcome.",
+      "metadata": { "track": "A", "industry": "real-estate-construction", "relationship_type": "peer", "tone": "specific" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p09-script",
+      "practice_id": "p09",
+      "type": "referral_script",
+      "content": "Emerging brand advisors, food brokers, and retail buyers are usually the first to know when a brand is getting pulled faster than it can fulfill. That's my moment — the brand that's got the retail traction but doesn't have the operations to back it up. If you see that, I'd love to be the person you mention. You've seen exactly what I can do when the timeline is short and the stakes are real.",
+      "metadata": { "track": "A", "industry": "food-beverage", "relationship_type": "peer", "tone": "specific" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p10-script",
+      "practice_id": "p10",
+      "type": "referral_script",
+      "content": "Technology vendors, strategy firms, and PMOs almost always know when a transformation is at risk from the people side — and they almost never own it. If you're on a project where the adoption conversation isn't happening, I'd like to be the resource you point to. Not as a threat to anyone's scope — as the piece that makes everyone else's work actually stick. You've seen what that looks like when it's done right.",
+      "metadata": { "track": "A", "industry": "enterprise-cross-sector", "relationship_type": "peer", "tone": "collaborative" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p11-script",
+      "practice_id": "p11",
+      "type": "referral_script",
+      "content": "I'm actively building my client base in Midwest manufacturing and logistics — my background is financial services and insurance, and I'm making the move intentionally. If you know a COO or CIO who's stuck between knowing they need to modernize and not trusting a big firm to do it without making a mess — that's exactly the conversation I'm built for. I don't need a warm intro, but if you're willing to make one, I'll make you look good.",
+      "metadata": { "track": "B", "industry": "manufacturing-logistics", "relationship_type": "peer", "tone": "direct-new-market" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p12-script",
+      "practice_id": "p12",
+      "type": "referral_script",
+      "content": "I'm looking to connect with founders and CEOs of B2B services firms and SaaS companies between $1M and $10M who know their marketing isn't working but aren't sure why. If that sounds like someone you know — someone who's tried things, spent money, and hasn't seen the return — I'd love an introduction. The positioning work I do is usually the thing that makes everything else they've tried start working.",
+      "metadata": { "track": "B", "industry": "professional-services-saas", "relationship_type": "peer", "tone": "specific" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p13-script",
+      "practice_id": "p13",
+      "type": "referral_script",
+      "content": "I'm building in the B2B SaaS space and the best conversations start with a VP of Sales or founder who's watching good leads disappear into a broken process. If you know someone whose team is working hard but the numbers don't show it — pipeline looks full but the close rate is wrong, or forecasting is a guessing game — that's the conversation I want to have. Warm intro appreciated. Cold intro also fine. I'll earn it.",
+      "metadata": { "track": "B", "industry": "b2b-saas", "relationship_type": "peer", "tone": "direct-new-market" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p14-script",
+      "practice_id": "p14",
+      "type": "referral_script",
+      "content": "I'm looking to build relationships with real estate attorneys, family office advisors, and debt brokers who work with private operators. If you have a client dealing with an underperforming asset, a manager relationship that needs to change, or a first institutional deal that needs someone to make the reporting credible — that's exactly what I do. I'd like to be a resource you can trust to take care of whoever you send my way.",
+      "metadata": { "track": "B", "industry": "commercial-real-estate", "relationship_type": "peer", "tone": "trust-building" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p15-script",
+      "practice_id": "p15",
+      "type": "referral_script",
+      "content": "I realize I've never actually asked you directly — you work with the kind of organizations I help most, and I'd like to change that. If you have clients who are facing an examination, expanding into new regulatory territory, or just know their compliance function isn't where it needs to be, I'd like to be the person you mention. You know what I do and how I do it. A direct introduction is all I need.",
+      "metadata": { "track": "C", "industry": "financial-services-healthcare", "relationship_type": "peer", "tone": "direct-first-ask" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p16-script",
+      "practice_id": "p16",
+      "type": "referral_script",
+      "content": "I've worked alongside you long enough that I want to ask this directly. The organizations I help most are facing a leadership transition, a funder shift, or a board that can't agree on direction — and they need someone who can facilitate without taking sides. If you work with Executive Directors or boards in that situation, I'd be grateful for an introduction. You've seen how I work in a room. That's the referral I'm asking for.",
+      "metadata": { "track": "C", "industry": "nonprofit", "relationship_type": "peer", "tone": "direct-first-ask" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p17-script",
+      "practice_id": "p17",
+      "type": "referral_script",
+      "content": "I've been meaning to ask you this for a while. The companies I help most have promoted people into manager roles without really preparing them — and it's starting to show up in turnover or performance issues. CHROs and VPs of People usually see this before leadership admits it's a problem. If that's something you're watching in a client organization, I'd love to be the person you call before it becomes a bigger problem to solve.",
+      "metadata": { "track": "C", "industry": "cross-sector", "relationship_type": "peer", "tone": "direct-first-ask" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+    {
+      "id": "k-p18-script",
+      "practice_id": "p18",
+      "type": "referral_script",
+      "content": "I want to ask you something I should have asked a while ago. You're connected to the RIA and wealth management community in a way I'm not yet — and the firms I help most are ones facing a platform transition, an acquisition integration, or an ops function that can't keep up with AUM growth. If you know a Managing Partner or COO dealing with any of those, I'd welcome an introduction. You can tell them exactly what we did here.",
+      "metadata": { "track": "C", "industry": "wealth-management-ria", "relationship_type": "peer", "tone": "direct-first-ask" },
+      "outcome_signal": null,
+      "source": "synthetic-seed"
+    },
+
+    {
+      "id": "k-meth-01",
+      "practice_id": null,
+      "type": "methodology",
+      "content": "TRACK ASSIGNMENT LOGIC\n\nTrack A — Discipline & Systematize: Assign when market_state=warm AND motion=referral or content. The practice has a functioning referral network and a known niche. The constraint is almost always consistency and systematization, not market-building. BD system should center on the Referral Engine and a cadenced weekly BD day.\n\nTrack B — Build From Zero: Assign when market_state=cold OR market_state=transitioning AND the practice is entering a new market, geography, or buyer type. The constraint is proof and presence in the new market. BD system should center on Credibility Presence (case studies, placements) before referral activation.\n\nTrack C — Fix & Activate: Assign when market_state=warm but motion=mixed with no dominant channel, or when the practice has some pipeline but inconsistent conversion. The constraint is almost always positioning — until the one-line is sharp, nothing else works. Start with Positioning before anything else.",
+      "metadata": { "type": "track-logic" },
+      "outcome_signal": null,
+      "source": "britt-curated"
+    },
+    {
+      "id": "k-meth-02",
+      "practice_id": null,
+      "type": "methodology",
+      "content": "REFERRAL FRAMEWORK: THE TWO-CONVERSATION MODEL\n\nConvo 1 — The Visibility Ask: The goal is not to ask for a referral. The goal is to re-establish top-of-mind status with someone who could refer you. 'I wanted to reconnect and catch you up on what I've been working on.' Share one specific client result. Ask what they're working on. Do not ask for a referral in this conversation.\n\nConvo 2 — The Direct Ask: 'I'm being intentional about how I grow this year, and I want to ask you directly. [Describe your ideal referral — specific, not generic.] If anyone comes to mind, I'd love an introduction. And if not, no worries — I just didn't want to leave it to chance.'\n\nKey rule: Never ask for a referral in the first conversation. Trust must be re-established first. The two-conversation cadence is the minimum.",
+      "metadata": { "type": "referral-system" },
+      "outcome_signal": null,
+      "source": "britt-curated"
+    },
+    {
+      "id": "k-meth-03",
+      "practice_id": null,
+      "type": "methodology",
+      "content": "OFFER ARCHITECTURE: ENTRY / FOUNDATION / RETAINED\n\nEvery practice needs exactly three offers:\n\nEntry (Offer 1): Lower risk, shorter duration, scoped to diagnosis or assessment. Purpose: lowers the barrier to a first engagement and lets the client experience how you work. Price should be 5–10% of the Foundation offer. Duration 2–4 weeks.\n\nFoundation (Offer 2): The core engagement. What the practice actually does. Price and duration should reflect actual market rates for the niche. This is the offer that most past clients have purchased.\n\nRetained (Offer 3): Ongoing relationship after the Foundation engagement. Monthly fee, minimum term (usually 3 months). Purpose: keeps the relationship active, captures value from decisions made during implementation, and creates recurring revenue. Fee should be 10–15% of the Foundation engagement value per month.\n\nDo not offer fewer than 3 or more than 3. A practice with only 1–2 offers has a pipeline problem — every conversation is all-or-nothing.",
+      "metadata": { "type": "offer-architecture" },
+      "outcome_signal": null,
+      "source": "britt-curated"
+    },
+    {
+      "id": "k-meth-04",
+      "practice_id": null,
+      "type": "methodology",
+      "content": "POSITIONING ONE-LINER FORMULA\n\nStructure: We help [specific buyer] [do the thing they're trying to do] — [without the thing they're afraid of / the thing that's been stopping them].\n\nTests for a good one-liner:\n1. Could someone repeat it accurately after hearing it once? If no, it's too long.\n2. Does it exclude someone? If it sounds like it's for everyone, it's for no one.\n3. Does it name a real constraint or fear? 'We help companies grow' fails this test.\n4. Could a competitor say it word-for-word? If yes, it's not specific enough.\n\nCommon failure modes:\n- Too abstract: 'We help organizations achieve their full potential'\n- Too functional: 'We provide operations consulting services'\n- Too many buyers: 'We work with companies of all sizes in any industry'\n- Jargon-forward: 'We deliver end-to-end transformation across the value chain'\n\nThe test: give the one-liner to a stranger and ask 'who is this for?' If they can't answer, rewrite it.",
+      "metadata": { "type": "positioning-formula" },
+      "outcome_signal": null,
+      "source": "britt-curated"
+    },
+    {
+      "id": "k-meth-05",
+      "practice_id": null,
+      "type": "methodology",
+      "content": "CASE STUDY STRUCTURE: THE CONSTRAINT NARRATIVE\n\nThe most effective case studies are built around the real constraint — not the stated problem. Structure:\n\n1. CLIENT CONTEXT: One sentence. Who they are, size, industry, situation.\n2. SITUATION: What was visibly happening when they came in.\n3. THE REAL CONSTRAINT: What was actually causing the situation. This is the insight — not the symptom. This is what makes the story specific and memorable.\n4. WHAT WAS DONE: The intervention. Concrete, specific, not generic.\n5. RESULT: A number. Not 'significantly improved' — an actual before/after with a time frame.\n6. QUOTE (if available): One sentence from the client that captures the experience, not just the outcome.\n\nKey rules:\n- The constraint must be non-obvious. If anyone could have spotted it, it's not a compelling case study.\n- The result must be specific. 'Improved operations' is not a result.\n- The story should take 60 seconds to tell out loud. If it takes longer, cut the situation section.\n- Anonymize the client name but keep the industry, size, and situation specific.",
+      "metadata": { "type": "case-study-structure" },
+      "outcome_signal": null,
+      "source": "britt-curated"
+    },
+    {
+      "id": "k-meth-06",
+      "practice_id": null,
+      "type": "methodology",
+      "content": "30-60-90 SEQUENCING RULES BY TRACK\n\nTrack A (Referral-dominant, warm market):\n- Days 1–30: Lock positioning, finalize offers, build contact roster to minimum 6, block BD day weekly\n- Days 31–60: First referral asks with top 2 contacts, first case study published to LinkedIn, Convo 1 with each priority contact\n- Days 61–90: Close or advance one referral-sourced opportunity, second referral ask round, second case study draft\n- Key constraint: Consistency. Most Track A practices stop when they get busy. The BD day must be non-negotiable.\n\nTrack B (Cold market, new geography):\n- Days 1–30: Positioning for the new market, first case study (even anonymized), identify 3 credibility placement targets, build 15-name prospect list\n- Days 31–60: Publish first content, submit to trade association or event, begin outbound sequence (5 attempts/week)\n- Days 61–90: First new-market client conversation, refine ICP based on response data, expand content distribution\n- Key constraint: Proof. Cannot activate referrals in a market where you're unknown. Credibility comes first.\n\nTrack C (Mixed motion, positioning stalling):\n- Days 1–30: Positioning sprint — lock the one-liner before touching anything else, audit current pipeline for pattern\n- Days 31–60: Test the new positioning in 3 conversations, refine referral ask language, identify 2 channels to consolidate on\n- Days 61–90: First referral cycle with sharpened positioning, one credibility placement with new one-liner\n- Key constraint: Focus. Track C practices are usually trying to do too many things. The fix is subtraction before addition.",
+      "metadata": { "type": "plan-sequencing" },
+      "outcome_signal": null,
+      "source": "britt-curated"
+    },
+    {
+      "id": "k-meth-07",
+      "practice_id": null,
+      "type": "methodology",
+      "content": "CHANNEL PRIORITIZATION RULES\n\nFor Track A practices: LinkedIn first, always. It is where buyers verify you exist before they take a referral seriously. Peer groups (Slack, associations) second — where referral sources gather. Speaking engagements third — highest-leverage credibility placement per hour invested. Do not spread to more than 3 channels in the first 90 days.\n\nFor Track B practices: Owned content first (blog, LinkedIn, Substack) — builds proof that can be referenced in outbound. Cold email second — highest volume, lowest barrier in a market where you have no relationships. Trade associations third — fastest way to build credibility in a new sector. Avoid referral activation until you have at least 1 case study in the new market.\n\nFor Track C practices: Consolidate before adding. Identify the 1–2 channels that have produced any results and double down. Adding new channels when existing ones aren't working is the most common Track C mistake. Fix the positioning first — bad positioning makes every channel underperform.\n\nGeneral rule: One channel mastered beats three channels dabbled. The goal is depth of presence, not breadth of activity.",
+      "metadata": { "type": "channel-prioritization" },
+      "outcome_signal": null,
+      "source": "britt-curated"
+    }
+
+  ]
+}
