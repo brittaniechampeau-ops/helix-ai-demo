@@ -1067,14 +1067,24 @@
 
       <div class="card" style="margin-bottom:20px">
         <div class="card-header">
-          <span class="card-title">Session Notes</span>
-          <span style="font-size:11px;color:var(--txt3)" id="notesSavedHint"></span>
+          <span class="card-title">Session Log</span>
+          <button class="btn btn-primary btn-sm" onclick="openSessionEntry()">+ Add Entry</button>
         </div>
-        <p style="font-size:12px;color:var(--txt3);margin-bottom:10px">Notes from your last call, what's blocked, next action. Saved automatically.</p>
-        <textarea id="practiceNotes"
-          placeholder="e.g. Covered referral engine. Sarah is blocked on drafting the case study — she needs a writing session. Follow up in 2 weeks to check on LinkedIn post."
-          style="width:100%;min-height:90px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--txt);font-size:13px;resize:vertical;font-family:inherit;line-height:1.6;outline:none"
-          oninput="saveNotes(this.value)"></textarea>
+        <p style="font-size:12px;color:var(--txt3);margin-bottom:12px">Timestamped log across all sessions — what was covered, what's blocked, next action.</p>
+        <!-- compose area (hidden by default) -->
+        <div id="sessionEntryCompose" style="display:none;margin-bottom:14px">
+          <textarea id="sessionEntryText"
+            placeholder="e.g. Covered referral engine. Sarah blocked on case study draft — needs writing session. Follow up in 2 weeks."
+            style="width:100%;min-height:80px;padding:10px 12px;background:var(--surface2);border:1px solid var(--accent);border-radius:8px;color:var(--txt);font-size:13px;resize:vertical;font-family:inherit;line-height:1.6;outline:none;margin-bottom:8px"></textarea>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-primary btn-sm" onclick="saveSessionEntry()">Save Entry</button>
+            <button class="btn btn-ghost btn-sm" onclick="cancelSessionEntry()">Cancel</button>
+            <span style="font-size:11px;color:var(--txt3);align-self:center" id="sessionEntrySavedHint"></span>
+          </div>
+        </div>
+        <!-- log list -->
+        <div id="sessionLogList"></div>
+        <div id="sessionLogEmpty" style="font-size:12px;color:var(--txt3);padding:8px 0">No entries yet. Add one after your next call.</div>
       </div>
 
       <div class="card">
@@ -1336,7 +1346,7 @@ const VEC = {
   cred: { cases: [], placements: [], generated: false },
   ops:  { duration: '', cadence: '', refAsk: true, caseDraft: true, nps: false, generated: false },
   plan: { generated: false, checked: {} },
-  notes: ''
+  sessionLog: []
 };
 let PHASE = 0;
 const STEP_MIN = [0, 1, 2, 3, 4, 5, 6];
@@ -2118,9 +2128,8 @@ function updatePracticeOS() {
   statusEl('fs-ops',  VEC.ops.generated);
   statusEl('fs-plan', VEC.plan.generated);
 
-  // Notes
-  const notesEl = document.getElementById('practiceNotes');
-  if (notesEl && notesEl.value !== (VEC.notes || '')) notesEl.value = VEC.notes || '';
+  // Session log
+  renderSessionLog();
 
   // Integration hub
   if (VEC.diag.crm.length || VEC.diag.pm.length || VEC.diag.storage.length) {
@@ -2292,16 +2301,57 @@ function toggleMilestone(id, checked) {
   renderPlanTracker();
 }
 
-let _notesSaveTimer = null;
-function saveNotes(val) {
-  VEC.notes = val;
-  const hint = document.getElementById('notesSavedHint');
-  if (hint) hint.textContent = '';
-  clearTimeout(_notesSaveTimer);
-  _notesSaveTimer = setTimeout(() => {
-    saveState();
-    if (hint) { hint.textContent = 'Saved'; setTimeout(() => { if (hint) hint.textContent = ''; }, 1500); }
-  }, 800);
+function renderSessionLog() {
+  const log = VEC.sessionLog || [];
+  const listEl = document.getElementById('sessionLogList');
+  const emptyEl = document.getElementById('sessionLogEmpty');
+  if (!listEl) return;
+  if (!log.length) { listEl.innerHTML = ''; if (emptyEl) emptyEl.style.display = ''; return; }
+  if (emptyEl) emptyEl.style.display = 'none';
+  listEl.innerHTML = [...log].reverse().map((entry, ri) => {
+    const i = log.length - 1 - ri;
+    const d = new Date(entry.date);
+    const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) +
+      ' · ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    const text = (entry.text || '').replace(/\n/g, '<br>');
+    return `<div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span style="font-size:11px;color:var(--txt3)">${label}</span>
+        <button onclick="deleteSessionEntry(${i})" style="background:none;border:none;color:var(--txt3);cursor:pointer;font-size:12px;padding:0 2px" title="Delete">✕</button>
+      </div>
+      <div style="font-size:13px;color:var(--txt);line-height:1.6">${text}</div>
+    </div>`;
+  }).join('');
+}
+
+function openSessionEntry() {
+  const compose = document.getElementById('sessionEntryCompose');
+  if (compose) { compose.style.display = ''; document.getElementById('sessionEntryText')?.focus(); }
+}
+function cancelSessionEntry() {
+  const compose = document.getElementById('sessionEntryCompose');
+  if (compose) compose.style.display = 'none';
+  const ta = document.getElementById('sessionEntryText');
+  if (ta) ta.value = '';
+}
+function saveSessionEntry() {
+  const ta = document.getElementById('sessionEntryText');
+  const text = (ta?.value || '').trim();
+  if (!text) return;
+  if (!Array.isArray(VEC.sessionLog)) VEC.sessionLog = [];
+  VEC.sessionLog.push({ id: Date.now(), date: new Date().toISOString(), text });
+  ta.value = '';
+  document.getElementById('sessionEntryCompose').style.display = 'none';
+  renderSessionLog();
+  saveState();
+  const hint = document.getElementById('sessionEntrySavedHint');
+  if (hint) { hint.textContent = 'Saved'; setTimeout(() => { hint.textContent = ''; }, 1500); }
+}
+function deleteSessionEntry(i) {
+  if (!Array.isArray(VEC.sessionLog)) return;
+  VEC.sessionLog.splice(i, 1);
+  renderSessionLog();
+  saveState();
 }
 
 // ─── DOWNLOAD ARTIFACTS ────────────────────────────────
@@ -3232,7 +3282,9 @@ function renderAdminClients(clients) {
     const track = vec.diag?.track || '—';
     const updated = c.updated_at ? new Date(c.updated_at).toLocaleDateString('en-US', { month:'short', day:'numeric' }) : '—';
     const founder = vec.practice?.founder || '';
-    const notes = (vec.notes || '').trim();
+    const log = vec.sessionLog || [];
+    const latestEntry = log.length ? log[log.length - 1] : null;
+    const notes = latestEntry ? (latestEntry.text || '').trim() : '';
     const { done, total, pct, nextTask } = getPlanProgress(vec);
     const hasPlan = total > 0;
     const trackColor = track === 'A' ? 'var(--accent)' : track === 'B' ? '#5AABF0' : '#F0A832';
@@ -3254,7 +3306,7 @@ function renderAdminClients(clients) {
       </div>
       ${hasPlan ? `<div style="margin-top:10px;height:3px;background:var(--surface2);border-radius:2px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${trackColor};border-radius:2px;transition:width .3s"></div></div>` : ''}
       ${nextTask ? `<div style="margin-top:8px;font-size:11px;color:var(--txt3);display:flex;gap:6px;align-items:flex-start"><span style="color:var(--accent);flex-shrink:0">→</span><span>Next: ${nextTask}</span></div>` : ''}
-      ${notes ? `<div style="margin-top:8px;padding:8px 10px;background:var(--surface2);border-radius:6px;font-size:11px;color:var(--txt2);line-height:1.5;border-left:2px solid var(--border)">${notes.length > 120 ? notes.slice(0, 120) + '…' : notes}</div>` : ''}
+      ${notes ? `<div style="margin-top:8px;padding:8px 10px;background:var(--surface2);border-radius:6px;font-size:11px;color:var(--txt2);line-height:1.5;border-left:2px solid var(--border)"><span style="color:var(--txt3);font-size:10px">${new Date(latestEntry.date).toLocaleDateString('en-US',{month:'short',day:'numeric'})} · </span>${notes.length > 100 ? notes.slice(0, 100) + '…' : notes}</div>` : ''}
     </div>`;
   }).join('');
 }
