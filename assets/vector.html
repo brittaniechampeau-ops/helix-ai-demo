@@ -1102,21 +1102,7 @@
           <span class="card-title">Artifact Library</span>
           <button class="btn btn-primary btn-sm" onclick="downloadBundle()">↓ Download All</button>
         </div>
-        <div class="artifact-list" id="artifactLibrary">
-          <div class="artifact-row"><div class="artifact-left"><span class="artifact-icon">🗺️</span><div><div class="artifact-name">Positioning Canvas</div><div class="artifact-meta">positioning_canvas.doc</div></div></div><button class="btn btn-ghost btn-sm" onclick="downloadArtifact('positioning')">↓</button></div>
-          <div class="artifact-row"><div class="artifact-left"><span class="artifact-icon">📦</span><div><div class="artifact-name">Entry Offer One-Pager</div><div class="artifact-meta">offer_entry.doc</div></div></div><button class="btn btn-ghost btn-sm" onclick="downloadArtifact('offer1')">↓</button></div>
-          <div class="artifact-row"><div class="artifact-left"><span class="artifact-icon">📦</span><div><div class="artifact-name">Foundation Offer One-Pager</div><div class="artifact-meta">offer_foundation.doc</div></div></div><button class="btn btn-ghost btn-sm" onclick="downloadArtifact('offer2')">↓</button></div>
-          <div class="artifact-row"><div class="artifact-left"><span class="artifact-icon">📦</span><div><div class="artifact-name">Retained Offer One-Pager</div><div class="artifact-meta">offer_retained.doc</div></div></div><button class="btn btn-ghost btn-sm" onclick="downloadArtifact('offer3')">↓</button></div>
-          <div class="artifact-row"><div class="artifact-left"><span class="artifact-icon">🤝</span><div><div class="artifact-name">Referral Ask Scripts</div><div class="artifact-meta">referral_scripts.doc</div></div></div><button class="btn btn-ghost btn-sm" onclick="downloadArtifact('referral')">↓</button></div>
-          <div class="artifact-row"><div class="artifact-left"><span class="artifact-icon">⭐</span><div><div class="artifact-name">Case Study Draft(s)</div><div class="artifact-meta">case_studies.doc</div></div></div><button class="btn btn-ghost btn-sm" onclick="downloadArtifact('casestudies')">↓</button></div>
-          <div class="artifact-row"><div class="artifact-left"><span class="artifact-icon">📋</span><div><div class="artifact-name">Placement Checklist</div><div class="artifact-meta">placement_checklist.doc</div></div></div><button class="btn btn-ghost btn-sm" onclick="downloadArtifact('placement')">↓</button></div>
-          <div class="artifact-row"><div class="artifact-left"><span class="artifact-icon">📝</span><div><div class="artifact-name">Intake Questionnaire</div><div class="artifact-meta">intake_questionnaire.doc</div></div></div><button class="btn btn-ghost btn-sm" onclick="downloadArtifact('intake')">↓</button></div>
-          <div class="artifact-row"><div class="artifact-left"><span class="artifact-icon">📄</span><div><div class="artifact-name">Scoping Document</div><div class="artifact-meta">scoping_document.doc</div></div></div><button class="btn btn-ghost btn-sm" onclick="downloadArtifact('scoping')">↓</button></div>
-          <div class="artifact-row"><div class="artifact-left"><span class="artifact-icon">🚀</span><div><div class="artifact-name">Kickoff Agenda</div><div class="artifact-meta">kickoff_agenda.doc</div></div></div><button class="btn btn-ghost btn-sm" onclick="downloadArtifact('kickoff')">↓</button></div>
-          <div class="artifact-row"><div class="artifact-left"><span class="artifact-icon">🔄</span><div><div class="artifact-name">Delivery Cadence Template</div><div class="artifact-meta">delivery_cadence.doc</div></div></div><button class="btn btn-ghost btn-sm" onclick="downloadArtifact('cadence')">↓</button></div>
-          <div class="artifact-row"><div class="artifact-left"><span class="artifact-icon">🏁</span><div><div class="artifact-name">Handoff Checklist</div><div class="artifact-meta">handoff_checklist.doc</div></div></div><button class="btn btn-ghost btn-sm" onclick="downloadArtifact('handoff')">↓</button></div>
-          <div class="artifact-row"><div class="artifact-left"><span class="artifact-icon">📅</span><div><div class="artifact-name">30-60-90 Day Plan</div><div class="artifact-meta">Track progress in-app above ↑</div></div></div><button class="btn btn-ghost btn-sm" onclick="downloadArtifact('plan')">View</button></div>
-        </div>
+        <div class="artifact-list" id="artifactLibrary"></div>
       </div>
     </div>
 
@@ -1402,7 +1388,7 @@ const VEC = {
   ref:  { contacts: [], generated: false },
   cred: { cases: [], placements: [], generated: false },
   ops:  { duration: '', cadence: '', refAsk: true, caseDraft: true, nps: false, generated: false },
-  plan: { generated: false, checked: {} },
+  plan: { generated: false, checked: {}, delivery: {} },
   sessionLog: [],
   stakeholders: []
 };
@@ -2186,9 +2172,10 @@ function updatePracticeOS() {
   statusEl('fs-ops',  VEC.ops.generated);
   statusEl('fs-plan', VEC.plan.generated);
 
-  // Stakeholders + session log
+  // Stakeholders, session log, artifact library
   renderStakeholders();
   renderSessionLog();
+  renderArtifactLibrary();
 
   // Integration hub
   if (VEC.diag.crm.length || VEC.diag.pm.length || VEC.diag.storage.length) {
@@ -2507,6 +2494,66 @@ function deleteStakeholder(i) {
   if (!Array.isArray(VEC.stakeholders)) return;
   VEC.stakeholders.splice(i, 1);
   renderStakeholders();
+  saveState();
+}
+
+// ─── ARTIFACT LIBRARY ──────────────────────────────────
+const ARTIFACTS = [
+  { id: 'positioning',  icon: '🗺️', name: 'Positioning Canvas',         file: 'positioning_canvas.doc' },
+  { id: 'offer1',       icon: '📦', name: 'Entry Offer One-Pager',       file: 'offer_entry.doc' },
+  { id: 'offer2',       icon: '📦', name: 'Foundation Offer One-Pager',  file: 'offer_foundation.doc' },
+  { id: 'offer3',       icon: '📦', name: 'Retained Offer One-Pager',    file: 'offer_retained.doc' },
+  { id: 'referral',     icon: '🤝', name: 'Referral Ask Scripts',        file: 'referral_scripts.doc' },
+  { id: 'casestudies',  icon: '⭐', name: 'Case Study Draft(s)',         file: 'case_studies.doc' },
+  { id: 'placement',    icon: '📋', name: 'Placement Checklist',         file: 'placement_checklist.doc' },
+  { id: 'intake',       icon: '📝', name: 'Intake Questionnaire',        file: 'intake_questionnaire.doc' },
+  { id: 'scoping',      icon: '📄', name: 'Scoping Document',            file: 'scoping_document.doc' },
+  { id: 'kickoff',      icon: '🚀', name: 'Kickoff Agenda',              file: 'kickoff_agenda.doc' },
+  { id: 'cadence',      icon: '🔄', name: 'Delivery Cadence Template',   file: 'delivery_cadence.doc' },
+  { id: 'handoff',      icon: '🏁', name: 'Handoff Checklist',           file: 'handoff_checklist.doc' },
+  { id: 'plan',         icon: '📅', name: '30-60-90 Day Plan',           file: null }
+];
+
+const DELIVERY_STATES = ['draft', 'sent', 'reviewed'];
+const DELIVERY_STYLE = {
+  draft:    { label: 'Draft',    bg: 'var(--surface3)', color: 'var(--txt3)', border: 'var(--border)' },
+  sent:     { label: 'Sent',     bg: 'rgba(90,171,240,.12)', color: '#5AABF0', border: '#5AABF0' },
+  reviewed: { label: 'Reviewed', bg: 'rgba(13,148,136,.12)', color: 'var(--accent)', border: 'var(--accent)' }
+};
+
+function renderArtifactLibrary() {
+  const el = document.getElementById('artifactLibrary');
+  if (!el) return;
+  const delivery = VEC.plan.delivery || {};
+  el.innerHTML = ARTIFACTS.map(a => {
+    const state = delivery[a.id] || 'draft';
+    const style = DELIVERY_STYLE[state];
+    const cycleStates = DELIVERY_STATES;
+    const nextState = cycleStates[(cycleStates.indexOf(state) + 1) % cycleStates.length];
+    const dlBtn = a.file
+      ? `<button class="btn btn-ghost btn-sm" onclick="downloadArtifact('${a.id}')">↓</button>`
+      : `<button class="btn btn-ghost btn-sm" onclick="downloadArtifact('${a.id}')">View</button>`;
+    return `<div class="artifact-row">
+      <div class="artifact-left">
+        <span class="artifact-icon">${a.icon}</span>
+        <div>
+          <div class="artifact-name">${a.name}</div>
+          <div class="artifact-meta">${a.file || 'Track progress in-app above ↑'}</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button onclick="cycleDelivery('${a.id}','${nextState}')" title="Click to advance status"
+          style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;border:1px solid ${style.border};background:${style.bg};color:${style.color};cursor:pointer;letter-spacing:.03em;white-space:nowrap">${style.label}</button>
+        ${dlBtn}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function cycleDelivery(id, nextState) {
+  if (!VEC.plan.delivery) VEC.plan.delivery = {};
+  VEC.plan.delivery[id] = nextState;
+  renderArtifactLibrary();
   saveState();
 }
 
