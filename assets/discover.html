@@ -264,6 +264,12 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
   background:var(--card);border-color:var(--border2);color:var(--muted);
   opacity:.5;
 }
+.pill-link{cursor:pointer;text-decoration:none;transition:opacity .15s,transform .1s}
+.pill-link:hover{opacity:.8;transform:translateY(-1px)}
+.field-input.input-error{border-color:#e05555}
+.footer-error{color:#e05555!important}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+.question-card.card-error{border-color:#e05555;animation:shake .35s ease}
 
 .first30{
   background:var(--teal-bg);border:1px solid var(--teal-dim);border-radius:10px;
@@ -756,12 +762,42 @@ function updateFooterHint() {
 }
 
 function navNext() {
-  // Hard guard — not just button disabled, checked in JS too
-  if (currentStep === 0 && !state.orgName) return;
-  if (currentStep >= 1 && currentStep <= 4) {
-    const sectionAnswered = state.answers[currentStep - 1].every(v => v !== null);
-    if (!sectionAnswered) return;
+  if (currentStep === 0) {
+    const nameInput = document.getElementById('orgName');
+    if (!state.orgName) {
+      nameInput.classList.add('input-error');
+      nameInput.focus();
+      const hint = document.getElementById('footerHint');
+      hint.textContent = 'Please enter the organization name to continue.';
+      hint.classList.add('footer-error');
+      nameInput.addEventListener('input', function clearErr() {
+        nameInput.classList.remove('input-error');
+        hint.classList.remove('footer-error');
+        nameInput.removeEventListener('input', clearErr);
+      });
+      return;
+    }
   }
+  if (currentStep >= 1 && currentStep <= 4) {
+    const si = currentStep - 1;
+    const unanswered = state.answers[si].map((v, qi) => v === null ? qi : -1).filter(i => i !== -1);
+    if (unanswered.length > 0) {
+      const cards = document.getElementById(`qlist-${si}`).querySelectorAll('.question-card');
+      unanswered.forEach(qi => {
+        const card = cards[qi];
+        card.classList.remove('card-error');
+        void card.offsetWidth;
+        card.classList.add('card-error');
+        card.addEventListener('animationend', () => card.classList.remove('card-error'), { once: true });
+      });
+      const hint = document.getElementById('footerHint');
+      hint.textContent = 'Please answer all questions before continuing.';
+      hint.classList.add('footer-error');
+      cards[unanswered[0]].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+  }
+  document.getElementById('footerHint').classList.remove('footer-error');
   if (currentStep < 4) {
     document.getElementById(`panel-${currentStep}`).classList.remove('active');
     currentStep++;
@@ -769,12 +805,14 @@ function navNext() {
     updateSidebar();
     updateFooter();
     document.getElementById('contentArea').scrollTop = 0;
+    window.scrollTo(0, 0);
   } else {
     showResults();
   }
 }
 
 function navBack() {
+  if (currentStep <= 0) return;
   if (currentStep > 0) {
     document.getElementById(`panel-${currentStep}`).classList.remove('active');
     currentStep--;
@@ -786,6 +824,7 @@ function navBack() {
     updateSidebar();
     updateFooter();
     document.getElementById('contentArea').scrollTop = 0;
+    window.scrollTo(0, 0);
   }
 }
 
@@ -798,6 +837,7 @@ function goToSection(n) {
   updateSidebar();
   updateFooter();
   document.getElementById('contentArea').scrollTop = 0;
+  window.scrollTo(0, 0);
 }
 
 function updateSidebar() {
@@ -818,6 +858,9 @@ function updateFooter() {
     const sectionAnswered = state.answers[currentStep-1].every(v => v !== null);
     btnNext.textContent = currentStep === 4 ? 'See recommendation →' : 'Next section →';
     btnNext.disabled = !sectionAnswered;
+    btnNext.style.display = 'block';
+  } else {
+    btnNext.style.display = 'none';
   }
   updateFooterHint();
 }
@@ -985,11 +1028,13 @@ function showResults() {
   // Module pills
   const pillsEl = document.getElementById('modulePills');
   pillsEl.innerHTML = '';
+  const PILL_HREFS = { FUSE: '/resolve.html', SIGNAL: '/intelligence.html', VECTOR: '/vector.html', HELIX: '#' };
   ['FUSE','SIGNAL','VECTOR','HELIX'].forEach(tool => {
     const included = modules.includes(tool.toLowerCase());
     const c = moduleConfig(tool, included);
-    const pill = document.createElement('div');
-    pill.className = `module-pill${included ? '' : ' pill-locked'}`;
+    const pill = document.createElement('a');
+    pill.href = PILL_HREFS[tool];
+    pill.className = `module-pill pill-link${included ? '' : ' pill-locked'}`;
     pill.style.cssText = included
       ? `background:${c.bg};border-color:${c.border};color:${c.color}`
       : '';

@@ -539,6 +539,18 @@ function updateApiStatus() {
     lbl.textContent = 'No API key';
     document.getElementById('apiBanner').style.display = 'flex';
   }
+  dot.style.cursor = 'pointer';
+  dot.title = 'Click to set API key';
+  dot.onclick = () => {
+    const banner = document.getElementById('apiBanner');
+    if (banner) { banner.style.display = banner.style.display === 'none' ? 'flex' : 'none'; }
+  };
+  lbl.style.cursor = 'pointer';
+  lbl.title = 'Click to set API key';
+  lbl.onclick = () => {
+    const banner = document.getElementById('apiBanner');
+    if (banner) { banner.style.display = banner.style.display === 'none' ? 'flex' : 'none'; }
+  };
 }
 
 function saveApiKey() {

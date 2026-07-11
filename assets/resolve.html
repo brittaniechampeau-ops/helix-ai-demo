@@ -373,6 +373,13 @@ body {
 .btn-danger { background: rgba(239,107,107,0.15); color: #ef6b6b; border: 1px solid rgba(239,107,107,0.3); }
 .btn-danger:hover { background: rgba(239,107,107,0.25); }
 
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20%      { transform: translateX(-4px); }
+  60%      { transform: translateX(4px); }
+  80%      { transform: translateX(-2px); }
+}
+
 /* ── SCROLLBAR ── */
 .workbench::-webkit-scrollbar { height: 6px; }
 .workbench::-webkit-scrollbar-track { background: transparent; }
@@ -738,6 +745,7 @@ function buildCatCol(cat) {
   addInput.type = 'text';
   addInput.className = 'add-term-input';
   addInput.placeholder = 'New term…';
+  addInput.maxLength = 60;
 
   const addCancel = document.createElement('button');
   addCancel.className = 'add-term-cancel';
@@ -764,7 +772,12 @@ function buildCatCol(cat) {
 
   function commitAddTerm() {
     const text = addInput.value.trim();
-    if (!text) return;
+    if (!text) {
+      addInput.style.animation = 'none';
+      addInput.offsetHeight;
+      addInput.style.animation = 'shake 0.3s ease';
+      return;
+    }
     const newTerm = { id: uid(), text, status: 'pending' };
     cat.terms.push(newTerm);
     termsList.appendChild(buildTermRow(cat, newTerm, termsList));
@@ -868,6 +881,7 @@ function updateCatProgress(cat) {
 }
 
 function updateProgress() {
+  if (!taxonomy || !taxonomy.categories) return;
   let total = 0, defined = 0;
   taxonomy.categories.forEach(cat => {
     total += cat.terms.length;
@@ -887,21 +901,17 @@ function updateProgress() {
 
 // ── CATEGORY MANAGEMENT ───────────────────────────────────
 function addCategory() {
+  const name = prompt('Category name:');
+  if (!name?.trim()) return;
   const cat = {
     id: uid(),
-    label: 'New Category',
+    label: name.trim(),
     terms: []
   };
   taxonomy.categories.push(cat);
   renderWorkbench();
   updateProgress();
   scheduleSave();
-
-  // Focus the new column's title
-  setTimeout(() => {
-    const col = document.querySelector(`[data-cat-id="${cat.id}"]`);
-    col?.querySelector('.cat-title-input')?.select();
-  }, 50);
 }
 
 function confirmDeleteCategory(cat) {

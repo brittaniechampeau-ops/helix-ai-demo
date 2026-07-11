@@ -80,11 +80,11 @@
     gap: 4px; flex-shrink: 0; overflow-x: auto;
   }
   .step-btn {
-    display: flex; align-items: center; gap: 8px;
-    padding: 6px 14px; border-radius: 7px; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 10px; border-radius: 7px; cursor: pointer;
     border: none; background: transparent; color: var(--txt3);
-    font-size: 13px; font-weight: 500; transition: all 0.15s;
-    white-space: nowrap;
+    font-size: 12px; font-weight: 500; transition: all 0.15s;
+    white-space: nowrap; flex-shrink: 0;
   }
   .step-btn:hover:not(.locked) { background: var(--surface2); color: var(--txt2); }
   .step-btn.active  { background: var(--surface3); color: var(--txt); }
@@ -426,11 +426,12 @@
 
   /* ── TOAST ── */
   .toast {
-    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+    position: fixed; top: 18px; left: 50%; transform: translateX(-50%);
     background: var(--surface3); border: 1px solid var(--border2);
     color: var(--txt2); padding: 9px 22px; border-radius: 8px;
     font-size: 13px; z-index: 600; pointer-events: none;
     opacity: 0; transition: opacity 0.25s; white-space: nowrap;
+    max-width: 90vw; overflow: hidden; text-overflow: ellipsis;
   }
   .toast.show { opacity: 1; }
 
@@ -893,19 +894,19 @@
         <div class="card-header"><span class="card-title">Positioning Canvas</span></div>
         <div class="form-group">
           <label class="form-label">Who is the buyer? (role + company type + size)</label>
-          <input class="form-input" id="pos-buyer" placeholder="e.g. VP Operations at mid-market manufacturers ($50M–$300M) navigating post-acquisition integration" />
+          <input class="form-input" id="pos-buyer" placeholder="e.g. VP Operations at mid-market manufacturers ($50M–$300M) navigating post-acquisition integration" title="Who is the buyer? Enter role, company type, and size — e.g. VP Operations at mid-market manufacturers ($50M–$300M) navigating post-acquisition integration" />
         </div>
         <div class="form-group">
           <label class="form-label">What is the real constraint? (not the symptom — the actual thing blocking growth)</label>
-          <textarea class="form-textarea" id="pos-constraint" placeholder="e.g. Systems are in place. Adoption isn't. They buy change frameworks but don't change behavior."></textarea>
+          <textarea class="form-textarea" id="pos-constraint" placeholder="e.g. Systems are in place. Adoption isn't. They buy change frameworks but don't change behavior." title="What is the real constraint? Not the symptom — the actual thing blocking growth. e.g. Systems are in place. Adoption isn't."></textarea>
         </div>
         <div class="form-group">
           <label class="form-label">The one-line (what you do and for whom — no jargon)</label>
-          <input class="form-input" id="pos-oneline" placeholder="e.g. We engineer adoption, not just change." />
+          <input class="form-input" id="pos-oneline" placeholder="e.g. We engineer adoption, not just change." title="The one-line: what you do and for whom — no jargon. e.g. We engineer adoption, not just change." />
         </div>
         <div class="form-group">
           <label class="form-label">Proof point (a number or outcome that validates the one-line)</label>
-          <input class="form-input" id="pos-proof" placeholder="e.g. 87% of our engagements hit adoption targets within 90 days of go-live." />
+          <input class="form-input" id="pos-proof" placeholder="e.g. 87% of our engagements hit adoption targets within 90 days of go-live." title="Proof point: a number or outcome that validates the one-line. e.g. 87% of our engagements hit adoption targets within 90 days of go-live." />
         </div>
       </div>
 
@@ -1137,7 +1138,14 @@
         </div>
       </div>
 
-      <div class="step-cta">
+      <div class="step-cta" id="planCtaEmpty" style="display:none">
+        <div class="step-cta-copy">
+          <strong>Plan not yet generated.</strong>
+          Run the Diagnostic and complete earlier steps to generate your 30-60-90 plan.
+        </div>
+        <button class="btn btn-ghost btn-disabled">↓ Download Plan</button>
+      </div>
+      <div class="step-cta" id="planCtaGenerated" style="display:none">
         <div class="step-cta-copy">
           <strong>Plan generated from your diagnostic track.</strong>
           Tasks marked DO are your immediate actions. Tasks marked WAIT have a prerequisite.
@@ -1673,10 +1681,20 @@ let _caseEditId = null;
 // ─── NAVIGATION ────────────────────────────────────────
 let currentStep = 0;
 function showStep(n) {
+  document.querySelectorAll('.modal, .modal-overlay, [id$="Modal"], [id$="-modal"]').forEach(m => {
+    if (m.style) m.style.display = 'none';
+    m.classList.remove('active', 'open', 'visible');
+  });
   if (n > 0 && PHASE < STEP_MIN[n]) { showToast('Complete the previous step first'); return; }
   document.querySelectorAll('.step-panel').forEach((p, i) => p.classList.toggle('active', i === n));
   document.querySelectorAll('.step-btn').forEach((b, i) => b.classList.toggle('active', i === n));
   currentStep = n;
+  if (n === 5) {
+    const planEmpty = document.getElementById('planCtaEmpty');
+    const planGen   = document.getElementById('planCtaGenerated');
+    if (planEmpty) planEmpty.style.display = VEC.plan.generated ? 'none' : '';
+    if (planGen)   planGen.style.display   = VEC.plan.generated ? '' : 'none';
+  }
   if (n === 6) updatePracticeOS();
   const stepNames = ['Diagnostic','Positioning','Referral Engine','Credibility','Intake','Plan','Practice OS','Activate'];
   logEvent('step_visited', { step: n, name: stepNames[n] || n });
@@ -1892,7 +1910,8 @@ function restoreUI() {
   if (d.track) {
     document.getElementById('trackBadge').textContent = 'Track ' + d.track;
     document.getElementById('trackBadge').style.display = '';
-    document.getElementById('phaseBadge').textContent   = 'Track ' + d.track;
+    const _stepNames = ['Diagnostic','Positioning','Referral Engine','Credibility','Intake','Plan','Practice OS','Activate'];
+    document.getElementById('phaseBadge').textContent = _stepNames[PHASE] || 'Diagnostic';
   }
   // Regenerate plan if previously built
   if (VEC.plan.generated) generatePlan();
@@ -1973,7 +1992,10 @@ document.addEventListener('change', function(e) {
 });
 
 // ─── MODALS ────────────────────────────────────────────
-function openContactModal() { document.getElementById('contactModal').classList.add('open'); }
+function openContactModal() {
+  document.querySelectorAll('#contactModal input, #contactModal textarea, #contactModal select').forEach(el => el.value = '');
+  document.getElementById('contactModal').classList.add('open');
+}
 function openCaseModal()    { document.getElementById('caseModal').classList.add('open'); }
 function closeModal(id)     { document.getElementById(id).classList.remove('open'); }
 function openModal(id)      { document.getElementById(id).classList.add('open'); }
@@ -2088,12 +2110,17 @@ function updateSidebar() {
 }
 
 // ─── LOAD DEMO ─────────────────────────────────────────
+
 function loadDemo() {
   // Practice identity
   document.getElementById('practiceName').value    = 'Clearfield Advisory';
   document.getElementById('founderName').value     = 'Sarah Chen';
   document.getElementById('founderEmail').value    = 'sarah@clearfieldadvisory.com';
   document.getElementById('practiceWebsite').value = 'clearfieldadvisory.com';
+  VEC.practice.name    = 'Clearfield Advisory';
+  VEC.practice.founder = 'Sarah Chen';
+  VEC.practice.email   = 'sarah@clearfieldadvisory.com';
+  VEC.practice.website = 'clearfieldadvisory.com';
 
   // Q1 size
   document.querySelector('input[name="size"][value="solo"]').checked = true;
@@ -2161,6 +2188,7 @@ function loadDemo() {
   updateSidebar(); saveState();
   if (!VEC.taxFields || !VEC.taxFields.length) VEC.taxFields = JSON.parse(JSON.stringify(DEFAULT_TAX_FIELDS));
   initTaxFields();
+  document.getElementById('clientHomeName').textContent = VEC.practice.name;
   showToast('Demo data loaded — Clearfield Advisory');
 }
 
@@ -2174,7 +2202,7 @@ function runDiagnostic() {
   const motion  = document.querySelector('input[name="motion"]:checked');
 
   if (!name || !founder || !size || !who || !market || !motion) {
-    showToast('Fill in all five questions and practice name before running'); return;
+    showToast('Please fill in all required fields before running the diagnostic'); return;
   }
 
   VEC.practice.name    = name;
@@ -2229,7 +2257,7 @@ function runDiagnostic() {
           <div style="margin-top:4px;">${stackTags}</div>
         </div>`;
       document.getElementById('diagResult').classList.add('show');
-      document.getElementById('phaseBadge').textContent = 'Track ' + track;
+      document.getElementById('phaseBadge').textContent = 'Positioning';
       unlockStep(1); unlockStep(2); unlockStep(3); unlockStep(4); unlockStep(5); unlockStep(6);
       document.getElementById('nav-0').classList.add('done');
       // Do NOT mark steps 1-6 as done — only unlock them
@@ -2481,6 +2509,10 @@ function generatePlan() {
   document.getElementById('planTableWrap').innerHTML = html;
   VEC.plan.generated = true;
   document.getElementById('nav-5').classList.add('done');
+  const planEmpty = document.getElementById('planCtaEmpty');
+  const planGen   = document.getElementById('planCtaGenerated');
+  if (planEmpty) planEmpty.style.display = 'none';
+  if (planGen)   planGen.style.display   = '';
   updatePracticeOS();
 }
 
@@ -2861,13 +2893,13 @@ function renderCDNA(dna) {
       const opts = f.values.map(v =>
         `<option value="${escAttr(v)}" ${v === val ? 'selected' : ''}>${escHtml(v)}</option>`
       ).join('');
-      field.innerHTML = `<div class="cdna-label">${escHtml(f.key)}</div>
-        <select class="cdna-value editable" style="width:100%;padding:2px 0" onchange="cdnaState['${key}']=this.value">
+      field.innerHTML = `<div class="cdna-label" title="${escAttr(f.key)}">${escHtml(f.key)}</div>
+        <select class="cdna-value editable" style="width:100%;padding:2px 0" title="${escAttr(val)}" onchange="cdnaState['${key}']=this.value;this.title=this.value">
           <option value="">— select —</option>${opts}
         </select>`;
     } else {
-      field.innerHTML = `<div class="cdna-label">${escHtml(f.key)}</div>
-        <textarea class="cdna-value editable" rows="2" data-key="${key}" onchange="cdnaState['${key}']=this.value">${escHtml(String(val))}</textarea>`;
+      field.innerHTML = `<div class="cdna-label" title="${escAttr(f.key)}">${escHtml(f.key)}</div>
+        <textarea class="cdna-value editable" rows="2" data-key="${key}" title="${escAttr(String(val))}" onchange="cdnaState['${key}']=this.value;this.title=this.value">${escHtml(String(val))}</textarea>`;
     }
     grid.appendChild(field);
   });
@@ -3869,7 +3901,7 @@ function downloadBundle() {
 
     <h2>Referral Roster</h2>
     ${VEC.ref.contacts.length ? `<table><tr><th>Name</th><th>Company</th><th>Type</th><th>Status</th></tr>
-    ${VEC.ref.contacts.map(c=>`<tr><td>${c.name}</td><td>${c.company||'—'}</td><td>${c.type||'—'}</td><td>${c.status||'—'}</td></tr>`).join('')}</table>` : '<p>No contacts yet.</p>'}
+    ${VEC.ref.contacts.map(c=>`<tr><td>${c.name}</td><td>${c.company||'—'}</td><td>${c.type||c.rel||'—'}</td><td>${c.status||'—'}</td></tr>`).join('')}</table>` : '<p>No contacts yet.</p>'}
 
     <h2>Case Studies</h2>
     ${VEC.cred.cases.length ? VEC.cred.cases.map(cs=>`<h3>${cs.client}</h3><p><strong>Result:</strong> ${cs.result||'—'}</p>${cs.quote?`<p style="font-style:italic">"${cs.quote}"</p>`:''}`).join('') : '<p>No case studies yet.</p>'}
