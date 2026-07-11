@@ -10,21 +10,21 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg:        #0d0f1a;
-    --surface:   #141726;
-    --surface2:  #1c2035;
-    --surface3:  #232740;
-    --border:    #2a2f4a;
-    --border2:   #353b5c;
-    --accent:    #0d9488;
-    --accent-dim:#0f766e;
-    --green:     #10b981;
+    --bg:        #060E1C;
+    --surface:   #0C1830;
+    --surface2:  #102040;
+    --surface3:  #162850;
+    --border:    #1A2C48;
+    --border2:   #243858;
+    --accent:    #00C8FF;
+    --accent-dim:#0088BB;
+    --green:     #00FF88;
     --amber:     #f59e0b;
     --red:       #ef4444;
     --blue:      #3b82f6;
-    --txt:       #f1f5f9;
-    --txt2:      #94a3b8;
-    --txt3:      #64748b;
+    --txt:       #EEF2FF;
+    --txt2:      #8A9FBF;
+    --txt3:      #526080;
     --mono:      'Courier New', monospace;
   }
 
@@ -364,7 +364,7 @@
 
   /* ── PROCESSING OVERLAY ── */
   .proc-overlay {
-    position: fixed; inset: 0; background: #080b14; z-index: 500;
+    position: fixed; inset: 0; background: #080b14; z-index: 11000;
     display: flex; align-items: center; justify-content: center;
     opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
   }
@@ -426,10 +426,10 @@
 
   /* ── TOAST ── */
   .toast {
-    position: fixed; top: 18px; left: 50%; transform: translateX(-50%);
+    position: fixed; top: 100px; left: 50%; transform: translateX(-50%);
     background: var(--surface3); border: 1px solid var(--border2);
     color: var(--txt2); padding: 9px 22px; border-radius: 8px;
-    font-size: 13px; z-index: 600; pointer-events: none;
+    font-size: 13px; z-index: 20000; pointer-events: none;
     opacity: 0; transition: opacity 0.25s; white-space: nowrap;
     max-width: 90vw; overflow: hidden; text-overflow: ellipsis;
   }
@@ -647,7 +647,6 @@
     <span class="badge badge-amber" id="phaseBadge">Diagnostic</span>
     <div class="topbar-divider"></div>
     <button id="btnBackAdmin" class="btn btn-ghost" style="padding:4px 11px;font-size:12px;display:none" onclick="showAdminHome()">← Clients</button>
-    <button class="btn btn-primary" style="padding:4px 13px;font-size:12px;gap:5px" onclick="openTranscriptImport()">📋 Transcript</button>
     <button class="btn btn-ghost" style="padding:4px 11px;font-size:12px" onclick="exportInstance()" title="Download this practice as a JSON file to share with your client">↓ Export</button>
     <button class="btn btn-ghost" style="padding:4px 11px;font-size:12px" onclick="importInstance()" title="Load a previously exported practice instance">↑ Import</button>
     <button class="btn btn-ghost" style="padding:4px 11px;font-size:12px;color:var(--txt3)" onclick="confirmNew()">New</button>
@@ -1399,6 +1398,7 @@
     <div class="proc-title-lbl" id="procTitle">Analyzing...</div>
     <div class="proc-msg-lbl"  id="procMsg"></div>
     <div class="proc-bar-wrap"><div class="proc-bar" id="procBar"></div></div>
+    <div id="procTimer" style="font-size:11px;color:var(--txt3,#526080);margin-top:10px;font-variant-numeric:tabular-nums"></div>
   </div>
 </div>
 
@@ -1592,12 +1592,10 @@
       <div style="font-size:11px;color:var(--txt3)">.vtt · .txt · .pdf · .docx · .pptx</div>
     </div>
 
-    <!-- LinkedIn URL row -->
-    <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
-      <input id="intakeLinkedInUrl" type="url" placeholder="linkedin.com/in/founder — paste profile URL"
-        style="flex:1;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--txt);font-size:12px;font-family:inherit;outline:none"
-        onkeydown="if(event.key==='Enter')addLinkedInSource()">
-      <button class="btn btn-ghost btn-sm" onclick="addLinkedInSource()">+ Add URL</button>
+    <!-- LinkedIn paste shortcut -->
+    <div style="margin-bottom:12px">
+      <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;gap:6px" onclick="openLinkedInPaste()">+ Paste LinkedIn profile text</button>
+      <div style="font-size:11px;color:var(--txt3);margin-top:4px;text-align:center">Copy text from your LinkedIn profile and paste it here — LinkedIn URLs can't be fetched directly</div>
     </div>
 
     <!-- Paste area (collapsed by default, expands when "other" or no file available) -->
@@ -1610,6 +1608,7 @@
           <option value="deck">Pitch deck</option>
           <option value="proposal">Proposal / SOW</option>
           <option value="case">Case studies</option>
+          <option value="linkedin">LinkedIn profile</option>
           <option value="other">Other</option>
         </select>
         <button class="btn btn-ghost btn-sm" onclick="addPastedSource()">Add this text</button>
@@ -1628,6 +1627,7 @@
       ⚠ <strong style="color:#F0A832">Pricing conflict detected</strong> — sources disagree on fee. You'll choose which to use in the review step.
     </div>
 
+    <!-- API key inline row — shown only when key is missing -->
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('transcriptModal')">Cancel</button>
       <button class="btn btn-primary" id="intakeRunBtn" onclick="runTranscriptParse()" disabled>Analyze sources</button>
@@ -4095,7 +4095,6 @@ function downloadBundle() {
 
 // ─── TRANSCRIPT IMPORT ─────────────────────────────────
 const ANTHROPIC_KEY_STORAGE = 'vec_anthropic_key';
-let _pendingTranscriptText = null;
 let _extractedData = null;
 
 function getApiKey() {
@@ -4106,13 +4105,6 @@ function saveApiKey() {
   if (!key.startsWith('sk-ant-')) { showToast('Invalid key format'); return; }
   localStorage.setItem(ANTHROPIC_KEY_STORAGE, key);
   closeModal('apiKeyModal');
-  if (_pendingTranscriptText) {
-    // Resume a parse that was interrupted by missing key
-    runTranscriptParse();
-  } else {
-    // Fresh key setup — open the transcript modal now
-    _openTranscriptModal();
-  }
 }
 
 function _openTranscriptModal() {
@@ -4161,9 +4153,23 @@ function showOverlay(msg, pct) {
   document.getElementById('procMsg').textContent = '';
   document.getElementById('procBar').style.width = (pct != null ? pct : 60) + '%';
   overlay.classList.add('active');
+  // Start elapsed timer
+  if (window._overlayTimerStart == null) {
+    window._overlayTimerStart = Date.now();
+    window._overlayTimerInterval = setInterval(() => {
+      const s = Math.floor((Date.now() - window._overlayTimerStart) / 1000);
+      const el = document.getElementById('procTimer');
+      if (el) el.textContent = `${s}s — AI pipeline running…`;
+    }, 1000);
+  }
 }
 function hideOverlay() {
   document.getElementById('procOverlay').classList.remove('active');
+  clearInterval(window._overlayTimerInterval);
+  window._overlayTimerInterval = null;
+  window._overlayTimerStart = null;
+  const el = document.getElementById('procTimer');
+  if (el) el.textContent = '';
 }
 
 // ─── LAYER 5: CLAUDE AGENT HELPER ──────────────────────
@@ -4248,195 +4254,93 @@ function inferSignalsFromText(text) {
 }
 
 async function runTranscriptParse() {
-  // Build bundle from multi-source intake, falling back to legacy single paste
-  let text = _pendingTranscriptText || '';
-  if (!text) {
-    if (_intakeSources.length > 0) {
-      text = bundleSources();
-    } else {
-      const pasted = document.getElementById('transcriptPaste').value.trim();
-      if (pasted) text = pasted;
-    }
+  let text = '';
+  if (_intakeSources.length > 0) {
+    text = bundleSources();
+  } else {
+    text = document.getElementById('transcriptPaste').value.trim();
   }
   if (!text) { showToast('Add at least one source before running analysis'); return; }
 
-  const key = getApiKey();
-  if (!key) {
-    _pendingTranscriptText = text;
-    closeModal('transcriptModal');
-    openModal('apiKeyModal');
-    return;
-  }
-
   closeModal('transcriptModal');
-  _pendingTranscriptText = null;
 
   const sourceCount = _intakeSources.length || 1;
   const sourceLabel = sourceCount > 1 ? `${sourceCount} sources` : (_intakeSources[0]?.label || 'transcript');
 
   try {
-    // ── STAGE 1: Signal Extractor ───────────────────────────
-    showOverlay(`Signal Extractor — reading ${sourceLabel}…`, 10);
+    showOverlay(`Analyzing ${sourceLabel}…`, 15);
+
+    // Fetch knowledge examples client-side (anon key, no auth needed)
     const signals = inferSignalsFromText(text);
-
-    const signalData = await callClaude(
-      `You are extracting raw facts from consulting intake materials.
-Sources are separated by === SECTION HEADERS === — extract signal from all sections.
-Where values conflict across sources (e.g. different prices), use the transcript value and note the discrepancy in ops.notes.
-Return ONLY valid JSON. Use null for anything not mentioned.
-
-{
-  "practice": { "name": "string or null", "founder": "string or null", "email": "string or null", "website": "string or null" },
-  "diag": {
-    "size": "solo|small|mid|large or null",
-    "bdRole": "founder-only|founder-plus|dedicated|team-bd or null",
-    "marketState": "warm|transitioning|cold or null",
-    "who": "string — ideal client description or null",
-    "market": "string — geographic or sector focus or null",
-    "motion": "referral|outbound|content|mixed or null",
-    "constraint": "string — #1 growth bottleneck or null",
-    "crm": [], "pm": [], "storage": [], "comms": [], "calendly": false
-  },
-  "contacts": [{ "name": "string", "company": "string or null", "type": "past-client|peer|prospect", "status": "not-asked" }],
-  "rawCases": [{ "client": "string", "industry": "string or null", "situation": "string", "rawResult": "string — any outcome or metric mentioned" }],
-  "ops": { "duration": "string or null", "budget": "string or null", "urgency": "string or null", "notes": "string or null — conflicts between sources, e.g. 'transcript says $20k, proposal says $35k'" }
-}
-
-Rules:
-- size: solo=1, small=2-5, mid=6-15, large=16+
-- bdRole: "founder-only" if founder drives Growth alone; "founder-plus" if one other helps; "dedicated" if Growth hire exists; "team-bd" if distributed
-- marketState: "warm"=strong referral network in niche; "transitioning"=entering new market; "cold"=no reputation there yet
-- motion: "referral"|"outbound"|"content"|"mixed"
-- crm/pm/storage/comms: only tools explicitly mentioned
-- contacts: ALL people named across ALL sources — past clients, referral sources, collaborators, prospects
-- rawCases: any client engagements described across ALL sources — even partial, even unnamed
-- If sources conflict on a value, prefer the transcript section; note the discrepancy in ops.notes
-- Return ONLY the JSON object`,
-      `Source materials:\n\n${text.slice(0, 60000)}`,
-      { maxTokens: 1200, model: 'claude-haiku-4-5-20251001' }
-    );
-
-    // ── STAGE 2: Parallel — Positioning Agent + Case Study Drafter ──
-    showOverlay('Positioning Agent + Case Study Drafter running…', 40);
-
     const [posExamples, offerExamples, caseExamples] = await Promise.all([
       retrieveKnowledge('positioning', signals, 3),
       retrieveKnowledge('offers',      signals, 3),
       retrieveKnowledge('case_study',  { industry: signals.industry }, 2),
     ]);
 
-    const [posData, casesData] = await Promise.all([
+    showOverlay('Running AI pipeline…', 40);
 
-      // Positioning Agent
-      callClaude(
-        `You are a positioning specialist for small B2B consulting firms.
-Given intake signals about a practice, craft a sharp positioning statement and buyer profile.
-Return ONLY valid JSON.
-${posExamples.length ? `\nEXAMPLE POSITIONING from similar practices (match specificity, not content):\n${posExamples.map(e => `- "${e.content}"`).join('\n')}` : ''}
+    const SUPABASE_URL = 'https://ilhljjkiijmjpwinovzj.supabase.co';
+    const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsaGxqamtpaWptanB3aW5vdnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MTk4MjIsImV4cCI6MjA5OTE5NTgyMn0.w8asDSA-rXuaDfujC2dr4J-EKCzlCVABOuq3VQeeFsE';
 
-{
-  "buyer": "string — ideal client profile (role, company type, situation)",
-  "constraint": "string — the core problem this firm solves",
-  "oneline": "string — one plain-language sentence: what they do + for whom. No jargon, no buzzwords.",
-  "proof": "string or null — strongest result or credential mentioned"
-}
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 90000);
 
-Rules:
-- oneline must be a complete sentence a stranger would immediately understand
-- buyer should be specific: not just 'CEOs' but 'founders of 10-50 person professional services firms entering a new market'
-- constraint should name the pain, not the solution`,
-        `Practice signals:\n${JSON.stringify(signalData, null, 2)}`,
-        { maxTokens: 600 }
-      ),
-
-      // Case Study Drafter
-      callClaude(
-        `You are a case study writer for B2B consulting firms.
-Structure raw case notes into compelling before/after narratives.
-Return ONLY valid JSON array (may be empty []).
-${caseExamples.length ? `\nEXAMPLE CASE STUDY FORMAT from similar practices:\n${caseExamples.map(e => e.content).join('\n\n')}` : ''}
-
-[{
-  "client": "string — company or persona name",
-  "industry": "string or null",
-  "situation": "string — what was happening before engagement",
-  "constraint": "string — the real underlying problem",
-  "solution": "string — what was done, concisely",
-  "result": "string — specific outcome or metric. If none stated, infer a plausible range based on the situation.",
-  "quote": "string or null — any quote from the source materials"
-}]
-
-Rules:
-- result must be specific — numbers, timeframes, percentages where mentioned
-- If a result is vague, make it concrete (e.g. 'reduced time' → '~40% reduction in time')
-- Draw case material from ALL source sections, not just the transcript
-- Return [] if no case material found`,
-        `Raw case notes from materials:\n${JSON.stringify(signalData.rawCases || [], null, 2)}\n\nFull context:\n${text.slice(0, 20000)}`,
-        { maxTokens: 800 }
-      )
-    ]);
-
-    // ── STAGE 3: Offer Architect ────────────────────────────
-    showOverlay('Offer Architect — designing 3 offers…', 75);
-
-    const offersData = await callClaude(
-      `You are an offer architect for small B2B consulting firms.
-Design exactly 3 tiered offers based on what you know about this practice.
-Return ONLY valid JSON.
-${offerExamples.length ? `\nEXAMPLE OFFER STRUCTURES from similar practices:\n${offerExamples.map(e => e.content).join('\n\n')}` : ''}
-
-{
-  "offer1": { "name": "string — entry/diagnostic offer name", "price": "string", "duration": "string", "desc": "string — what the client gets, 1-2 sentences" },
-  "offer2": { "name": "string — core engagement name", "price": "string", "duration": "string", "desc": "string — what the client gets, 1-2 sentences" },
-  "offer3": { "name": "string — retained advisory name", "price": "string/month", "duration": "string — minimum commitment", "desc": "string — what the client gets, 1-2 sentences" }
-}
-
-Rules:
-- offer1: scoped entry point — assessment, audit, or sprint. Lower risk, faster decision. Price: 20-30% of offer2.
-- offer2: their core service as described. Use actual scope/price/duration from the transcript if mentioned.
-- offer3: ongoing retained relationship. Even if not discussed — infer a monthly fee ~10-15% of offer2 price, 3-month minimum.
-- Names should be distinctive, not generic. Not "Consulting Package" — more like "Revenue Architecture Sprint"
-- Never return null for any field`,
-      `Practice positioning:\n${JSON.stringify(posData, null, 2)}\n\nPractice signals:\n${JSON.stringify({ diag: signalData.diag, ops: signalData.ops }, null, 2)}`,
-      { maxTokens: 700 }
-    );
-
-    // ── Assemble final extracted data ───────────────────────
-    showOverlay('Done — review your data…', 95);
-
-    _extractedData = {
-      practice: signalData.practice || {},
-      diag:     signalData.diag || {},
-      pos: {
-        buyer:      posData.buyer      || null,
-        constraint: posData.constraint || null,
-        oneline:    posData.oneline    || null,
-        proof:      posData.proof      || null,
-        offer1:     offersData.offer1  || {},
-        offer2:     offersData.offer2  || {},
-        offer3:     offersData.offer3  || {},
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/analyze-sources`, {
+      method: 'POST',
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SUPABASE_ANON}`,
+        'apikey': SUPABASE_ANON,
       },
-      contacts: signalData.contacts || [],
-      cases:    Array.isArray(casesData) ? casesData : [],
-      ops: {
-        duration: signalData.ops?.duration || null,
-        refAsk:   true,
-        caseDraft: false,
-      }
-    };
+      body: JSON.stringify({ text, posExamples, offerExamples, caseExamples })
+    }).finally(() => clearTimeout(timeout));
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: res.statusText }));
+      throw new Error(err.error || `Server error ${res.status}`);
+    }
+
+    showOverlay('Done — review your data…', 95);
+    _extractedData = await res.json();
 
     hideOverlay();
     showValidationModal(_extractedData);
 
   } catch(err) {
     hideOverlay();
-    showToast('Parse error: ' + err.message);
+    showToast('Analysis error: ' + err.message);
   }
 }
 
 function showValidationModal(data) {
   const p = data.practice || {};
-  const d = data.diag || {};
+  const rawDiag = data.diag || {};
+
+  // Normalize AI-returned values to match UI option values
+  const sizeMap  = { solo:'solo', small:'small', mid:'team', large:'firm' };
+  const bdMap    = { 'founder-only':'founder-only','founder-plus':'founder-plus','dedicated':'dedicated','team-bd':'team-bd' };
+  const normalize = (arr, known) => (arr || []).map(v => {
+    const lc = (v||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+    return known.find(k => k.replace(/[^a-z0-9]/g,'') === lc) || null;
+  }).filter(Boolean);
+
+  const KNOWN_CRM     = ['hubspot','salesforce','pipedrive','close','none'];
+  const KNOWN_PM      = ['asana','monday','notion','clickup','basecamp'];
+  const KNOWN_STORAGE = ['gdrive','dropbox','sharepoint','notion','box'];
+  const KNOWN_COMMS   = ['slack','teams','email'];
+
+  const d = {
+    ...rawDiag,
+    size:        sizeMap[rawDiag.size] || rawDiag.size || '',
+    bdRole:      bdMap[rawDiag.bdRole] || rawDiag.bdRole || '',
+    marketState: rawDiag.marketState || '',
+    crm:         normalize(rawDiag.crm,     KNOWN_CRM),
+    pm:          normalize(rawDiag.pm,      KNOWN_PM),
+    storage:     normalize(rawDiag.storage, KNOWN_STORAGE),
+    comms:       normalize(rawDiag.comms,   KNOWN_COMMS),
+  };
   const pos = data.pos || {};
   const ops = data.ops || {};
 
@@ -4486,7 +4390,7 @@ function showValidationModal(data) {
 
   document.getElementById('validationBody').innerHTML =
     section('Practice Basics', '🏢',
-      field('Practice Name ⚠️', 'practice.name', p.name) +
+      field('Practice Name', 'practice.name', p.name, '— confirm before sending') +
       field('Founder / Contact', 'practice.founder', p.founder) +
       field('Client Email (their login)', 'practice.email', p.email, '— double-check this') +
       field('Website', 'practice.website', p.website)
@@ -4591,6 +4495,21 @@ function confirmPopulate() {
       Object.assign(VEC.practice, d.practice);
     }
   }
+  // Map AI size values to Step 0 radio values
+  const _sizeToUI = { solo:'solo', small:'small', mid:'team', large:'firm' };
+  if (d.diag?.size) d.diag.size = _sizeToUI[d.diag.size] || d.diag.size;
+  // Normalize martech arrays to lowercase UI values
+  const _normArr = (arr, known) => (arr||[]).map(v => {
+    const lc = (v||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+    return known.find(k => k.replace(/[^a-z0-9]/g,'') === lc) || null;
+  }).filter(Boolean);
+  if (d.diag) {
+    d.diag.crm     = _normArr(d.diag.crm,     ['hubspot','salesforce','pipedrive','close','none']);
+    d.diag.pm      = _normArr(d.diag.pm,       ['asana','monday','notion','clickup','basecamp']);
+    d.diag.storage = _normArr(d.diag.storage,  ['gdrive','dropbox','sharepoint','notion','box']);
+    d.diag.comms   = _normArr(d.diag.comms,    ['slack','teams','email']);
+  }
+
   if (d.diag) {
     if (isFollowup) {
       // Only update blank diag fields; never overwrite track on follow-up
@@ -4966,6 +4885,7 @@ supa.auth.onAuthStateChange(async (event, session) => {
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script>
 // ─── MULTI-SOURCE INTAKE ────────────────────────────────
 // _intakeSources: [{ type, label, filename, text }]
@@ -5034,29 +4954,25 @@ async function readIntakeFile(file, type) {
 }
 
 async function extractPptxText(file) {
-  // PPTX is a ZIP — use SheetJS's zip reader to pull slide XML, then strip tags
+  if (typeof JSZip === 'undefined') throw new Error('JSZip not loaded');
   const ab = await file.arrayBuffer();
-  const zip = XLSX.utils.cfb_new();
-  let slideTexts = [];
-  try {
-    const data = new Uint8Array(ab);
-    // Use a minimal unzip approach via XLSX's CFB parser
-    // PPTX slide XML lives at ppt/slides/slide*.xml
-    const JSZipLike = XLSX.zip || null;
-    // Fallback: read as binary and extract text between XML tags
-    const decoder = new TextDecoder('utf-8');
-    const raw = decoder.decode(data);
-    // Extract all text runs from slide XML — crude but effective for plain text extraction
-    const slideMatches = raw.match(/<a:t[^>]*>([^<]+)<\/a:t>/g) || [];
-    slideTexts = slideMatches.map(m => m.replace(/<[^>]+>/g, '').trim()).filter(Boolean);
-  } catch(e) {
-    // If ZIP parsing fails fall back to raw text extraction
-    const text = await file.text().catch(() => '');
-    const matches = text.match(/<a:t[^>]*>([^<]+)<\/a:t>/g) || [];
-    slideTexts = matches.map(m => m.replace(/<[^>]+>/g,'').trim()).filter(Boolean);
+  const zip = await JSZip.loadAsync(ab);
+  const slideTexts = [];
+  const slideFiles = Object.keys(zip.files)
+    .filter(n => /^ppt\/slides\/slide\d+\.xml$/.test(n))
+    .sort((a, b) => {
+      const numA = parseInt(a.match(/\d+/)[0]);
+      const numB = parseInt(b.match(/\d+/)[0]);
+      return numA - numB;
+    });
+  for (const name of slideFiles) {
+    const xml = await zip.files[name].async('string');
+    const matches = xml.match(/<a:t[^>]*>([^<]+)<\/a:t>/g) || [];
+    const texts = matches.map(m => m.replace(/<[^>]+>/g, '').trim()).filter(Boolean);
+    if (texts.length) slideTexts.push(texts.join(' '));
   }
   if (!slideTexts.length) throw new Error('No readable text found in presentation');
-  return `[PRESENTATION: ${file.name}]\n\nExtracted slide content:\n\n${slideTexts.join('\n')}`;
+  return `[PRESENTATION: ${file.name}]\n\nSlide content:\n\n${slideTexts.map((t, i) => `Slide ${i+1}: ${t}`).join('\n')}`;
 }
 
 async function extractPdfText(file) {
@@ -5080,11 +4996,12 @@ async function extractDocxText(file) {
   return result.value;
 }
 
-function addLinkedInSource() {
-  const url = document.getElementById('intakeLinkedInUrl').value.trim();
-  if (!url) return;
-  addIntakeSource({ type: 'linkedin', label: 'LinkedIn', filename: url, text: `LinkedIn profile URL: ${url}\n(Signal Extractor: fetch public profile context from this URL — founder name, current one-liner, work history, proof points)` });
-  document.getElementById('intakeLinkedInUrl').value = '';
+function openLinkedInPaste() {
+  const wrap = document.getElementById('intakePasteWrap');
+  wrap.style.display = 'block';
+  document.getElementById('pasteTypeSelect').value = 'linkedin';
+  document.getElementById('transcriptPaste').placeholder = 'Copy your LinkedIn About section, experience, and any key bio text and paste it here…';
+  document.getElementById('transcriptPaste').focus();
 }
 
 function addPastedSource() {
@@ -5093,6 +5010,7 @@ function addPastedSource() {
   const type = document.getElementById('pasteTypeSelect').value;
   addIntakeSource({ type, label: SOURCE_META[type]?.label || 'Document', filename: 'pasted text', text });
   document.getElementById('transcriptPaste').value = '';
+  document.getElementById('transcriptPaste').placeholder = 'Paste text here…';
 }
 
 function addIntakeSource(src) {
@@ -5150,8 +5068,8 @@ function bundleSources() {
 function resetIntakeModal() {
   _intakeSources = [];
   _intakePendingType = null;
-  document.getElementById('intakeLinkedInUrl').value = '';
   document.getElementById('transcriptPaste').value = '';
+  document.getElementById('transcriptPaste').placeholder = 'Paste text here…';
   document.getElementById('intakePasteWrap').style.display = 'none';
   renderIntakeSources();
 }
