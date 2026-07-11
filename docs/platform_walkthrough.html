@@ -1,148 +1,187 @@
 <title>Platform walkthrough — Britt Bowman LLC</title>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: var(--font-sans); color: var(--text-primary); padding: 2rem 0 4rem; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-.pnav {
-  display: flex; align-items: center; gap: 4px;
-  background: #050709; border: 1px solid #0E1218;
-  border-radius: 8px; padding: 6px 14px; margin-bottom: 2.5rem;
-  width: fit-content;
+:root {
+  --bg: #080a12;
+  --surface: #0f1220;
+  --surface2: #161928;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --txt: #f0f2f8;
+  --txt2: #7b82a0;
+  --txt3: #3d4460;
+  --mono: 'Courier New', monospace;
+
+  --d: #8B7FEC;
+  --f: #4DE8FF;
+  --s: #5B8CFF;
+  --v: #3BBFA3;
+  --h: #FF8A3D;
 }
-.pnav-brand { font-size: 13px; font-weight: 500; color: #818cf8; margin-right: 10px; }
-.pnav-sep { width: 1px; height: 14px; background: #1C2535; margin: 0 6px; }
+
+body {
+  background: var(--bg);
+  color: var(--txt);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  padding: 48px 52px 80px;
+  max-width: 900px;
+}
+
+/* ── PNAV ── */
+.pnav {
+  display: inline-flex; align-items: center; gap: 2px;
+  background: #050709; border: 1px solid #0E1218;
+  border-radius: 7px; padding: 5px 12px;
+  margin-bottom: 48px;
+}
+.pnav-brand { font-size: 12px; font-weight: 700; color: #6366f1; margin-right: 8px; }
+.pnav-sep { width: 1px; height: 12px; background: #1C2535; margin: 0 4px; }
 .pnav-tool {
   display: flex; align-items: center; gap: 5px;
-  padding: 3px 9px; border-radius: 5px;
-  font-size: 12px; font-weight: 500; color: #4A5270;
-  white-space: nowrap;
+  padding: 3px 8px; border-radius: 5px;
+  font-size: 11px; font-weight: 500; color: #3d4460;
+  white-space: nowrap; letter-spacing: 0.01em;
 }
-.pnav-tool.active { background: #0E1218; color: #f1f5f9; }
-.pnav-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.pnav-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
 
-h1 { font-size: 22px; font-weight: 500; margin-bottom: 6px; }
-.subtitle { font-size: 15px; color: var(--text-secondary); margin-bottom: 3rem; }
+/* ── HEADER ── */
+.page-eyebrow {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--txt3);
+  margin-bottom: 10px;
+}
+h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.5px; margin-bottom: 8px; }
+.page-sub { font-size: 15px; color: var(--txt2); margin-bottom: 56px; }
 
-.flow {
-  display: flex; align-items: center; gap: 0;
-  margin-bottom: 3rem; overflow-x: auto;
-}
-.flow-tool {
-  display: flex; flex-direction: column; align-items: center;
-  gap: 6px; min-width: 80px;
-}
+/* ── FLOW ── */
+.flow { display: flex; align-items: center; gap: 0; margin-bottom: 56px; }
+.flow-tool { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .flow-icon {
-  width: 44px; height: 44px; border-radius: 10px;
+  width: 48px; height: 48px; border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 16px; font-weight: 600; color: #fff;
+  font-size: 17px; font-weight: 700; color: rgba(255,255,255,0.9);
+  letter-spacing: -0.5px;
 }
-.flow-name { font-size: 12px; font-weight: 500; }
-.flow-role { font-size: 11px; color: var(--text-muted); }
-.flow-arrow {
-  font-size: 18px; color: var(--text-muted);
-  margin: 0 8px; margin-bottom: 20px; flex-shrink: 0;
+.flow-label { font-size: 12px; font-weight: 600; letter-spacing: 0.01em; }
+.flow-sub { font-size: 11px; color: var(--txt3); }
+.flow-arrow { font-size: 16px; color: var(--txt3); margin: 0 14px; margin-bottom: 22px; flex-shrink: 0; }
+
+/* ── CALLOUT ── */
+.callout {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-left: 3px solid #6366f1;
+  border-radius: 8px;
+  padding: 16px 20px;
+  font-size: 13px; color: var(--txt2); line-height: 1.7;
+  margin-bottom: 56px;
+}
+.callout code { font-family: var(--mono); font-size: 11px; color: var(--txt); background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 3px; }
+
+/* ── SECTION ── */
+.section-eyebrow {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--txt3);
+  margin-bottom: 20px;
 }
 
-.section-label {
-  font-size: 11px; font-weight: 500; letter-spacing: 0.06em;
-  text-transform: uppercase; color: var(--text-muted);
-  margin-bottom: 1rem;
-}
-
-.tool-card {
-  border: 0.5px solid var(--border);
-  border-radius: 12px;
-  overflow: hidden;
-  margin-bottom: 1.5rem;
-}
+/* ── TOOL CARD ── */
+.tool-card { margin-bottom: 40px; }
 .tool-header {
-  display: flex; align-items: center; gap: 12px;
-  padding: 1rem 1.25rem; border-bottom: 0.5px solid var(--border);
+  display: flex; align-items: flex-start; gap: 14px;
+  margin-bottom: 18px;
 }
 .tool-icon {
-  width: 36px; height: 36px; border-radius: 8px;
+  width: 38px; height: 38px; border-radius: 9px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 14px; font-weight: 600; color: #fff; flex-shrink: 0;
+  font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.9);
+  flex-shrink: 0; margin-top: 1px;
 }
-.tool-name { font-size: 15px; font-weight: 500; }
-.tool-desc { font-size: 13px; color: var(--text-secondary); }
-.tool-body { padding: 1rem 1.25rem; }
+.tool-name { font-size: 16px; font-weight: 600; margin-bottom: 2px; }
+.tool-desc { font-size: 12px; color: var(--txt2); line-height: 1.6; }
 
-.screen-mock {
-  border: 0.5px solid var(--border); border-radius: 8px;
-  overflow: hidden; background: #0a0c14; margin-bottom: 12px;
+/* ── SCREEN MOCK ── */
+.screen {
+  background: #060810;
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 16px;
 }
-.screen-topbar {
-  height: 36px; background: #050709; border-bottom: 1px solid #0E1218;
-  display: flex; align-items: center; padding: 0 12px; gap: 6px;
+.screen-bar {
+  height: 32px; background: #050709; border-bottom: 1px solid #0E1218;
+  display: flex; align-items: center; padding: 0 14px; gap: 6px;
 }
-.screen-dot { width: 5px; height: 5px; border-radius: 50%; }
-.screen-content { padding: 14px; }
-.screen-label {
-  font-size: 10px; font-weight: 500; letter-spacing: 0.05em;
-  text-transform: uppercase; color: #4A5270; margin-bottom: 8px;
-}
+.screen-bar-dot { width: 5px; height: 5px; border-radius: 50%; }
+.screen-bar-label { font-size: 10px; color: #3d4460; margin-left: 4px; }
+.screen-body { padding: 18px 20px; }
 
-.discover-results {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+/* Discover results */
+.rr-label { font-size: 9px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--txt3); margin-bottom: 6px; }
+.rr-headline { font-size: 20px; font-weight: 600; letter-spacing: -0.3px; margin-bottom: 6px; }
+.rr-sub { font-size: 12px; color: var(--txt2); margin-bottom: 16px; }
+.module-row { display: flex; gap: 6px; margin-bottom: 18px; flex-wrap: wrap; }
+.mod {
+  padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 500;
+  border: 1px solid;
 }
-.score-card {
-  border-radius: 6px; padding: 10px 12px;
-  border: 1px solid rgba(255,255,255,0.06);
+.score-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.score-cell { background: #0a0c18; border: 1px solid rgba(255,255,255,0.05); border-radius: 7px; padding: 12px 14px; }
+.sc-label { font-size: 9px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; }
+.sc-bar-bg { height: 2px; background: rgba(255,255,255,0.06); border-radius: 2px; margin-bottom: 8px; }
+.sc-bar { height: 2px; border-radius: 2px; }
+.sc-row { display: flex; align-items: center; gap: 7px; }
+.sc-badge {
+  font-size: 9px; font-weight: 600; letter-spacing: 0.04em;
+  padding: 2px 7px; border-radius: 10px;
 }
-.score-label { font-size: 10px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 4px; }
-.score-bar-bg { height: 3px; border-radius: 2px; background: rgba(255,255,255,0.08); margin-bottom: 4px; }
-.score-bar { height: 3px; border-radius: 2px; }
-.score-value { font-size: 11px; color: rgba(255,255,255,0.5); }
-.badge-pill {
-  display: inline-block; padding: 2px 8px; border-radius: 10px;
-  font-size: 10px; font-weight: 600; margin-bottom: 6px;
-}
-.badge-high { background: rgba(16,185,129,0.15); color: #10b981; }
-.badge-medium { background: rgba(245,158,11,0.15); color: #f59e0b; }
+.sc-val { font-size: 11px; color: var(--txt3); }
 
-.banner-mock {
-  background: rgba(59,191,163,0.08); border: 1px solid rgba(59,191,163,0.2);
-  border-radius: 6px; padding: 8px 12px;
-  display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+/* Vector banner */
+.v-banner {
+  border-radius: 7px; padding: 10px 14px;
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 14px;
+  border: 1px solid rgba(59,191,163,0.25);
+  background: rgba(59,191,163,0.07);
 }
-.banner-icon { color: #3BBFA3; font-size: 13px; }
-.banner-text { font-size: 12px; color: rgba(255,255,255,0.7); flex: 1; }
-.banner-text strong { color: #fff; }
-.banner-link { font-size: 11px; color: #3BBFA3; white-space: nowrap; }
+.v-banner-star { color: var(--v); font-size: 12px; flex-shrink: 0; }
+.v-banner-text { font-size: 12px; color: rgba(255,255,255,0.65); flex: 1; line-height: 1.4; }
+.v-banner-text strong { color: #fff; font-weight: 600; }
+.v-banner-link { font-size: 11px; color: var(--v); white-space: nowrap; opacity: 0.8; }
+.v-diag-label { font-size: 11px; font-weight: 600; color: var(--txt); margin-bottom: 3px; }
+.v-diag-sub { font-size: 11px; color: var(--txt3); }
 
-.modules-row { display: flex; gap: 6px; flex-wrap: wrap; }
-.module-pill {
-  padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 500;
-  border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.5);
-}
-.module-pill.unlocked { color: #fff; }
-
-.fact-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+/* Facts */
+.fact-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .fact {
-  background: var(--surface-1); border: 0.5px solid var(--border);
-  border-radius: 8px; padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 14px;
 }
-.fact-value { font-size: 20px; font-weight: 500; line-height: 1.2; }
-.fact-label { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.fact-val { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+.fact-lbl { font-size: 11px; color: var(--txt2); }
+.fact-lbl code { font-family: var(--mono); font-size: 10px; color: var(--txt); background: rgba(255,255,255,0.06); padding: 1px 4px; border-radius: 3px; }
 
-.integration-callout {
-  background: var(--bg-accent); border: 0.5px solid var(--border-accent);
-  border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1.5rem;
+/* Divider */
+hr { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+
+/* Schema table */
+.schema { width: 100%; border-collapse: collapse; }
+.schema tr { border-bottom: 1px solid var(--border); }
+.schema tr:last-child { border-bottom: none; }
+.schema td { padding: 10px 0; font-size: 12px; vertical-align: top; }
+.schema td:first-child { width: 170px; }
+.schema td:last-child { color: var(--txt2); }
+.schema code {
+  font-family: var(--mono); font-size: 11px; color: var(--txt);
+  background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 3px;
 }
-.integration-callout .label { font-size: 11px; font-weight: 500; color: var(--text-accent); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
-.integration-callout p { font-size: 14px; color: var(--text-primary); line-height: 1.6; }
-
-.divider { border: none; border-top: 0.5px solid var(--border); margin: 2.5rem 0; }
-
-.supabase-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-.col-pill {
-  font-size: 11px; font-family: var(--font-mono); padding: 3px 8px;
-  border-radius: 4px; background: var(--surface-1); border: 0.5px solid var(--border);
-  color: var(--text-secondary);
-}
-.col-arrow { font-size: 12px; color: var(--text-muted); }
-.col-owner { font-size: 12px; color: var(--text-secondary); }
+.schema-owner { display: inline-flex; align-items: center; gap: 5px; }
+.schema-dot { width: 5px; height: 5px; border-radius: 50%; display: inline-block; }
 </style>
 
 <h2 class="sr-only">Platform walkthrough — 5-tool growth intelligence suite by Britt Bowman LLC</h2>
@@ -150,206 +189,192 @@ h1 { font-size: 22px; font-weight: 500; margin-bottom: 6px; }
 <div class="pnav">
   <span class="pnav-brand">✦</span>
   <div class="pnav-sep"></div>
-  <span class="pnav-tool active"><span class="pnav-dot" style="background:#8B7FEC"></span>Discover</span>
-  <span class="pnav-tool active"><span class="pnav-dot" style="background:#4DE8FF"></span>Fuse</span>
-  <span class="pnav-tool active"><span class="pnav-dot" style="background:#5B8CFF"></span>Signal</span>
-  <span class="pnav-tool active"><span class="pnav-dot" style="background:#3BBFA3"></span>Vector</span>
-  <span class="pnav-tool active"><span class="pnav-dot" style="background:#FF8A3D"></span>Helix</span>
+  <span class="pnav-tool"><span class="pnav-dot" style="background:var(--d)"></span>Discover</span>
+  <span class="pnav-tool"><span class="pnav-dot" style="background:var(--f)"></span>Fuse</span>
+  <span class="pnav-tool"><span class="pnav-dot" style="background:var(--s)"></span>Signal</span>
+  <span class="pnav-tool"><span class="pnav-dot" style="background:var(--v)"></span>Vector</span>
+  <span class="pnav-tool"><span class="pnav-dot" style="background:var(--h)"></span>Helix</span>
 </div>
 
+<p class="page-eyebrow">Britt Bowman LLC · Platform overview</p>
 <h1>Growth intelligence platform</h1>
-<p class="subtitle">Five tools, one Supabase spine. Each unlocks the next.</p>
+<p class="page-sub">Five tools, one Supabase spine. Each unlocks the next.</p>
 
 <div class="flow">
   <div class="flow-tool">
-    <div class="flow-icon" style="background:#4a3d9e">D</div>
-    <div class="flow-name" style="color:#8B7FEC">Discover</div>
-    <div class="flow-role">Readiness</div>
+    <div class="flow-icon" style="background:#2a2060">D</div>
+    <div class="flow-label" style="color:var(--d)">Discover</div>
+    <div class="flow-sub">Readiness</div>
   </div>
   <div class="flow-arrow">→</div>
   <div class="flow-tool">
-    <div class="flow-icon" style="background:#0e6e8c">F</div>
-    <div class="flow-name" style="color:#4DE8FF">Fuse</div>
-    <div class="flow-role">Taxonomy</div>
+    <div class="flow-icon" style="background:#063d4a">F</div>
+    <div class="flow-label" style="color:var(--f)">Fuse</div>
+    <div class="flow-sub">Taxonomy</div>
   </div>
   <div class="flow-arrow">→</div>
   <div class="flow-tool">
-    <div class="flow-icon" style="background:#2a3fa8">S</div>
-    <div class="flow-name" style="color:#5B8CFF">Signal</div>
-    <div class="flow-role">Intelligence</div>
+    <div class="flow-icon" style="background:#0e2060">S</div>
+    <div class="flow-label" style="color:var(--s)">Signal</div>
+    <div class="flow-sub">Intelligence</div>
   </div>
   <div class="flow-arrow">→</div>
   <div class="flow-tool">
-    <div class="flow-icon" style="background:#0d6b5a">V</div>
-    <div class="flow-name" style="color:#3BBFA3">Vector</div>
-    <div class="flow-role">Strategy</div>
+    <div class="flow-icon" style="background:#063d30">V</div>
+    <div class="flow-label" style="color:var(--v)">Vector</div>
+    <div class="flow-sub">Strategy</div>
   </div>
   <div class="flow-arrow">→</div>
   <div class="flow-tool">
-    <div class="flow-icon" style="background:#8a4a1a">H</div>
-    <div class="flow-name" style="color:#FF8A3D">Helix</div>
-    <div class="flow-role">Execution</div>
+    <div class="flow-icon" style="background:#3d2008">H</div>
+    <div class="flow-label" style="color:var(--h)">Helix</div>
+    <div class="flow-sub">Execution</div>
   </div>
 </div>
 
-<div class="integration-callout">
-  <div class="label">How the spine works</div>
-  <p>All five tools share a single <code>practices</code> table in Supabase, keyed by email. Discover writes the readiness assessment. Vector reads it back and surfaces a track recommendation. Fuse and Signal persist their own state in namespaced columns. One login, one record, five tools.</p>
+<div class="callout">
+  All five tools share a single <code>practices</code> table in Supabase, keyed by email. Discover writes the readiness assessment. Vector reads it back and surfaces a track recommendation before the diagnostic starts. Fuse and Signal persist their own state in namespaced columns. One login, one record, five tools.
 </div>
 
-<p class="section-label">Tool 1 — Discover</p>
-
+<p class="section-eyebrow">Tool 1 — Discover</p>
 <div class="tool-card">
   <div class="tool-header">
-    <div class="tool-icon" style="background:#4a3d9e">D</div>
+    <div class="tool-icon" style="background:#2a2060">D</div>
     <div>
-      <div class="tool-name">Discover</div>
-      <div class="tool-desc">Platform Readiness Assessment · 4-section, 16-question diagnostic that scores taxonomy, signal, strategy, and execution readiness and recommends which tools to activate</div>
+      <div class="tool-name" style="color:var(--d)">Discover</div>
+      <div class="tool-desc">Platform Readiness Assessment. 4-section, 16-question diagnostic that scores taxonomy, signal, strategy, and execution — then recommends which tools to activate and in what order.</div>
     </div>
   </div>
-  <div class="tool-body">
-    <div class="screen-mock">
-      <div class="screen-topbar">
-        <span class="screen-dot" style="background:#8B7FEC"></span>
-        <span style="font-size:10px;color:#4A5270;margin-left:4px">Discover · Platform Readiness Assessment</span>
+  <div class="screen">
+    <div class="screen-bar">
+      <div class="screen-bar-dot" style="background:var(--d)"></div>
+      <span class="screen-bar-label">Discover · Readiness Report</span>
+    </div>
+    <div class="screen-body">
+      <div class="rr-label">Readiness Report</div>
+      <div class="rr-headline">Muoro — Strategy + Execution</div>
+      <div class="rr-sub">Based on the readiness assessment, we recommend a 3-tool engagement in the sequence below.</div>
+      <div class="module-row">
+        <div class="mod" style="color:rgba(255,255,255,0.2);border-color:rgba(255,255,255,0.07)">◈ Fuse · not yet</div>
+        <div class="mod" style="color:var(--s);border-color:rgba(91,140,255,0.3)">◉ Signal</div>
+        <div class="mod" style="color:var(--v);border-color:rgba(59,191,163,0.3)">◆ Vector</div>
+        <div class="mod" style="color:var(--h);border-color:rgba(255,138,61,0.3)">◇ Helix</div>
       </div>
-      <div class="screen-content">
-        <div class="screen-label">Readiness Report — Muoro</div>
-        <div style="font-size:13px;color:rgba(255,255,255,0.8);margin-bottom:10px">Based on the readiness assessment, we recommend a <strong style="color:#fff">3-tool engagement</strong> in the sequence below.</div>
-        <div class="modules-row" style="margin-bottom:12px">
-          <div class="module-pill" style="color:rgba(255,255,255,0.25);border-color:rgba(255,255,255,0.06)">◈ Fuse · not yet</div>
-          <div class="module-pill unlocked" style="border-color:#5B8CFF;color:#5B8CFF">◉ Signal</div>
-          <div class="module-pill unlocked" style="border-color:#3BBFA3;color:#3BBFA3">◆ Vector</div>
-          <div class="module-pill unlocked" style="border-color:#FF8A3D;color:#FF8A3D">◇ Helix</div>
+      <div class="score-grid">
+        <div class="score-cell">
+          <div class="sc-label" style="color:var(--f)">Fuse — Taxonomy</div>
+          <div class="sc-bar-bg"><div class="sc-bar" style="background:var(--f);width:100%"></div></div>
+          <div class="sc-row">
+            <span class="sc-badge" style="background:rgba(16,185,129,0.12);color:#10b981">High</span>
+            <span class="sc-val">8 / 8</span>
+          </div>
         </div>
-        <div class="discover-results">
-          <div class="score-card" style="background:#0d1120">
-            <div class="score-label" style="color:#4DE8FF">Fuse — Taxonomy</div>
-            <div class="score-bar-bg"><div class="score-bar" style="background:#4DE8FF;width:100%"></div></div>
-            <div style="display:flex;align-items:center;gap:6px">
-              <span class="badge-pill badge-high">High</span>
-              <span class="score-value">8 / 8</span>
-            </div>
+        <div class="score-cell">
+          <div class="sc-label" style="color:var(--s)">Signal — Signal</div>
+          <div class="sc-bar-bg"><div class="sc-bar" style="background:var(--s);width:100%"></div></div>
+          <div class="sc-row">
+            <span class="sc-badge" style="background:rgba(16,185,129,0.12);color:#10b981">High</span>
+            <span class="sc-val">8 / 8</span>
           </div>
-          <div class="score-card" style="background:#0d1120">
-            <div class="score-label" style="color:#5B8CFF">Signal — Signal</div>
-            <div class="score-bar-bg"><div class="score-bar" style="background:#5B8CFF;width:100%"></div></div>
-            <div style="display:flex;align-items:center;gap:6px">
-              <span class="badge-pill badge-high">High</span>
-              <span class="score-value">8 / 8</span>
-            </div>
+        </div>
+        <div class="score-cell">
+          <div class="sc-label" style="color:var(--v)">Vector — Strategy</div>
+          <div class="sc-bar-bg"><div class="sc-bar" style="background:var(--v);width:50%"></div></div>
+          <div class="sc-row">
+            <span class="sc-badge" style="background:rgba(245,158,11,0.12);color:#f59e0b">Medium</span>
+            <span class="sc-val">4 / 8</span>
           </div>
-          <div class="score-card" style="background:#0d1120">
-            <div class="score-label" style="color:#3BBFA3">Vector — Strategy</div>
-            <div class="score-bar-bg"><div class="score-bar" style="background:#3BBFA3;width:50%"></div></div>
-            <div style="display:flex;align-items:center;gap:6px">
-              <span class="badge-pill badge-medium">Medium</span>
-              <span class="score-value">4 / 8</span>
-            </div>
-          </div>
-          <div class="score-card" style="background:#0d1120">
-            <div class="score-label" style="color:#FF8A3D">Helix — Execution</div>
-            <div class="score-bar-bg"><div class="score-bar" style="background:#FF8A3D;width:87.5%"></div></div>
-            <div style="display:flex;align-items:center;gap:6px">
-              <span class="badge-pill badge-high">High</span>
-              <span class="score-value">7 / 8</span>
-            </div>
+        </div>
+        <div class="score-cell">
+          <div class="sc-label" style="color:var(--h)">Helix — Execution</div>
+          <div class="sc-bar-bg"><div class="sc-bar" style="background:var(--h);width:87.5%"></div></div>
+          <div class="sc-row">
+            <span class="sc-badge" style="background:rgba(16,185,129,0.12);color:#10b981">High</span>
+            <span class="sc-val">7 / 8</span>
           </div>
         </div>
       </div>
     </div>
-    <div class="fact-row">
-      <div class="fact">
-        <div class="fact-value">4 sections</div>
-        <div class="fact-label">taxonomy · signal · strategy · execution</div>
-      </div>
-      <div class="fact">
-        <div class="fact-value">Saves to Supabase</div>
-        <div class="fact-label"><code style="font-size:11px">readiness</code> + <code style="font-size:11px">modules_unlocked</code> columns</div>
-      </div>
+  </div>
+  <div class="fact-row">
+    <div class="fact">
+      <div class="fact-val">4 sections · 16 questions</div>
+      <div class="fact-lbl">taxonomy · signal · strategy · execution</div>
+    </div>
+    <div class="fact">
+      <div class="fact-val">Saves to Supabase</div>
+      <div class="fact-lbl"><code>readiness</code> + <code>modules_unlocked</code></div>
     </div>
   </div>
 </div>
 
-<p class="section-label">Tool 4 — Vector (with Discover integration)</p>
-
+<p class="section-eyebrow" style="margin-top:40px">Tool 4 — Vector (Discover integration)</p>
 <div class="tool-card">
   <div class="tool-header">
-    <div class="tool-icon" style="background:#0d6b5a">V</div>
+    <div class="tool-icon" style="background:#063d30">V</div>
     <div>
-      <div class="tool-name">Vector</div>
-      <div class="tool-desc">Growth Command Center · When Discover data is on file, Vector reads the readiness column and surfaces a track recommendation at the top of the diagnostic</div>
+      <div class="tool-name" style="color:var(--v)">Vector</div>
+      <div class="tool-desc">Growth Command Center. When Discover data is on file, Vector reads the <code style="font-family:monospace;font-size:11px;color:var(--txt);background:rgba(255,255,255,0.06);padding:1px 4px;border-radius:3px">readiness</code> column on login and surfaces a track recommendation before the diagnostic starts.</div>
     </div>
   </div>
-  <div class="tool-body">
-    <div class="screen-mock">
-      <div class="screen-topbar">
-        <span class="screen-dot" style="background:#3BBFA3"></span>
-        <span style="font-size:10px;color:#4A5270;margin-left:4px">Vector · Practice Diagnostic</span>
-      </div>
-      <div class="screen-content">
-        <div class="banner-mock">
-          <span class="banner-icon">✦</span>
-          <span class="banner-text"><strong>Discover assessment on file</strong> · Track A recommended — systematize existing motion</span>
-          <span class="banner-link">Re-run assessment →</span>
-        </div>
-        <div class="screen-label" style="margin-top:4px">Practice Diagnostic</div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.5)">Answer five questions to get your track, foundation weights, and a prioritized 90-day build sequence.</div>
-      </div>
+  <div class="screen">
+    <div class="screen-bar">
+      <div class="screen-bar-dot" style="background:var(--v)"></div>
+      <span class="screen-bar-label">Vector · Practice Diagnostic</span>
     </div>
-    <div class="fact-row">
-      <div class="fact">
-        <div class="fact-value">Auto-populated</div>
-        <div class="fact-label">Banner appears after Discover login, no manual input</div>
+    <div class="screen-body">
+      <div class="v-banner">
+        <span class="v-banner-star">✦</span>
+        <div class="v-banner-text"><strong>Discover assessment on file</strong>&nbsp; · &nbsp;Track A recommended — systematize existing motion</div>
+        <div class="v-banner-link">Re-run →</div>
       </div>
-      <div class="fact">
-        <div class="fact-value">Track logic</div>
-        <div class="fact-label">A (systematize) · B (build foundation) · C (fix + activate)</div>
-      </div>
+      <div class="v-diag-label">Practice Diagnostic</div>
+      <div class="v-diag-sub">Answer five questions to get your track, foundation weights, and a prioritized 90-day build sequence.</div>
+    </div>
+  </div>
+  <div class="fact-row">
+    <div class="fact">
+      <div class="fact-val">Auto-populated</div>
+      <div class="fact-lbl">Banner appears on login — no manual input needed</div>
+    </div>
+    <div class="fact">
+      <div class="fact-val">3 tracks</div>
+      <div class="fact-lbl">A (systematize) · B (build foundation) · C (fix + activate)</div>
     </div>
   </div>
 </div>
 
-<hr class="divider">
+<hr>
 
-<p class="section-label">Shared spine — Supabase <code>practices</code> table</p>
-
-<div style="margin-bottom:1.5rem">
-  <div class="supabase-row">
-    <span class="col-pill">email</span>
-    <span class="col-arrow">→</span>
-    <span class="col-owner">primary key — all 5 tools</span>
-  </div>
-  <div class="supabase-row">
-    <span class="col-pill">readiness</span>
-    <span class="col-arrow">→</span>
-    <span class="col-owner">written by Discover, read by Vector</span>
-  </div>
-  <div class="supabase-row">
-    <span class="col-pill">modules_unlocked</span>
-    <span class="col-arrow">→</span>
-    <span class="col-owner">written by Discover (Fuse/Signal/Vector/Helix)</span>
-  </div>
-  <div class="supabase-row">
-    <span class="col-pill">state</span>
-    <span class="col-arrow">→</span>
-    <span class="col-owner">Vector session state (VEC + PHASE)</span>
-  </div>
-  <div class="supabase-row">
-    <span class="col-pill">fuse_state</span>
-    <span class="col-arrow">→</span>
-    <span class="col-owner">Fuse resolution state</span>
-  </div>
-  <div class="supabase-row">
-    <span class="col-pill">signal_state</span>
-    <span class="col-arrow">→</span>
-    <span class="col-owner">Signal APP_STATE (minus deck file)</span>
-  </div>
-  <div class="supabase-row">
-    <span class="col-pill">updated_at</span>
-    <span class="col-arrow">→</span>
-    <span class="col-owner">all tools write on save</span>
-  </div>
-</div>
-
-<p style="font-size:13px;color:var(--text-muted)">All upserts use <code>onConflict: 'email'</code> and write only their own columns — no tool overwrites another's data.</p>
+<p class="section-eyebrow">Shared spine — Supabase <code style="font-family:monospace;font-size:10px;letter-spacing:0">practices</code> table</p>
+<table class="schema">
+  <tr>
+    <td><code>email</code></td>
+    <td><span class="schema-owner">primary key · all five tools</span></td>
+  </tr>
+  <tr>
+    <td><code>readiness</code></td>
+    <td><span class="schema-owner"><span class="schema-dot" style="background:var(--d)"></span> written by Discover · read by Vector</span></td>
+  </tr>
+  <tr>
+    <td><code>modules_unlocked</code></td>
+    <td><span class="schema-owner"><span class="schema-dot" style="background:var(--d)"></span> written by Discover (Fuse / Signal / Vector / Helix)</span></td>
+  </tr>
+  <tr>
+    <td><code>state</code></td>
+    <td><span class="schema-owner"><span class="schema-dot" style="background:var(--v)"></span> Vector session state (VEC + PHASE)</span></td>
+  </tr>
+  <tr>
+    <td><code>fuse_state</code></td>
+    <td><span class="schema-owner"><span class="schema-dot" style="background:var(--f)"></span> Fuse resolution state</span></td>
+  </tr>
+  <tr>
+    <td><code>signal_state</code></td>
+    <td><span class="schema-owner"><span class="schema-dot" style="background:var(--s)"></span> Signal APP_STATE (minus deck file)</span></td>
+  </tr>
+  <tr>
+    <td><code>updated_at</code></td>
+    <td>all tools write on save</td>
+  </tr>
+</table>
+<p style="margin-top:16px;font-size:12px;color:var(--txt3)">All upserts use <code style="font-family:monospace;font-size:10px;color:var(--txt2)">onConflict: 'email'</code> and only write their own columns — no tool overwrites another's data.</p>
