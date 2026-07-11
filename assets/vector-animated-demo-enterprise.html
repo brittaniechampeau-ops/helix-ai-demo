@@ -93,11 +93,12 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 .file-st.done{color:var(--teal)}.file-st.proc{color:var(--blue)}
 .proc-bar{height:2px;background:var(--faint);border-radius:1px;margin-top:5px;overflow:hidden}
 .proc-bar-fill{height:100%;background:var(--blue);border-radius:1px;width:0;transition:width 2s ease}
-.sigs-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sigs-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .sig-card{background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:11px 13px;opacity:0;transition:opacity .35s ease;}
 .sig-card.show{opacity:1}
 .sig-tag{font-size:9px;font-weight:700;letter-spacing:.1em;color:var(--purple);background:var(--purple-bg);border:1px solid var(--purple-dim);border-radius:4px;padding:2px 6px;display:inline-block;margin-bottom:5px;}
 .sig-tag.buyer{color:var(--blue);background:var(--blue-bg);border-color:var(--blue-dim);}
+.sig-tag.trend{color:var(--teal);background:var(--teal-bg);border-color:var(--teal-dim);}
 .sig-text{font-size:11px;color:var(--muted);line-height:1.45}
 
 /* DIAGNOSTIC */
@@ -134,6 +135,8 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 .proc-bar-track{height:3px;background:var(--faint);border-radius:2px;overflow:hidden}
 .proc-bar-fill2{height:100%;background:var(--teal);border-radius:2px;width:0;transition:width .3s ease}
 .proc-steps-label{font-size:10px;color:var(--muted);margin-top:8px;text-align:center;font-family:var(--mono)}
+.ctx-badge{font-size:10px;color:var(--muted);background:var(--card);border:1px solid var(--border2);border-radius:5px;padding:5px 12px;font-family:var(--mono);text-align:center;}
+.ctx-badge span{color:var(--teal);}
 
 /* POSITIONING */
 .offers-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;flex:1}
@@ -243,8 +246,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 .stage-close{background:#2e1a14;color:#E8836B;border:1px solid #5a3020}
 .pipe-val{color:var(--muted);margin-left:auto;font-family:var(--mono)}
 
-/* ACTIVATE */
-.act-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;flex:1}
+/* ACTIVATE / CAMPAIGN DNA */
 .act-col{background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;}
 .act-chip{font-size:11px;padding:5px 9px;border-radius:6px;border:1px solid var(--border2);color:var(--muted);display:flex;align-items:center;justify-content:space-between;opacity:0;transform:translateX(-4px);transition:opacity .3s ease,transform .3s ease;}
 .act-chip.show{opacity:1;transform:none}
@@ -254,6 +256,11 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 .act-payload.show{opacity:1;transform:none}
 .act-payload.done{background:var(--teal-bg);border-color:var(--teal-dim);color:var(--teal);}
 .act-payload.act{border-color:var(--blue-dim);color:var(--blue);background:var(--blue-bg);}
+.payload-card{background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:5px;}
+.payload-platform{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);background:var(--blue-bg);border:1px solid var(--blue-dim);border-radius:4px;padding:2px 6px;display:inline-block;margin-bottom:3px;align-self:flex-start;}
+.payload-field{font-size:10px;color:var(--muted);line-height:1.5}
+.payload-field .fkey{color:var(--text);font-family:var(--mono);font-size:9px;}
+.payload-field .fval{color:var(--teal);}
 
 /* CAPTION BAR */
 .caption-bar{position:fixed;bottom:0;left:0;right:0;background:var(--panel);border-top:1px solid var(--border);padding:0 28px;height:70px;display:flex;align-items:center;gap:20px;}
@@ -293,8 +300,8 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
         <div class="login-wrap">
           <div class="v-logo">V</div>
           <div style="text-align:center">
-            <div style="font-size:22px;font-weight:600">Vector</div>
-            <div style="font-size:13px;color:var(--muted);margin-top:6px">Ardent Group · Practice Growth Intelligence</div>
+            <div style="font-size:22px;font-weight:600">Enterprise AI Growth Platform</div>
+            <div style="font-size:13px;color:var(--muted);margin-top:6px">Ardent Group · Vector Practice Intelligence</div>
           </div>
           <div class="login-form">
             <div class="form-group">
@@ -313,39 +320,39 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
           <div>
             <div class="step-eyebrow"><div class="step-num-r">RESOLVE</div></div>
             <div class="step-title">Taxonomy Workbench</div>
-            <div class="step-sub">Define your practice vocabulary — Vector uses this to generate precisely-calibrated offers and positioning</div>
+            <div class="step-sub">Ardent's taxonomy is already loaded — exact audience labels, offer types, and content categories Vector will use to generate positioning</div>
           </div>
           <div class="tax-grid">
             <div class="tax-col">
-              <div class="tax-head">Practice Areas</div>
+              <div class="tax-head">Audience</div>
               <div class="tax-chips">
-                <div class="tax-chip done" id="rt0">Strategy Consulting <span class="tc-check">✓</span></div>
-                <div class="tax-chip done" id="rt1">Digital Transformation <span class="tc-check">✓</span></div>
-                <div class="tax-chip done" id="rt2">M&amp;A Integration <span class="tc-check">✓</span></div>
-                <div class="tax-chip act" id="rt3">Talent &amp; Org Design <span class="tc-dot">●</span></div>
+                <div class="tax-chip done" id="rt0">Fortune 1000 CXO <span class="tc-check">✓</span></div>
+                <div class="tax-chip done" id="rt1">PE-Backed C-Suite <span class="tc-check">✓</span></div>
+                <div class="tax-chip done" id="rt2">Government Agency TL <span class="tc-check">✓</span></div>
+                <div class="tax-chip act" id="rt3">Family Office Principal <span class="tc-dot">●</span></div>
               </div>
             </div>
             <div class="tax-col">
-              <div class="tax-head">Target Markets</div>
+              <div class="tax-head">Offer Type</div>
               <div class="tax-chips">
-                <div class="tax-chip done" id="rt4">Fortune 1000 <span class="tc-check">✓</span></div>
-                <div class="tax-chip done" id="rt5">High-Growth ($50M+) <span class="tc-check">✓</span></div>
-                <div class="tax-chip done" id="rt6">PE-Backed Enterprise <span class="tc-check">✓</span></div>
-                <div class="tax-chip act" id="rt7">Government / Public Sector <span class="tc-dot">●</span></div>
+                <div class="tax-chip done" id="rt4">Multi-Month Engagement <span class="tc-check">✓</span></div>
+                <div class="tax-chip done" id="rt5">Embedded Team Program <span class="tc-check">✓</span></div>
+                <div class="tax-chip done" id="rt6">M&amp;A Integration Sprint <span class="tc-check">✓</span></div>
+                <div class="tax-chip act" id="rt7">AI Readiness Audit <span class="tc-dot">●</span></div>
               </div>
             </div>
             <div class="tax-col">
-              <div class="tax-head">Delivery Models</div>
+              <div class="tax-head">Content Category</div>
               <div class="tax-chips">
-                <div class="tax-chip done" id="rt8">Multi-Month Engagement <span class="tc-check">✓</span></div>
-                <div class="tax-chip done" id="rt9">Retainer Program <span class="tc-check">✓</span></div>
-                <div class="tax-chip done" id="rt10">Embedded Team <span class="tc-check">✓</span></div>
-                <div class="tax-chip act" id="rt11">Co-Deliver with Client <span class="tc-dot">●</span></div>
+                <div class="tax-chip done" id="rt8">Board-Ready Research <span class="tc-check">✓</span></div>
+                <div class="tax-chip done" id="rt9">Executive Thought Leadership <span class="tc-check">✓</span></div>
+                <div class="tax-chip done" id="rt10">Case Study <span class="tc-check">✓</span></div>
+                <div class="tax-chip act" id="rt11">Webinar Series <span class="tc-dot">●</span></div>
               </div>
             </div>
           </div>
           <div class="tax-footer">
-            <div class="tax-status"><span style="color:var(--blue)">✦</span> Taxonomy 86% complete — 22 terms defined, 4 pending</div>
+            <div class="tax-status"><span style="color:var(--blue)">✦</span> Taxonomy 92% complete — 24 terms defined, 2 pending</div>
             <div class="btn-next show" style="background:var(--blue-bg);border:1px solid var(--blue-dim);color:var(--blue);height:34px;padding:0 16px;font-size:12px;font-weight:600;border-radius:7px;display:flex;align-items:center;gap:6px;">Continue to Intelligence →</div>
           </div>
         </div>
@@ -357,27 +364,27 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
           <div>
             <div class="step-eyebrow"><div class="step-num-i">INTELLIGENCE</div></div>
             <div class="step-title">Market Signals</div>
-            <div class="step-sub">Upload transcripts, research docs, and competitive intel — Intelligence extracts buyer signals that sharpen every offer</div>
+            <div class="step-sub">Ardent's deal briefs, survey data, and CXO reports — Intelligence extracts live buyer signals that ground Vector's AI in real context</div>
           </div>
           <div class="files-area">
             <div class="file-row" id="fi0">
               <div class="file-ico">📋</div>
               <div class="file-info">
                 <div class="file-nm">Everfield Platform Deal Brief.pdf</div>
-                <div class="file-st done">✓ Processed · 18 deal signals captured</div>
+                <div class="file-st done">✓ Processed · 18 signals extracted</div>
               </div>
             </div>
             <div class="file-row" id="fi1">
               <div class="file-ico">📄</div>
               <div class="file-info">
-                <div class="file-nm">Enterprise Transformation Index 2026.pdf</div>
-                <div class="file-st done">✓ Processed · 9 market signals captured</div>
+                <div class="file-nm">Enterprise AI Readiness Index 2026.pdf</div>
+                <div class="file-st done">✓ Processed · 12 signals extracted</div>
               </div>
             </div>
             <div class="file-row" id="fi2">
               <div class="file-ico">📊</div>
               <div class="file-info">
-                <div class="file-nm">AI Readiness Survey · 200 CXOs.xlsx</div>
+                <div class="file-nm">CXO Transformation Survey · 340 respondents.xlsx</div>
                 <div class="file-st proc" id="fi2st">Extracting signals…</div>
                 <div class="proc-bar"><div class="proc-bar-fill" id="fi2bar"></div></div>
               </div>
@@ -386,11 +393,15 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
           <div class="sigs-row">
             <div class="sig-card" id="sc0">
               <div class="sig-tag buyer">BUYER SIGNAL</div>
-              <div class="sig-text">Multi-entity platform play post-close — integration urgency across 3 acquired firms, board pressure on Day 100 plan</div>
+              <div class="sig-text">Multi-entity platform play — 4 portfolio companies, Day 100 board pressure mounting, $400K+ budget approved for integration lead</div>
             </div>
             <div class="sig-card" id="sc1">
               <div class="sig-tag">MARKET SIGNAL</div>
-              <div class="sig-text">Enterprise transformation spend up 38% driven by AI adoption mandates — large consulting firms capacity-constrained</div>
+              <div class="sig-text">Enterprise transformation spend up 38% YoY — large consulting firms capacity-constrained, boutique specialists in demand</div>
+            </div>
+            <div class="sig-card" id="sc2">
+              <div class="sig-tag trend">TREND</div>
+              <div class="sig-text">AI readiness now a board-level mandate — 67% of Fortune 500 CXOs surveyed say board requested formal readiness plan in 2026</div>
             </div>
           </div>
         </div>
@@ -402,7 +413,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
           <div>
             <div class="step-eyebrow"><div class="step-num">STEP 01</div></div>
             <div class="step-title">Practice Diagnostic</div>
-            <div class="step-sub">Tell us about your firm — 8 questions, under 4 minutes</div>
+            <div class="step-sub">Resolve taxonomy pre-loaded — Vector reads Ardent's own vocabulary, no re-entry required</div>
           </div>
           <div class="form-grid">
             <div class="form-group span2">
@@ -415,7 +426,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
                 <div class="chip sel" id="chip1">Strategy Consulting</div>
                 <div class="chip" id="chip2">Digital Transformation</div>
                 <div class="chip" id="chip3">M&amp;A Integration</div>
-                <div class="chip" id="chip4">Talent &amp; Org</div>
+                <div class="chip" id="chip4">Talent &amp; Org Design</div>
                 <div class="chip" id="chip5">AI Advisory</div>
               </div>
             </div>
@@ -450,24 +461,25 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
             <div class="agent-card span2" id="ag0">
               <div class="agent-name">Signal Extractor</div>
               <div class="agent-model">claude-haiku-4-5 · fast extraction</div>
-              <div class="agent-status"><div class="spinner" id="sp0"></div><span id="st0">Extracting practice signals…</span></div>
+              <div class="agent-status"><div class="spinner" id="sp0"></div><span id="st0">Loading 24 taxonomy terms from Resolve + 30 signals from Intelligence…</span></div>
             </div>
             <div class="agent-card" id="ag1">
               <div class="agent-name">Positioning Agent</div>
               <div class="agent-model">claude-sonnet-5 · parallel</div>
-              <div class="agent-status"><div class="spinner" id="sp1" style="opacity:0"></div><span id="st1" style="opacity:0">Drafting positioning…</span></div>
+              <div class="agent-status"><div class="spinner" id="sp1" style="opacity:0"></div><span id="st1" style="opacity:0">Generating positioning using Ardent's own audience language…</span></div>
             </div>
             <div class="agent-card" id="ag2">
               <div class="agent-name">Credibility Drafter</div>
               <div class="agent-model">claude-sonnet-5 · parallel</div>
-              <div class="agent-status"><div class="spinner" id="sp2" style="opacity:0"></div><span id="st2" style="opacity:0">Writing case studies…</span></div>
+              <div class="agent-status"><div class="spinner" id="sp2" style="opacity:0"></div><span id="st2" style="opacity:0">Writing case studies in Ardent's voice…</span></div>
             </div>
             <div class="agent-card span2" id="ag3">
               <div class="agent-name">Offer Architect</div>
               <div class="agent-model">claude-sonnet-5 · synthesis</div>
-              <div class="agent-status"><div class="spinner" id="sp3" style="opacity:0"></div><span id="st3" style="opacity:0">Architecting offers…</span></div>
+              <div class="agent-status"><div class="spinner" id="sp3" style="opacity:0"></div><span id="st3" style="opacity:0">Pricing against Fortune 1000 and PE-backed buyer signals…</span></div>
             </div>
           </div>
+          <div class="ctx-badge">Taxonomy: <span>24 terms</span> · Signals: <span>30 extracted</span> · Model: <span>claude-sonnet-5</span></div>
           <div class="proc-bar-wrap">
             <div class="proc-bar-track"><div class="proc-bar-fill2" id="procBar"></div></div>
             <div class="proc-steps-label" id="procLabel">Initializing pipeline…</div>
@@ -481,7 +493,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
           <div>
             <div class="step-eyebrow"><div class="step-num">STEP 02</div></div>
             <div class="step-title">Positioning &amp; Offers</div>
-            <div class="step-sub">Three distinct offers — each with pricing, framing, and activation plan</div>
+            <div class="step-sub">Positioning language reflects Ardent's Resolve taxonomy · Pricing calibrated to buyer signals from Intelligence</div>
           </div>
           <div class="offers-grid">
             <div class="offer-card" id="oc0">
@@ -499,7 +511,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
               <div class="offer-tag">Offer 02</div>
               <div class="offer-name">M&amp;A Integration Accelerator</div>
               <div class="offer-price">$145,000<span>/project</span></div>
-              <div class="offer-desc">90-day post-close integration program that preserves deal value, aligns cultures, and hits synergy targets from day one.</div>
+              <div class="offer-desc">90-day post-close integration lead across portfolio entities — preserves deal value, aligns cultures, hits synergy targets from Day 1.</div>
               <div class="offer-bullets">
                 <div class="ob">Integration management office (IMO) setup</div>
                 <div class="ob">Cultural + operational gap analysis</div>
@@ -508,12 +520,12 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
             </div>
             <div class="offer-card" id="oc2">
               <div class="offer-tag">Offer 03</div>
-              <div class="offer-name">Digital &amp; AI Readiness Program</div>
+              <div class="offer-name">AI Readiness &amp; Governance Program</div>
               <div class="offer-price">$95,000<span>/engagement</span></div>
-              <div class="offer-desc">Enterprise readiness assessment and transformation roadmap for organizations deploying AI and modernizing digital infrastructure.</div>
+              <div class="offer-desc">Board-mandate-driven AI readiness assessment and governance framework — positions Ardent as the firm that translates mandate into roadmap.</div>
               <div class="offer-bullets">
                 <div class="ob">AI governance + risk assessment</div>
-                <div class="ob">Technology stack evaluation</div>
+                <div class="ob">Board-ready readiness scorecard</div>
                 <div class="ob">Change management + adoption strategy</div>
               </div>
             </div>
@@ -531,14 +543,14 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
           <div>
             <div class="step-eyebrow"><div class="step-num">STEP 03</div></div>
             <div class="step-title">Referral Engine</div>
-            <div class="step-sub">AI-drafted warm intros for your top referral sources — ready to send, not just a list</div>
+            <div class="step-sub">Targets sourced from deal signals in Intelligence — the people already in Ardent's orbit who match the buyer taxonomy</div>
           </div>
           <div class="ref-list">
             <div class="ref-card" id="rc0">
               <div class="ref-avatar">DW</div>
               <div class="ref-info">
                 <div class="ref-name">David Whitmore <div class="ref-badge">HIGH FIT</div></div>
-                <div class="ref-role">Managing Partner · Everfield Capital (PE)</div>
+                <div class="ref-role">Managing Partner · Everfield Capital (PE) — M&amp;A Integration intro</div>
                 <div class="ref-intro">"David — Ardent just closed a three-firm platform play and needs M&amp;A integration across all three entities simultaneously. This is the work they do best. Intro call this week?"</div>
               </div>
             </div>
@@ -546,7 +558,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
               <div class="ref-avatar">AT</div>
               <div class="ref-info">
                 <div class="ref-name">Anita Thomas <div class="ref-badge">HIGH FIT</div></div>
-                <div class="ref-role">CHRO · Cascade Global (Fortune 500)</div>
+                <div class="ref-role">CHRO · Cascade Global (Fortune 500) — Talent &amp; Org Design</div>
                 <div class="ref-intro">"Anita — you mentioned the board wants a 12-month transformation roadmap. Ardent built the last one for a company our size and scale. Worth 30 minutes with their practice lead?"</div>
               </div>
             </div>
@@ -554,8 +566,8 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
               <div class="ref-avatar">MF</div>
               <div class="ref-info">
                 <div class="ref-name">Marcus Flynn</div>
-                <div class="ref-role">VP Corporate Development · Ironwood Industries</div>
-                <div class="ref-intro">"Marcus — the AI readiness gaps you flagged in the board deck are exactly what Ardent's Digital Practice addresses. They've run this at four companies your size. Intro?"</div>
+                <div class="ref-role">VP Corporate Development · Ironwood Industries — Strategy refresh</div>
+                <div class="ref-intro">"Marcus — the AI readiness gaps you flagged in the board deck are exactly what Ardent's practice addresses. They've run this at four companies your size. Intro?"</div>
               </div>
             </div>
           </div>
@@ -568,26 +580,26 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
           <div>
             <div class="step-eyebrow"><div class="step-num">STEP 04</div></div>
             <div class="step-title">Credibility Kit</div>
-            <div class="step-sub">AI-written case studies, proof points, and your practice bio — ready to deploy in proposals, decks, and outreach</div>
+            <div class="step-sub">Case studies written in Ardent's voice, using Resolve's content category taxonomy — ready for the proposal library</div>
           </div>
           <div class="cred-grid">
             <div class="cred-card" id="cc0">
               <div class="cred-tag">Case Study</div>
               <div class="cred-co">Everfield Platform Integration</div>
-              <div class="cred-result">$180M<span> synergy captured</span></div>
-              <div class="cred-desc">PE-backed 3-firm platform play. Ardent stood up an IMO across all entities within 14 days of close. Unified operating model and leadership alignment delivered in 90 days.</div>
+              <div class="cred-result">$180M<span> synergy realization</span></div>
+              <div class="cred-desc">PE-backed 3-firm platform play. Ardent stood up an IMO across all entities within 14 days of close. 18-month transformation — unified operating model and leadership alignment delivered in 90 days.</div>
             </div>
             <div class="cred-card" id="cc1">
               <div class="cred-tag">Case Study</div>
               <div class="cred-co">Cascade Global Digital Transformation</div>
               <div class="cred-result">47%<span> productivity gain</span></div>
-              <div class="cred-desc">12-month enterprise AI adoption program across 8,000 employees. Ardent designed the governance model, change management strategy, and executive rollout framework.</div>
+              <div class="cred-desc">12-month enterprise AI adoption program across 2,400 practitioners. Ardent designed the governance model, change management strategy, and executive rollout framework.</div>
             </div>
             <div class="cred-card" id="cc2">
               <div class="cred-tag">Case Study</div>
               <div class="cred-co">Ironwood Industries Strategy Refresh</div>
               <div class="cred-result">3×<span> revenue in 36 months</span></div>
-              <div class="cred-desc">Board-to-frontline strategy alignment for a $400M industrial firm entering two new markets. Ardent facilitated the strategy cycle and designed the accountability operating system.</div>
+              <div class="cred-desc">Board-to-frontline strategy alignment for a $700M industrial firm. Ardent facilitated the strategy cycle and designed the accountability operating system — $2.1B deal value downstream.</div>
             </div>
           </div>
           <div class="proof-row">
@@ -605,14 +617,14 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
           <div>
             <div class="step-eyebrow"><div class="step-num">STEP 05</div></div>
             <div class="step-title">Client Intake</div>
-            <div class="step-sub">Upload discovery call transcripts or meeting notes — Vector extracts buyer signals, pain points, and deal context automatically</div>
+            <div class="step-sub">Transcript parsed against Ardent's taxonomy — buyer signals mapped to Resolve audience and offer categories automatically</div>
           </div>
           <div class="intake-files">
             <div class="intake-file" id="if0">
               <div class="file-ico">🎙️</div>
               <div class="file-info">
                 <div class="file-nm">Discovery Call — Everfield Capital · David Whitmore.vtt</div>
-                <div class="file-st done" id="if0st">✓ Transcript parsed · Extracting signals…</div>
+                <div class="file-st done" id="if0st">✓ Transcript parsed · Extracting signals against Resolve taxonomy…</div>
                 <div class="proc-bar"><div class="proc-bar-fill" id="if0bar" style="width:82%"></div></div>
               </div>
             </div>
@@ -620,19 +632,19 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
           <div class="intake-signals">
             <div class="isig" id="is0">
               <div class="isig-tag pain">PAIN</div>
-              <div class="isig-text">Board pressure on 100-day integration plan — three acquired firms, no unified operating model, leadership conflict already surfacing</div>
+              <div class="isig-text">Board pressure on 100-day integration plan — 3 acquired firms, no unified integration model, leadership conflict already surfacing across entities</div>
             </div>
             <div class="isig" id="is1">
               <div class="isig-tag need">NEED</div>
-              <div class="isig-text">Single integration lead who can hold accountability across all entities without getting lost in politics — "someone who's done this before at scale"</div>
+              <div class="isig-text">Single integration lead across 4 portfolio companies — someone who can hold accountability without getting lost in politics, "done this before at scale"</div>
             </div>
             <div class="isig" id="is2">
               <div class="isig-tag budget">BUDGET</div>
-              <div class="isig-text">Board approved $400K+ for the right partner — PE fund has a 4-year hold, deal economics require fast synergy capture in Year 1</div>
+              <div class="isig-text">$400K+ approved — PE fund has a 4-year hold, deal economics require fast synergy capture in Year 1, board review at Day 100</div>
             </div>
             <div class="isig" id="is3">
               <div class="isig-tag timing">TIMING</div>
-              <div class="isig-text">Close expected in 30 days — wants engagement to start immediately at signing, not after 6-week procurement</div>
+              <div class="isig-text">Close expected in 30 days — wants engagement start at signing, Day 100 board review is the hard deadline driving urgency</div>
             </div>
           </div>
         </div>
@@ -644,40 +656,40 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
           <div>
             <div class="step-eyebrow"><div class="step-num">STEP 06</div></div>
             <div class="step-title">90-Day Activation Plan</div>
-            <div class="step-sub">Your personalized growth roadmap — phased milestones, owner assignments, and target outcomes built from your diagnostic</div>
+            <div class="step-sub">Built from Ardent's actual pipeline targets and offer prices — not a generic template</div>
           </div>
           <div class="plan-phases">
             <div class="plan-phase" id="ph0">
               <div class="phase-label">PHASE 1</div>
               <div class="phase-period">Days 1–30 · Foundation</div>
-              <div class="phase-focus">Stand up the growth infrastructure</div>
+              <div class="phase-focus">Finalize positioning, activate referral outreach</div>
               <div class="phase-items">
-                <div class="pitem done"><div class="pitem-dot done"></div>Practice leads aligned on offer architecture</div>
+                <div class="pitem done"><div class="pitem-dot done"></div>Finalize offer positioning with practice leads</div>
+                <div class="pitem done"><div class="pitem-dot done"></div>Activate referral outreach to 8 priority targets</div>
                 <div class="pitem done"><div class="pitem-dot done"></div>Credibility kit deployed to BD team</div>
-                <div class="pitem done"><div class="pitem-dot done"></div>Referral campaign live — 14 warm targets</div>
-                <div class="pitem"><div class="pitem-dot"></div>HubSpot sequences activated</div>
+                <div class="pitem"><div class="pitem-dot"></div>HubSpot sequences activated with Campaign DNA</div>
               </div>
             </div>
             <div class="plan-phase" id="ph1">
               <div class="phase-label">PHASE 2</div>
               <div class="phase-period">Days 31–60 · Activation</div>
-              <div class="phase-focus">Drive qualified conversations</div>
+              <div class="phase-focus">6 discovery calls, 2 proposals, first close targeted</div>
               <div class="phase-items">
                 <div class="pitem"><div class="pitem-dot"></div>6 executive discovery meetings booked</div>
-                <div class="pitem"><div class="pitem-dot"></div>Everfield platform proposal submitted</div>
+                <div class="pitem"><div class="pitem-dot"></div>2 proposals submitted — Everfield + Cascade</div>
+                <div class="pitem"><div class="pitem-dot"></div>First close targeted by Day 45</div>
                 <div class="pitem"><div class="pitem-dot"></div>AI Governance thought leadership published</div>
-                <div class="pitem"><div class="pitem-dot"></div>Cascade Global scoping call completed</div>
               </div>
             </div>
             <div class="plan-phase" id="ph2">
               <div class="phase-label">PHASE 3</div>
               <div class="phase-period">Days 61–90 · Pipeline</div>
-              <div class="phase-focus">Close and expand</div>
+              <div class="phase-focus">Close pipeline, initiate onboarding, launch thought leadership</div>
               <div class="phase-items">
-                <div class="pitem"><div class="pitem-dot"></div>2 engagements closed — $465K committed</div>
-                <div class="pitem"><div class="pitem-dot"></div>3rd engagement in final proposal stage</div>
+                <div class="pitem"><div class="pitem-dot"></div>Close active pipeline — $465K committed</div>
+                <div class="pitem"><div class="pitem-dot"></div>Initiate onboarding for closed engagements</div>
+                <div class="pitem"><div class="pitem-dot"></div>Launch board-ready research series (Resolve: ETL)</div>
                 <div class="pitem"><div class="pitem-dot"></div>PE network introductions — 3 new opportunities</div>
-                <div class="pitem"><div class="pitem-dot"></div>Q4 retainer renewals initiated</div>
               </div>
             </div>
           </div>
@@ -698,12 +710,12 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
               <div class="gcc-title">Growth Command Center</div>
               <div class="gcc-sub">Ardent Group · Market Leadership Track · Generated Jul 2026</div>
             </div>
-            <div class="gcc-badge">✦ ACTIVE</div>
+            <div class="gcc-badge">✦ ACTIVE · Day 28 of 90</div>
           </div>
           <div class="metrics-row">
-            <div class="metric-card" id="mc0"><div class="metric-val">$1.2M</div><div class="metric-lbl">Pipeline target</div></div>
-            <div class="metric-card" id="mc1"><div class="metric-val">24</div><div class="metric-lbl">Referral targets</div></div>
-            <div class="metric-card" id="mc2"><div class="metric-val">$560K</div><div class="metric-lbl">Active pipeline</div></div>
+            <div class="metric-card" id="mc0"><div class="metric-val">$560K</div><div class="metric-lbl">Active pipeline</div></div>
+            <div class="metric-card" id="mc1"><div class="metric-val">$1.2M</div><div class="metric-lbl">Pipeline target</div></div>
+            <div class="metric-card" id="mc2"><div class="metric-val">24</div><div class="metric-lbl">Referral targets</div></div>
             <div class="metric-card" id="mc3"><div class="metric-val">Day 28</div><div class="metric-lbl">Timeline position</div></div>
           </div>
           <div class="gcc-bottom">
@@ -712,7 +724,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
               <div class="checklist">
                 <div class="citem"><div class="cbox done" id="cb0">✓</div><span>Align practice leads on offer architecture</span></div>
                 <div class="citem"><div class="cbox done" id="cb1">✓</div><span>Deploy credibility kit to BD team</span></div>
-                <div class="citem"><div class="cbox done" id="cb2">✓</div><span>Launch referral campaign (14 warm targets)</span></div>
+                <div class="citem"><div class="cbox done" id="cb2">✓</div><span>Launch referral campaign — 8 priority targets activated</span></div>
                 <div class="citem"><div class="cbox" id="cb3">4</div><span>Submit Everfield platform proposal</span></div>
                 <div class="citem"><div class="cbox" id="cb4">5</div><span>Book 6 executive discovery meetings</span></div>
                 <div class="citem"><div class="cbox" id="cb5">6</div><span>Close first engagement by Day 45</span></div>
@@ -731,47 +743,80 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
         </div>
       </div>
 
-      <!-- SCENE 12: ACTIVATE / CAMPAIGN DNA -->
+      <!-- SCENE 12: CAMPAIGN DNA -->
       <div class="scene" id="sA">
-        <div class="wrap">
+        <div class="wrap" style="padding:18px 28px;gap:10px">
           <div>
-            <div class="step-eyebrow"><div class="step-num">STEP 08</div></div>
+            <div class="step-eyebrow"><div class="step-num">CAMPAIGN DNA</div></div>
             <div class="step-title">Activate — Campaign DNA</div>
-            <div class="step-sub">Vector maps your positioning to campaign taxonomy and generates ready-to-import payloads for HubSpot, Salesforce, Marketo, Outreach, and LinkedIn Ads</div>
+            <div class="step-sub">Resolve defined the terms · Vector maps positioning to them · Payloads export field-mapped and ready to import — no manual translation</div>
           </div>
-          <div class="act-grid">
+
+          <!-- Two-column: taxonomy values + export payloads -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
             <div class="act-col">
-              <div class="tax-head">Campaign Taxonomy</div>
+              <div class="tax-head">Taxonomy Values · Mapped from Resolve</div>
               <div class="tax-chips" style="gap:5px">
-                <div class="act-chip done" id="ac0">Practice Area · Strategy Consulting <span class="tc-check">✓</span></div>
-                <div class="act-chip done" id="ac1">Buyer Persona · Enterprise CXO <span class="tc-check">✓</span></div>
-                <div class="act-chip done" id="ac2">Offer Type · Multi-Month Engagement <span class="tc-check">✓</span></div>
-                <div class="act-chip done" id="ac3">Channel Motion · Executive Referral <span class="tc-check">✓</span></div>
-                <div class="act-chip act" id="ac4">Campaign Type · Account-Based <span class="tc-dot">●</span></div>
+                <div class="act-chip done" id="ac0">Practice Area → Strategy Consulting <span class="tc-check">✓</span></div>
+                <div class="act-chip done" id="ac1">Buyer Persona → Enterprise CXO <span class="tc-check">✓</span></div>
+                <div class="act-chip done" id="ac2">Offer Type → Multi-Month Engagement <span class="tc-check">✓</span></div>
+                <div class="act-chip done" id="ac3">Channel Motion → Executive Referral <span class="tc-check">✓</span></div>
+                <div class="act-chip act" id="ac4">Campaign Type → Account-Based <span class="tc-dot">●</span></div>
               </div>
             </div>
             <div class="act-col">
-              <div class="tax-head">Destination Payloads</div>
+              <div class="tax-head">Export Payloads · Ready to Import</div>
               <div class="tax-chips" style="gap:5px">
-                <div class="act-payload done" id="ap0">HubSpot Campaign <span class="tc-check">↓</span></div>
-                <div class="act-payload done" id="ap1">Salesforce Campaign <span class="tc-check">↓</span></div>
-                <div class="act-payload done" id="ap2">Marketo Program <span class="tc-check">↓</span></div>
-                <div class="act-payload done" id="ap3">Outreach Sequence <span class="tc-check">↓</span></div>
+                <div class="act-payload done" id="ap0">HubSpot <span class="tc-check">↓ Ready</span></div>
+                <div class="act-payload done" id="ap1">Salesforce <span class="tc-check">↓ Ready</span></div>
+                <div class="act-payload done" id="ap2">Marketo <span class="tc-check">↓ Ready</span></div>
+                <div class="act-payload done" id="ap3">Outreach Sequence <span class="tc-check">↓ Ready</span></div>
                 <div class="act-payload act" id="ap4">LinkedIn Ads <span class="tc-dot">●</span></div>
               </div>
             </div>
-            <div class="act-col">
-              <div class="tax-head">Content Themes</div>
-              <div class="tax-chips" style="gap:5px">
-                <div class="act-chip done" id="at0">Enterprise Transformation ROI <span class="tc-check">✓</span></div>
-                <div class="act-chip done" id="at1">M&amp;A Integration Speed <span class="tc-check">✓</span></div>
-                <div class="act-chip done" id="at2">AI Readiness at Scale <span class="tc-check">✓</span></div>
-                <div class="act-chip done" id="at3">Board-Ready Strategy <span class="tc-check">✓</span></div>
-              </div>
+          </div>
+
+          <!-- Platform payload field:value cards -->
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+            <div class="payload-card">
+              <div class="payload-platform">HubSpot</div>
+              <div class="payload-field"><span class="fkey">deal_type</span> = <span class="fval">"Strategic Consulting"</span></div>
+              <div class="payload-field"><span class="fkey">buyer_persona</span> = <span class="fval">"Enterprise CXO"</span></div>
+              <div class="payload-field"><span class="fkey">campaign_type</span> = <span class="fval">"ABM"</span></div>
+            </div>
+            <div class="payload-card">
+              <div class="payload-platform">Salesforce</div>
+              <div class="payload-field"><span class="fkey">Opportunity_Type__c</span> = <span class="fval">"Transformation"</span></div>
+              <div class="payload-field"><span class="fkey">Persona__c</span> = <span class="fval">"C-Suite"</span></div>
+              <div class="payload-field"><span class="fkey">Channel__c</span> = <span class="fval">"Referral"</span></div>
+            </div>
+            <div class="payload-card">
+              <div class="payload-platform">Marketo</div>
+              <div class="payload-field"><span class="fkey">Program_Channel</span> = <span class="fval">"Executive"</span></div>
+              <div class="payload-field"><span class="fkey">Segment</span> = <span class="fval">"Fortune 1000"</span></div>
+              <div class="payload-field"><span class="fkey">Offer_Track</span> = <span class="fval">"Multi-Month"</span></div>
+            </div>
+            <div class="payload-card">
+              <div class="payload-platform">Outreach + LinkedIn</div>
+              <div class="payload-field">sequence = <span class="fval">"Enterprise CXO · ABM · Executive Referral"</span></div>
+              <div class="payload-field">audience = <span class="fval">"Fortune 1000"</span></div>
+              <div class="payload-field">content_theme = <span class="fval">"Transformation ROI"</span></div>
             </div>
           </div>
+
+          <!-- Content themes -->
+          <div>
+            <div class="tax-head" style="margin-bottom:6px">Content Themes Generated</div>
+            <div style="display:flex;gap:7px;flex-wrap:wrap">
+              <div class="act-chip done" id="at0" style="padding:5px 10px">Enterprise Transformation ROI <span class="tc-check">✓</span></div>
+              <div class="act-chip done" id="at1" style="padding:5px 10px">M&amp;A Integration Speed to Value <span class="tc-check">✓</span></div>
+              <div class="act-chip done" id="at2" style="padding:5px 10px">AI Readiness at Board Level <span class="tc-check">✓</span></div>
+              <div class="act-chip done" id="at3" style="padding:5px 10px">Talent &amp; Org Resilience <span class="tc-check">✓</span></div>
+            </div>
+          </div>
+
           <div class="tax-footer">
-            <div class="tax-status"><span style="color:var(--teal)">✦</span> 5 payloads ready · Primary KPI: Enterprise Pipeline Created</div>
+            <div class="tax-status"><span style="color:var(--teal)">✦</span> 5 payloads ready · Resolve taxonomy → field-mapped · No manual translation layer</div>
             <div class="btn-next show" style="height:34px;padding:0 16px;font-size:12px">Export All Payloads ↓</div>
           </div>
         </div>
@@ -797,18 +842,18 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 
 <script>
 const SCENES=[
-  {id:'s0',  label:'Welcome — Login',                  text:'Secure magic-link login — no passwords, no friction. Practice data stays private and org-isolated.',                                              dur:4500, tool:'vector'},
-  {id:'sR',  label:'Resolve — Taxonomy Workbench',     text:'Before Vector generates anything, Resolve locks in your practice vocabulary — the foundation every offer and campaign is built from.',           dur:5500, tool:'resolve'},
-  {id:'sI',  label:'Intelligence — Market Signals',    text:'Upload deal briefs, market research, and competitive docs. Intelligence extracts buyer signals that sharpen every offer and piece of content.',  dur:5500, tool:'intelligence'},
-  {id:'s1',  label:'Step 01 — Practice Diagnostic',    text:'Answer 8 questions about your firm. Vector reads between the lines to find what makes Ardent Group genuinely distinct in a crowded market.',     dur:6000, tool:'vector'},
-  {id:'s2',  label:'AI Pipeline — 4 Agents',           text:'Signal Extractor, Positioning Agent, Credibility Drafter, and Offer Architect run in sequence and parallel — full analysis in under 60 seconds.', dur:5500, tool:'vector'},
-  {id:'s3',  label:'Step 02 — Positioning & Offers',   text:'Three fully-developed offers with pricing, framing, and activation plans — plus Regenerate and "Try a different angle" controls.',                dur:5500, tool:'vector'},
-  {id:'s4',  label:'Step 03 — Referral Engine',        text:'AI-drafted warm intro language for your top referral sources — matched to the right offer, ready to send.',                                      dur:5500, tool:'vector'},
-  {id:'sC',  label:'Step 04 — Credibility Kit',        text:'AI-written case studies and proof points for Ardent Group — pulled from your diagnostic and calibrated for enterprise buyers.',                   dur:5500, tool:'vector'},
-  {id:'s5i', label:'Step 05 — Client Intake',          text:'Upload a discovery call transcript. Vector extracts pain points, needs, budget signals, and timeline — before you write a single proposal line.',  dur:5500, tool:'vector'},
-  {id:'s6',  label:'Step 06 — 90-Day Activation Plan', text:'A phased growth roadmap with milestone targets, owner assignments, and a Day 45 first-close goal — built entirely from your diagnostic data.',     dur:5500, tool:'vector'},
-  {id:'s5',  label:'Step 07 — Growth Command Center',  text:'Your live operating dashboard: pipeline tracker, 90-day checklist, metrics, and revenue targets — all auto-populated and always current.',         dur:5500, tool:'vector'},
-  {id:'sA',  label:'Step 08 — Activate / Campaign DNA','text':'Vector maps positioning to your marketing taxonomy and generates import-ready payloads for HubSpot, Salesforce, Marketo, Outreach, and LinkedIn.', dur:5500, tool:'vector'},
+  {id:'s0',  label:'Welcome — Login',                  text:'Ardent Group Enterprise AI Growth Platform. Secure magic-link login — practice data stays private and org-isolated.',                                          dur:4500, tool:'vector'},
+  {id:'sR',  label:'Resolve — Taxonomy Workbench',     text:'Resolve loads first — Ardent\'s taxonomy becomes the shared vocabulary every other tool speaks. 24 terms defined across Audience, Offer Type, and Content Category.',  dur:5500, tool:'resolve'},
+  {id:'sI',  label:'Intelligence — Market Signals',    text:'Intelligence extracts live signals from Ardent\'s own documents — grounding Vector\'s AI in real buyer context, not assumptions. 30 signals loaded.',              dur:5500, tool:'intelligence'},
+  {id:'s1',  label:'Step 01 — Practice Diagnostic',    text:'Vector diagnostic loads with Resolve taxonomy pre-selected — no re-entry of what Resolve already knows. Ardent\'s vocabulary carries forward automatically.',        dur:6000, tool:'vector'},
+  {id:'s2',  label:'AI Pipeline — 4 Agents',           text:'The AI pipeline doesn\'t start cold — it runs with Ardent\'s taxonomy and live signals already loaded. Output is specific to Ardent\'s language and buyers, not generic.',  dur:5500, tool:'vector'},
+  {id:'s3',  label:'Step 02 — Positioning & Offers',   text:'Positioning language reflects Ardent\'s Resolve taxonomy. Pricing is calibrated to buyer signals from Intelligence. Three enterprise-grade offers with activation plans.',  dur:5500, tool:'vector'},
+  {id:'s4',  label:'Step 03 — Referral Engine',        text:'Referral targets sourced from deal signals in Intelligence — the people already in Ardent\'s orbit who match the buyer taxonomy.',                                    dur:5500, tool:'vector'},
+  {id:'sC',  label:'Step 04 — Credibility Kit',        text:'Case studies written in Ardent\'s voice, using Resolve\'s content category taxonomy — ready for the proposal library.',                                              dur:5500, tool:'vector'},
+  {id:'s5i', label:'Step 05 — Client Intake',          text:'Intake transcript parsed against Ardent\'s taxonomy — buyer signals mapped to Resolve audience and offer categories automatically.',                                   dur:5500, tool:'vector'},
+  {id:'s6',  label:'Step 06 — 90-Day Activation Plan', text:'90-day plan built from Ardent\'s actual pipeline targets and offer prices — not a generic template. Phase milestones tied to the specific buyers Vector identified.',    dur:5500, tool:'vector'},
+  {id:'s5',  label:'Step 07 — Growth Command Center',  text:'Command center tracks the real pipeline — tied to the exact offers and buyers Vector identified. $560K active against a $1.2M target at Day 28.',                    dur:5500, tool:'vector'},
+  {id:'sA',  label:'Campaign DNA — Taxonomy Export',   text:'Campaign DNA closes the loop — Ardent\'s taxonomy values become the exact field values in every marketing tool. No manual mapping. No translation layer. Resolve defined the terms; Vector maps them; payloads export ready to import.', dur:6000, tool:'vector'},
 ];
 
 let cur=0,playing=true,rafId=null,startT=0;
@@ -912,9 +957,9 @@ function animI(){
     const r=document.getElementById(id);
     if(r){r.classList.remove('show');setTimeout(()=>r.classList.add('show'),300+i*400);}
   });
-  ['sc0','sc1'].forEach((id,i)=>{
+  ['sc0','sc1','sc2'].forEach((id,i)=>{
     const c=document.getElementById(id);
-    if(c){c.classList.remove('show');setTimeout(()=>c.classList.add('show'),1900+i*380);}
+    if(c){c.classList.remove('show');setTimeout(()=>c.classList.add('show'),1900+i*300);}
   });
   const bar=document.getElementById('fi2bar');
   if(bar){bar.style.width='0%';bar.style.transition='none';
@@ -963,14 +1008,14 @@ function animProc(){
     {t:300,fn:()=>{
       document.getElementById('ag0').classList.add('show');
       ['sp0','st0'].forEach(id=>{document.getElementById(id).style.opacity='1';});
-      document.getElementById('st0').textContent='Extracting practice signals…';
+      document.getElementById('st0').textContent='Loading 24 taxonomy terms from Resolve + 30 signals from Intelligence…';
       bar.style.transition='width .8s ease';bar.style.width='15%';
       lbl.textContent='Signal Extractor → running';
     }},
     {t:1300,fn:()=>{
       const sp0=document.getElementById('sp0');
       if(sp0)sp0.outerHTML='<span class="done-check" id="sp0">✓</span>';
-      document.getElementById('st0').textContent='Complete — 22 signals extracted';
+      document.getElementById('st0').textContent='Complete — 24 taxonomy terms + 30 signals loaded';
       bar.style.width='35%';
     }},
     {t:1900,fn:()=>{
@@ -984,8 +1029,8 @@ function animProc(){
         const e=document.getElementById(id);
         if(e&&e.className==='spinner')e.outerHTML='<span class="done-check" id="'+id+'">✓</span>';
       });
-      const st1=document.getElementById('st1');if(st1)st1.textContent='3 offers positioned';
-      const st2=document.getElementById('st2');if(st2)st2.textContent='3 case studies drafted';
+      const st1=document.getElementById('st1');if(st1)st1.textContent='3 offers positioned in Ardent\'s language';
+      const st2=document.getElementById('st2');if(st2)st2.textContent='3 case studies drafted in Ardent\'s voice';
     }},
     {t:3700,fn:()=>{
       document.getElementById('ag3').classList.add('show');
