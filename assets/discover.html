@@ -1523,6 +1523,7 @@ function getTrack(size, modules) {
   const hasHelix = modules.includes('helix');
   const hasAll   = modules.length === 4;
 
+  // Size-based overrides come first — before module checks
   if (size === 'enterprise') {
     return {
       name:         'Enterprise Governance',
@@ -1536,6 +1537,20 @@ function getTrack(size, modules) {
     };
   }
 
+  if (size === 'micro') {
+    return {
+      name:         'Vector Sprint',
+      tagline:      'One focused sprint to lock positioning and activate growth',
+      color:        'var(--purple)', bg: 'var(--purple-bg)', border: 'var(--purple-border)',
+      duration:     '3–5 weeks',
+      stakeholders: 'Founder or owner (this is a 1:1 engagement)',
+      deliverables: ['Campaign DNA', 'Positioning one-liner', 'Offer stack', 'Referral engine', '30-60-90 plan'],
+      focus:        'At your stage, positioning and offers are the whole game. Vector runs fast — one sprint to define who you serve, what you offer, and how to systematize referrals. Taxonomy and Intelligence come later as infrastructure matures.',
+      firstStep:    'vector',
+    };
+  }
+
+  // Module-selection tracks (smb / mid only reach here)
   if (hasFuse && hasAll) {
     return {
       name:         'Full DRIVE Engagement',
@@ -1575,20 +1590,7 @@ function getTrack(size, modules) {
     };
   }
 
-  if (size === 'micro') {
-    return {
-      name:         'Vector Sprint',
-      tagline:      'One focused sprint to lock positioning and activate growth',
-      color:        'var(--purple)', bg: 'var(--purple-bg)', border: 'var(--purple-border)',
-      duration:     '3–5 weeks',
-      stakeholders: 'Founder or owner (this is a 1:1 engagement)',
-      deliverables: ['Campaign DNA', 'Positioning one-liner', 'Offer stack', 'Referral engine', '30-60-90 plan'],
-      focus:        'At your stage, positioning and offers are the whole game. Vector runs fast — one sprint to define who you serve, what you offer, and how to systematize referrals. Taxonomy and Intelligence come later as infrastructure matures.',
-      firstStep:    'vector',
-    };
-  }
-
-  // small / mid, Vector core
+  // smb / mid default
   return {
     name:         'Growth Sprint',
     tagline:      'Strategy and activation — sequenced for your stage',

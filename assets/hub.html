@@ -387,6 +387,7 @@ async function checkDataPresence(engList, activeId) {
 }
 
 const HUB_TRACK_NAMES = {
+  micro:      'Vector Sprint',
   smb:        'Growth Sprint',
   mid:        'Full DRIVE Engagement',
   enterprise: 'Enterprise Governance',
@@ -394,8 +395,8 @@ const HUB_TRACK_NAMES = {
 
 function cardHTML(eng, activeId) {
   const isActive = eng.id === activeId;
-  const tierClass = { smb: 'tier-smb', mid: 'tier-mid', enterprise: 'tier-enterprise' }[eng.size_tier] || 'tier-smb';
-  const tierLabel = { smb: 'SMB', mid: 'Mid-Market', enterprise: 'Enterprise' }[eng.size_tier] || 'SMB';
+  const tierClass = { micro: 'tier-smb', smb: 'tier-smb', mid: 'tier-mid', enterprise: 'tier-enterprise' }[eng.size_tier] || 'tier-smb';
+  const tierLabel = { micro: 'Micro', smb: 'SMB', mid: 'Mid-Market', enterprise: 'Enterprise' }[eng.size_tier] || 'SMB';
   const trackName = eng.track_name || HUB_TRACK_NAMES[eng.size_tier] || '';
   const updated = eng.updated_at ? new Date(eng.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
   const created = eng.created_at ? new Date(eng.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
@@ -1110,7 +1111,7 @@ tr:last-child td{border-bottom:none}
 
   <!-- FOOTER -->
   <div class="footer">
-    <div class="footer-text">Prepared by ${rEsc(eng.client_name)} engagement team · ${date}</div>
+    <div class="footer-text">Prepared by Britt Bowman LLC · ${date}</div>
     <div class="footer-text">Confidential — for ${rEsc(eng.contact_name || eng.client_name)} only</div>
   </div>
 

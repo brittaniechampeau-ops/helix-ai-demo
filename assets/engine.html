@@ -1218,7 +1218,7 @@ supa.auth.onAuthStateChange(async (event, session) => {
   const { data: { session } } = await supa.auth.getSession();
   if (!session) {
     // Still init the UI so it's explorable
-    loadLocalData();
+    loadDRIVEData();
     buildAssets();
     renderAssetList();
     const practiceName = getPracticeName();

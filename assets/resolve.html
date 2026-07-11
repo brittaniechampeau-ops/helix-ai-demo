@@ -622,7 +622,7 @@ async function enterApp() {
 
 // ── APPROVAL ─────────────────────────────────────────────
 function showApprovalButton() {
-  const hasTax = RS.taxonomy && RS.taxonomy.length > 0;
+  const hasTax = RS.taxonomy?.categories?.length > 0;
   document.getElementById('approvalBtn').style.display = hasTax ? 'block' : 'none';
 }
 
@@ -662,7 +662,7 @@ function renderApprovalChip(approval) {
 }
 
 function openApprovalModal() {
-  const tax    = RS.taxonomy || [];
+  const tax    = RS.taxonomy?.categories || [];
   const naming = RS.naming?.pattern || '';
   const rules  = RS.rules || [];
   const preview = document.getElementById('approvalPreview');

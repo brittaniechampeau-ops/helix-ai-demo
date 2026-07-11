@@ -2571,7 +2571,7 @@ function runDiagnostic() {
         </div>`;
       document.getElementById('diagResult').classList.add('show');
       document.getElementById('phaseBadge').textContent = 'Positioning';
-      unlockStep(1); unlockStep(2); unlockStep(3); unlockStep(4); unlockStep(5); unlockStep(6);
+      unlockStep(1); unlockStep(2); unlockStep(3); unlockStep(4); unlockStep(5); unlockStep(6); unlockStep(7);
       document.getElementById('nav-0').classList.add('done');
       // Do NOT mark steps 1-6 as done — only unlock them
       updateSidebar(); saveState();
@@ -4215,18 +4215,18 @@ function copyArtifact(type) {
   } else if (type === 'offer1' || type === 'offer2' || type === 'offer3') {
     const o = pos[type] || {};
     text = `${o.name||type}\nPrice: ${o.price||'—'} · Duration: ${o.duration||'—'}\n\n${o.desc||''}`;
-  } else if (type === 'referral-scripts') {
+  } else if (type === 'referral') {
     text = VEC.ref.contacts.map(c =>
       `Referral: ${c.name} (${c.company})\n${c.intro || c.value || ''}`
     ).join('\n\n---\n\n');
-  } else if (type === 'case-studies') {
+  } else if (type === 'casestudies') {
     text = (VEC.cred.cases || []).map(c =>
       `${c.client} — ${c.industry}\n\nSituation: ${c.situation||''}\nSolution: ${c.solution||''}\nResult: ${c.result||''}\n${c.quote ? '\n"'+c.quote+'"' : ''}`
     ).join('\n\n---\n\n');
-  } else if (type === 'intake-kit') {
+  } else if (type === 'intake') {
     text = `CLIENT INTAKE KIT — ${p.name}\n\nDelivery: ${ops.duration||'—'} · Cadence: ${ops.cadence||'—'}\n\nPositioning\n${pos.oneline||'—'}\n\nOffers\n${[pos.offer1,pos.offer2,pos.offer3].filter(o=>o?.name).map(o=>`• ${o.name} — ${o.price}`).join('\n')}`;
-  } else if (type === 'discovery-guide') {
-    text = `DISCOVERY GUIDE — ${p.name}\nSee Discovery Prep section in Intake & Delivery step.`;
+  } else if (type === 'scoping') {
+    text = `SCOPING DOCUMENT — ${p.name}\nSee Discovery Prep section in Intake & Delivery step.`;
   } else {
     showToast('Nothing to copy yet'); return;
   }
