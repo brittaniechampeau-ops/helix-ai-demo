@@ -528,14 +528,18 @@ async function generateReport(engId) {
   const date = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
   const tierLabel = { smb:'SMB', mid:'Mid-Market', enterprise:'Enterprise' }[eng.size_tier] || 'SMB';
 
-  // Discover scores
-  const sc = D?.state?.scores || {};
+  // Discover scores (stored as top-level keys: taxonomy/signal/strategy/execution, each 0–8)
   const scores = [
-    { label:'Taxonomy Readiness', dim:'resolve',      val: sc.resolve      || 0, color:'#4DE8FF' },
-    { label:'Signal Readiness',   dim:'intelligence', val: sc.intelligence  || 0, color:'#5B8CFF' },
-    { label:'Strategy Readiness', dim:'vector',       val: sc.vector        || 0, color:'#3BBFA3' },
-    { label:'Execution Readiness',dim:'engine',       val: sc.engine        || 0, color:'#FF8A3D' },
+    { label:'Taxonomy Readiness',  val: (D.taxonomy  || 0) / 8, color:'#4DE8FF' },
+    { label:'Signal Readiness',    val: (D.signal    || 0) / 8, color:'#5B8CFF' },
+    { label:'Strategy Readiness',  val: (D.strategy  || 0) / 8, color:'#3BBFA3' },
+    { label:'Execution Readiness', val: (D.execution || 0) / 8, color:'#FF8A3D' },
   ];
+
+  // Roadmap
+  const roadmapSteps = D.roadmap || [];
+  const first30 = D.first30 || [];
+  const engPath = D.path || '';
 
   // Resolve taxonomy
   const taxFields = (R.taxonomy || []).slice(0, 20);
@@ -673,6 +677,30 @@ body{background:#050709;color:#E8EAF0;font-family:-apple-system,BlinkMacSystemFo
       ${D.intake?.tools?.length ? `<div><span style="font-size:11px;color:#4A5270;text-transform:uppercase;letter-spacing:.06em">Current Stack</span><div style="margin-top:6px">${D.intake.tools.map(t=>pill(t.name||t,'#8892A4')).join('')}</div></div>` : ''}
     `) : ''}
   `)}
+
+  <!-- ROADMAP -->
+  ${roadmapSteps.length ? section('Recommended Engagement Sequence', '#8B7FEC', `
+    ${engPath ? `<div style="font-size:12px;color:#8892A4;margin-bottom:14px">Path: <strong style="color:#8B7FEC">${rEsc(engPath)}</strong></div>` : ''}
+    ${roadmapSteps.map((s, i) => {
+      const color = { RESOLVE:'#4DE8FF', INTEL:'#5B8CFF', VECTOR:'#3BBFA3', ENGINE:'#FF8A3D' }[s.tool] || '#8892A4';
+      return card(`
+        <div style="display:flex;gap:14px;align-items:flex-start">
+          <div style="width:28px;height:28px;border-radius:7px;background:${color}22;color:${color};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0">${i+1}</div>
+          <div style="flex:1">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.06em;color:${color};margin-bottom:3px">${rEsc(s.tool)} · ${rEsc(s.weeks||'')}</div>
+            <div style="font-size:14px;font-weight:600;color:#E8EAF0;margin-bottom:5px">${rEsc(s.action)}</div>
+            <div style="font-size:12px;color:#8892A4;line-height:1.6">${rEsc(s.detail)}</div>
+          </div>
+        </div>
+      `);
+    }).join('')}
+    ${first30.length ? `<div style="margin-top:16px;padding:14px 16px;background:#0A0D14;border:1px solid #1C2535;border-radius:8px">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#4A5270;margin-bottom:10px">First 30 Days</div>
+      ${first30.map((item, i) => `<div style="font-size:12px;color:#8892A4;padding:5px 0;border-bottom:${i<first30.length-1?'1px solid #1C2535':'none'};line-height:1.5">
+        <span style="color:#8B7FEC;font-weight:700;margin-right:8px">${i+1}</span>${rEsc(item)}
+      </div>`).join('')}
+    </div>` : ''}
+  `) : ''}
 
   <!-- TAXONOMY -->
   ${section('Canonical Taxonomy', '#4DE8FF', `
