@@ -266,6 +266,30 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 <!-- TOAST -->
 <div id="toast"></div>
 
+<!-- APPROVAL MODAL -->
+<div id="approvalModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9998;align-items:center;justify-content:center;padding:16px">
+  <div style="background:var(--panel);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:480px;padding:28px">
+    <div style="font-size:16px;font-weight:700;margin-bottom:6px">Send for Approval</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Send the canonical taxonomy, naming convention, and governance rules to your client contact for sign-off.</div>
+    <div style="margin-bottom:14px">
+      <label style="font-size:12px;font-weight:500;color:var(--muted);display:block;margin-bottom:6px">Contact name</label>
+      <input id="approvalContactName" placeholder="Jane Smith" style="width:100%;background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;font-size:13px;color:var(--text);outline:none">
+    </div>
+    <div style="margin-bottom:20px">
+      <label style="font-size:12px;font-weight:500;color:var(--muted);display:block;margin-bottom:6px">Contact email *</label>
+      <input id="approvalContactEmail" type="email" placeholder="jane@client.com" style="width:100%;background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;font-size:13px;color:var(--text);outline:none">
+    </div>
+    <div style="background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:12px 14px;margin-bottom:20px;font-size:12px;color:var(--muted)">
+      <div style="font-weight:600;color:var(--text);margin-bottom:4px">What will be sent</div>
+      <div id="approvalPreview" style="line-height:1.6"></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button onclick="closeApprovalModal()" style="padding:8px 16px;border-radius:8px;background:var(--card);border:1px solid var(--border2);font-size:13px;font-weight:600;color:var(--muted);cursor:pointer">Cancel</button>
+      <button onclick="sendApproval()" id="approvalSendBtn" style="padding:8px 16px;border-radius:8px;background:var(--cyan);color:#050709;font-size:13px;font-weight:700;border:none;cursor:pointer">Send →</button>
+    </div>
+  </div>
+</div>
+
 <!-- APP -->
 <div id="app" style="display:none;grid-template-columns:var(--sidebar) 1fr;grid-template-rows:52px 1fr">
 
@@ -278,6 +302,8 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
     <div class="tb-sep"></div>
     <div class="tb-org">Taxonomy for <span id="tbOrg">—</span></div>
     <div class="tb-right">
+      <div id="approvalChip" style="display:none;font-size:11px;font-weight:700;letter-spacing:.05em;padding:3px 10px;border-radius:5px"></div>
+      <button id="approvalBtn" onclick="openApprovalModal()" style="display:none;height:30px;padding:0 14px;background:var(--card);border:1px solid var(--border2);border-radius:7px;font-size:12px;font-weight:600;color:var(--text);cursor:pointer">↑ Send for Approval</button>
       <div class="tb-status status-draft" id="tbStatus">Draft</div>
       <button class="tb-save" onclick="saveTaxonomy()">Save</button>
       <button class="tb-user" onclick="signOut()" id="tbUser">Sign out</button>
@@ -574,7 +600,129 @@ async function enterApp() {
     });
     if (added > 0) showToast(`${added} taxonomy source${added > 1 ? 's' : ''} imported from Discover`);
   }
+  // Pre-fill approval contact from engagement record
+  const engId = OrgStore.orgId;
+  if (engId && engId.includes('-')) {
+    try {
+      const { data: eng } = await supa.from('drive_engagements').select('contact_name,contact_email,client_name').eq('id', engId).maybeSingle();
+      if (eng) {
+        if (eng.contact_email) document.getElementById('approvalContactEmail').value = eng.contact_email;
+        if (eng.contact_name) document.getElementById('approvalContactName').value = eng.contact_name;
+        window._approvalEngagement = eng;
+      }
+    } catch (_) {}
+  }
+  // Show approval button once there's something to approve
+  showApprovalButton();
+  // Load latest approval status
+  await loadApprovalStatus();
   render();
+}
+
+// ── APPROVAL ─────────────────────────────────────────────
+function showApprovalButton() {
+  const hasTax = RS.taxonomy && RS.taxonomy.length > 0;
+  document.getElementById('approvalBtn').style.display = hasTax ? 'block' : 'none';
+}
+
+async function loadApprovalStatus() {
+  const engId = OrgStore.orgId;
+  if (!engId) return;
+  try {
+    const { data } = await supa
+      .from('drive_approvals')
+      .select('status, sent_at, responded_at, notes')
+      .eq('engagement_id', engId)
+      .eq('approval_type', 'taxonomy')
+      .order('sent_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (data) renderApprovalChip(data);
+  } catch (_) {}
+}
+
+function renderApprovalChip(approval) {
+  const chip = document.getElementById('approvalChip');
+  const btn  = document.getElementById('approvalBtn');
+  const cfg = {
+    pending:            { label: '⏳ Pending approval', bg: 'rgba(240,192,64,.12)', color: '#F0C040', border: 'rgba(240,192,64,.25)' },
+    approved:           { label: '✓ Approved',           bg: 'rgba(59,191,163,.12)', color: '#3BBFA3', border: 'rgba(59,191,163,.25)' },
+    changes_requested:  { label: '→ Changes requested',  bg: 'rgba(255,138,61,.12)', color: '#FF8A3D', border: 'rgba(255,138,61,.25)' },
+  }[approval.status] || { label: approval.status, bg: 'var(--card)', color: 'var(--muted)', border: 'var(--border2)' };
+  chip.textContent = cfg.label;
+  chip.style.cssText = `display:block;font-size:11px;font-weight:700;letter-spacing:.05em;padding:3px 10px;border-radius:5px;background:${cfg.bg};color:${cfg.color};border:1px solid ${cfg.border}`;
+  if (approval.status === 'changes_requested') {
+    btn.textContent = '↑ Resend for Approval';
+    btn.style.display = 'block';
+  } else if (approval.status === 'pending') {
+    btn.textContent = '↑ Resend';
+    btn.style.display = 'block';
+  }
+}
+
+function openApprovalModal() {
+  const tax    = RS.taxonomy || [];
+  const naming = RS.naming?.pattern || '';
+  const rules  = RS.rules || [];
+  const preview = document.getElementById('approvalPreview');
+  const parts = [];
+  if (naming) parts.push(`Naming: <code style="font-size:11px;color:var(--cyan)">${naming}</code>`);
+  parts.push(`${tax.length} taxonomy field${tax.length !== 1 ? 's' : ''}`);
+  if (rules.length) parts.push(`${rules.length} governance rule${rules.length !== 1 ? 's' : ''}`);
+  preview.innerHTML = parts.join(' · ');
+  document.getElementById('approvalModal').style.display = 'flex';
+}
+
+function closeApprovalModal() {
+  document.getElementById('approvalModal').style.display = 'none';
+}
+
+async function sendApproval() {
+  const contactEmail = document.getElementById('approvalContactEmail').value.trim();
+  const contactName  = document.getElementById('approvalContactName').value.trim();
+  if (!contactEmail) {
+    document.getElementById('approvalContactEmail').style.borderColor = 'var(--red, #FF5A5A)';
+    return;
+  }
+  const btn = document.getElementById('approvalSendBtn');
+  btn.textContent = 'Sending…'; btn.disabled = true;
+
+  const eng = window._approvalEngagement || {};
+  const clientName = eng.client_name || document.getElementById('tbOrg').textContent || 'Client';
+
+  const summaryJson = {
+    taxonomy: RS.taxonomy || [],
+    naming: RS.naming || {},
+    rules: RS.rules || [],
+  };
+
+  try {
+    const { data: { session } } = await supa.auth.getSession();
+    const res = await fetch(`${SUPA_URL}/functions/v1/send-approval-request`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token || SUPA_KEY}`,
+      },
+      body: JSON.stringify({
+        engagementId: OrgStore.orgId,
+        ownerEmail: currentUser.email,
+        contactEmail,
+        contactName,
+        clientName,
+        summaryJson,
+      }),
+    });
+    const json = await res.json();
+    if (!res.ok || json.error) throw new Error(json.error || 'Send failed');
+    closeApprovalModal();
+    showToast('Approval request sent to ' + contactEmail);
+    await loadApprovalStatus();
+  } catch (e) {
+    showToast('Error: ' + e.message);
+  } finally {
+    btn.textContent = 'Send →'; btn.disabled = false;
+  }
 }
 
 async function signOut() { await supa.auth.signOut(); window.location.reload(); }

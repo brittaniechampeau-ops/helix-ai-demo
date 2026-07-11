@@ -185,3 +185,41 @@ CREATE POLICY "owner_manages_own_engagements"
 -- org_vec_state, and org_engine_assets now accepts engagement UUIDs
 -- (from drive_engagement_id in localStorage) in addition to email domains.
 -- No schema change needed — the column is already text PRIMARY KEY.
+
+-- ============================================================
+-- drive_approvals — stakeholder approval loop
+-- Run this as a NEW query in Supabase SQL Editor
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.drive_approvals (
+  id            uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  engagement_id text        NOT NULL,
+  owner_email   text        NOT NULL,
+  client_name   text        NOT NULL DEFAULT '',
+  contact_email text        NOT NULL,
+  contact_name  text        NOT NULL DEFAULT '',
+  approval_type text        NOT NULL DEFAULT 'taxonomy',
+  summary_json  jsonb       NOT NULL DEFAULT '{}',
+  status        text        NOT NULL DEFAULT 'pending'
+                CHECK (status IN ('pending','approved','changes_requested')),
+  notes         text        NOT NULL DEFAULT '',
+  token         text        UNIQUE NOT NULL DEFAULT gen_random_uuid()::text,
+  sent_at       timestamptz NOT NULL DEFAULT now(),
+  responded_at  timestamptz
+);
+
+CREATE INDEX IF NOT EXISTS drive_approvals_engagement_idx
+  ON public.drive_approvals (engagement_id);
+
+CREATE INDEX IF NOT EXISTS drive_approvals_owner_idx
+  ON public.drive_approvals (owner_email);
+
+ALTER TABLE public.drive_approvals ENABLE ROW LEVEL SECURITY;
+
+-- Owners can read their own approval records
+CREATE POLICY "owner_reads_own_approvals"
+  ON public.drive_approvals
+  FOR SELECT
+  USING (owner_email = auth.jwt() ->> 'email');
+
+-- handle-approval edge function uses service role key to update status
+-- No additional policy needed for UPDATE — service role bypasses RLS

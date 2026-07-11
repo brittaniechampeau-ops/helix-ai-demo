@@ -334,9 +334,20 @@ async function checkDataPresence(engList, activeId) {
   const tables = ['org_discover','org_resolve','org_intelligence','org_vec_state','org_engine_assets'];
   const ids = engList.map(e => e.id);
 
-  const results = await Promise.all(tables.map(t =>
-    supa.from(t).select('org_id').in('org_id', ids)
-  ));
+  const [approvalRes, ...results] = await Promise.all([
+    supa.from('drive_approvals')
+      .select('engagement_id, status')
+      .in('engagement_id', ids)
+      .eq('approval_type', 'taxonomy')
+      .order('sent_at', { ascending: false }),
+    ...tables.map(t => supa.from(t).select('org_id').in('org_id', ids)),
+  ]);
+
+  // Latest approval per engagement
+  const latestApproval = {};
+  (approvalRes.data || []).forEach(row => {
+    if (!latestApproval[row.engagement_id]) latestApproval[row.engagement_id] = row.status;
+  });
 
   const presence = {};
   ids.forEach(id => { presence[id] = {}; });
@@ -355,6 +366,22 @@ async function checkDataPresence(engList, activeId) {
     el.querySelector('.pd-i').classList.toggle('has-data', !!p['org_intelligence']);
     el.querySelector('.pd-v').classList.toggle('has-data', !!p['org_vec_state']);
     el.querySelector('.pd-e').classList.toggle('has-data', !!p['org_engine_assets']);
+
+    // Approval status badge
+    const status = latestApproval[id];
+    if (status) {
+      const approvalEl = document.getElementById(`approval-${id}`);
+      if (!approvalEl) return;
+      const cfg = {
+        pending:           { label:'⏳ Approval pending',    color:'#F0C040', bg:'rgba(240,192,64,.1)'  },
+        approved:          { label:'✓ Taxonomy approved',    color:'#3BBFA3', bg:'rgba(59,191,163,.1)'  },
+        changes_requested: { label:'→ Changes requested',    color:'#FF8A3D', bg:'rgba(255,138,61,.1)'  },
+      }[status];
+      if (cfg) {
+        approvalEl.textContent = cfg.label;
+        approvalEl.style.cssText = `display:inline-block;font-size:10px;font-weight:700;letter-spacing:.04em;padding:2px 8px;border-radius:4px;background:${cfg.bg};color:${cfg.color}`;
+      }
+    }
   });
 }
 
@@ -381,6 +408,7 @@ function cardHTML(eng, activeId) {
       <div class="eng-meta-item">Created <span>${created}</span></div>
       <div class="eng-meta-item">Updated <span>${updated}</span></div>
     </div>
+    <div style="margin-bottom:8px"><span id="approval-${eng.id}"></span></div>
     <div class="eng-pipeline" id="pipeline-${eng.id}" title="DRIVE pipeline progress">
       <div class="pipeline-dot pd-d" title="Discover">D</div>
       <div class="pipeline-dot pd-r" title="Resolve">R</div>
