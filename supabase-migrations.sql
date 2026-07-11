@@ -148,3 +148,40 @@ CREATE POLICY "own_row_or_team" ON public.practices
     email = auth.jwt() ->> 'email'
     OR team_emails @> to_jsonb(auth.jwt() ->> 'email')
   );
+
+-- ============================================================
+-- drive_engagements — multi-client workspace
+-- Run this as a NEW query in Supabase SQL Editor
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.drive_engagements (
+  id           uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_email  text        NOT NULL,
+  client_name  text        NOT NULL,
+  org_name     text        NOT NULL DEFAULT '',
+  industry     text        NOT NULL DEFAULT '',
+  size_tier    text        NOT NULL DEFAULT 'smb'
+               CHECK (size_tier IN ('smb', 'mid', 'enterprise')),
+  contact_name  text       NOT NULL DEFAULT '',
+  contact_email text       NOT NULL DEFAULT '',
+  notes        text        NOT NULL DEFAULT '',
+  status       text        NOT NULL DEFAULT 'active'
+               CHECK (status IN ('active', 'archived')),
+  created_at   timestamptz NOT NULL DEFAULT now(),
+  updated_at   timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS drive_engagements_owner_idx
+  ON public.drive_engagements (owner_email);
+
+ALTER TABLE public.drive_engagements ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "owner_manages_own_engagements"
+  ON public.drive_engagements
+  FOR ALL
+  USING  (owner_email = auth.jwt() ->> 'email')
+  WITH CHECK (owner_email = auth.jwt() ->> 'email');
+
+-- NOTE: The org_id column in org_discover, org_resolve, org_intelligence,
+-- org_vec_state, and org_engine_assets now accepts engagement UUIDs
+-- (from drive_engagement_id in localStorage) in addition to email domains.
+-- No schema change needed — the column is already text PRIMARY KEY.

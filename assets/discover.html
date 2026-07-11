@@ -261,6 +261,8 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 <div class="pnav">
   <span class="pnav-brand">✦ DRIVE</span>
   <div class="pnav-sep"></div>
+  <a class="pnav-tool" href="/hub.html"><span class="pnav-dot" style="background:#8B7FEC"></span>Hub</a>
+  <div class="pnav-sep"></div>
   <a class="pnav-tool pnav-active" href="/discover.html">
     <span class="pnav-dot" style="background:#8B7FEC"></span>Discover
   </a>
@@ -688,7 +690,8 @@ const OrgStore = {
   orgId: null, userEmail: null,
   init(session) {
     this.userEmail = session?.user?.email || '';
-    this.orgId = this.userEmail.includes('@') ? this.userEmail.split('@')[1] : 'default';
+    const engId = localStorage.getItem('drive_engagement_id');
+    this.orgId = engId || (this.userEmail.includes('@') ? this.userEmail.split('@')[1] : 'default');
   },
   async save(table, data) {
     if (!this.orgId) return;

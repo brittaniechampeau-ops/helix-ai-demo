@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DRIVE Hub</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#050709;--surface:#0A0D14;--surface2:#0E1218;--border:#1C2535;--border2:#232B3D;
+  --text:#E8EAF0;--text2:#8892A4;--text3:#4A5270;
+  --purple:#8B7FEC;--cyan:#4DE8FF;--blue:#5B8CFF;--teal:#3BBFA3;--orange:#FF8A3D;
+  --green:#3BCC7A;--red:#FF5A5A;--yellow:#F0C040;
+}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh}
+
+/* NAV */
+.pnav{height:36px;background:#050709;border-bottom:1px solid #0E1218;display:flex;align-items:center;padding:0 16px;gap:4px;position:fixed;top:0;left:0;right:0;z-index:10000}
+.pnav-brand{font-size:13px;font-weight:700;color:var(--purple);letter-spacing:-.01em;margin-right:10px;flex-shrink:0}
+.pnav-sep{width:1px;height:14px;background:#1C2535;margin:0 6px;flex-shrink:0}
+.pnav-tool{display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:500;color:#4A5270;text-decoration:none;transition:all .15s;white-space:nowrap}
+.pnav-tool:hover{background:#0E1218;color:var(--text)}
+.pnav-tool.pnav-active{background:#0E1218;color:var(--text)}
+.pnav-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.pnav-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.pnav-user{font-size:11px;color:var(--text3)}
+.pnav-signout{font-size:11px;color:var(--text3);background:none;border:none;cursor:pointer;padding:2px 6px;border-radius:4px}
+.pnav-signout:hover{color:var(--text2);background:var(--surface2)}
+
+/* AUTH GATE */
+#authGate{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:40px 16px}
+.auth-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px;max-width:400px;width:100%;text-align:center}
+.auth-logo{font-size:28px;font-weight:800;color:var(--purple);letter-spacing:-.02em;margin-bottom:6px}
+.auth-sub{font-size:13px;color:var(--text2);margin-bottom:28px}
+.auth-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:14px;color:var(--text);outline:none;transition:border .15s}
+.auth-input:focus{border-color:var(--purple)}
+.auth-btn{width:100%;margin-top:10px;background:var(--purple);color:#fff;border:none;border-radius:8px;padding:11px;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .15s}
+.auth-btn:hover{opacity:.88}
+.auth-msg{margin-top:14px;font-size:13px;color:var(--text2)}
+
+/* MAIN */
+#app{display:none;padding-top:36px}
+.hub-header{padding:32px 32px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.hub-title{font-size:22px;font-weight:700;letter-spacing:-.02em}
+.hub-title span{color:var(--purple)}
+.hub-subtitle{font-size:13px;color:var(--text2);margin-top:4px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;text-decoration:none}
+.btn-primary{background:var(--purple);color:#fff}
+.btn-primary:hover{opacity:.88}
+.btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
+.btn-ghost:hover{color:var(--text);border-color:var(--border2)}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-danger{background:rgba(255,90,90,.1);color:var(--red);border:1px solid rgba(255,90,90,.2)}
+.btn-danger:hover{background:rgba(255,90,90,.18)}
+
+/* ACTIVE BANNER */
+.active-banner{margin:20px 32px 0;background:rgba(59,191,163,.08);border:1px solid rgba(59,191,163,.22);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.active-banner-dot{width:8px;height:8px;border-radius:50%;background:var(--teal);flex-shrink:0}
+.active-banner-label{font-size:12px;color:var(--text2)}
+.active-banner-name{font-size:13px;font-weight:600;color:var(--teal)}
+.active-banner-actions{margin-left:auto;display:flex;gap:6px}
+
+/* ENGAGEMENT GRID */
+.section{padding:24px 32px}
+.section-label{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:14px}
+.eng-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px}
+.eng-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;transition:border-color .15s;position:relative}
+.eng-card:hover{border-color:var(--border2)}
+.eng-card.eng-active{border-color:rgba(59,191,163,.35);box-shadow:0 0 0 1px rgba(59,191,163,.1) inset}
+.eng-card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px}
+.eng-client{font-size:15px;font-weight:700;letter-spacing:-.01em}
+.eng-org{font-size:12px;color:var(--text2);margin-top:2px}
+.eng-tier{display:inline-flex;align-items:center;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:4px;flex-shrink:0}
+.tier-smb{background:rgba(59,204,122,.1);color:var(--green)}
+.tier-mid{background:rgba(91,140,255,.1);color:var(--blue)}
+.tier-enterprise{background:rgba(139,127,236,.1);color:var(--purple)}
+.eng-meta{display:flex;gap:16px;margin-bottom:14px;flex-wrap:wrap}
+.eng-meta-item{font-size:11px;color:var(--text3)}
+.eng-meta-item span{color:var(--text2)}
+.eng-pipeline{display:flex;gap:6px;margin-bottom:16px;align-items:center}
+.pipeline-dot{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;letter-spacing:.02em;opacity:.35}
+.pipeline-dot.has-data{opacity:1}
+.pd-d{background:rgba(139,127,236,.15);color:var(--purple)}
+.pd-r{background:rgba(77,232,255,.15);color:var(--cyan)}
+.pd-i{background:rgba(91,140,255,.15);color:var(--blue)}
+.pd-v{background:rgba(59,191,163,.15);color:var(--teal)}
+.pd-e{background:rgba(255,138,61,.15);color:var(--orange)}
+.eng-actions{display:flex;gap:6px;flex-wrap:wrap}
+.active-chip{position:absolute;top:14px;right:14px;font-size:10px;font-weight:600;color:var(--teal);background:rgba(59,191,163,.12);border:1px solid rgba(59,191,163,.22);padding:2px 7px;border-radius:4px}
+
+/* EMPTY STATE */
+.empty-state{padding:60px 32px;text-align:center}
+.empty-icon{font-size:40px;margin-bottom:16px;opacity:.4}
+.empty-title{font-size:16px;font-weight:600;color:var(--text2);margin-bottom:8px}
+.empty-sub{font-size:13px;color:var(--text3);margin-bottom:24px}
+
+/* ARCHIVED */
+.archived-toggle{background:none;border:none;cursor:pointer;color:var(--text3);font-size:12px;display:flex;align-items:center;gap:6px;padding:0;margin-bottom:14px}
+.archived-toggle:hover{color:var(--text2)}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:500px;padding:28px;max-height:90vh;overflow-y:auto}
+.modal-title{font-size:17px;font-weight:700;margin-bottom:20px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-group{margin-bottom:16px}
+.form-label{font-size:12px;font-weight:500;color:var(--text2);margin-bottom:6px;display:block}
+.form-input,.form-select,.form-textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;color:var(--text);outline:none;transition:border .15s;font-family:inherit}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--purple)}
+.form-select option{background:var(--surface2)}
+.form-textarea{resize:vertical;min-height:80px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:4px}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:12px 16px;font-size:13px;color:var(--text);z-index:99999;transform:translateY(8px);opacity:0;transition:all .25s;max-width:320px}
+.toast.show{transform:translateY(0);opacity:1}
+</style>
+</head>
+<body>
+
+<div class="pnav">
+  <span class="pnav-brand">✦ DRIVE</span>
+  <div class="pnav-sep"></div>
+  <a class="pnav-tool pnav-active" href="/hub.html">
+    <span class="pnav-dot" style="background:#8B7FEC"></span>Hub
+  </a>
+  <a class="pnav-tool" href="/discover.html">
+    <span class="pnav-dot" style="background:#8B7FEC"></span>Discover
+  </a>
+  <a class="pnav-tool" href="/resolve.html">
+    <span class="pnav-dot" style="background:#4DE8FF"></span>Resolve
+  </a>
+  <a class="pnav-tool" href="/intelligence.html">
+    <span class="pnav-dot" style="background:#5B8CFF"></span>Intelligence
+  </a>
+  <a class="pnav-tool" href="/vector.html">
+    <span class="pnav-dot" style="background:#3BBFA3"></span>Vector
+  </a>
+  <a class="pnav-tool" href="/engine.html">
+    <span class="pnav-dot" style="background:#FF8A3D"></span>Engine
+  </a>
+  <div class="pnav-right">
+    <span class="pnav-user" id="navUser"></span>
+    <button class="pnav-signout" onclick="signOut()">Sign out</button>
+  </div>
+</div>
+
+<!-- AUTH -->
+<div id="authGate">
+  <div class="auth-card">
+    <div class="auth-logo">✦ DRIVE</div>
+    <div class="auth-sub">Engagement Hub — sign in to manage client engagements</div>
+    <input class="auth-input" type="email" id="emailInput" placeholder="your@email.com" />
+    <button class="auth-btn" onclick="sendMagicLink()">Send magic link</button>
+    <div class="auth-msg" id="authMsg"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="hub-header">
+    <div>
+      <div class="hub-title">✦ DRIVE <span>Hub</span></div>
+      <div class="hub-subtitle">Manage client engagements — each engagement keeps its own data across all five tools</div>
+    </div>
+    <button class="btn btn-primary" onclick="openNewModal()">+ New Engagement</button>
+  </div>
+
+  <div id="activeBanner" style="display:none" class="active-banner">
+    <div class="active-banner-dot"></div>
+    <div>
+      <div class="active-banner-label">Active engagement</div>
+      <div class="active-banner-name" id="activeBannerName"></div>
+    </div>
+    <div class="active-banner-actions">
+      <a class="btn btn-ghost btn-sm" href="/discover.html">Open in Discover →</a>
+      <button class="btn btn-ghost btn-sm" onclick="clearActive()">Clear</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Active Engagements</div>
+    <div id="engGrid" class="eng-grid"></div>
+    <div id="emptyState" class="empty-state" style="display:none">
+      <div class="empty-icon">◎</div>
+      <div class="empty-title">No engagements yet</div>
+      <div class="empty-sub">Create your first client engagement to get started</div>
+      <button class="btn btn-primary" onclick="openNewModal()">+ New Engagement</button>
+    </div>
+  </div>
+
+  <div class="section" id="archivedSection" style="display:none">
+    <button class="archived-toggle" onclick="toggleArchived()">
+      <span id="archivedToggleIcon">▸</span>
+      <span id="archivedToggleLabel">Show archived</span>
+    </button>
+    <div id="archivedGrid" class="eng-grid" style="display:none"></div>
+  </div>
+</div>
+
+<!-- NEW / EDIT MODAL -->
+<div class="modal-overlay" id="engModal">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">New Engagement</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Client Name *</label>
+        <input class="form-input" id="fClientName" placeholder="Acme Corp" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Org / Division</label>
+        <input class="form-input" id="fOrgName" placeholder="Marketing Ops" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Industry</label>
+        <input class="form-input" id="fIndustry" placeholder="B2B SaaS" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Org Size</label>
+        <select class="form-select" id="fSizeTier">
+          <option value="smb">SMB (&lt;50 employees)</option>
+          <option value="mid">Mid-Market (50–500)</option>
+          <option value="enterprise">Enterprise (500+)</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Primary Contact</label>
+        <input class="form-input" id="fContactName" placeholder="Jane Smith" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Contact Email</label>
+        <input class="form-input" id="fContactEmail" type="email" placeholder="jane@acme.com" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notes</label>
+      <textarea class="form-textarea" id="fNotes" placeholder="Engagement scope, goals, constraints…"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEngagement()">Save Engagement</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPA_URL = 'https://ilhljjkiijmjpwinovzj.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsaGxqamtpaWptanB3aW5vdnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MTk4MjIsImV4cCI6MjA5OTE5NTgyMn0.w8asDSA-rXuaDfujC2dr4J-EKCzlCVABOuq3VQeeFsE';
+const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+const ENG_KEY = 'drive_engagement_id';
+const ENG_NAME_KEY = 'drive_engagement_name';
+
+let currentUser = null;
+let engagements = [];
+let editingId = null;
+let showingArchived = false;
+
+// --- AUTH ---
+supa.auth.onAuthStateChange((_ev, session) => {
+  if (session?.user) {
+    currentUser = session.user;
+    document.getElementById('navUser').textContent = currentUser.email;
+    document.getElementById('authGate').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    loadEngagements();
+    refreshActiveBanner();
+  } else {
+    currentUser = null;
+    document.getElementById('authGate').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+  }
+});
+
+async function sendMagicLink() {
+  const email = document.getElementById('emailInput').value.trim();
+  if (!email) return;
+  const msg = document.getElementById('authMsg');
+  msg.textContent = 'Sending…';
+  const { error } = await supa.auth.signInWithOtp({ email, options: { emailRedirectTo: location.href } });
+  msg.textContent = error ? error.message : 'Check your email for the magic link.';
+}
+
+async function signOut() {
+  await supa.auth.signOut();
+}
+
+// --- ENGAGEMENTS ---
+async function loadEngagements() {
+  const { data, error } = await supa.from('drive_engagements')
+    .select('*')
+    .eq('owner_email', currentUser.email)
+    .order('updated_at', { ascending: false });
+  engagements = data || [];
+  render();
+}
+
+function render() {
+  const activeId = localStorage.getItem(ENG_KEY);
+  const active = engagements.filter(e => e.status === 'active');
+  const archived = engagements.filter(e => e.status === 'archived');
+
+  const grid = document.getElementById('engGrid');
+  const empty = document.getElementById('emptyState');
+  const archSec = document.getElementById('archivedSection');
+
+  if (active.length === 0) {
+    grid.innerHTML = '';
+    empty.style.display = '';
+  } else {
+    empty.style.display = 'none';
+    grid.innerHTML = active.map(e => cardHTML(e, activeId)).join('');
+  }
+
+  if (archived.length > 0) {
+    archSec.style.display = '';
+    document.getElementById('archivedGrid').innerHTML = archived.map(e => cardHTML(e, activeId)).join('');
+  } else {
+    archSec.style.display = 'none';
+  }
+
+  checkDataPresence(active, activeId);
+}
+
+async function checkDataPresence(engList, activeId) {
+  if (!engList.length) return;
+  const tables = ['org_discover','org_resolve','org_intelligence','org_vec_state','org_engine_assets'];
+  const ids = engList.map(e => e.id);
+
+  const results = await Promise.all(tables.map(t =>
+    supa.from(t).select('org_id').in('org_id', ids)
+  ));
+
+  const presence = {};
+  ids.forEach(id => { presence[id] = {}; });
+  results.forEach((res, ti) => {
+    (res.data || []).forEach(row => {
+      presence[row.org_id][tables[ti]] = true;
+    });
+  });
+
+  ids.forEach(id => {
+    const el = document.getElementById(`pipeline-${id}`);
+    if (!el) return;
+    const p = presence[id];
+    el.querySelector('.pd-d').classList.toggle('has-data', !!p['org_discover']);
+    el.querySelector('.pd-r').classList.toggle('has-data', !!p['org_resolve']);
+    el.querySelector('.pd-i').classList.toggle('has-data', !!p['org_intelligence']);
+    el.querySelector('.pd-v').classList.toggle('has-data', !!p['org_vec_state']);
+    el.querySelector('.pd-e').classList.toggle('has-data', !!p['org_engine_assets']);
+  });
+}
+
+function cardHTML(eng, activeId) {
+  const isActive = eng.id === activeId;
+  const tierClass = { smb: 'tier-smb', mid: 'tier-mid', enterprise: 'tier-enterprise' }[eng.size_tier] || 'tier-smb';
+  const tierLabel = { smb: 'SMB', mid: 'Mid-Market', enterprise: 'Enterprise' }[eng.size_tier] || 'SMB';
+  const updated = eng.updated_at ? new Date(eng.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
+  const created = eng.created_at ? new Date(eng.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
+
+  return `
+  <div class="eng-card${isActive ? ' eng-active' : ''}">
+    ${isActive ? '<div class="active-chip">Active</div>' : ''}
+    <div class="eng-card-header">
+      <div>
+        <div class="eng-client">${esc(eng.client_name)}</div>
+        ${eng.org_name ? `<div class="eng-org">${esc(eng.org_name)}</div>` : ''}
+      </div>
+      <span class="eng-tier ${tierClass}">${tierLabel}</span>
+    </div>
+    <div class="eng-meta">
+      ${eng.industry ? `<div class="eng-meta-item">Industry <span>${esc(eng.industry)}</span></div>` : ''}
+      ${eng.contact_name ? `<div class="eng-meta-item">Contact <span>${esc(eng.contact_name)}</span></div>` : ''}
+      <div class="eng-meta-item">Created <span>${created}</span></div>
+      <div class="eng-meta-item">Updated <span>${updated}</span></div>
+    </div>
+    <div class="eng-pipeline" id="pipeline-${eng.id}" title="DRIVE pipeline progress">
+      <div class="pipeline-dot pd-d" title="Discover">D</div>
+      <div class="pipeline-dot pd-r" title="Resolve">R</div>
+      <div class="pipeline-dot pd-i" title="Intelligence">I</div>
+      <div class="pipeline-dot pd-v" title="Vector">V</div>
+      <div class="pipeline-dot pd-e" title="Engine">E</div>
+    </div>
+    <div class="eng-actions">
+      ${isActive
+        ? `<a class="btn btn-ghost btn-sm" href="/discover.html">Open in Discover</a>`
+        : `<button class="btn btn-primary btn-sm" onclick="setActive('${eng.id}','${esc(eng.client_name)}')">Set Active</button>`}
+      <button class="btn btn-ghost btn-sm" onclick="editEngagement('${eng.id}')">Edit</button>
+      ${eng.status === 'active'
+        ? `<button class="btn btn-danger btn-sm" onclick="archiveEngagement('${eng.id}')">Archive</button>`
+        : `<button class="btn btn-ghost btn-sm" onclick="unarchiveEngagement('${eng.id}')">Restore</button>`}
+    </div>
+  </div>`;
+}
+
+// --- ACTIVE ENGAGEMENT ---
+function setActive(id, name) {
+  localStorage.setItem(ENG_KEY, id);
+  localStorage.setItem(ENG_NAME_KEY, name);
+  refreshActiveBanner();
+  render();
+  showToast(`Active: ${name}`);
+}
+
+function clearActive() {
+  localStorage.removeItem(ENG_KEY);
+  localStorage.removeItem(ENG_NAME_KEY);
+  refreshActiveBanner();
+  render();
+  showToast('Engagement cleared');
+}
+
+function refreshActiveBanner() {
+  const id = localStorage.getItem(ENG_KEY);
+  const name = localStorage.getItem(ENG_NAME_KEY);
+  const banner = document.getElementById('activeBanner');
+  if (id && name) {
+    banner.style.display = 'flex';
+    document.getElementById('activeBannerName').textContent = name;
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+// --- MODAL ---
+function openNewModal() {
+  editingId = null;
+  document.getElementById('modalTitle').textContent = 'New Engagement';
+  ['fClientName','fOrgName','fIndustry','fContactName','fContactEmail','fNotes'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('fSizeTier').value = 'smb';
+  document.getElementById('engModal').classList.add('open');
+}
+
+function editEngagement(id) {
+  const eng = engagements.find(e => e.id === id);
+  if (!eng) return;
+  editingId = id;
+  document.getElementById('modalTitle').textContent = 'Edit Engagement';
+  document.getElementById('fClientName').value = eng.client_name || '';
+  document.getElementById('fOrgName').value = eng.org_name || '';
+  document.getElementById('fIndustry').value = eng.industry || '';
+  document.getElementById('fSizeTier').value = eng.size_tier || 'smb';
+  document.getElementById('fContactName').value = eng.contact_name || '';
+  document.getElementById('fContactEmail').value = eng.contact_email || '';
+  document.getElementById('fNotes').value = eng.notes || '';
+  document.getElementById('engModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('engModal').classList.remove('open');
+}
+
+async function saveEngagement() {
+  const clientName = document.getElementById('fClientName').value.trim();
+  if (!clientName) { showToast('Client name is required'); return; }
+
+  const payload = {
+    owner_email: currentUser.email,
+    client_name: clientName,
+    org_name: document.getElementById('fOrgName').value.trim(),
+    industry: document.getElementById('fIndustry').value.trim(),
+    size_tier: document.getElementById('fSizeTier').value,
+    contact_name: document.getElementById('fContactName').value.trim(),
+    contact_email: document.getElementById('fContactEmail').value.trim(),
+    notes: document.getElementById('fNotes').value.trim(),
+    updated_at: new Date().toISOString(),
+  };
+
+  if (editingId) {
+    const { error } = await supa.from('drive_engagements').update(payload).eq('id', editingId);
+    if (error) { showToast('Error saving: ' + error.message); return; }
+    if (localStorage.getItem(ENG_KEY) === editingId) {
+      localStorage.setItem(ENG_NAME_KEY, clientName);
+      refreshActiveBanner();
+    }
+    showToast('Engagement updated');
+  } else {
+    const { data, error } = await supa.from('drive_engagements').insert({ ...payload, status: 'active' }).select().single();
+    if (error) { showToast('Error creating: ' + error.message); return; }
+    showToast(`Engagement created: ${clientName}`);
+    if (data) setActive(data.id, clientName);
+  }
+
+  closeModal();
+  loadEngagements();
+}
+
+async function archiveEngagement(id) {
+  if (!confirm('Archive this engagement? It will no longer appear in the active list.')) return;
+  await supa.from('drive_engagements').update({ status: 'archived', updated_at: new Date().toISOString() }).eq('id', id);
+  if (localStorage.getItem(ENG_KEY) === id) clearActive();
+  showToast('Archived');
+  loadEngagements();
+}
+
+async function unarchiveEngagement(id) {
+  await supa.from('drive_engagements').update({ status: 'active', updated_at: new Date().toISOString() }).eq('id', id);
+  showToast('Restored');
+  loadEngagements();
+}
+
+// --- ARCHIVED TOGGLE ---
+function toggleArchived() {
+  showingArchived = !showingArchived;
+  document.getElementById('archivedGrid').style.display = showingArchived ? '' : 'none';
+  document.getElementById('archivedToggleIcon').textContent = showingArchived ? '▾' : '▸';
+  document.getElementById('archivedToggleLabel').textContent = showingArchived ? 'Hide archived' : 'Show archived';
+}
+
+// --- UTILS ---
+function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+document.getElementById('engModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('engModal')) closeModal();
+});
+
+document.getElementById('emailInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') sendMagicLink();
+});
+</script>
+</body>
+</html>
