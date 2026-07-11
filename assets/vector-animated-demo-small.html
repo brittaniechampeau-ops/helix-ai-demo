@@ -1,0 +1,581 @@
+<title>Vector — Animated Demo · Small (Clearfield Advisory)</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07090C;--panel:#0E1218;--card:#131920;--card2:#171F2A;
+  --teal:#3BBFA3;--teal-dim:#1E6B5E;--teal-bg:#0D2E27;
+  --text:#E8EDF3;--muted:#6B7A8D;--faint:#2A3544;
+  --border:#1C2535;--border2:#243040;
+  --r:10px;
+  --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-serif;
+  --mono:'SF Mono','Fira Code',monospace;
+}
+html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--text);overflow:hidden}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+.stage{position:relative;width:100%;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px 80px;}
+.browser{width:100%;max-width:860px;border-radius:14px;border:1px solid var(--border2);background:var(--panel);overflow:hidden;flex-shrink:0;}
+.browser-chrome{height:40px;background:#0B1016;display:flex;align-items:center;padding:0 14px;gap:12px;border-bottom:1px solid var(--border);}
+.dots{display:flex;gap:6px}
+.dot{width:11px;height:11px;border-radius:50%;background:#3a3a3a}
+.url-bar{flex:1;height:24px;background:var(--faint);border-radius:6px;display:flex;align-items:center;padding:0 10px;font-size:11px;color:var(--muted);font-family:var(--mono);letter-spacing:.01em;}
+.url-bar .lock{color:var(--teal);margin-right:5px;font-size:10px}
+.pnav{height:34px;background:#090D12;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 10px;gap:2px;}
+.pnav-item{display:flex;align-items:center;gap:5px;padding:0 10px;height:100%;opacity:.4;transition:opacity .15s;cursor:default;border-radius:4px;}
+.pnav-item.active{opacity:1;background:rgba(59,191,163,.06);}
+.pnav-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.pnav-label{font-size:10px;font-weight:500;color:var(--muted);letter-spacing:.02em}
+.pnav-item.active .pnav-label{color:var(--teal)}
+.pnav-item[data-tool="resolve"].active{background:rgba(75,168,200,.07);}
+.pnav-item[data-tool="resolve"].active .pnav-label{color:#4BA8C8}
+.pnav-item[data-tool="intelligence"].active{background:rgba(139,127,232,.07);}
+.pnav-item[data-tool="intelligence"].active .pnav-label{color:#9B8FE8}
+.rsw-wrap{padding:22px 28px;display:flex;flex-direction:column;gap:14px;height:100%}
+.step-num-r{font-size:10px;font-weight:700;letter-spacing:.12em;color:#4BA8C8;background:#0D2535;border:1px solid #1a4a6b;border-radius:4px;padding:2px 7px;}
+.step-num-i{font-size:10px;font-weight:700;letter-spacing:.12em;color:#9B8FE8;background:#1a1535;border:1px solid #3a2a6b;border-radius:4px;padding:2px 7px;}
+.tax-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;flex:1}
+.tax-col{background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;}
+.tax-head{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.tax-chips{display:flex;flex-direction:column;gap:5px}
+.tax-chip{font-size:11px;padding:5px 9px;border-radius:6px;border:1px solid var(--border2);color:var(--muted);display:flex;align-items:center;justify-content:space-between;}
+.tax-chip.done{background:#0D2E27;border-color:#1E6B5E;color:#3BBFA3;}
+.tax-chip.act{border-color:#1a4a6b;color:#4BA8C8;background:#0D2535;}
+.tc-check{font-size:9px;opacity:.8}.tc-dot{font-size:6px;animation:blink .9s step-end infinite}
+.tax-footer{display:flex;justify-content:space-between;align-items:center}
+.tax-status{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px}
+.intel-wrap{padding:22px 28px;display:flex;flex-direction:column;gap:14px;height:100%}
+.files-area{background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;}
+.file-row{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border-radius:6px;background:var(--card2);border:1px solid var(--border);opacity:0;transform:translateX(-6px);transition:opacity .3s ease,transform .3s ease;}
+.file-row.show{opacity:1;transform:none}
+.file-ico{font-size:16px;flex-shrink:0;width:22px;text-align:center;padding-top:1px}
+.file-info{flex:1;min-width:0}
+.file-nm{font-size:11px;font-weight:500;color:var(--text)}
+.file-st{font-size:10px;color:var(--muted);margin-top:3px}
+.file-st.done{color:#3BBFA3}.file-st.proc{color:#4BA8C8}
+.proc-bar{height:2px;background:var(--faint);border-radius:1px;margin-top:5px;overflow:hidden}
+.proc-bar-fill{height:100%;background:#4BA8C8;border-radius:1px;width:0;transition:width 2s ease}
+.sigs-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sig-card{background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:11px 13px;opacity:0;transition:opacity .35s ease;}
+.sig-card.show{opacity:1}
+.sig-tag{font-size:9px;font-weight:700;letter-spacing:.1em;color:#9B8FE8;background:#1a1535;border:1px solid #3a2a6b;border-radius:4px;padding:2px 6px;display:inline-block;margin-bottom:5px;}
+.sig-tag.buyer{color:#4BA8C8;background:#0D2535;border-color:#1a4a6b;}
+.sig-text{font-size:11px;color:var(--muted);line-height:1.45}
+.browser-body{min-height:420px;position:relative;overflow:hidden}
+.scene{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .5s ease,visibility 0s linear .5s;pointer-events:none;}
+.scene.active{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .5s ease,visibility 0s linear 0s;}
+.login-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:40px 24px;gap:28px;}
+.v-logo{width:64px;height:64px;border-radius:16px;background:var(--teal-bg);border:1.5px solid var(--teal-dim);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:var(--teal);letter-spacing:-1px;}
+.login-title{font-size:22px;font-weight:600;color:var(--text);text-align:center}
+.login-sub{font-size:13px;color:var(--muted);text-align:center;margin-top:-18px}
+.login-form{width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px}
+.field-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.field-input{height:42px;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:0 14px;color:var(--text);font-size:14px;display:flex;align-items:center;gap:8px;}
+.field-input .typed-text{color:var(--text)}
+.field-input .cursor{display:inline-block;width:2px;height:15px;background:var(--teal);animation:blink .9s step-end infinite;vertical-align:middle;}
+.btn-magic{height:42px;background:var(--teal);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#07090C;cursor:pointer;margin-top:4px;}
+.btn-magic.pulse{animation:btnpulse 1.2s ease forwards}
+.login-secure{font-size:11px;color:var(--muted);text-align:center;display:flex;align-items:center;gap:5px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes btnpulse{0%{transform:scale(1)}40%{transform:scale(.96);background:#2ea68f}100%{transform:scale(1);background:var(--teal)}}
+.diag-wrap{padding:24px 28px;display:flex;flex-direction:column;gap:18px;height:100%}
+.step-eyebrow{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.step-num{font-size:10px;font-weight:700;letter-spacing:.12em;color:var(--teal);background:var(--teal-bg);border:1px solid var(--teal-dim);border-radius:4px;padding:2px 7px;}
+.step-title{font-size:17px;font-weight:600}
+.step-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;flex:1}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-group.span2{grid-column:span 2}
+.flabel{font-size:11px;color:var(--muted);font-weight:500}
+.finput{height:38px;background:var(--card);border:1px solid var(--border2);border-radius:7px;padding:0 12px;font-size:13px;color:var(--text);display:flex;align-items:center;}
+.finput.typing .cursor{display:inline-block;width:1.5px;height:14px;background:var(--teal);animation:blink .8s step-end infinite;vertical-align:middle;margin-left:1px}
+.chips-row{display:flex;flex-wrap:wrap;gap:7px;padding:8px 0}
+.chip{height:28px;border-radius:14px;padding:0 12px;font-size:11px;font-weight:500;display:flex;align-items:center;cursor:pointer;transition:all .2s;border:1px solid var(--border2);color:var(--muted);background:var(--card);}
+.chip.sel{background:var(--teal-bg);border-color:var(--teal-dim);color:var(--teal)}
+.range-bar{height:4px;background:var(--faint);border-radius:2px;position:relative;margin:10px 0;}
+.range-fill{height:100%;border-radius:2px;background:var(--teal);transition:width 1.2s ease}
+.range-thumb{position:absolute;top:50%;width:14px;height:14px;background:var(--teal);border-radius:50%;transform:translate(-50%,-50%);transition:left 1.2s ease;border:2.5px solid var(--panel);}
+.range-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--muted)}
+.diag-footer{display:flex;justify-content:flex-end;padding:8px 0 4px}
+.btn-next{height:36px;padding:0 20px;background:var(--teal);color:#07090C;font-size:13px;font-weight:600;border-radius:7px;display:flex;align-items:center;gap:6px;opacity:0;transition:opacity .6s ease;}
+.btn-next.show{opacity:1}
+.proc-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:32px;padding:32px 28px;}
+.proc-logo{width:56px;height:56px;border-radius:14px;background:var(--teal-bg);border:1.5px solid var(--teal-dim);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:var(--teal);}
+.proc-title{font-size:15px;color:var(--muted);text-align:center}
+.proc-title span{color:var(--text);font-weight:600}
+.agents-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:520px}
+.agent-card{background:var(--card);border:1px solid var(--border2);border-radius:9px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;opacity:0;transform:translateY(8px);transition:opacity .4s ease,transform .4s ease;}
+.agent-card.show{opacity:1;transform:none}
+.agent-card.span2{grid-column:span 2;max-width:none}
+.agent-name{font-size:12px;font-weight:600;color:var(--teal)}
+.agent-model{font-size:10px;color:var(--muted);font-family:var(--mono)}
+.agent-status{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
+.spinner{width:10px;height:10px;border:1.5px solid var(--faint);border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite}
+.done-check{color:var(--teal);font-size:12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.proc-bar-wrap{width:100%;max-width:320px}
+.proc-bar-track{height:3px;background:var(--faint);border-radius:2px;overflow:hidden}
+.proc-bar-fill{height:100%;background:var(--teal);border-radius:2px;width:0;transition:width .3s ease}
+.proc-steps-label{font-size:10px;color:var(--muted);margin-top:8px;text-align:center;font-family:var(--mono)}
+.pos-wrap{padding:22px 28px;display:flex;flex-direction:column;gap:16px;height:100%}
+.offers-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;flex:1}
+.offer-card{background:var(--card);border:1px solid var(--border2);border-radius:9px;padding:16px;display:flex;flex-direction:column;gap:10px;opacity:0;transform:translateY(10px);transition:opacity .4s ease,transform .4s ease;}
+.offer-card.show{opacity:1;transform:none}
+.offer-tag{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);background:var(--teal-bg);border:1px solid var(--teal-dim);border-radius:4px;padding:2px 7px;align-self:flex-start;}
+.offer-name{font-size:13px;font-weight:600;line-height:1.3}
+.offer-price{font-size:20px;font-weight:700;color:var(--teal)}
+.offer-price span{font-size:11px;color:var(--muted);font-weight:400}
+.offer-desc{font-size:11px;color:var(--muted);line-height:1.5}
+.offer-bullets{display:flex;flex-direction:column;gap:4px;padding-top:4px;border-top:1px solid var(--faint)}
+.ob{font-size:10px;color:var(--muted);display:flex;gap:6px}
+.ob::before{content:'→';color:var(--teal);flex-shrink:0}
+.pos-footer{display:flex;gap:10px;justify-content:flex-end}
+.btn-outline{height:34px;padding:0 16px;border:1px solid var(--border2);color:var(--muted);font-size:12px;border-radius:7px;display:flex;align-items:center;gap:6px;}
+.btn-regen{height:34px;padding:0 16px;background:var(--teal-bg);border:1px solid var(--teal-dim);color:var(--teal);font-size:12px;font-weight:500;border-radius:7px;display:flex;align-items:center;gap:6px;}
+.ref-wrap{padding:22px 28px;display:flex;flex-direction:column;gap:14px;height:100%}
+.ref-list{display:flex;flex-direction:column;gap:8px;flex:1}
+.ref-card{background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:12px 14px;display:flex;align-items:flex-start;gap:12px;opacity:0;transform:translateX(-8px);transition:opacity .35s ease,transform .35s ease;}
+.ref-card.show{opacity:1;transform:none}
+.ref-avatar{width:36px;height:36px;border-radius:10px;flex-shrink:0;background:var(--card2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--teal);}
+.ref-info{flex:1;min-width:0}
+.ref-name{font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px}
+.ref-role{font-size:11px;color:var(--muted);margin-top:1px}
+.ref-intro{font-size:11px;color:var(--muted);margin-top:6px;font-style:italic;line-height:1.45;border-left:2px solid var(--teal-dim);padding-left:8px}
+.ref-badge{font-size:9px;background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-dim);border-radius:4px;padding:1px 6px;font-weight:600;letter-spacing:.05em}
+.gcc-wrap{padding:20px 28px;display:flex;flex-direction:column;gap:14px;height:100%}
+.gcc-header{display:flex;justify-content:space-between;align-items:flex-start}
+.gcc-meta{display:flex;flex-direction:column;gap:2px}
+.gcc-title{font-size:17px;font-weight:600}
+.gcc-sub{font-size:11px;color:var(--muted)}
+.gcc-badge{font-size:10px;background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-dim);border-radius:5px;padding:3px 9px;font-weight:600;align-self:flex-start}
+.metrics-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.metric-card{background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:12px 14px;opacity:0;transition:opacity .4s ease;}
+.metric-card.show{opacity:1}
+.metric-val{font-size:22px;font-weight:700;color:var(--teal);font-family:var(--mono)}
+.metric-lbl{font-size:10px;color:var(--muted);margin-top:2px}
+.gcc-bottom{display:grid;grid-template-columns:1fr 1fr;gap:12px;flex:1}
+.gcc-panel{background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;opacity:0;transition:opacity .4s ease .2s;}
+.gcc-panel.show{opacity:1}
+.panel-title{font-size:11px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px}
+.panel-title::before{content:'';width:3px;height:11px;background:var(--teal);border-radius:2px;display:inline-block}
+.checklist{display:flex;flex-direction:column;gap:7px}
+.citem{display:flex;align-items:flex-start;gap:8px;font-size:11px;color:var(--muted)}
+.cbox{width:15px;height:15px;border-radius:4px;flex-shrink:0;margin-top:1px;border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:8px;}
+.cbox.done{background:var(--teal-bg);border-color:var(--teal-dim);color:var(--teal)}
+.pipeline-rows{display:flex;flex-direction:column;gap:7px}
+.pipe-row{display:flex;align-items:center;gap:10px;font-size:11px}
+.pipe-co{color:var(--text);font-weight:500;min-width:110px}
+.pipe-stage{font-size:9px;padding:2px 7px;border-radius:4px;font-weight:600;letter-spacing:.05em;}
+.stage-warm{background:#1A2E1A;color:#4CAF50;border:1px solid #2A4A2A}
+.stage-prop{background:#1A1A2E;color:#7B7FEC;border:1px solid #2A2A4A}
+.stage-qual{background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-dim)}
+.pipe-val{color:var(--muted);margin-left:auto;font-family:var(--mono)}
+.caption-bar{position:fixed;bottom:0;left:0;right:0;background:var(--panel);border-top:1px solid var(--border);padding:0 28px;height:70px;display:flex;align-items:center;gap:20px;}
+.cap-step-info{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+.cap-step-label{font-size:10px;color:var(--teal);font-weight:600;letter-spacing:.1em;text-transform:uppercase}
+.cap-text{font-size:13px;color:var(--text);line-height:1.4}
+.cap-controls{display:flex;align-items:center;gap:12px}
+.cap-btn{width:32px;height:32px;border-radius:8px;border:1px solid var(--border2);background:var(--card);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:14px;transition:all .15s;user-select:none;}
+.cap-btn:hover{background:var(--card2);color:var(--text)}
+.cap-play{width:36px;height:36px;background:var(--teal);color:#07090C;border:none;border-radius:9px}
+.cap-play:hover{background:#2ea68f;color:#07090C}
+.step-dots{display:flex;gap:6px}
+.sdot{width:6px;height:6px;border-radius:50%;background:var(--faint);cursor:pointer;transition:all .2s;}
+.sdot.active{background:var(--teal);width:18px;border-radius:3px}
+.progress-line{position:fixed;bottom:70px;left:0;height:2px;background:var(--teal);transition:width .1s linear;opacity:.7;}
+</style>
+
+<h2 class="sr-only">Vector — Animated Demo · Small firm · Clearfield Advisory</h2>
+
+<div class="stage">
+  <div class="browser">
+    <div class="browser-chrome">
+      <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      <div class="url-bar"><span class="lock">🔒</span>vector.brittbowman.ai</div>
+    </div>
+    <div class="pnav">
+      <div class="pnav-item" data-tool="discover"><div class="pnav-dot" style="background:#2A7A5E"></div><div class="pnav-label">Discover</div></div>
+      <div class="pnav-item" data-tool="resolve"><div class="pnav-dot" style="background:#1a6b8a"></div><div class="pnav-label">Resolve</div></div>
+      <div class="pnav-item" data-tool="intelligence"><div class="pnav-dot" style="background:#3b2a8a"></div><div class="pnav-label">Intelligence</div></div>
+      <div class="pnav-item active" data-tool="vector"><div class="pnav-dot" style="background:#3BBFA3"></div><div class="pnav-label">Vector</div></div>
+      <div class="pnav-item" data-tool="engine"><div class="pnav-dot" style="background:#8a4a1a"></div><div class="pnav-label">Engine</div></div>
+    </div>
+    <div class="browser-body">
+
+      <div class="scene" id="s0">
+        <div class="login-wrap">
+          <div class="v-logo">V</div>
+          <div style="text-align:center">
+            <div class="login-title">Growth Command Center</div>
+            <div class="login-sub" style="margin-top:6px">Britt Bowman LLC · Practice Growth Intelligence</div>
+          </div>
+          <div class="login-form">
+            <div class="form-group">
+              <div class="field-label">Work email</div>
+              <div class="field-input"><span class="typed-text" id="loginTyped"></span><span class="cursor"></span></div>
+            </div>
+            <div class="btn-magic" id="btnMagic">Send magic link</div>
+            <div class="login-secure"><span style="color:var(--teal)">✦</span> No passwords. Secure magic link sent to your inbox.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCENE: RESOLVE -->
+      <div class="scene" id="sR">
+        <div class="rsw-wrap">
+          <div>
+            <div class="step-eyebrow"><div class="step-num-r">RESOLVE</div></div>
+            <div class="step-title">Taxonomy Workbench</div>
+            <div class="step-sub">Define your practice vocabulary — Vector builds your positioning from this foundation</div>
+          </div>
+          <div class="tax-grid">
+            <div class="tax-col">
+              <div class="tax-head">Core Services</div>
+              <div class="tax-chips">
+                <div class="tax-chip done">CFO Advisory <span class="tc-check">✓</span></div>
+                <div class="tax-chip done">Fractional CFO <span class="tc-check">✓</span></div>
+                <div class="tax-chip act">M&amp;A Advisory <span class="tc-dot">●</span></div>
+                <div class="tax-chip">Financial Planning</div>
+              </div>
+            </div>
+            <div class="tax-col">
+              <div class="tax-head">Target Markets</div>
+              <div class="tax-chips">
+                <div class="tax-chip done">Growth-Stage ($3M–$20M) <span class="tc-check">✓</span></div>
+                <div class="tax-chip done">PE-Backed Companies <span class="tc-check">✓</span></div>
+                <div class="tax-chip">Family-Owned Business</div>
+                <div class="tax-chip">Pre-Series B</div>
+              </div>
+            </div>
+            <div class="tax-col">
+              <div class="tax-head">Delivery Methods</div>
+              <div class="tax-chips">
+                <div class="tax-chip done">Fractional Embedded <span class="tc-check">✓</span></div>
+                <div class="tax-chip done">Project-Based <span class="tc-check">✓</span></div>
+                <div class="tax-chip act">Advisory Retainer <span class="tc-dot">●</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="tax-footer">
+            <div class="tax-status"><span style="color:#4BA8C8">✦</span> Taxonomy 78% complete — 14 terms defined, 4 pending</div>
+            <div class="btn-next show" style="height:34px;padding:0 16px;font-size:12px">Continue to Intelligence →</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCENE: INTELLIGENCE -->
+      <div class="scene" id="sI">
+        <div class="intel-wrap">
+          <div>
+            <div class="step-eyebrow"><div class="step-num-i">INTELLIGENCE</div></div>
+            <div class="step-title">Market Signals</div>
+            <div class="step-sub">Upload transcripts, research, and competitive docs — Intelligence extracts buyer signals that shape your offers</div>
+          </div>
+          <div class="files-area">
+            <div class="file-row" id="fi0">
+              <div class="file-ico">🎙️</div>
+              <div class="file-info">
+                <div class="file-nm">Client Intake · Meridian PortCo.mp4</div>
+                <div class="file-st done">✓ Transcript extracted · 12 buyer signals captured</div>
+              </div>
+            </div>
+            <div class="file-row" id="fi1">
+              <div class="file-ico">📄</div>
+              <div class="file-info">
+                <div class="file-nm">PE Deal Flow Report Q2 2026.pdf</div>
+                <div class="file-st done">✓ Processed · 6 market signals captured</div>
+              </div>
+            </div>
+            <div class="file-row" id="fi2">
+              <div class="file-ico">📊</div>
+              <div class="file-info">
+                <div class="file-nm">CFO Market Benchmark 2026.xlsx</div>
+                <div class="file-st proc" id="fi2st">Extracting signals…</div>
+                <div class="proc-bar"><div class="proc-bar-fill" id="fi2bar"></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="sigs-row">
+            <div class="sig-card" id="sc0">
+              <div class="sig-tag buyer">BUYER SIGNAL</div>
+              <div class="sig-text">PE portfolio company post–Series B — CFO infrastructure gap flagged by sponsor before next board meeting</div>
+            </div>
+            <div class="sig-card" id="sc1">
+              <div class="sig-tag">MARKET SIGNAL</div>
+              <div class="sig-text">Fractional CFO demand up 47% in PE-backed growth segment — window before larger firms enter market</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="scene" id="s1">
+        <div class="diag-wrap">
+          <div>
+            <div class="step-eyebrow"><div class="step-num">STEP 01</div></div>
+            <div class="step-title">Practice Diagnostic</div>
+            <div class="step-sub">Tell us about your firm — 8 questions, under 4 minutes</div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group span2">
+              <div class="flabel">Practice name</div>
+              <div class="finput typing" id="diagName"><span id="diagTyped"></span><span class="cursor"></span></div>
+            </div>
+            <div class="form-group span2">
+              <div class="flabel">Primary services</div>
+              <div class="chips-row">
+                <div class="chip sel" id="chip1">CFO Advisory</div>
+                <div class="chip" id="chip2">M&amp;A Advisory</div>
+                <div class="chip" id="chip3">Tax Strategy</div>
+                <div class="chip" id="chip4">Fractional CFO</div>
+                <div class="chip" id="chip5">Financial Planning</div>
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="flabel">Annual revenue</div>
+              <div style="padding:4px 0">
+                <div class="range-bar">
+                  <div class="range-fill" id="revFill" style="width:0%"></div>
+                  <div class="range-thumb" id="revThumb" style="left:0%"></div>
+                </div>
+                <div class="range-labels"><span>$0</span><span>$500K</span><span>$1M+</span></div>
+              </div>
+              <div style="font-size:12px;color:var(--teal);font-weight:600" id="revLabel">—</div>
+            </div>
+            <div class="form-group">
+              <div class="flabel">Growth track</div>
+              <div class="finput" style="font-size:12px;color:var(--teal)">Track A — Discipline &amp; Systematize</div>
+            </div>
+          </div>
+          <div class="diag-footer">
+            <div class="btn-next" id="diagNext">Analyze Practice <span style="font-size:16px">→</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="scene" id="s2">
+        <div class="proc-wrap">
+          <div class="proc-logo">V</div>
+          <div class="proc-title">Analyzing <span>Clearfield Advisory</span></div>
+          <div class="agents-grid">
+            <div class="agent-card span2" id="ag0"><div class="agent-name">Signal Extractor</div><div class="agent-model">claude-haiku-4-5 · fast extraction</div><div class="agent-status"><div class="spinner" id="sp0"></div><span id="st0">Extracting practice signals…</span></div></div>
+            <div class="agent-card" id="ag1"><div class="agent-name">Positioning Agent</div><div class="agent-model">claude-sonnet-5 · parallel</div><div class="agent-status"><div class="spinner" id="sp1" style="opacity:0"></div><span id="st1" style="opacity:0">Drafting positioning…</span></div></div>
+            <div class="agent-card" id="ag2"><div class="agent-name">Case Study Drafter</div><div class="agent-model">claude-sonnet-5 · parallel</div><div class="agent-status"><div class="spinner" id="sp2" style="opacity:0"></div><span id="st2" style="opacity:0">Drafting case studies…</span></div></div>
+            <div class="agent-card span2" id="ag3"><div class="agent-name">Offer Architect</div><div class="agent-model">claude-sonnet-5 · synthesis</div><div class="agent-status"><div class="spinner" id="sp3" style="opacity:0"></div><span id="st3" style="opacity:0">Architecting offers…</span></div></div>
+          </div>
+          <div class="proc-bar-wrap">
+            <div class="proc-bar-track"><div class="proc-bar-fill" id="procBar"></div></div>
+            <div class="proc-steps-label" id="procLabel">Initializing pipeline…</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="scene" id="s3">
+        <div class="pos-wrap">
+          <div>
+            <div class="step-eyebrow"><div class="step-num">STEP 02</div></div>
+            <div class="step-title">Positioning &amp; Offers</div>
+            <div class="step-sub">Three distinct offers — each with pricing, framing, and activation plan</div>
+          </div>
+          <div class="offers-grid">
+            <div class="offer-card" id="oc0">
+              <div class="offer-tag">Offer 01</div>
+              <div class="offer-name">Fractional CFO Accelerator</div>
+              <div class="offer-price">$8,500<span>/month</span></div>
+              <div class="offer-desc">Embedded financial leadership for growth-stage companies needing structure without full-time overhead.</div>
+              <div class="offer-bullets">
+                <div class="ob">Monthly board-ready reporting</div>
+                <div class="ob">Cash flow modeling + scenario planning</div>
+                <div class="ob">Fundraise &amp; M&A readiness prep</div>
+              </div>
+            </div>
+            <div class="offer-card" id="oc1">
+              <div class="offer-tag">Offer 02</div>
+              <div class="offer-name">M&amp;A Advisory Sprint</div>
+              <div class="offer-price">$24,000<span>/project</span></div>
+              <div class="offer-desc">90-day engagement from financial diligence through close — for founders who need a deal partner, not a spectator.</div>
+              <div class="offer-bullets">
+                <div class="ob">Target screening &amp; thesis validation</div>
+                <div class="ob">Financial model build + QoE</div>
+                <div class="ob">Deal structuring &amp; term negotiation</div>
+              </div>
+            </div>
+            <div class="offer-card" id="oc2">
+              <div class="offer-tag">Offer 03</div>
+              <div class="offer-name">Growth Diagnostic</div>
+              <div class="offer-price">$3,500<span>/engagement</span></div>
+              <div class="offer-desc">One-week intensive that maps financial health gaps to a prioritized 60-day growth roadmap.</div>
+              <div class="offer-bullets">
+                <div class="ob">Unit economics audit</div>
+                <div class="ob">Revenue leakage identification</div>
+                <div class="ob">90-day action roadmap</div>
+              </div>
+            </div>
+          </div>
+          <div class="pos-footer">
+            <div class="btn-outline">↺ Try different angle</div>
+            <div class="btn-regen">↻ Regenerate</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="scene" id="s4">
+        <div class="ref-wrap">
+          <div>
+            <div class="step-eyebrow"><div class="step-num">STEP 03</div></div>
+            <div class="step-title">Referral Engine</div>
+            <div class="step-sub">AI-drafted warm intros for your top referral sources</div>
+          </div>
+          <div class="ref-list">
+            <div class="ref-card" id="rc0">
+              <div class="ref-avatar">MW</div>
+              <div class="ref-info">
+                <div class="ref-name">Marcus Webb <div class="ref-badge">HIGH FIT</div></div>
+                <div class="ref-role">Managing Partner · Kestrel Growth Partners (PE)</div>
+                <div class="ref-intro">"Marcus — thinking of you for a client who just closed a Series B and needs CFO-level infrastructure before their next raise. Would love 15 min to see if there's a fit."</div>
+              </div>
+            </div>
+            <div class="ref-card" id="rc1">
+              <div class="ref-avatar">SL</div>
+              <div class="ref-info">
+                <div class="ref-name">Sarah Lindqvist <div class="ref-badge">HIGH FIT</div></div>
+                <div class="ref-role">Partner · Thornfield Advisory (M&amp;A law)</div>
+                <div class="ref-intro">"Sarah — I'm working with a founder going through their first acquisition and could use a great M&A attorney. Your name came up immediately. Intro?"</div>
+              </div>
+            </div>
+            <div class="ref-card" id="rc2">
+              <div class="ref-avatar">DJ</div>
+              <div class="ref-info">
+                <div class="ref-name">David Johansson</div>
+                <div class="ref-role">VP Finance · Meridian Ventures (VC)</div>
+                <div class="ref-intro">"David — one of our portfolio companies is hitting the ceiling on their internal finance function. You've seen this before — would you be open to a quick intro call?"</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="scene" id="s5">
+        <div class="gcc-wrap">
+          <div class="gcc-header">
+            <div class="gcc-meta">
+              <div class="gcc-title">Growth Command Center</div>
+              <div class="gcc-sub">Clearfield Advisory · Track A · Generated Jul 2026</div>
+            </div>
+            <div class="gcc-badge">✦ ACTIVE</div>
+          </div>
+          <div class="metrics-row">
+            <div class="metric-card" id="mc0"><div class="metric-val">$36K</div><div class="metric-lbl">Monthly recurring target</div></div>
+            <div class="metric-card" id="mc1"><div class="metric-val">14</div><div class="metric-lbl">Referral targets queued</div></div>
+            <div class="metric-card" id="mc2"><div class="metric-val">3</div><div class="metric-lbl">Active offers</div></div>
+            <div class="metric-card" id="mc3"><div class="metric-val">60d</div><div class="metric-lbl">Activation timeline</div></div>
+          </div>
+          <div class="gcc-bottom">
+            <div class="gcc-panel" id="gp0">
+              <div class="panel-title">60-Day Activation Checklist</div>
+              <div class="checklist">
+                <div class="citem"><div class="cbox done">✓</div>Finalize offer language + pricing</div>
+                <div class="citem"><div class="cbox done">✓</div>Record positioning one-pager</div>
+                <div class="citem"><div class="cbox">3</div>Send 5 warm intro requests (Week 1)</div>
+                <div class="citem"><div class="cbox">4</div>Publish LinkedIn content series</div>
+                <div class="citem"><div class="cbox">5</div>Book 3 discovery calls</div>
+                <div class="citem"><div class="cbox">6</div>Send first Growth Diagnostic proposal</div>
+              </div>
+            </div>
+            <div class="gcc-panel" id="gp1">
+              <div class="panel-title">Pipeline Tracker</div>
+              <div class="pipeline-rows">
+                <div class="pipe-row"><div class="pipe-co">Kestrel Partners</div><div class="pipe-stage stage-qual">QUALIFIED</div><div class="pipe-val">$8,500</div></div>
+                <div class="pipe-row"><div class="pipe-co">Meridian PortCo</div><div class="pipe-stage stage-prop">PROPOSAL</div><div class="pipe-val">$24,000</div></div>
+                <div class="pipe-row"><div class="pipe-co">Thornfield Referral</div><div class="pipe-stage stage-warm">WARM INTRO</div><div class="pipe-val">$3,500</div></div>
+                <div class="pipe-row"><div class="pipe-co">Coastal Brands</div><div class="pipe-stage stage-warm">WARM INTRO</div><div class="pipe-val">$8,500</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCENE: ACTIVATE -->
+      <div class="scene" id="sA">
+        <div class="rsw-wrap">
+          <div>
+            <div class="step-eyebrow"><div class="step-num-r" style="color:#3BBFA3;background:#0D2E27;border-color:#1E6B5E">ACTIVATE</div></div>
+            <div class="step-title">Campaign DNA</div>
+            <div class="step-sub">Vector maps positioning to your marketing taxonomy — generates ready-to-import payloads for HubSpot, Salesforce, Marketo, and Outreach</div>
+          </div>
+          <div class="tax-grid">
+            <div class="tax-col">
+              <div class="tax-head">Taxonomy</div>
+              <div class="tax-chips">
+                <div class="tax-chip done">Practice Area · CFO Advisory <span class="tc-check">✓</span></div>
+                <div class="tax-chip done">Buyer Persona · PE-Backed CFO <span class="tc-check">✓</span></div>
+                <div class="tax-chip done">Channel Motion · Warm Referral <span class="tc-check">✓</span></div>
+                <div class="tax-chip act">Campaign Type · Partner Referral <span class="tc-dot">●</span></div>
+              </div>
+            </div>
+            <div class="tax-col">
+              <div class="tax-head">Destination Payloads</div>
+              <div class="tax-chips">
+                <div class="tax-chip done">HubSpot Campaign <span class="tc-check">↓</span></div>
+                <div class="tax-chip done">Salesforce Campaign <span class="tc-check">↓</span></div>
+                <div class="tax-chip act">Outreach Sequence <span class="tc-dot">●</span></div>
+              </div>
+            </div>
+            <div class="tax-col">
+              <div class="tax-head">Content Themes</div>
+              <div class="tax-chips">
+                <div class="tax-chip done">PE Portfolio Readiness <span class="tc-check">✓</span></div>
+                <div class="tax-chip done">CFO as Growth Driver <span class="tc-check">✓</span></div>
+                <div class="tax-chip done">Fractional Leadership ROI <span class="tc-check">✓</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="tax-footer">
+            <div class="tax-status"><span style="color:#3BBFA3">✦</span> 3 payloads ready · Primary KPI: Qualified Intro Calls Booked</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="caption-bar">
+  <div class="cap-step-info"><div class="cap-step-label" id="capLabel">—</div><div class="cap-text" id="capText">—</div></div>
+  <div class="cap-controls">
+    <div class="step-dots" id="stepDots"></div>
+    <div class="cap-btn" onclick="goTo(cur-1)">‹</div>
+    <div class="cap-btn cap-play" id="btnPlay" onclick="togglePlay()">⏸</div>
+    <div class="cap-btn" onclick="goTo(cur+1)">›</div>
+  </div>
+</div>
+<div class="progress-line" id="progressLine" style="width:0%"></div>
+
+<script>
+const SCENES=[
+  {id:'s0',label:'Welcome',text:'Secure magic-link login — no passwords, no friction. Your practice data stays private.',dur:4200,tool:'vector'},
+  {id:'sR',label:'Resolve — Taxonomy Workbench',text:'Define your practice vocabulary in Resolve first. Vector uses this to generate precisely-calibrated offers and positioning.',dur:5000,tool:'resolve'},
+  {id:'sI',label:'Intelligence — Market Signals',text:'Upload transcripts, research docs, and competitive intel. Intelligence extracts buyer signals that sharpen every offer.',dur:5200,tool:'intelligence'},
+  {id:'s1',label:'Step 01 — Practice Diagnostic',text:'Answer 8 questions about your firm. Vector reads between the lines to find what makes you distinct.',dur:5500,tool:'vector'},
+  {id:'s2',label:'AI Pipeline',text:'Four specialized agents run in sequence and parallel — extracting signals, drafting positioning, architecting offers.',dur:5000,tool:'vector'},
+  {id:'s3',label:'Step 02 — Positioning & Offers',text:'Three fully-developed offers with pricing, framing, and activation plans — plus Regenerate and "Try a different angle" controls.',dur:5200,tool:'vector'},
+  {id:'s4',label:'Step 03 — Referral Engine',text:'AI-drafted warm intro language for your top referral sources — ready to send, not just a list.',dur:4800,tool:'vector'},
+  {id:'s5',label:'Growth Command Center',text:'Your complete growth system: metrics, 60-day activation checklist, and a live pipeline tracker — all assembled from your diagnostic.',dur:5500,tool:'vector'},
+  {id:'sA',label:'Activate — Campaign DNA',text:'Vector maps your positioning to campaign taxonomy and generates ready-to-import payloads for HubSpot, Salesforce, Outreach, and more.',dur:5000,tool:'vector'},
+];
+let cur=0,playing=true,timer=null,startT=0,elapsed=0,rafId=null;
+function buildDots(){const el=document.getElementById('stepDots');el.innerHTML='';SCENES.forEach((_,i)=>{const d=document.createElement('div');d.className='sdot'+(i===cur?' active':'');d.onclick=()=>goTo(i);el.appendChild(d);});}
+function updatePnav(tool){document.querySelectorAll('.pnav-item').forEach(el=>{el.classList.toggle('active',el.dataset.tool===tool);});}
+function goTo(n){n=Math.max(0,Math.min(SCENES.length-1,n));document.getElementById(SCENES[cur].id).classList.remove('active');cur=n;const sc=SCENES[cur];document.getElementById(sc.id).classList.add('active');document.getElementById('capLabel').textContent=sc.label;document.getElementById('capText').textContent=sc.text;updatePnav(sc.tool||'vector');buildDots();runSceneAnim(cur);if(playing)resetTimer();}
+function resetTimer(){clearTimeout(timer);cancelAnimationFrame(rafId);startT=performance.now();elapsed=0;const dur=SCENES[cur].dur;function tick(){if(!playing){cancelAnimationFrame(rafId);return;}elapsed=performance.now()-startT;const pct=Math.min(100,elapsed/dur*100);document.getElementById('progressLine').style.width=pct+'%';if(elapsed>=dur){const next=(cur+1)%SCENES.length;goTo(next);}else{rafId=requestAnimationFrame(tick);}}rafId=requestAnimationFrame(tick);}
+function togglePlay(){playing=!playing;document.getElementById('btnPlay').textContent=playing?'⏸':'▶';if(playing)resetTimer();else{cancelAnimationFrame(rafId);clearTimeout(timer);}}
+function runSceneAnim(n){const id=SCENES[n].id;if(id==='s0')animLogin();else if(id==='sR')animR();else if(id==='sI')animI();else if(id==='s1')animDiag();else if(id==='s2')animProc();else if(id==='s3')animPos();else if(id==='s4')animRef();else if(id==='s5')animGcc();else if(id==='sA')animA();}
+function animA(){}
+function animR(){}
+function animI(){['fi0','fi1','fi2'].forEach((id,i)=>{const r=document.getElementById(id);if(r){r.classList.remove('show');setTimeout(()=>r.classList.add('show'),300+i*400);}});['sc0','sc1'].forEach((id,i)=>{const c=document.getElementById(id);if(c){c.classList.remove('show');setTimeout(()=>c.classList.add('show'),1800+i*350);}});const bar=document.getElementById('fi2bar');if(bar){bar.style.width='0%';bar.style.transition='none';setTimeout(()=>{bar.style.transition='width 2s ease';bar.style.width='74%';},700);}}
+function typeText(el,text,speed,cb){el.textContent='';let i=0;function step(){if(i<=text.length){el.textContent=text.slice(0,i);i++;setTimeout(step,speed);}else if(cb)cb();}step();}
+function animLogin(){const t=document.getElementById('loginTyped');document.getElementById('btnMagic').classList.remove('pulse');setTimeout(()=>typeText(t,'britt@clearfieldadvisory.com',55,()=>{setTimeout(()=>document.getElementById('btnMagic').classList.add('pulse'),300);}),600);}
+function animDiag(){const typed=document.getElementById('diagTyped');document.getElementById('diagName').classList.add('typing');typed.textContent='';['chip2','chip3','chip4','chip5'].forEach(id=>document.getElementById(id).classList.remove('sel'));document.getElementById('chip1').classList.add('sel');document.getElementById('revFill').style.width='0%';document.getElementById('revThumb').style.left='0%';document.getElementById('revLabel').textContent='—';document.getElementById('diagNext').classList.remove('show');setTimeout(()=>typeText(typed,'Clearfield Advisory',48,()=>{setTimeout(()=>{document.getElementById('chip2').classList.add('sel');setTimeout(()=>{document.getElementById('chip4').classList.add('sel');setTimeout(()=>{document.getElementById('revFill').style.width='62%';document.getElementById('revThumb').style.left='62%';document.getElementById('revLabel').textContent='~$620K / year';setTimeout(()=>document.getElementById('diagNext').classList.add('show'),900);},700);},500);},500);}),400);}
+function animProc(){const bar=document.getElementById('procBar');const lbl=document.getElementById('procLabel');[0,1,2,3].forEach(i=>{const c=document.getElementById('ag'+i);c.classList.remove('show');const sp=document.getElementById('sp'+i);const st=document.getElementById('st'+i);if(sp)sp.style.opacity='0';if(st)st.style.opacity='0';});bar.style.width='0%';bar.style.transition='none';lbl.textContent='Initializing pipeline…';const steps=[{t:300,fn:()=>{document.getElementById('ag0').classList.add('show');document.getElementById('sp0').style.opacity='1';document.getElementById('st0').style.opacity='1';document.getElementById('st0').textContent='Extracting practice signals…';bar.style.transition='width .8s ease';bar.style.width='15%';lbl.textContent='Signal Extractor → running';}},{t:1300,fn:()=>{document.getElementById('sp0').outerHTML='<span class="done-check" id="sp0">✓</span>';document.getElementById('st0').textContent='Complete — 12 signals extracted';bar.style.width='35%';}},{t:1900,fn:()=>{['ag1','ag2'].forEach(id=>{const c=document.getElementById(id);if(c)c.classList.add('show');});['sp1','sp2','st1','st2'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.opacity='1';});bar.style.width='55%';lbl.textContent='Positioning Agent + Case Study Drafter → parallel';}},{t:3000,fn:()=>{bar.style.width='75%';const sp1=document.getElementById('sp1');if(sp1&&sp1.className==='spinner'){sp1.outerHTML='<span class="done-check" id="sp1">✓</span>';}const st1=document.getElementById('st1');if(st1)st1.textContent='3 offers positioned';const sp2=document.getElementById('sp2');if(sp2&&sp2.className==='spinner'){sp2.outerHTML='<span class="done-check" id="sp2">✓</span>';}const st2=document.getElementById('st2');if(st2)st2.textContent='2 case studies drafted';}},{t:3600,fn:()=>{document.getElementById('ag3').classList.add('show');document.getElementById('sp3').style.opacity='1';document.getElementById('st3').style.opacity='1';bar.style.width='90%';lbl.textContent='Offer Architect → synthesizing';}},{t:4500,fn:()=>{const sp3=document.getElementById('sp3');if(sp3&&sp3.className==='spinner'){sp3.outerHTML='<span class="done-check" id="sp3">✓</span>';}const st3=document.getElementById('st3');if(st3)st3.textContent='Growth bundle ready';bar.style.width='100%';lbl.textContent='Analysis complete ✦';}}];steps.forEach(s=>setTimeout(s.fn,s.t));}
+function animPos(){['oc0','oc1','oc2'].forEach((id,i)=>{const c=document.getElementById(id);c.classList.remove('show');setTimeout(()=>c.classList.add('show'),300+i*180);});}
+function animRef(){['rc0','rc1','rc2'].forEach((id,i)=>{const c=document.getElementById(id);c.classList.remove('show');setTimeout(()=>c.classList.add('show'),250+i*220);});}
+function animGcc(){['mc0','mc1','mc2','mc3'].forEach((id,i)=>{const c=document.getElementById(id);c.classList.remove('show');setTimeout(()=>c.classList.add('show'),200+i*120);});['gp0','gp1'].forEach((id,i)=>{const c=document.getElementById(id);c.classList.remove('show');setTimeout(()=>c.classList.add('show'),700+i*150);});}
+buildDots();goTo(0);
+</script>

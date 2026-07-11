@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Vector — Growth Command Center</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -480,6 +481,44 @@
   .pnav-tool.pnav-active { background: #0E1218; color: var(--txt); }
   .pnav-tool.pnav-locked { opacity: .3; pointer-events: none; cursor: default; }
   .pnav-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ── TAXONOMY CONFIGURATOR ── */
+  .tax-config-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .tax-config-key { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 7px 10px; color: var(--txt); font-size: 12px; font-family: inherit; }
+  .tax-config-key:focus { outline: none; border-color: var(--green); }
+  .tax-config-vals { flex: 2; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 7px 10px; color: var(--txt2); font-size: 12px; font-family: inherit; }
+  .tax-config-vals:focus { outline: none; border-color: var(--green); }
+  .tax-config-vals::placeholder { color: var(--txt3); }
+  .tax-remove { width: 24px; height: 24px; border-radius: 4px; border: 1px solid var(--border); background: transparent; color: var(--txt3); font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .tax-remove:hover { border-color: #e05252; color: #e05252; }
+  .tax-upload-zone { border: 1px dashed var(--border); border-radius: 8px; padding: 14px 16px; text-align: center; cursor: pointer; transition: border-color .15s; margin-bottom: 12px; }
+  .tax-upload-zone:hover { border-color: var(--green); }
+  .tax-upload-zone-label { font-size: 12px; color: var(--txt3); }
+  .tax-upload-zone-label span { color: var(--green); }
+  .tax-col-map { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+  .tax-col-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--txt2); }
+  .tax-col-select { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px; color: var(--txt); font-size: 12px; font-family: inherit; }
+  .tax-col-select:focus { outline: none; border-color: var(--green); }
+  .tax-preview-chip { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; background: rgba(62,207,142,.1); color: var(--green); border: 1px solid rgba(62,207,142,.2); margin: 2px; }
+  .import-drop { border: 1px dashed var(--border); border-radius: 8px; padding: 16px; text-align: center; cursor: pointer; margin-top: 10px; transition: border-color .15s; }
+  .import-drop:hover { border-color: var(--green); }
+  .import-drop-label { font-size: 12px; color: var(--txt3); }
+
+  /* ── ACTIVATE STEP ── */
+  .cdna-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+  .cdna-field { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 13px 15px; }
+  .cdna-label { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--txt3); margin-bottom: 6px; }
+  .cdna-value { font-size: 13px; color: var(--txt); line-height: 1.45; }
+  .cdna-value.editable { border: none; background: transparent; width: 100%; color: var(--txt); font-size: 13px; line-height: 1.45; resize: none; font-family: inherit; outline: none; padding: 0; }
+  .cdna-value.editable:focus { color: var(--green); }
+  .dest-stack-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .dest-chip { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface2); color: var(--txt2); font-size: 12px; font-weight: 500; cursor: pointer; transition: all .15s; }
+  .dest-chip.active { border-color: var(--green); color: var(--green); background: rgba(62,207,142,.08); }
+  .dest-panel { margin-bottom: 16px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .dest-panel-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: var(--surface2); border-bottom: 1px solid var(--border); }
+  .dest-panel-title { font-size: 13px; font-weight: 600; color: var(--txt); }
+  .dest-panel-actions { display: flex; gap: 8px; }
+  .dest-payload { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 11px; color: var(--txt2); padding: 14px 16px; white-space: pre-wrap; word-break: break-word; max-height: 260px; overflow-y: auto; background: #0a0d12; line-height: 1.6; }
 </style>
 </head>
 <body>
@@ -492,16 +531,16 @@
     <span class="pnav-dot" style="background:#8B7FEC"></span>Discover
   </a>
   <a class="pnav-tool pnav-locked" href="#">
-    <span class="pnav-dot" style="background:#4DE8FF"></span>Fuse
+    <span class="pnav-dot" style="background:#4DE8FF"></span>Resolve
   </a>
   <a class="pnav-tool pnav-locked" href="#">
-    <span class="pnav-dot" style="background:#5B8CFF"></span>Signal
+    <span class="pnav-dot" style="background:#5B8CFF"></span>Intelligence
   </a>
   <a class="pnav-tool pnav-active" href="/vector.html">
     <span class="pnav-dot" style="background:#3BBFA3"></span>Vector
   </a>
   <a class="pnav-tool pnav-locked" href="#">
-    <span class="pnav-dot" style="background:#FF8A3D"></span>Helix
+    <span class="pnav-dot" style="background:#FF8A3D"></span>Engine
   </a>
 </div>
 
@@ -645,6 +684,10 @@
   <span class="step-arrow">›</span>
   <button class="step-btn locked" id="nav-6" onclick="showStep(6)">
     <span class="snum"><span>7</span></span> Growth Command Center
+  </button>
+  <span class="step-arrow">›</span>
+  <button class="step-btn locked" id="nav-7" onclick="showStep(7)">
+    <span class="snum"><span>8</span></span> Activate
   </button>
 </div>
 
@@ -916,7 +959,10 @@
       <div class="card">
         <div class="card-header">
           <span class="card-title">Contact Roster</span>
-          <button class="btn btn-ghost btn-sm" onclick="openContactModal()">+ Add Contact</button>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-ghost btn-sm" onclick="exportContactsCSV()">↓ CSV</button>
+            <button class="btn btn-ghost btn-sm" onclick="openContactModal()">+ Add Contact</button>
+          </div>
         </div>
         <div id="contactTableWrap">
           <table class="contact-table">
@@ -1184,11 +1230,123 @@
       <div class="card">
         <div class="card-header">
           <span class="card-title">Artifact Library</span>
-          <button class="btn btn-primary btn-sm" onclick="downloadBundle()">↓ Download All</button>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-ghost btn-sm" onclick="exportOffersCSV()">↓ Offers CSV</button>
+            <button class="btn btn-ghost btn-sm" onclick="exportPipelineCSV()">↓ Pipeline CSV</button>
+            <button class="btn btn-primary btn-sm" onclick="downloadBundle()">↓ Download All</button>
+          </div>
         </div>
         <div class="artifact-list" id="artifactLibrary"></div>
       </div>
     </div>
+
+    <!-- ═══ STEP 7: ACTIVATE ═══ -->
+    <div class="step-panel" id="panel-7">
+      <div class="step-header">
+        <h1>Activate</h1>
+        <p>Map your positioning to campaign taxonomy and generate ready-to-import payloads for your marketing stack.</p>
+      </div>
+
+      <!-- Data Import card -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Import Data</span>
+          <span style="font-size:12px;color:var(--txt3)">Optional — seeds contacts, offers, or pipeline from a spreadsheet</span>
+        </div>
+        <p style="font-size:13px;color:var(--txt2);margin:0 0 14px">Upload a CSV or XLSX with your existing data. Vector reads the columns and maps them in — no reformatting required.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+          <div>
+            <div style="font-size:11px;font-weight:600;color:var(--txt3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px">Contacts / Referrals</div>
+            <div class="import-drop" onclick="document.getElementById('importContacts').click()">
+              <div style="font-size:20px;margin-bottom:4px">👥</div>
+              <div class="import-drop-label">Drop CSV / XLSX<br><span style="color:var(--green)">or click to browse</span></div>
+            </div>
+            <input type="file" id="importContacts" accept=".csv,.xlsx" style="display:none" onchange="handleDataImport(event,'contacts')">
+            <div id="importContactsStatus" style="font-size:11px;color:var(--txt3);margin-top:6px;min-height:16px"></div>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:600;color:var(--txt3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px">Offers / Pricing</div>
+            <div class="import-drop" onclick="document.getElementById('importOffers').click()">
+              <div style="font-size:20px;margin-bottom:4px">💼</div>
+              <div class="import-drop-label">Drop CSV / XLSX<br><span style="color:var(--green)">or click to browse</span></div>
+            </div>
+            <input type="file" id="importOffers" accept=".csv,.xlsx" style="display:none" onchange="handleDataImport(event,'offers')">
+            <div id="importOffersStatus" style="font-size:11px;color:var(--txt3);margin-top:6px;min-height:16px"></div>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:600;color:var(--txt3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px">Pipeline</div>
+            <div class="import-drop" onclick="document.getElementById('importPipeline').click()">
+              <div style="font-size:20px;margin-bottom:4px">📊</div>
+              <div class="import-drop-label">Drop CSV / XLSX<br><span style="color:var(--green)">or click to browse</span></div>
+            </div>
+            <input type="file" id="importPipeline" accept=".csv,.xlsx" style="display:none" onchange="handleDataImport(event,'pipeline')">
+            <div id="importPipelineStatus" style="font-size:11px;color:var(--txt3);margin-top:6px;min-height:16px"></div>
+          </div>
+        </div>
+        <div id="importPreview" style="display:none;margin-top:16px">
+          <div style="font-size:11px;font-weight:600;color:var(--txt3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">Column Mapping</div>
+          <div id="importColMap" class="tax-col-map"></div>
+          <button class="btn btn-primary btn-sm" style="margin-top:12px" onclick="applyImport()">Apply Import</button>
+        </div>
+      </div>
+
+      <!-- Taxonomy configurator -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Your Campaign Taxonomy</span>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('taxUploadInput').click()">↑ Upload taxonomy</button>
+            <button class="btn btn-ghost btn-sm" onclick="addTaxField()">+ Add field</button>
+          </div>
+        </div>
+        <input type="file" id="taxUploadInput" accept=".csv,.xlsx" style="display:none" onchange="handleTaxUpload(event)">
+        <p style="font-size:13px;color:var(--txt2);margin:0 0 14px">Define your real taxonomy field names and allowed values. Vector will map Campaign DNA to these exact terms when generating payloads.</p>
+
+        <div style="display:grid;grid-template-columns:180px 1fr 28px;gap:6px;margin-bottom:6px">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--txt3);text-transform:uppercase;padding:0 4px">Field name</div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--txt3);text-transform:uppercase;padding:0 4px">Allowed values <span style="font-weight:400;text-transform:none;letter-spacing:0">(comma-separated, or leave blank for free text)</span></div>
+          <div></div>
+        </div>
+
+        <div id="taxFieldList"></div>
+
+        <div id="taxPreviewRow" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+          <div style="font-size:11px;font-weight:600;color:var(--txt3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">Taxonomy preview</div>
+          <div id="taxPreviewChips" style="display:flex;flex-wrap:wrap;gap:4px"></div>
+        </div>
+      </div>
+
+      <!-- Campaign DNA card -->
+      <div class="card" id="cdna-card">
+        <div class="card-header">
+          <span class="card-title">Campaign DNA</span>
+          <button class="btn btn-primary btn-sm" id="cdna-btn" onclick="generateCampaignDNA()">Generate Campaign DNA</button>
+        </div>
+        <p style="font-size:13px;color:var(--txt2);margin:0 0 16px">Vector maps your positioning, offers, and buyer persona to campaign taxonomy fields — the structured vocabulary your marketing tools understand.</p>
+        <div id="cdna-empty" style="color:var(--txt3);font-size:13px;padding:24px 0;text-align:center">Run Generate to build your Campaign DNA from your positioning outputs.</div>
+        <div id="cdna-output" style="display:none">
+          <div class="cdna-grid" id="cdnaGrid"></div>
+        </div>
+      </div>
+
+      <!-- Destination stacks -->
+      <div class="card" id="dest-card" style="display:none">
+        <div class="card-header">
+          <span class="card-title">Destination Payloads</span>
+          <span style="font-size:12px;color:var(--txt3)">Select the tools in your stack</span>
+        </div>
+        <div class="dest-stack-row" id="destStackRow">
+          <button class="dest-chip active" data-dest="hubspot" onclick="toggleDest(this)">HubSpot</button>
+          <button class="dest-chip active" data-dest="salesforce" onclick="toggleDest(this)">Salesforce</button>
+          <button class="dest-chip active" data-dest="marketo" onclick="toggleDest(this)">Marketo</button>
+          <button class="dest-chip active" data-dest="outreach" onclick="toggleDest(this)">Outreach</button>
+          <button class="dest-chip" data-dest="linkedin" onclick="toggleDest(this)">LinkedIn Ads</button>
+          <button class="dest-chip" data-dest="apollo" onclick="toggleDest(this)">Apollo</button>
+        </div>
+        <div id="dest-panels"></div>
+      </div>
+
+    </div><!-- /panel-7 -->
 
   </div><!-- /content -->
 </div><!-- /main -->
@@ -1390,7 +1548,7 @@
     </div>
 
     <!-- Hidden file input (shared) -->
-    <input type="file" id="intakeFileInput" accept=".vtt,.txt,.pdf,.docx" style="display:none" onchange="handleIntakeFile(event)">
+    <input type="file" id="intakeFileInput" accept=".vtt,.txt,.pdf,.docx,.pptx,.ppt" style="display:none" onchange="handleIntakeFile(event)">
 
     <!-- Drop zone -->
     <div id="intakeDropZone"
@@ -1399,7 +1557,7 @@
       ondrop="handleIntakeDrop(event)"
       style="border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;margin-bottom:12px;transition:border-color .2s">
       <div style="font-size:13px;font-weight:600;color:var(--txt2);margin-bottom:4px">Drop files here</div>
-      <div style="font-size:11px;color:var(--txt3)">.vtt · .txt · .pdf · .docx</div>
+      <div style="font-size:11px;color:var(--txt3)">.vtt · .txt · .pdf · .docx · .pptx</div>
     </div>
 
     <!-- LinkedIn URL row -->
@@ -1508,7 +1666,7 @@ const VEC = {
   stakeholders: []
 };
 let PHASE = 0;
-const STEP_MIN = [0, 1, 2, 3, 4, 5, 6];
+const STEP_MIN = [0, 1, 2, 3, 4, 5, 6, 6];
 let _contactEditId = null;
 let _caseEditId = null;
 
@@ -1520,7 +1678,7 @@ function showStep(n) {
   document.querySelectorAll('.step-btn').forEach((b, i) => b.classList.toggle('active', i === n));
   currentStep = n;
   if (n === 6) updatePracticeOS();
-  const stepNames = ['Diagnostic','Positioning','Referral Engine','Credibility','Intake','Plan','Practice OS'];
+  const stepNames = ['Diagnostic','Positioning','Referral Engine','Credibility','Intake','Plan','Practice OS','Activate'];
   logEvent('step_visited', { step: n, name: stepNames[n] || n });
 }
 function unlockStep(n) {
@@ -1718,6 +1876,7 @@ function restoreUI() {
   document.getElementById('ops-nps').checked        = !!ops.nps;
   // Dynamic tables
   renderContacts(); renderCases(); renderPlanTracker();
+  if (VEC.taxFields) initTaxFields(); else { VEC.taxFields = JSON.parse(JSON.stringify(DEFAULT_TAX_FIELDS)); initTaxFields(); }
   // Step nav unlock
   for (let i = 0; i <= 6; i++) {
     const btn = document.getElementById('nav-' + i);
@@ -2000,6 +2159,8 @@ function loadDemo() {
   });
 
   updateSidebar(); saveState();
+  if (!VEC.taxFields || !VEC.taxFields.length) VEC.taxFields = JSON.parse(JSON.stringify(DEFAULT_TAX_FIELDS));
+  initTaxFields();
   showToast('Demo data loaded — Clearfield Advisory');
 }
 
@@ -2398,6 +2559,528 @@ function updatePracticeOS() {
 
 // ─── PLAN TRACKER ──────────────────────────────────────
 function navigateTo(n) { showStep(n); }
+
+// ─── ACTIVATE / CAMPAIGN DNA ──────────────────────────────
+let cdnaState = null;
+
+// ── Taxonomy state ─────────────────────────────────────────
+// Each entry: { key: 'Field Name', values: ['val1','val2'] }
+const DEFAULT_TAX_FIELDS = [
+  { key: 'Practice Area',          values: [] },
+  { key: 'Campaign Type',          values: ['Thought Leadership','Direct Outbound','Partner Referral','Event-Driven','Nurture'] },
+  { key: 'Buyer Persona',          values: [] },
+  { key: 'Offer Type',             values: ['Advisory Retainer','Fractional Engagement','Project Sprint','Diagnostic'] },
+  { key: 'Channel Motion',         values: ['Warm Referral Network','LinkedIn Outbound','Email Outbound','Partner Co-Sell','Event'] },
+  { key: 'Lifecycle Stage',        values: ['Awareness','Consideration','Decision','Retention'] },
+  { key: 'Urgency Driver',         values: [] },
+  { key: 'Campaign Name Template', values: [] },
+  { key: 'Primary KPI',            values: ['Qualified Intro Calls','Pipeline Created','MQLs','Opportunities Won'] },
+  { key: 'Content Themes',         values: [] },
+];
+VEC.taxFields = VEC.taxFields || JSON.parse(JSON.stringify(DEFAULT_TAX_FIELDS));
+
+function initTaxFields() {
+  renderTaxFields();
+}
+
+function renderTaxFields() {
+  const list = document.getElementById('taxFieldList');
+  list.innerHTML = '';
+  VEC.taxFields.forEach((f, i) => {
+    const row = document.createElement('div');
+    row.className = 'tax-config-row';
+    row.innerHTML = `
+      <input class="tax-config-key" value="${escAttr(f.key)}" placeholder="Field name" oninput="VEC.taxFields[${i}].key=this.value;updateTaxPreview()">
+      <input class="tax-config-vals" value="${escAttr(f.values.join(', '))}" placeholder="Value 1, Value 2, Value 3 …" oninput="VEC.taxFields[${i}].values=this.value.split(',').map(v=>v.trim()).filter(Boolean);updateTaxPreview()">
+      <button class="tax-remove" onclick="removeTaxField(${i})">×</button>`;
+    list.appendChild(row);
+  });
+  updateTaxPreview();
+}
+
+function addTaxField() {
+  VEC.taxFields.push({ key: '', values: [] });
+  renderTaxFields();
+  // focus the new key input
+  const inputs = document.querySelectorAll('.tax-config-key');
+  if (inputs.length) inputs[inputs.length - 1].focus();
+}
+
+function removeTaxField(i) {
+  VEC.taxFields.splice(i, 1);
+  renderTaxFields();
+}
+
+function updateTaxPreview() {
+  const row = document.getElementById('taxPreviewRow');
+  const chips = document.getElementById('taxPreviewChips');
+  const filled = VEC.taxFields.filter(f => f.key);
+  if (!filled.length) { row.style.display = 'none'; return; }
+  row.style.display = 'block';
+  chips.innerHTML = filled.map(f =>
+    `<span class="tax-preview-chip">${escHtml(f.key)}${f.values.length ? ' (' + f.values.length + ')' : ''}</span>`
+  ).join('');
+}
+
+async function handleTaxUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  e.target.value = '';
+  try {
+    const rows = await parseSpreadsheet(file);
+    if (!rows.length) { showToast('No data found in file'); return; }
+    // Accept two formats:
+    // Format A: columns "Field" and "Values" (one row per field)
+    // Format B: first row is field names, remaining rows are allowed values
+    const headers = Object.keys(rows[0]).map(h => h.toLowerCase().trim());
+    const hasFieldCol = headers.some(h => h.includes('field') || h.includes('name') || h.includes('key'));
+    const hasValCol   = headers.some(h => h.includes('value') || h.includes('val') || h.includes('option'));
+
+    if (hasFieldCol && hasValCol) {
+      // Format A
+      const fieldCol = Object.keys(rows[0]).find(h => h.toLowerCase().match(/field|name|key/));
+      const valCol   = Object.keys(rows[0]).find(h => h.toLowerCase().match(/value|val|option/));
+      VEC.taxFields = rows
+        .filter(r => r[fieldCol])
+        .map(r => ({
+          key: String(r[fieldCol] || '').trim(),
+          values: String(r[valCol] || '').split(',').map(v => v.trim()).filter(Boolean)
+        }));
+    } else {
+      // Format B: each column header is a field name, column values are allowed values
+      VEC.taxFields = Object.keys(rows[0]).map(col => ({
+        key: col.trim(),
+        values: rows.map(r => String(r[col] || '').trim()).filter(Boolean)
+      }));
+    }
+    renderTaxFields();
+    showToast(`Taxonomy loaded — ${VEC.taxFields.length} fields`);
+  } catch(err) {
+    showToast('Could not read file: ' + err.message);
+  }
+}
+
+// ── Generic spreadsheet parser (CSV + XLSX via SheetJS) ───
+async function parseSpreadsheet(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const wb = XLSX.read(data, { type: 'array' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+        resolve(rows);
+      } catch(err) { reject(err); }
+    };
+    reader.onerror = reject;
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+// ── Data import (contacts / offers / pipeline) ────────────
+let _importState = { type: null, rows: [], headers: [] };
+
+async function handleDataImport(e, type) {
+  const file = e.target.files[0];
+  if (!file) return;
+  e.target.value = '';
+  const statusEl = document.getElementById('import' + type.charAt(0).toUpperCase() + type.slice(1) + 'Status');
+  statusEl.textContent = 'Reading…';
+  try {
+    const rows = await parseSpreadsheet(file);
+    if (!rows.length) { statusEl.textContent = 'No rows found'; return; }
+    _importState = { type, rows, headers: Object.keys(rows[0]) };
+    statusEl.textContent = `${rows.length} rows loaded`;
+    renderImportColMap(type, rows);
+  } catch(err) {
+    statusEl.textContent = 'Error: ' + err.message;
+  }
+}
+
+function renderImportColMap(type, rows) {
+  const headers = Object.keys(rows[0]);
+  const preview = document.getElementById('importPreview');
+  const colMap  = document.getElementById('importColMap');
+  preview.style.display = 'block';
+
+  const MAPS = {
+    contacts: [
+      { label: 'Name',       key: 'name' },
+      { label: 'Company',    key: 'company' },
+      { label: 'Title',      key: 'title' },
+      { label: 'Email',      key: 'email' },
+      { label: 'Relationship', key: 'relationship' },
+    ],
+    offers: [
+      { label: 'Offer Name', key: 'name' },
+      { label: 'Price',      key: 'price' },
+      { label: 'Description',key: 'description' },
+    ],
+    pipeline: [
+      { label: 'Company',    key: 'company' },
+      { label: 'Status',     key: 'status' },
+      { label: 'Value',      key: 'value' },
+      { label: 'Notes',      key: 'notes' },
+    ],
+  };
+
+  const fields = MAPS[type] || [];
+  colMap.innerHTML = fields.map(f => {
+    const opts = ['(skip)', ...headers].map(h => `<option value="${escAttr(h)}" ${guessCol(h, f.key, headers) === h ? 'selected' : ''}>${escHtml(h)}</option>`).join('');
+    return `<div class="tax-col-row">
+      <span style="min-width:90px">${f.label}</span>
+      <select class="tax-col-select" data-field="${f.key}">${opts}</select>
+    </div>`;
+  }).join('');
+}
+
+function guessCol(candidate, fieldKey, headers) {
+  const SYNONYMS = {
+    name:         ['name','full name','contact','first name','fullname'],
+    company:      ['company','firm','organization','account','employer'],
+    title:        ['title','role','position','job title'],
+    email:        ['email','e-mail','mail'],
+    relationship: ['relationship','rel','type','connection','how do you know'],
+    price:        ['price','rate','fee','cost','amount','value'],
+    description:  ['description','desc','details','summary','notes'],
+    status:       ['status','stage','phase'],
+    value:        ['value','amount','arr','deal size','revenue'],
+    notes:        ['notes','note','comments','detail'],
+  };
+  const syns = SYNONYMS[fieldKey] || [fieldKey];
+  return headers.find(h => syns.some(s => h.toLowerCase().includes(s))) || '(skip)';
+}
+
+function applyImport() {
+  const { type, rows } = _importState;
+  if (!rows.length) return;
+  const selects = document.querySelectorAll('#importColMap .tax-col-select');
+  const mapping = {};
+  selects.forEach(s => { if (s.value !== '(skip)') mapping[s.dataset.field] = s.value; });
+
+  if (type === 'contacts') {
+    const added = rows.map(r => ({
+      id: crypto.randomUUID(), name: r[mapping.name] || '', company: r[mapping.company] || '',
+      title: r[mapping.title] || '', email: r[mapping.email] || '',
+      relationship: r[mapping.relationship] || 'warm', warmth: 'warm', intro: '', status: 'identified'
+    })).filter(c => c.name || c.company);
+    VEC.ref.contacts = [...(VEC.ref.contacts || []), ...added];
+    showToast(`${added.length} contacts imported`);
+    renderContacts && renderContacts();
+  } else if (type === 'offers') {
+    const imported = rows.filter(r => r[mapping.name]);
+    if (imported[0]) VEC.pos.offer1 = { name: imported[0][mapping.name] || '', price: imported[0][mapping.price] || '', description: imported[0][mapping.description] || '' };
+    if (imported[1]) VEC.pos.offer2 = { name: imported[1][mapping.name] || '', price: imported[1][mapping.price] || '', description: imported[1][mapping.description] || '' };
+    if (imported[2]) VEC.pos.offer3 = { name: imported[2][mapping.name] || '', price: imported[2][mapping.price] || '', description: imported[2][mapping.description] || '' };
+    showToast(`${Math.min(imported.length, 3)} offers imported`);
+  } else if (type === 'pipeline') {
+    VEC.pipeline = rows.map(r => ({
+      company: r[mapping.company] || '', status: r[mapping.status] || '',
+      value: r[mapping.value] || '', notes: r[mapping.notes] || ''
+    })).filter(p => p.company);
+    showToast(`${VEC.pipeline.length} pipeline rows imported`);
+  }
+  document.getElementById('importPreview').style.display = 'none';
+  _importState = { type: null, rows: [], headers: [] };
+}
+
+async function generateCampaignDNA() {
+  if (!getApiKey()) { showToast('Add your Anthropic API key first'); document.getElementById('apiKeyModal').style.display='flex'; return; }
+  const p = VEC.pos;
+  const d = VEC.diag;
+  if (!p.generated) { showToast('Complete Positioning step first'); return; }
+
+  const btn = document.getElementById('cdna-btn');
+  btn.textContent = 'Generating…'; btn.disabled = true;
+
+  const offers = [p.offer1, p.offer2, p.offer3].filter(o => o && o.name).map(o =>
+    `- ${o.name} (${o.price || 'TBD'}): ${o.description || ''}`).join('\n');
+
+  // Build taxonomy instruction from client's configured fields
+  const taxFields = (VEC.taxFields || DEFAULT_TAX_FIELDS).filter(f => f.key);
+  const taxInstruction = taxFields.map(f => {
+    const valHint = f.values.length
+      ? ` — must be one of: ${f.values.map(v => `"${v}"`).join(', ')}`
+      : ' — free text, 1 concise phrase';
+    return `  "${slugify(f.key)}": "${f.key}${valHint}"`;
+  }).join(',\n');
+
+  const system = `You are a B2B campaign taxonomy expert. Given a consulting practice's positioning outputs, map them to the client's campaign taxonomy fields so the output can be imported directly into their marketing tools.
+
+Return ONLY valid JSON with exactly these fields (use the exact keys shown):
+{
+${taxInstruction}
+}
+
+For array fields (like content themes), return a JSON array of strings. For all others, return a string. Match allowed values exactly when provided.`;
+
+  const user = `Practice: ${VEC.practice.name || 'Consulting Practice'}
+Track: ${d.track || ''}
+Size: ${d.size || ''}
+Motion: ${d.motion || ''}
+Buyer persona: ${p.buyer || ''}
+Core constraint they face: ${p.constraint || ''}
+Positioning one-liner: ${p.oneline || ''}
+Proof point: ${p.proof || ''}
+Offers:
+${offers}`;
+
+  try {
+    const dna = await callClaude(system, user, { maxTokens: 900 });
+    cdnaState = dna;
+    VEC.cdna = dna;
+    renderCDNA(dna);
+    document.getElementById('dest-card').style.display = 'block';
+    renderDestPanels();
+    logEvent('cdna_generated', { practice: VEC.practice.name });
+  } catch(e) {
+    showToast('Error: ' + e.message);
+  } finally {
+    btn.textContent = 'Regenerate'; btn.disabled = false;
+  }
+}
+
+function renderCDNA(dna) {
+  // Use the client's configured taxonomy fields for labels; fall back to DNA keys
+  const taxFields = (VEC.taxFields || DEFAULT_TAX_FIELDS).filter(f => f.key);
+  const grid = document.getElementById('cdnaGrid');
+  grid.innerHTML = '';
+
+  // Render one card per taxonomy field
+  taxFields.forEach(f => {
+    const key = slugify(f.key);
+    let val = dna[key] !== undefined ? dna[key] : (dna[f.key] || '');
+    if (Array.isArray(val)) val = val.join(' · ');
+
+    const field = document.createElement('div');
+    field.className = 'cdna-field';
+
+    // If field has allowed values, render a select instead of free text
+    if (f.values.length) {
+      const opts = f.values.map(v =>
+        `<option value="${escAttr(v)}" ${v === val ? 'selected' : ''}>${escHtml(v)}</option>`
+      ).join('');
+      field.innerHTML = `<div class="cdna-label">${escHtml(f.key)}</div>
+        <select class="cdna-value editable" style="width:100%;padding:2px 0" onchange="cdnaState['${key}']=this.value">
+          <option value="">— select —</option>${opts}
+        </select>`;
+    } else {
+      field.innerHTML = `<div class="cdna-label">${escHtml(f.key)}</div>
+        <textarea class="cdna-value editable" rows="2" data-key="${key}" onchange="cdnaState['${key}']=this.value">${escHtml(String(val))}</textarea>`;
+    }
+    grid.appendChild(field);
+  });
+
+  document.getElementById('cdna-empty').style.display = 'none';
+  document.getElementById('cdna-output').style.display = 'block';
+}
+
+function slugify(s) {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+}
+
+function toggleDest(btn) {
+  btn.classList.toggle('active');
+  renderDestPanels();
+}
+
+function renderDestPanels() {
+  if (!cdnaState) return;
+  const active = [...document.querySelectorAll('.dest-chip.active')].map(b => b.dataset.dest);
+  const container = document.getElementById('dest-panels');
+  container.innerHTML = '';
+  active.forEach(dest => {
+    const payload = buildPayload(dest, cdnaState);
+    const json = JSON.stringify(payload, null, 2);
+    const panel = document.createElement('div');
+    panel.className = 'dest-panel';
+    panel.innerHTML = `
+      <div class="dest-panel-header">
+        <span class="dest-panel-title">${DEST_META[dest].label}</span>
+        <div class="dest-panel-actions">
+          <button class="btn btn-ghost btn-sm" onclick="copyPayload('${dest}')">⎘ Copy</button>
+          <button class="btn btn-ghost btn-sm" onclick="downloadPayload('${dest}')">↓ Download</button>
+        </div>
+      </div>
+      <pre class="dest-payload" id="payload-${dest}">${escHtml(json)}</pre>`;
+    container.appendChild(panel);
+  });
+}
+
+const DEST_META = {
+  hubspot:    { label: 'HubSpot Campaign' },
+  salesforce: { label: 'Salesforce Campaign' },
+  marketo:    { label: 'Marketo Program' },
+  outreach:   { label: 'Outreach Sequence' },
+  linkedin:   { label: 'LinkedIn Ads' },
+  apollo:     { label: 'Apollo Sequence' }
+};
+
+// Semantic role synonyms — maps a standard concept to the labels clients might use
+const SEMANTIC_ROLES = {
+  practice_area:          ['practice area','practice','service area','service line','specialty','focus area','capability'],
+  campaign_type:          ['campaign type','campaign category','program type','type','motion type','campaign motion'],
+  buyer_persona:          ['buyer persona','persona','target persona','target audience','icp','ideal customer','target segment','audience'],
+  offer_type:             ['offer type','offering type','product type','service type','engagement type','solution type'],
+  channel_motion:         ['channel motion','channel','go-to-market','gtm motion','sales motion','channel strategy','distribution'],
+  lifecycle_stage:        ['lifecycle stage','stage','buyer stage','funnel stage','journey stage','buying stage'],
+  urgency_driver:         ['urgency driver','urgency','trigger','buying trigger','pain point','catalyst','business driver'],
+  campaign_name_template: ['campaign name template','naming convention','campaign name','name template','naming standard'],
+  primary_kpi:            ['primary kpi','kpi','success metric','goal metric','metric','key metric','target metric'],
+  content_themes:         ['content themes','themes','content pillars','messaging themes','topic themes','pillars'],
+};
+
+// Resolve a semantic role from cdnaState, regardless of what field name the client used
+function getDNA(role, dna) {
+  dna = dna || cdnaState;
+  if (!dna) return '';
+  // Direct key hit (default taxonomy or exact match)
+  if (dna[role] !== undefined) return dna[role];
+  // Try to find a configured field whose label matches a synonym for this role
+  const syns = SEMANTIC_ROLES[role] || [role.replace(/_/g,' ')];
+  const field = (VEC.taxFields || []).find(f =>
+    syns.some(s => f.key.toLowerCase().trim() === s.toLowerCase())
+  );
+  if (field) {
+    const val = dna[slugify(field.key)];
+    if (val !== undefined) return val;
+  }
+  // Last resort: scan all dna keys for the closest synonym match
+  for (const [k, v] of Object.entries(dna)) {
+    if (syns.some(s => k.toLowerCase().replace(/_/g,' ') === s.toLowerCase())) return v;
+  }
+  return '';
+}
+
+// Build a flat object of all custom taxonomy fields with their client-defined keys
+function getCustomFields(dna) {
+  const result = {};
+  (VEC.taxFields || []).forEach(f => {
+    if (!f.key) return;
+    const slug = slugify(f.key);
+    const val = dna[slug] !== undefined ? dna[slug] : (dna[f.key] || '');
+    result[f.key] = Array.isArray(val) ? val.join(', ') : val;
+  });
+  return result;
+}
+
+function arrVal(v) { return Array.isArray(v) ? v : (v ? [v] : []); }
+
+function buildPayload(dest, dna) {
+  const practice = VEC.practice.name || 'Practice';
+  const offers   = [VEC.pos.offer1, VEC.pos.offer2, VEC.pos.offer3].filter(o => o && o.name);
+  const now      = new Date().toISOString().slice(0,10);
+  const Q        = 'Q' + Math.ceil((new Date().getMonth()+1)/3);
+  const custom   = getCustomFields(dna);
+
+  // Resolve all semantic roles against the client's taxonomy
+  const practiceArea   = getDNA('practice_area', dna)   || practice;
+  const campaignType   = getDNA('campaign_type', dna);
+  const buyerPersona   = getDNA('buyer_persona', dna);
+  const offerType      = getDNA('offer_type', dna);
+  const channel        = getDNA('channel_motion', dna);
+  const stage          = getDNA('lifecycle_stage', dna);
+  const urgency        = getDNA('urgency_driver', dna);
+  const nameTemplate   = getDNA('campaign_name_template', dna);
+  const kpi            = getDNA('primary_kpi', dna);
+  const themes         = arrVal(getDNA('content_themes', dna));
+  const campaignName   = (nameTemplate || `${practiceArea} | ${buyerPersona} | ${offerType} | ${Q}`).replace('[Quarter]', Q);
+
+  if (dest === 'hubspot') return {
+    name: campaignName,
+    type: campaignType,
+    status: 'PLANNING',
+    startDate: now,
+    hs_campaign_type: offerType,
+    hs_primary_buyer_persona: buyerPersona,
+    hs_channel: channel,
+    hs_lifecycle_stage: stage,
+    hs_goal: kpi,
+    content_themes: themes,
+    notes: urgency,
+    custom_properties: custom
+  };
+
+  if (dest === 'salesforce') return {
+    Name: campaignName,
+    Type: campaignType,
+    Status: 'Planned',
+    StartDate: now,
+    Description: VEC.pos.oneline || '',
+    ExpectedResponse: kpi,
+    sf_channel: channel,
+    sf_persona: buyerPersona,
+    sf_offer_type: offerType,
+    sf_urgency_driver: urgency,
+    custom_fields: custom
+  };
+
+  if (dest === 'marketo') return {
+    name: `${practice} — ${practiceArea} Program`,
+    type: 'Email',
+    channel,
+    tags: custom,
+    tokens: [
+      { name: '{{my.positioningOneLiner}}', value: VEC.pos.oneline || '' },
+      { name: '{{my.urgencyDriver}}',       value: urgency },
+      { name: '{{my.primaryOffer}}',        value: offers[0]?.name || '' },
+      { name: '{{my.primaryOfferPrice}}',   value: offers[0]?.price || '' },
+      { name: '{{my.buyerPersona}}',        value: buyerPersona },
+      ...Object.entries(custom).map(([k,v]) => ({ name: `{{my.${slugify(k)}}}`, value: v }))
+    ],
+    contentThemes: themes
+  };
+
+  if (dest === 'outreach') return {
+    name: `${buyerPersona} — ${offerType} Sequence`,
+    sequenceType: channel,
+    steps: [
+      { day: 1,  type: 'email',          subject: `Re: ${urgency.split(/[—–]/)[0].trim() || practiceArea}`, body_hint: `Open with urgency driver: "${urgency}". Introduce: ${VEC.pos.oneline}.` },
+      { day: 3,  type: 'linkedin_view',  note: `View profile — persona: ${buyerPersona}` },
+      { day: 5,  type: 'email',          subject: `[${offers[0]?.name || offerType}] — quick question`, body_hint: `Reference "${themes[0] || practiceArea}". Soft CTA to 20-min call.` },
+      { day: 8,  type: 'call',           note: `Call task — reference urgency: "${urgency}"` },
+      { day: 12, type: 'email',          subject: 'Last note', body_hint: 'Breakup. Keep door open. Reference proof point.' }
+    ],
+    tags: Object.values(custom).filter(Boolean).slice(0, 8),
+    custom_fields: custom
+  };
+
+  if (dest === 'linkedin') return {
+    campaign_name: campaignName,
+    objective: 'LEAD_GENERATION',
+    target_persona: buyerPersona,
+    content_themes: themes,
+    ad_copy_hints: [
+      `Headline: ${VEC.pos.oneline || practiceArea}`,
+      `Body: ${urgency}`,
+      `CTA: Book a 20-minute intro call`
+    ],
+    audience_signals: [practiceArea, buyerPersona, stage].filter(Boolean),
+    custom_fields: custom
+  };
+
+  if (dest === 'apollo') return {
+    sequence_name: campaignName,
+    persona: buyerPersona,
+    channel,
+    steps: [
+      { step: 1, type: 'email',            day: 1,  personalization_hint: urgency },
+      { step: 2, type: 'linkedin_connect', day: 4 },
+      { step: 3, type: 'email',            day: 7,  subject: offers[0]?.name || offerType },
+      { step: 4, type: 'call',             day: 10 }
+    ],
+    filters: { title_keywords: [buyerPersona], seniority: ['Director','VP','C-Suite'] },
+    custom_fields: custom
+  };
+
+  return {};
+}
+
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escAttr(s) { return String(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function copyPayload(dest) { const el = document.getElementById('payload-'+dest); if (el) { navigator.clipboard.writeText(el.textContent); showToast('Copied to clipboard'); } }
+function downloadPayload(dest) { const el = document.getElementById('payload-'+dest); if (!el) return; const blob = new Blob([el.textContent], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = dest+'-payload.json'; a.click(); }
 
 const PLAN_MILESTONES = {
   A: {
@@ -2822,7 +3505,8 @@ function renderArtifactLibrary() {
     const cycleStates = DELIVERY_STATES;
     const nextState = cycleStates[(cycleStates.indexOf(state) + 1) % cycleStates.length];
     const dlBtn = a.file
-      ? `<button class="btn btn-ghost btn-sm" onclick="downloadArtifact('${a.id}')">↓</button>`
+      ? `<button class="btn btn-ghost btn-sm" onclick="downloadArtifact('${a.id}')" title="Download">↓</button>
+         <button class="btn btn-ghost btn-sm" onclick="copyArtifact('${a.id}')" title="Copy to clipboard">⎘</button>`
       : `<button class="btn btn-ghost btn-sm" onclick="downloadArtifact('${a.id}')">View</button>`;
     return `<div class="artifact-row">
       <div class="artifact-left">
@@ -2839,6 +3523,75 @@ function renderArtifactLibrary() {
       </div>
     </div>`;
   }).join('');
+}
+
+function copyArtifact(type) {
+  const p = VEC.practice, pos = VEC.pos, ops = VEC.ops;
+  let text = '';
+  if (type === 'positioning') {
+    text = `POSITIONING CANVAS — ${p.name}\n\nThe Buyer\n${pos.buyer||'—'}\n\nThe Real Constraint\n${pos.constraint||'—'}\n\nThe One-Line\n${pos.oneline||'—'}\n\nProof Point\n${pos.proof||'—'}`;
+  } else if (type === 'offer1' || type === 'offer2' || type === 'offer3') {
+    const o = pos[type] || {};
+    text = `${o.name||type}\nPrice: ${o.price||'—'} · Duration: ${o.duration||'—'}\n\n${o.desc||''}`;
+  } else if (type === 'referral-scripts') {
+    text = VEC.ref.contacts.map(c =>
+      `Referral: ${c.name} (${c.company})\n${c.intro || c.value || ''}`
+    ).join('\n\n---\n\n');
+  } else if (type === 'case-studies') {
+    text = (VEC.cred.cases || []).map(c =>
+      `${c.client} — ${c.industry}\n\nSituation: ${c.situation||''}\nSolution: ${c.solution||''}\nResult: ${c.result||''}\n${c.quote ? '\n"'+c.quote+'"' : ''}`
+    ).join('\n\n---\n\n');
+  } else if (type === 'intake-kit') {
+    text = `CLIENT INTAKE KIT — ${p.name}\n\nDelivery: ${ops.duration||'—'} · Cadence: ${ops.cadence||'—'}\n\nPositioning\n${pos.oneline||'—'}\n\nOffers\n${[pos.offer1,pos.offer2,pos.offer3].filter(o=>o?.name).map(o=>`• ${o.name} — ${o.price}`).join('\n')}`;
+  } else if (type === 'discovery-guide') {
+    text = `DISCOVERY GUIDE — ${p.name}\nSee Discovery Prep section in Intake & Delivery step.`;
+  } else {
+    showToast('Nothing to copy yet'); return;
+  }
+  if (!text.trim()) { showToast('Generate this artifact first'); return; }
+  navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard'));
+}
+
+// ── CSV exports ───────────────────────────────────────────
+function exportContactsCSV() {
+  const rows = (VEC.ref.contacts || []);
+  if (!rows.length) { showToast('No contacts yet'); return; }
+  const headers = ['Name','Company','Role','Email','Relationship','Warmth','Status'];
+  const lines = [headers.join(','), ...rows.map(c => [
+    csvCell(c.name), csvCell(c.company), csvCell(c.role||c.title||''), csvCell(c.email||''),
+    csvCell(c.rel||c.relationship||''), csvCell(c.warmth||''), csvCell(c.status||'')
+  ].join(','))];
+  dlCSV(`${csvSlug()}_referral_contacts.csv`, lines.join('\n'));
+  logEvent('csv_exported', { type: 'contacts' });
+}
+
+function exportPipelineCSV() {
+  const rows = (VEC.pipeline || []);
+  if (!rows.length) { showToast('No pipeline data — import a pipeline spreadsheet first'); return; }
+  const headers = ['Company','Status','Value','Notes'];
+  const lines = [headers.join(','), ...rows.map(r => [
+    csvCell(r.company), csvCell(r.status), csvCell(r.value), csvCell(r.notes)
+  ].join(','))];
+  dlCSV(`${csvSlug()}_pipeline.csv`, lines.join('\n'));
+  logEvent('csv_exported', { type: 'pipeline' });
+}
+
+function exportOffersCSV() {
+  const pos = VEC.pos;
+  const offers = [pos.offer1, pos.offer2, pos.offer3].filter(o => o?.name);
+  if (!offers.length) { showToast('No offers generated yet'); return; }
+  const headers = ['Name','Price','Duration','Description'];
+  const lines = [headers.join(','), ...offers.map(o => [
+    csvCell(o.name), csvCell(o.price||''), csvCell(o.duration||''), csvCell(o.desc||o.description||'')
+  ].join(','))];
+  dlCSV(`${csvSlug()}_offers.csv`, lines.join('\n'));
+}
+
+function csvCell(v) { v = String(v||''); return v.includes(',') || v.includes('"') || v.includes('\n') ? '"'+v.replace(/"/g,'""')+'"' : v; }
+function csvSlug() { return (VEC.practice.name||'practice').toLowerCase().replace(/\s+/g,'-'); }
+function dlCSV(filename, content) {
+  const blob = new Blob([content], { type: 'text/csv' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; a.click();
 }
 
 function cycleDelivery(id, nextState) {
@@ -4037,6 +4790,10 @@ async function readIntakeFile(file, type) {
       text = await extractPdfText(file);
     } else if (ext === 'docx') {
       text = await extractDocxText(file);
+    } else if (ext === 'pptx' || ext === 'ppt') {
+      text = await extractPptxText(file);
+      // Override type to deck when a slide file is dropped
+      type = 'deck';
     } else {
       text = await file.text();
     }
@@ -4044,6 +4801,32 @@ async function readIntakeFile(file, type) {
   } catch(err) {
     showToast('Could not read ' + file.name + ' — try saving as .txt');
   }
+}
+
+async function extractPptxText(file) {
+  // PPTX is a ZIP — use SheetJS's zip reader to pull slide XML, then strip tags
+  const ab = await file.arrayBuffer();
+  const zip = XLSX.utils.cfb_new();
+  let slideTexts = [];
+  try {
+    const data = new Uint8Array(ab);
+    // Use a minimal unzip approach via XLSX's CFB parser
+    // PPTX slide XML lives at ppt/slides/slide*.xml
+    const JSZipLike = XLSX.zip || null;
+    // Fallback: read as binary and extract text between XML tags
+    const decoder = new TextDecoder('utf-8');
+    const raw = decoder.decode(data);
+    // Extract all text runs from slide XML — crude but effective for plain text extraction
+    const slideMatches = raw.match(/<a:t[^>]*>([^<]+)<\/a:t>/g) || [];
+    slideTexts = slideMatches.map(m => m.replace(/<[^>]+>/g, '').trim()).filter(Boolean);
+  } catch(e) {
+    // If ZIP parsing fails fall back to raw text extraction
+    const text = await file.text().catch(() => '');
+    const matches = text.match(/<a:t[^>]*>([^<]+)<\/a:t>/g) || [];
+    slideTexts = matches.map(m => m.replace(/<[^>]+>/g,'').trim()).filter(Boolean);
+  }
+  if (!slideTexts.length) throw new Error('No readable text found in presentation');
+  return `[PRESENTATION: ${file.name}]\n\nExtracted slide content:\n\n${slideTexts.join('\n')}`;
 }
 
 async function extractPdfText(file) {

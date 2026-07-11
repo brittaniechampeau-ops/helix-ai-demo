@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Helix AI — GTM Context Engine</title>
+<title>Engine — GTM Context Engine</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -438,16 +438,16 @@
     <span class="pnav-dot" style="background:#8B7FEC"></span>Discover
   </a>
   <a class="pnav-tool pnav-locked" href="#">
-    <span class="pnav-dot" style="background:#4DE8FF"></span>Fuse
+    <span class="pnav-dot" style="background:#4DE8FF"></span>Resolve
   </a>
   <a class="pnav-tool pnav-locked" href="#">
-    <span class="pnav-dot" style="background:#5B8CFF"></span>Signal
+    <span class="pnav-dot" style="background:#5B8CFF"></span>Intelligence
   </a>
   <a class="pnav-tool pnav-locked" href="#">
     <span class="pnav-dot" style="background:#3BBFA3"></span>Vector
   </a>
   <a class="pnav-tool pnav-active" href="#">
-    <span class="pnav-dot" style="background:#FF8A3D"></span>Helix
+    <span class="pnav-dot" style="background:#FF8A3D"></span>Engine
   </a>
 </div>
 
@@ -471,7 +471,7 @@
           <line x1="5" y1="32" x2="21" y2="32" stroke="#818cf8" stroke-width="2" stroke-linecap="round" opacity="0.9"/>
         </svg>
       </div>
-      <span class="logo-text">Helix AI</span>
+      <span class="logo-text">Engine</span>
       <span class="logo-tag">GTM Context Engine</span>
     </div>
     <div class="topbar-divider"></div>
@@ -584,7 +584,7 @@
       <div class="step-header" style="display:flex; align-items:flex-start; justify-content:space-between; gap:16px;">
         <div>
           <h1>⬆ Foundation Setup</h1>
-          <p>Before Helix can translate anything, it needs to learn how your organization operates. Upload your system exports and governance documentation. Helix indexes every field, picklist, naming convention, and rule — and builds the Customer GTM Ontology that every future campaign will run through.</p>
+          <p>Before Engine can translate anything, it needs to learn how your organization operates. Upload your system exports and governance documentation. Engine indexes every field, picklist, naming convention, and rule — and builds the Customer GTM Ontology that every future campaign will run through.</p>
         </div>
         <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px; flex-shrink:0;">
           <div style="display:flex; gap:8px; align-items:center;">
@@ -669,7 +669,7 @@
             <div style="text-align:center; padding: 8px 0 4px;">
               <div style="font-size:28px; margin-bottom:8px;">🏛</div>
               <div style="font-size:16px; font-weight:700; margin-bottom:4px;">Ready to Build Ontology</div>
-              <div style="font-size:13px; color:var(--txt3); margin-bottom:0;" id="fnd-ready-msg">Required files uploaded. Helix can now index your organization's operating model.</div>
+              <div style="font-size:13px; color:var(--txt3); margin-bottom:0;" id="fnd-ready-msg">Required files uploaded. Engine can now index your organization's operating model.</div>
             </div>
           </div>
 
@@ -697,7 +697,7 @@
       <div class="step-header" style="display:flex; align-items:flex-start; justify-content:space-between; gap:16px;">
         <div>
           <h1>🏛 Org Context Discovery</h1>
-          <p>Helix processed your system exports and produced a draft Customer GTM Ontology. Inspect extracted fields, picklists, naming conventions, and governance rules. Click any item to inspect or edit it.</p>
+          <p>Engine processed your system exports and produced a draft Customer GTM Ontology. Inspect extracted fields, picklists, naming conventions, and governance rules. Click any item to inspect or edit it.</p>
         </div>
         <button class="btn btn-primary" style="flex-shrink:0;" onclick="showStep(3)">Review &amp; Approve →</button>
       </div>
@@ -1174,7 +1174,7 @@
 
       <!-- ── TAB: MISSING INPUTS ── -->
       <div id="cm-panel-missing" style="display:none;">
-        <div class="section-label">Missing Inputs — Required fields Helix cannot populate from source documents</div>
+        <div class="section-label">Missing Inputs — Required fields Engine cannot populate from source documents</div>
         <div id="cm-missing-list"></div>
       </div>
 
@@ -1575,7 +1575,7 @@
             <div><div style="color:var(--txt3); margin-bottom:2px; letter-spacing:0.5px; text-transform:uppercase; font-size:10px; font-weight:700;">BC Role</div><div style="color:var(--amber);">Economic Buyer ⚠</div></div>
             <div><div style="color:var(--txt3); margin-bottom:2px; letter-spacing:0.5px; text-transform:uppercase; font-size:10px; font-weight:700;">Account Risk</div><div style="color:var(--red);">Single-threaded — needs CCO, CIO</div></div>
           </div>
-          <div style="padding:8px 10px; background:rgba(245,158,11,0.06); border:1px solid rgba(245,158,11,0.25); border-radius:6px; font-size:12px; color:var(--txt3);"><span style="color:var(--amber); font-weight:600;">⚠ Account risk: </span>Global Trust in active Negotiation stage. CRO engaged but no CCO, CIO, or CTO. Single-threaded deal risk. Helix recommends expanding before advancing.</div>
+          <div style="padding:8px 10px; background:rgba(245,158,11,0.06); border:1px solid rgba(245,158,11,0.25); border-radius:6px; font-size:12px; color:var(--txt3);"><span style="color:var(--amber); font-weight:600;">⚠ Account risk: </span>Global Trust in active Negotiation stage. CRO engaged but no CCO, CIO, or CTO. Single-threaded deal risk. Engine recommends expanding before advancing.</div>
         </div>
 
         <div style="padding:14px 16px; border-bottom:1px solid var(--border); cursor:pointer;" onclick="openContactDrawer('mt')" class="clickable">
@@ -1820,7 +1820,7 @@
         <div>
           <div class="section-label">Semantic Layer — Canonical Dimensions</div>
           <div class="card" style="padding:0; overflow:hidden;">
-            <div style="padding:7px 12px; background:var(--surface2); border-bottom:1px solid var(--border); font-size:11px; color:var(--txt3);">Semantic model: Helix Canonical GTM · <span style="color:var(--accent); cursor:pointer;" onclick="openPowerBIDashboard()">Open Dashboard ↗</span></div>
+            <div style="padding:7px 12px; background:var(--surface2); border-bottom:1px solid var(--border); font-size:11px; color:var(--txt3);">Semantic model: Engine Canonical GTM · <span style="color:var(--accent); cursor:pointer;" onclick="openPowerBIDashboard()">Open Dashboard ↗</span></div>
             <div class="kv-row clickable" style="cursor:pointer;" onclick="openBIItem('dim','persona')"><span class="kv-key">Persona</span><span style="font-size:11px;color:var(--accent);">dim · 6 values · preview ›</span></div>
             <div class="kv-row clickable" style="cursor:pointer;" onclick="openBIItem('dim','offer')"><span class="kv-key">Offer</span><span style="font-size:11px;color:var(--accent);">dim · 3 values · preview ›</span></div>
             <div class="kv-row clickable" style="cursor:pointer;" onclick="openBIItem('dim','region')"><span class="kv-key">Region</span><span style="font-size:11px;color:var(--accent);">dim · 3 values · preview ›</span></div>
@@ -2173,7 +2173,7 @@
         <div class="card" style="background:linear-gradient(135deg,rgba(99,102,241,0.07) 0%,rgba(16,185,129,0.05) 100%); border-color:rgba(99,102,241,0.4);">
           <div style="display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:14px;">
             <div>
-              <div style="font-size:11px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; color:var(--accent); margin-bottom:4px;">Helix Recommendation</div>
+              <div style="font-size:11px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; color:var(--accent); margin-bottom:4px;">Engine Recommendation</div>
               <div style="font-size:16px; font-weight:700; color:var(--txt); margin-bottom:3px;">AgentOps Platform Expansion — Q2</div>
               <div style="font-size:12px; color:var(--txt3);">Existing customers · CIO + CCO · EU + UK · 30-Day Pilot</div>
             </div>
@@ -2208,7 +2208,7 @@
           <div>
             <div style="font-size:13px; font-weight:600; letter-spacing:0.8px; text-transform:uppercase; color:var(--accent); margin-bottom:4px;">Campaign 2 Has Arrived</div>
             <div style="font-size:16px; font-weight:700; margin-bottom:4px;">AgentOps — Platform Expansion — Q2 Launch</div>
-            <div style="font-size:13px; color:var(--txt3);">New strategy. Same operating model. Helix knows how to run this.</div>
+            <div style="font-size:13px; color:var(--txt3);">New strategy. Same operating model. Engine knows how to run this.</div>
           </div>
           <div style="text-align:right;">
             <div class="conf-score">94%</div>
@@ -2234,7 +2234,7 @@
       <!-- What's inherited vs what's needed -->
       <div class="two-col" style="margin-bottom:18px;">
         <div>
-          <div class="section-label">What Helix Already Knows for Campaign 2</div>
+          <div class="section-label">What Engine Already Knows for Campaign 2</div>
           <div class="card" style="border-color: rgba(16,185,129,0.3);">
             <div class="check-row"><span style="color:var(--green)">✓</span><span class="label"><strong>CRM schema</strong> — 184 fields, 63 custom, all picklist values</span></div>
             <div class="check-row"><span style="color:var(--green)">✓</span><span class="label"><strong>MAP schema</strong> — token structure, channels, program patterns</span></div>
@@ -2263,7 +2263,7 @@
             <div class="check-row"><span style="color:var(--accent)">→</span><span class="label"><strong>New campaign goals</strong> — pipeline target, SQL goal, success metrics</span></div>
             <div style="margin-top:14px; padding:10px; background:rgba(99,102,241,0.06); border:1px solid rgba(99,102,241,0.25); border-radius:6px;">
               <div style="font-size:13px; color:var(--accent); font-weight:600;">Campaign 2 starts at Strategy Discovery.</div>
-              <div style="font-size:13px; color:var(--txt3); margin-top:3px;">Upload the new deck. Helix reads it against the existing Canonical GTM Model. Gaps are flagged. Conflicts are resolved. Assets are generated. The model gets stronger.</div>
+              <div style="font-size:13px; color:var(--txt3); margin-top:3px;">Upload the new deck. Engine reads it against the existing Canonical GTM Model. Gaps are flagged. Conflicts are resolved. Assets are generated. The model gets stronger.</div>
             </div>
             <div style="margin-top:14px;">
               <div style="font-size:11px; font-weight:700; letter-spacing:0.6px; text-transform:uppercase; color:var(--txt3); margin-bottom:8px;">Model Confidence Over Time</div>
@@ -2374,7 +2374,7 @@
           <div style="font-size:28px; margin-bottom:10px;">🧬</div>
           <div style="font-size:11px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; color:var(--accent); margin-bottom:6px;">The Model Is Ready</div>
           <div style="font-size:17px; font-weight:700; color:var(--txt); margin-bottom:6px;">Campaign 2 starts at Strategy Discovery</div>
-          <div style="font-size:13px; color:var(--txt3); margin-bottom:20px; max-width:480px; margin-left:auto; margin-right:auto;">Upload the Q2 GTM deck. Helix reads it against the existing Canonical GTM Model. Naming conventions, personas, governance rules, and all 38 field mappings are already known. The model gets stronger with every campaign.</div>
+          <div style="font-size:13px; color:var(--txt3); margin-bottom:20px; max-width:480px; margin-left:auto; margin-right:auto;">Upload the Q2 GTM deck. Engine reads it against the existing Canonical GTM Model. Naming conventions, personas, governance rules, and all 38 field mappings are already known. The model gets stronger with every campaign.</div>
           <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
             <button class="btn btn-primary" style="font-size:14px; padding:10px 24px;" onclick="createNextCampaign()">Create Q2 Campaign →</button>
             <button class="btn" style="border:1px solid var(--border2); color:var(--txt2); padding:10px 20px; border-radius:6px; font-size:13px; cursor:pointer; background:transparent;" onclick="generateRecommendedCampaign()">Generate Recommended Campaign ✦</button>
@@ -2488,7 +2488,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['Regulatory_Driver__c field mapped: "EU AI Act" for this segment', 'Segment 2 template stored with geo filter logic', 'EU AI Act hook validated as highest-confidence urgency trigger'] },
       { step: 's4', heading: 'Generated Asset', points: ['9 contacts matched: UK/EU FS, CRO/CCO titles', 'SF record: Type=Email, StartDate=Feb 3 2025', 'Marketo program EU variant linked via campaign sync'] }
     ],
-    insight: 'The EU AI Act urgency hook is the single highest-performing message variable in this segment. Helix extracted the enforcement date from page 7 of the deck and turned it into the lead subject line across all EU Outreach sequences.'
+    insight: 'The EU AI Act urgency hook is the single highest-performing message variable in this segment. Engine extracted the enforcement date from page 7 of the deck and turned it into the lead subject line across all EU Outreach sequences.'
   },
   'sf-apac': {
     label: 'Salesforce · Child Campaign',
@@ -2499,7 +2499,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['Regulatory_Driver__c mapped: "MAS/APRA" for APAC segment', 'Segment 3 template stored: APAC FS, MAS/APRA hook', 'Confidence: APRA hook [INFERRED] — lower than EU AI Act'] },
       { step: 's4', heading: 'Generated Asset', points: ['7 contacts matched: SG/AU FS accounts', 'SF Type=Email · Marketo APAC program linked', 'Outreach sequences: no CTO variant (insufficient contacts)'] }
     ],
-    insight: 'MAS/APRA was inferred, not explicit in the deck — Helix flagged it [INFERRED] and applied lower confidence. The next campaign that validates this hook will raise confidence from ~74% to 90%+.'
+    insight: 'MAS/APRA was inferred, not explicit in the deck — Engine flagged it [INFERRED] and applied lower confidence. The next campaign that validates this hook will raise confidence from ~74% to 90%+.'
   },
   'sf-webinar': {
     label: 'Salesforce · Child Campaign',
@@ -2510,7 +2510,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['Event motion pattern stored for reuse', 'Registration target field mapped to SF Campaign.TargetRegMeetings', '2,500 target stored as baseline for future webinar benchmarking'] },
       { step: 's4', heading: 'Generated Asset', points: ['SF Type=Webinar · ParentId=Q1 Launch', 'Marketo event program: AgentOps-Q1-Webinar-Registration', 'All 38 contacts eligible · 2,500 external reg target'] }
     ],
-    insight: 'This is the top-of-funnel capture event for the entire Q1 motion. Every contact segment is eligible. The 2,500 registration target came directly from the deck — Helix didn\'t guess it.'
+    insight: 'This is the top-of-funnel capture event for the entire Q1 motion. Every contact segment is eligible. The 2,500 registration target came directly from the deck — Engine didn\'t guess it.'
   },
   'sf-pipeline': {
     label: 'Salesforce · Child Campaign',
@@ -2521,7 +2521,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['Segment 4 rule: Opportunity.StageName NOT IN (Closed Won, Closed Lost)', '11 contacts matched across all regions', 'Direct mail motion stored as pipeline-stage-appropriate'] },
       { step: 's4', heading: 'Generated Asset', points: ['SF Type=Direct Mail · 11 campaign members', 'Distinct messaging: ROI-proof track vs awareness track', 'No Marketo program — direct mail only'] }
     ],
-    insight: 'This segment is separated from demand gen deliberately — open pipeline contacts get proof-of-ROI messaging, not top-of-funnel awareness content. Helix derived this from the sales play section of the deck.'
+    insight: 'This segment is separated from demand gen deliberately — open pipeline contacts get proof-of-ROI messaging, not top-of-funnel awareness content. Engine derived this from the sales play section of the deck.'
   },
   'sf-customer': {
     label: 'Salesforce · Child Campaign',
@@ -2532,7 +2532,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['Segment 5 rule: Account.Type=Customer, no DNC flag', 'Customer expansion pattern stored for future reuse', 'Persona: CIO/CTO dominant for expansion deals'] },
       { step: 's4', heading: 'Generated Asset', points: ['SF Type=Other · 4 campaign members', 'Highest-priority contacts: enterprise license conversation', 'Manual outreach recommended over automated sequence'] }
     ],
-    insight: '4 contacts but potentially the highest-value segment. These are existing customers who could expand to enterprise licensing. Helix flagged them separately so they don\'t get caught in demand gen flows.'
+    insight: '4 contacts but potentially the highest-value segment. These are existing customers who could expand to enterprise licensing. Engine flagged them separately so they don\'t get caught in demand gen flows.'
   },
   'sf-nyc': {
     label: 'Salesforce · Child Campaign',
@@ -2543,7 +2543,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['Event: Tier 1 invite-only roundtable pattern stored', 'NYC as primary NA exec event market', 'Persona match: CRO primary, CCO secondary'] },
       { step: 's4', heading: 'Generated Asset', points: ['SF Type=Event · Tier 1 contact list only', 'Filtered from Segment 1: 18 contacts → ~8 Tier 1 invites', 'Paired with London roundtable for global exec motion'] }
     ],
-    insight: 'The NYC roundtable targets the 8 highest-value contacts in the entire campaign. The invite criteria (Tier 1 only, CRO/CCO) came directly from the deck\'s sales play section — Helix extracted the tier filter automatically.'
+    insight: 'The NYC roundtable targets the 8 highest-value contacts in the entire campaign. The invite criteria (Tier 1 only, CRO/CCO) came directly from the deck\'s sales play section — Engine extracted the tier filter automatically.'
   },
   'sf-london': {
     label: 'Salesforce · Child Campaign',
@@ -2577,7 +2577,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['Segment rule stored: Account.Industry=FS AND Account.AnnualRevenue>1B AND Contact.Title CONTAINS CxO/VP', 'Tier logic mapped to ICP_Tier__c custom field', '18 contacts validated against this rule'] },
       { step: 's4', heading: 'Generated Asset', points: ['18 SF Campaign Members assigned to NA DemandGen child', 'Segment template stored for Campaign 2 — no re-derivation', 'Highest-value segment: ~$12M of $18M pipeline target'] }
     ],
-    insight: 'This segment alone represents the majority of Q1 pipeline target. The Tier 1/2 distinction maps directly to account revenue — Helix extracted the threshold from the deck\'s ICP section and stored it as a reusable field rule.'
+    insight: 'This segment alone represents the majority of Q1 pipeline target. The Tier 1/2 distinction maps directly to account revenue — Engine extracted the threshold from the deck\'s ICP section and stored it as a reusable field rule.'
   },
   'seg-eu': {
     label: 'Audience Segment',
@@ -2588,7 +2588,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['Geo filter: Account.BillingCountry IN (UK, FR, DE, NL, SE, NO)', 'Regulatory_Driver__c = "EU AI Act" stored as segment attribute', '9 contacts validated; template reusable for any EU FS campaign'] },
       { step: 's4', heading: 'Generated Asset', points: ['9 contacts: EU FS CRO/CCO/CIO roles', 'EU DemandGen email + London roundtable + LinkedIn EU audience', 'Outreach: 4-touch EU AI Act urgency sequence'] }
     ],
-    insight: 'EU AI Act creates natural urgency that makes cold outreach warm. Helix extracted the enforcement deadline from the deck and turned it into the lead message variable — the subject line writes itself.'
+    insight: 'EU AI Act creates natural urgency that makes cold outreach warm. Engine extracted the enforcement deadline from the deck and turned it into the lead message variable — the subject line writes itself.'
   },
   'seg-apac': {
     label: 'Audience Segment',
@@ -2599,7 +2599,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['Geo filter: Account.BillingCountry IN (SG, AU)', 'Regulatory_Driver__c = "MAS/APRA" [INFERRED — lower confidence]', 'Segment template stored; confidence will increase with next APAC campaign'] },
       { step: 's4', heading: 'Generated Asset', points: ['7 contacts: SG/AU FS CRO/CCO accounts', 'Marketo APAC program + CRO/CCO Outreach sequences', 'No LinkedIn audience yet — insufficient volume'] }
     ],
-    insight: 'MAS/APRA was inferred by Helix, not stated explicitly in the deck. It\'s flagged with lower confidence. If the next APAC campaign validates this hook, confidence rises to 90%+ and becomes a stored, high-confidence rule.'
+    insight: 'MAS/APRA was inferred by Engine, not stated explicitly in the deck. It\'s flagged with lower confidence. If the next APAC campaign validates this hook, confidence rises to 90%+ and becomes a stored, high-confidence rule.'
   },
   'seg-pipeline': {
     label: 'Audience Segment',
@@ -2610,7 +2610,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['Rule: Contact has Opportunity.StageName NOT IN (Closed Won, Closed Lost)', '11 contacts matched across all geographies', 'Stored as pipeline segment pattern for future campaigns'] },
       { step: 's4', heading: 'Generated Asset', points: ['11 SF Campaign Members: Direct Mail type', 'No Marketo/email — personalized direct outreach', 'SDR follow-up brief linked: proof-track messaging'] }
     ],
-    insight: 'This segment receives entirely different content than everyone else — proof and ROI instead of awareness. Separating them is a decision Helix derived from the sales play section of the deck, not a default.'
+    insight: 'This segment receives entirely different content than everyone else — proof and ROI instead of awareness. Separating them is a decision Engine derived from the sales play section of the deck, not a default.'
   },
   'seg-customer': {
     label: 'Audience Segment',
@@ -2621,7 +2621,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['Rule: Account.Type=Customer AND no DNC flag', 'Expansion offer catalog entry mapped: Enterprise License', 'Pattern stored: customers get enterprise CTA, not readiness assessment'] },
       { step: 's4', heading: 'Generated Asset', points: ['4 contacts: highest-LTV accounts in campaign', 'SF Type=Other — manual high-touch outreach', 'Recommended: AE-led, not automated sequence'] }
     ],
-    insight: 'Only 4 contacts but the highest potential deal value. These customers are already convinced of the product — the campaign ask is expansion, not conversion. Helix kept them isolated from demand gen to prevent brand dilution.'
+    insight: 'Only 4 contacts but the highest potential deal value. These customers are already convinced of the product — the campaign ask is expansion, not conversion. Engine kept them isolated from demand gen to prevent brand dilution.'
   },
   'seg-nurture': {
     label: 'Audience Segment',
@@ -2644,7 +2644,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['Persona-to-stream mapping stored in model', 'Token schema applied: {{my.Persona}}, {{my.Regulatory_Hook}}', 'SF campaign sync: AgentOps—NA—DemandGen—Q1 linked'] },
       { step: 's4', heading: 'Generated Asset', points: ['Marketo program structure: 6 smart lists, 6 email assets', '24 tokens pre-populated from Canonical GTM Model', 'SF campaign sync active — member status flows back'] }
     ],
-    insight: 'This program has 6 distinct email streams because the deck had 6 distinct personas with different pain points. Helix didn\'t use one generic email — it mapped each persona\'s primary pain to a separate message track.'
+    insight: 'This program has 6 distinct email streams because the deck had 6 distinct personas with different pain points. Engine didn\'t use one generic email — it mapped each persona\'s primary pain to a separate message track.'
   },
   'mkto-eu': {
     label: 'Marketo · Program',
@@ -2655,7 +2655,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['EU regulatory variant pattern stored', 'Regulatory_Driver__c = "EU AI Act" mapped to Marketo token', 'EU geo filter applied at smart list level'] },
       { step: 's4', heading: 'Generated Asset', points: ['Separate EU program — not a geo variant of NA', 'EU AI Act copy applied to all 3 active email assets', 'SF EU campaign sync active: 9 contacts'] }
     ],
-    insight: 'The EU program is a separate Marketo program, not a geo variant of NA — the regulatory framing is different enough that token overrides alone can\'t handle it. Helix recognized this from the deck\'s EU-specific messaging section.'
+    insight: 'The EU program is a separate Marketo program, not a geo variant of NA — the regulatory framing is different enough that token overrides alone can\'t handle it. Engine recognized this from the deck\'s EU-specific messaging section.'
   },
   'mkto-apac': {
     label: 'Marketo · Program',
@@ -2688,7 +2688,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['Nurture pattern stored: VP champions get different track than CxO buyers', 'Content-first → CTA-last sequencing rule encoded', '5 contacts matched: VP AI / VP Digital roles'] },
       { step: 's4', heading: 'Generated Asset', points: ['Marketo nurture program: 4 emails, 45-day cadence', 'Smart list: VP title filter + ICP account match', 'CTA at email 4 only: Readiness Assessment booking'] }
     ],
-    insight: 'VP-level champions need to be educated before they can sponsor the economic buyer\'s decision. Sending them an assessment CTA at touch 1 would kill the relationship — Helix derived the content-first, late-CTA structure from the deck\'s champion-building play.'
+    insight: 'VP-level champions need to be educated before they can sponsor the economic buyer\'s decision. Sending them an assessment CTA at touch 1 would kill the relationship — Engine derived the content-first, late-CTA structure from the deck\'s champion-building play.'
   },
   'mkto-pilot': {
     label: 'Marketo · Program',
@@ -2711,7 +2711,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['Campaign naming convention stored: [Verb] + [Outcome]', 'Theme phrase mapped to {{my.CampaignName}} token', 'Applied to all 6 Marketo programs via token inheritance'] },
       { step: 's4', heading: 'Generated Asset', points: ['Token value: "Govern What You\'ve Built"', 'Used in: email subject lines, landing page H1, SF campaign description', 'Consistent across all 6 programs — single source of truth'] }
     ],
-    insight: 'This phrase came verbatim from the deck. Helix extracted it as the campaign theme and propagated it as a token — ensuring every email, landing page, and SF record uses the exact same language the strategist intended.'
+    insight: 'This phrase came verbatim from the deck. Engine extracted it as the campaign theme and propagated it as a token — ensuring every email, landing page, and SF record uses the exact same language the strategist intended.'
   },
   'tok-product': {
     label: 'Marketo · Token',
@@ -2722,7 +2722,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['Product name stored as canonical field in GTM model', 'Token mapped: {{my.Product}} = "Northstar AgentOps"', 'Consistent product reference across all channels'] },
       { step: 's4', heading: 'Generated Asset', points: ['Token used in: subject lines, body copy, CTA buttons', 'Prevents product name inconsistency across 6 programs', '"Northstar AgentOps" vs "AgentOps" vs "Northstar" resolved'] }
     ],
-    insight: 'Without this token, different writers would use "Northstar," "AgentOps," and "Northstar AgentOps" interchangeably. Helix stores the canonical product name and enforces it across all generated assets.'
+    insight: 'Without this token, different writers would use "Northstar," "AgentOps," and "Northstar AgentOps" interchangeably. Engine stores the canonical product name and enforces it across all generated assets.'
   },
   'tok-cta': {
     label: 'Marketo · Token',
@@ -2733,7 +2733,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['CTA text mapped to offer catalog: Assessment offer', 'Token stored: {{my.CTA_Text}} = "Book Readiness Assessment"', 'Persona-level CTA override available for customer/pipeline segments'] },
       { step: 's4', heading: 'Generated Asset', points: ['CTA applied to: all 6 email programs, landing pages, Outreach sequences', 'Consistent button label across all channels', 'Overridden to "Activate 30-Day Pilot" for post-assessment program'] }
     ],
-    insight: 'CTA consistency is often broken when different teams write different button labels. Helix extracted "Book Readiness Assessment" from the deck\'s offer section and locked it as a token — preventing "Schedule a Demo," "Learn More," and other generic CTAs from creeping in.'
+    insight: 'CTA consistency is often broken when different teams write different button labels. Engine extracted "Book Readiness Assessment" from the deck\'s offer section and locked it as a token — preventing "Schedule a Demo," "Learn More," and other generic CTAs from creeping in.'
   },
   'tok-url': {
     label: 'Marketo · Token',
@@ -2755,7 +2755,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['Offer catalog entry: Assessment → Pilot → Enterprise', 'Primary offer token: full name for subject lines and headers', 'Short form "Readiness Assessment" for CTA buttons (stored separately)'] },
       { step: 's4', heading: 'Generated Asset', points: ['Token used in: email body copy, landing page descriptions', 'Full name in H1: "Book Your AI Agent Governance Readiness Assessment"', 'Short form used in CTA buttons and subject lines'] }
     ],
-    insight: 'The offer name is long but specific — "AI Agent Governance Readiness Assessment" communicates exactly what the prospect gets and who it\'s for. Helix extracted it verbatim from the deck rather than shortening it to a generic "assessment."'
+    insight: 'The offer name is long but specific — "AI Agent Governance Readiness Assessment" communicates exactly what the prospect gets and who it\'s for. Engine extracted it verbatim from the deck rather than shortening it to a generic "assessment."'
   },
   'tok-reg': {
     label: 'Marketo · Token',
@@ -2766,7 +2766,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['3 regulatory hook values stored: NA, EU, APAC variants', 'Regulatory_Driver__c field mapped to token at segment level', 'Token override: EU programs get EU AI Act, APAC gets MAS/APRA'] },
       { step: 's4', heading: 'Generated Asset', points: ['Token dynamically resolved per smart list segment', 'NA contacts: "OCC model risk guidance"', 'EU contacts: "EU AI Act Article 6" · APAC: "MAS TRM 2021"'] }
     ],
-    insight: 'This is one token with three values — resolved at send time based on the contact\'s segment. Without this approach, you\'d need three separate email templates per persona track. Helix stored all three regulatory hooks and mapped them to geographic segments automatically.'
+    insight: 'This is one token with three values — resolved at send time based on the contact\'s segment. Without this approach, you\'d need three separate email templates per persona track. Engine stored all three regulatory hooks and mapped them to geographic segments automatically.'
   },
   // ── OUTREACH ──
   'seq-cro': {
@@ -2778,7 +2778,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['CRO persona mapped to: pain=audit trail, value=compliance evidence, offer=assessment', 'Sequence length: 5 touches (CRO requires most nurturing — highest stakes decision)', 'Regulatory hook: resolves per segment geo at send time'] },
       { step: 's4', heading: 'Generated Asset', points: ['Subject line T1: "Your AI agents are running. Will you have the audit trail when OCC asks?"', '5-touch: T1 cold · T2 social proof · T3 regulation deadline · T4 case study · T5 break-up', 'CTA: Book Readiness Assessment'] }
     ],
-    insight: 'The subject line came directly from the deck\'s CRO pain point: "I don\'t have an audit trail for AI agent decisions." Helix converted that pain statement into a question the CRO asks themselves — the most effective cold email framing.'
+    insight: 'The subject line came directly from the deck\'s CRO pain point: "I don\'t have an audit trail for AI agent decisions." Engine converted that pain statement into a question the CRO asks themselves — the most effective cold email framing.'
   },
   'seq-cco': {
     label: 'Outreach · Sequence',
@@ -2789,7 +2789,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['CCO persona: pain=manual audit, value=automated evidence, offer=assessment', 'Differentiated from CRO: operational efficiency vs regulatory risk', '5-touch sequence — same length as CRO (C-suite engagement threshold)'] },
       { step: 's4', heading: 'Generated Asset', points: ['Subject T1: "Turn a 6-week AI audit into 3 hours — here\'s how one global insurer did it"', 'Social proof anchor at touch 1 (vs regulatory urgency for CRO)', 'CTA: Book Readiness Assessment'] }
     ],
-    insight: 'The CCO and CRO are often the same call — different titles, different entry points. Helix generated separate sequences because the deck showed they respond to different frames: CRO hears "audit trail," CCO hears "audit automation."'
+    insight: 'The CCO and CRO are often the same call — different titles, different entry points. Engine generated separate sequences because the deck showed they respond to different frames: CRO hears "audit trail," CCO hears "audit automation."'
   },
   'seq-cio': {
     label: 'Outreach · Sequence',
@@ -2800,7 +2800,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['CIO persona: pain=shadow AI, value=visibility+governance, offer=assessment', 'Different from CRO (audit) and CCO (evidence) — technology ownership angle', '5-touch: discovery → risk → solution → proof → CTA'] },
       { step: 's4', heading: 'Generated Asset', points: ['Subject T1: "How many AI agents are running in your org right now? Most CIOs don\'t know."', 'Opens with question — CIO\'s own uncertainty is the hook', 'CTA: Book Readiness Assessment (inventory angle)'] }
     ],
-    insight: 'The CIO sequence uses the prospect\'s own uncertainty as the hook — "most CIOs don\'t know." This came from the deck\'s research finding that 73% of CIOs underestimate their deployed AI tool count. Helix turned that stat into an opener.'
+    insight: 'The CIO sequence uses the prospect\'s own uncertainty as the hook — "most CIOs don\'t know." This came from the deck\'s research finding that 73% of CIOs underestimate their deployed AI tool count. Engine turned that stat into an opener.'
   },
   'seq-cto': {
     label: 'Outreach · Sequence',
@@ -2811,7 +2811,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['CTO persona: pain=no visibility, value=real-time monitoring, offer=assessment', '4-touch (shorter than CRO/CCO — CTO moves faster on tech decisions)', 'Technical differentiation: integration story vs governance story'] },
       { step: 's4', heading: 'Generated Asset', points: ['Subject T1: "Deploy AI agent governance in 48 hours — no rip-and-replace"', '4-touch: tech proof focused, less regulatory framing', 'CTA: Book Readiness Assessment (technical scoping call angle)'] }
     ],
-    insight: 'CTOs tune out compliance talk — they want to know it deploys fast and doesn\'t break anything. The "48-hour deployment" hook came from the deck\'s technical architecture slide. Helix recognized it as the CTO-specific differentiator.'
+    insight: 'CTOs tune out compliance talk — they want to know it deploys fast and doesn\'t break anything. The "48-hour deployment" hook came from the deck\'s technical architecture slide. Engine recognized it as the CTO-specific differentiator.'
   },
   'seq-eu': {
     label: 'Outreach · Sequence',
@@ -2822,7 +2822,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['EU regulatory hook mapped: Regulatory_Driver__c = "EU AI Act"', 'Geo-specific sequence stored — not a persona variant but a geo variant', '4-touch: deadline → article overview → classification risk → CTA'] },
       { step: 's4', heading: 'Generated Asset', points: ['Subject T1: "EU AI Act enforcement is 14 months away. Is your AI agent program ready?"', 'EU AI Act framing used across all EU contacts regardless of persona', 'CTA: Book Readiness Assessment (compliance readiness angle)'] }
     ],
-    insight: 'This sequence is geo-driven, not persona-driven — the EU AI Act is a stronger hook than any persona-specific pain for EU contacts. Helix recognized the enforcement deadline as the highest-urgency lever and made it the lead, superseding persona customization.'
+    insight: 'This sequence is geo-driven, not persona-driven — the EU AI Act is a stronger hook than any persona-specific pain for EU contacts. Engine recognized the enforcement deadline as the highest-urgency lever and made it the lead, superseding persona customization.'
   },
   'seq-pilot': {
     label: 'Outreach · Sequence',
@@ -2845,7 +2845,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['Segment 1 targeting rules translated to LinkedIn facets', 'Job function + industry + company size = LinkedIn audience spec', 'NA geo filter: US + Canada'] },
       { step: 's4', heading: 'Generated Asset', points: ['LinkedIn Matched Audience: account list + job title targeting', 'Ad creative: "Govern What You\'ve Built" campaign theme', 'CTA: northstar.ai/assess — consistent with Marketo/Outreach'] }
     ],
-    insight: 'LinkedIn targeting mirrors the Salesforce Segment 1 definition exactly — same ICP criteria, same persona titles, same company size thresholds. Helix derived the LinkedIn audience spec directly from the segment rule, not from a separate LinkedIn strategy.'
+    insight: 'LinkedIn targeting mirrors the Salesforce Segment 1 definition exactly — same ICP criteria, same persona titles, same company size thresholds. Engine derived the LinkedIn audience spec directly from the segment rule, not from a separate LinkedIn strategy.'
   },
   'li-eu': {
     label: 'LinkedIn · Matched Audience',
@@ -2856,7 +2856,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['EU segment rules translated to LinkedIn audience spec', 'Employee threshold: 1,000+ (EU accounts tend to be larger)', 'Regulatory message: EU AI Act → ad copy variant'] },
       { step: 's4', heading: 'Generated Asset', points: ['LinkedIn audience: EU FS CxO, 1,000+ employees', 'Ad copy variant: EU AI Act enforcement deadline as hook', 'Same CTA URL as NA — geo-specific landing page [MISSING]'] }
     ],
-    insight: 'The EU audience uses a stricter company size threshold than NA — 1,000+ employees vs 500+. This came from the deck\'s EU ICP definition, which noted EU financial institutions start at larger scale. Helix applied it automatically.'
+    insight: 'The EU audience uses a stricter company size threshold than NA — 1,000+ employees vs 500+. This came from the deck\'s EU ICP definition, which noted EU financial institutions start at larger scale. Engine applied it automatically.'
   },
   'li-abm': {
     label: 'LinkedIn · Matched Audience',
@@ -2867,7 +2867,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['ABM pattern stored: named account list + all-persona targeting', 'Account list flagged [MISSING] — requires sales team upload', 'ABM LinkedIn + exec roundtable = coordinated top-account motion'] },
       { step: 's4', heading: 'Generated Asset', points: ['Status: Awaiting account list upload from sales team', 'LinkedIn Company Match: ready to activate once list provided', 'All other assets ready — this is the only blocker'] }
     ],
-    insight: 'This audience is the only asset not ready to launch. It\'s blocked on the sales team\'s named account list — a dependency Helix flagged [MISSING] during extraction. Everything else in the campaign is ready; this is the single outstanding action item.'
+    insight: 'This audience is the only asset not ready to launch. It\'s blocked on the sales team\'s named account list — a dependency Engine flagged [MISSING] during extraction. Everything else in the campaign is ready; this is the single outstanding action item.'
   },
   // ── PERSONAS ──
   'persona-cro': {
@@ -2890,7 +2890,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['CCO persona stored: distinct from CRO — operations focus vs risk focus', 'Pain: manual audit → value: audit automation', 'Offer affinity: Readiness Assessment → Pilot for audit use case'] },
       { step: 's4', heading: 'What Persists', points: ['Differentiated from CRO: different pain, same offer', 'CCO/CRO co-buyer pattern stored for multi-threaded deals', 'Campaign 2 inherits: CCO gets audit automation angle, not regulatory risk angle'] }
     ],
-    insight: 'The CCO and CRO are often in the same meeting. Helix stored them as separate personas with different pain entry points — CCO hears "automate your audit process," CRO hears "don\'t get caught without an audit trail."'
+    insight: 'The CCO and CRO are often in the same meeting. Engine stored them as separate personas with different pain entry points — CCO hears "automate your audit process," CRO hears "don\'t get caught without an audit trail."'
   },
   'persona-cio': {
     label: 'Institutional Memory · Persona',
@@ -2901,7 +2901,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['CIO persona stored: visibility/inventory frame, not audit/compliance', 'Separate from CRO (audit) and CCO (evidence) — different value prop', 'Offer: Readiness Assessment doubles as inventory exercise'] },
       { step: 's4', heading: 'What Persists', points: ['Shadow AI framing stored as CIO-specific angle', 'Inventory value prop distinct from compliance value prop', 'Campaign 2 inherits: CIO gets "how many agents?" hook, not regulatory hook'] }
     ],
-    insight: 'The CIO persona reveals a product insight: the Readiness Assessment works as an AI inventory exercise, not just a compliance assessment. Helix captured this from the deck\'s CIO section and stored it as a separate value prop.'
+    insight: 'The CIO persona reveals a product insight: the Readiness Assessment works as an AI inventory exercise, not just a compliance assessment. Engine captured this from the deck\'s CIO section and stored it as a separate value prop.'
   },
   'persona-cto': {
     label: 'Institutional Memory · Persona',
@@ -2912,7 +2912,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['CTO persona stored: technical deployment focus, not compliance', 'Shorter sequence: 4 touch (moves faster than CRO/CCO on tech decisions)', 'Offer affinity: assessment as technical scoping call, not compliance audit'] },
       { step: 's4', heading: 'What Persists', points: ['48hr deploy proof point stored as CTO-specific differentiator', 'Technical angle separated from compliance angle in model', 'Campaign 2 inherits: CTO gets tech proof, not regulatory urgency'] }
     ],
-    insight: 'The CTO cares about deployment speed and integration complexity, not regulatory deadlines. Helix stored the 48-hour deployment proof point specifically for CTOs — it won\'t surface in CRO or CCO messaging.'
+    insight: 'The CTO cares about deployment speed and integration complexity, not regulatory deadlines. Engine stored the 48-hour deployment proof point specifically for CTOs — it won\'t surface in CRO or CCO messaging.'
   },
   'persona-cx': {
     label: 'Institutional Memory · Persona',
@@ -2923,7 +2923,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['CX persona stored: customer-facing AI risk, brand protection angle', 'Different entry point: not regulatory but brand/reputation risk', 'Offer: Readiness Assessment (customer AI audit variant)'] },
       { step: 's4', heading: 'What Persists', points: ['Hallucination risk framing stored — distinct from regulatory risk', 'Brand protection angle available for customer-facing AI campaigns', 'Campaign 2 inherits: CX gets "catch hallucinations before customers do"'] }
     ],
-    insight: 'The Head of CX is often overlooked in B2B enterprise campaigns — but they own the highest-risk AI surface. Helix extracted them from the deck\'s buying committee table and stored the hallucination risk frame as their specific entry point.'
+    insight: 'The Head of CX is often overlooked in B2B enterprise campaigns — but they own the highest-risk AI surface. Engine extracted them from the deck\'s buying committee table and stored the hallucination risk frame as their specific entry point.'
   },
   'persona-vpai': {
     label: 'Institutional Memory · Persona',
@@ -2934,7 +2934,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['VP AI persona stored: champion role, not economic buyer', 'Nurture track assigned: longer cycle, content-first', 'Offer: thought leadership content → assessment at touch 4'] },
       { step: 's4', heading: 'What Persists', points: ['Champion persona pattern stored: nurture, not direct CTA', 'ROI proof value prop distinct from compliance/risk value props', 'Campaign 2 inherits: VP AI gets content-first nurture track automatically'] }
     ],
-    insight: 'The VP AI is the most important persona to warm early — they\'re the internal advocate who creates the conditions for an executive purchase. Helix stored them in the nurture track specifically, ensuring future campaigns don\'t accidentally send them a direct sales CTA at touch 1.'
+    insight: 'The VP AI is the most important persona to warm early — they\'re the internal advocate who creates the conditions for an executive purchase. Engine stored them in the nurture track specifically, ensuring future campaigns don\'t accidentally send them a direct sales CTA at touch 1.'
   },
   // ── OFFERS ──
   'offer-assessment': {
@@ -2946,7 +2946,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['Offer catalog entry 1 of 3: top of funnel', 'Mapped to primary CTA token: {{my.CTA_Text}} = "Book Readiness Assessment"', 'Trigger: assessment completion → post-assessment pilot sequence'] },
       { step: 's4', heading: 'What Persists', points: ['Assessment is the default offer for all net-new demand gen', 'Offer definition reused in Campaign 2 — not re-derived', 'Conversion rate baseline: will be measured and stored after Campaign 1'] }
     ],
-    insight: 'The Assessment is the campaign\'s universal entry point — every persona, every segment, every channel leads here first. Helix stored it as the top-of-funnel offer so future campaigns don\'t start from scratch deciding what to offer cold contacts.'
+    insight: 'The Assessment is the campaign\'s universal entry point — every persona, every segment, every channel leads here first. Engine stored it as the top-of-funnel offer so future campaigns don\'t start from scratch deciding what to offer cold contacts.'
   },
   'offer-pilot': {
     label: 'Institutional Memory · Offer',
@@ -2957,7 +2957,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['Offer catalog entry 2 of 3: mid-funnel', 'Trigger condition: assessment form completion OR AE referral', 'Mapped to post-assessment Outreach sequence: 3-touch pilot activation'] },
       { step: 's4', heading: 'What Persists', points: ['Pilot offer stored: triggers automatically after assessment', 'Qualification criteria locked: Tier 1/2 + assessment required', 'Campaign 2 inherits same pilot offer — no redefinition needed'] }
     ],
-    insight: 'The Pilot is only offered after the Assessment — it\'s gated by qualification, not freely available. Helix encoded this sequencing rule in the offer catalog so future campaigns automatically preserve the assessment-first conversion path.'
+    insight: 'The Pilot is only offered after the Assessment — it\'s gated by qualification, not freely available. Engine encoded this sequencing rule in the offer catalog so future campaigns automatically preserve the assessment-first conversion path.'
   },
   'offer-enterprise': {
     label: 'Institutional Memory · Offer',
@@ -2968,19 +2968,19 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['Offer catalog entry 3 of 3: bottom of funnel', 'Segment rule: only shown to Account.Type=Customer OR pilot-converted accounts', 'AE-led — not automated sequence; requires manual qualification'] },
       { step: 's4', heading: 'What Persists', points: ['Enterprise offer restricted to: customer expansion + post-pilot tracks', 'Pricing band stored: $180K–$450K (will update as deals close)', 'Campaign 2 inherits: enterprise offer available only after pilot gate'] }
     ],
-    insight: 'The enterprise offer is the only bottom-of-funnel item in the catalog, and it\'s intentionally restricted. Helix stored the qualification gate (pilot completion or existing customer) to prevent the enterprise offer from appearing in cold demand gen sequences.'
+    insight: 'The enterprise offer is the only bottom-of-funnel item in the catalog, and it\'s intentionally restricted. Engine stored the qualification gate (pilot completion or existing customer) to prevent the enterprise offer from appearing in cold demand gen sequences.'
   },
   // ── FIELD MAPPINGS ──
   'field-persona': {
     label: 'Field Mapping · 97% Confidence',
     title: 'Target_Persona__c ↔ persona.name',
     chain: [
-      { step: 's1', heading: 'Org Ontology', points: ['Salesforce custom field: Target_Persona__c (picklist)', 'Persona values: CRO, CCO, CIO, CTO, Head of CX, VP AI', 'Field created to store Helix-derived persona assignment'] },
+      { step: 's1', heading: 'Org Ontology', points: ['Salesforce custom field: Target_Persona__c (picklist)', 'Persona values: CRO, CCO, CIO, CTO, Head of CX, VP AI', 'Field created to store Engine-derived persona assignment'] },
       { step: 's2', heading: 'Campaign DNA', points: ['Persona extracted per contact during CRM matching', 'Mapped from: Contact.Title → persona definition → Target_Persona__c value', 'Used to route contacts to correct Marketo email stream'] },
       { step: 's3', heading: 'Canonical GTM Model', points: ['Mapping validated: 38 contacts assigned without conflict', '97% confidence: only 1 contact edge case (dual title CRO/CCO)', 'Picklist values locked — matches persona library exactly'] },
       { step: 's4', heading: 'What Persists', points: ['Mapping will not be re-derived for Campaign 2', 'Confidence increases to 99%+ after second campaign validates same logic', 'Any new persona added to deck → new picklist value flagged automatically'] }
     ],
-    insight: 'At 97% confidence, this is the highest-validated mapping in the model. The single edge case was a contact with dual CRO/CCO title — Helix flagged it for human review rather than guessing. That\'s what 97% vs 100% means in practice.'
+    insight: 'At 97% confidence, this is the highest-validated mapping in the model. The single edge case was a contact with dual CRO/CCO title — Engine flagged it for human review rather than guessing. That\'s what 97% vs 100% means in practice.'
   },
   'field-type': {
     label: 'Field Mapping · 96% Confidence',
@@ -2991,7 +2991,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['Type mapping validated: 9 campaigns, 0 conflicts', '96% confidence (1 edge: roundtable classified as Event, not Other)', 'Type values stored as canonical set for Northstar campaigns'] },
       { step: 's4', heading: 'What Persists', points: ['Campaign type vocabulary locked for future campaigns', 'New campaign types will be flagged for model update', 'Campaign 2: type assignment auto-derived from campaign strategy section'] }
     ],
-    insight: 'The "type vocabulary" problem is real — without this mapping, different campaigns use different type labels for the same channel (Event vs Conference vs Roundtable). Helix stored the canonical type set so future campaigns use consistent terminology.'
+    insight: 'The "type vocabulary" problem is real — without this mapping, different campaigns use different type labels for the same channel (Event vs Conference vs Roundtable). Engine stored the canonical type set so future campaigns use consistent terminology.'
   },
   'field-icp': {
     label: 'Field Mapping · 94% Confidence',
@@ -3002,7 +3002,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['ICP_Tier__c mapping validated against 38 contacts', '94% confidence: 2 edge cases where AUM data was missing', 'MISSING flag applied to 2 contacts: insufficient account data'] },
       { step: 's4', heading: 'What Persists', points: ['Tier thresholds stored: $10B+ = Tier 1, $1–10B = Tier 2', 'Edge case handling: missing AUM → default to employee count', 'Campaign 2 inherits tier logic — no re-derivation'] }
     ],
-    insight: '94% confidence means 2 contacts couldn\'t be tier-assigned because their account revenue data was missing in Salesforce. Helix flagged them [MISSING] rather than guessing. Improving Salesforce data quality will raise this to 98%+.'
+    insight: '94% confidence means 2 contacts couldn\'t be tier-assigned because their account revenue data was missing in Salesforce. Engine flagged them [MISSING] rather than guessing. Improving Salesforce data quality will raise this to 98%+.'
   },
   'field-offer': {
     label: 'Field Mapping · 92% Confidence',
@@ -3013,7 +3013,7 @@ const DETAILS = {
       { step: 's3', heading: 'Canonical GTM Model', points: ['92% confidence: 3 contacts had ambiguous stage (pipeline + assessment eligible)', 'Rule stored: assessment wins over pilot for first-touch cold contacts', 'Offer sequencing enforced: assessment → pilot → enterprise (no skipping)'] },
       { step: 's4', heading: 'What Persists', points: ['Offer assignment rules stored and validated', 'Ambiguous cases: pipeline contacts who haven\'t been assessed get Assessment, not Pilot', 'Campaign 2 inherits: same offer rules, 0 re-derivation needed'] }
     ],
-    insight: 'The 3 ambiguous cases were contacts in open pipeline who\'d never done an assessment. Helix resolved them to "Assessment" (not "Pilot") because the offer sequence rule requires assessment before pilot. That rule is now stored and enforced.'
+    insight: 'The 3 ambiguous cases were contacts in open pipeline who\'d never done an assessment. Engine resolved them to "Assessment" (not "Pilot") because the offer sequence rule requires assessment before pilot. That rule is now stored and enforced.'
   },
   'field-persona-mkto': {
     label: 'Field Mapping · 91% Confidence',
@@ -3754,7 +3754,7 @@ function _stratDownload(slotKey) {
     },
     analyst: {
       ext: '.md', mime: 'text/markdown',
-      body: `# Analyst Research Summary — AI Governance Market\n\n## Gartner: AI Trust, Risk and Security Management (AI TRiSM)\n"By 2026, organizations that operationalize AI transparency, trust and security will see a 50% improvement in AI adoption, business goals and user acceptance."\nHelix tag: Positions AgentOps squarely in the AI TRiSM category Gartner is actively tracking.\n\n## Forrester: The AI Governance Platforms Wave (2025)\nTop criteria: audit trail completeness, regulatory framework coverage, integration breadth, time-to-value.\nHelix tag: AgentOps scores in top quadrant on audit trail and regulatory coverage.\n\n## IDC: AI Governance Spending Forecast\n$12B TAM by 2027, 38% CAGR. Regulated industries (FS, Healthcare, Government) driving 61% of spend.\nHelix tag: Confirms financial services as highest-priority vertical.\n\n## EU AI Act Market Impact (McKinsey, 2025)\n"Regulated enterprises face compliance costs of $50M–$300M if they cannot demonstrate AI governance by Q2 2026."\nHelix tag: Creates acute urgency for our primary ICP.\n`
+      body: `# Analyst Research Summary — AI Governance Market\n\n## Gartner: AI Trust, Risk and Security Management (AI TRiSM)\n"By 2026, organizations that operationalize AI transparency, trust and security will see a 50% improvement in AI adoption, business goals and user acceptance."\nEngine tag: Positions AgentOps squarely in the AI TRiSM category Gartner is actively tracking.\n\n## Forrester: The AI Governance Platforms Wave (2025)\nTop criteria: audit trail completeness, regulatory framework coverage, integration breadth, time-to-value.\nEngine tag: AgentOps scores in top quadrant on audit trail and regulatory coverage.\n\n## IDC: AI Governance Spending Forecast\n$12B TAM by 2027, 38% CAGR. Regulated industries (FS, Healthcare, Government) driving 61% of spend.\nEngine tag: Confirms financial services as highest-priority vertical.\n\n## EU AI Act Market Impact (McKinsey, 2025)\n"Regulated enterprises face compliance costs of $50M–$300M if they cannot demonstrate AI governance by Q2 2026."\nEngine tag: Creates acute urgency for our primary ICP.\n`
     },
   };
 
@@ -3764,7 +3764,7 @@ function _stratDownload(slotKey) {
     dlFile(baseName + '_helix_export' + docContent.ext, docContent.body, docContent.mime);
   } else {
     // Fallback for any unrecognized slot: generate a plain text summary
-    const content = '# ' + (f.name) + '\nLoaded: ' + f.uploadedAt + '\nSize: ' + f.size + (f.pages ? '\nPages: ' + f.pages : '') + '\n\n[Demo document — content generated by Helix AI]\n';
+    const content = '# ' + (f.name) + '\nLoaded: ' + f.uploadedAt + '\nSize: ' + f.size + (f.pages ? '\nPages: ' + f.pages : '') + '\n\n[Demo document — content generated by Engine]\n';
     dlFile(f.name.replace(/\.[^.]+$/, '') + '_helix_export.md', content, 'text/markdown');
   }
   showToast('Downloading ' + f.name);
@@ -4372,10 +4372,10 @@ function _renderConflicts() {
         '</div>' +
         (resolved ? '<span class="badge badge-green" style="flex-shrink:0;">' + chosenLabel + '</span>' : '<span class="badge badge-amber" style="flex-shrink:0;">Unresolved</span>') +
       '</div>' +
-      '<div style="font-size:12px; color:var(--txt3); margin-bottom:8px; padding:6px 8px; background:var(--surface2); border-radius:5px;">Helix recommends: <strong style="color:var(--accent);">' + c.helixRec + '</strong></div>' +
+      '<div style="font-size:12px; color:var(--txt3); margin-bottom:8px; padding:6px 8px; background:var(--surface2); border-radius:5px;">Engine recommends: <strong style="color:var(--accent);">' + c.helixRec + '</strong></div>' +
       (!resolved
         ? '<div style="display:flex; gap:6px; flex-wrap:wrap;">' +
-            '<button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;" onclick="odResolveConflict(' + i + ',\'helix\')">Accept Helix Rec</button>' +
+            '<button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;" onclick="odResolveConflict(' + i + ',\'helix\')">Accept Engine Rec</button>' +
             '<button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;" onclick="odResolveConflict(' + i + ',\'sysA\')">Use System A</button>' +
             '<button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;" onclick="odResolveConflict(' + i + ',\'sysB\')">Use System B</button>' +
             '<button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;" onclick="odResolveConflict(' + i + ',\'custom\')">Create Canonical</button>' +
@@ -4387,7 +4387,7 @@ function _renderConflicts() {
 }
 
 function _conflictChosenLabel(c) {
-  if (c.status === 'helix') return 'Helix rec accepted';
+  if (c.status === 'helix') return 'Engine rec accepted';
   if (c.status === 'sysA') return 'System A chosen';
   if (c.status === 'sysB') return 'System B chosen';
   if (c.status === 'custom') return c.custom ? '"' + c.custom + '"' : 'Custom canonical';
@@ -4863,7 +4863,7 @@ function _conflictRowHtml(c) {
   return '<div style="border:1px solid rgba(245,158,11,0.35);border-radius:8px;padding:12px 14px;margin-bottom:8px;background:rgba(245,158,11,0.04);">' +
     '<div style="font-size:13px;font-weight:600;color:var(--txt);margin-bottom:4px;">' + c.label + '</div>' +
     '<div style="font-size:12px;color:var(--txt3);margin-bottom:8px;">' + c.sysA + (c.sysB ? ' · ' + c.sysB : '') + (c.sysC ? ' · ' + c.sysC : '') + '</div>' +
-    '<div style="font-size:12px;color:var(--accent);margin-bottom:8px;">Helix recommends: <strong>' + c.rec + '</strong></div>' +
+    '<div style="font-size:12px;color:var(--accent);margin-bottom:8px;">Engine recommends: <strong>' + c.rec + '</strong></div>' +
     '<div style="display:flex;gap:6px;flex-wrap:wrap;">' +
       '<button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;color:var(--green);" onclick="resolveConflict(\'' + c.id + '\',\'helix\')">✓ Accept Recommendation</button>' +
       '<button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;" onclick="resolveConflict(\'' + c.id + '\',\'sysA\')">Use ' + c.sysA.split(':')[0] + ' Value</button>' +
@@ -4877,7 +4877,7 @@ function _conflictRowHtml(c) {
 function resolveConflict(id, choice) {
   const c = CM.conflicts.find(x => x.id === id);
   if (!c) return;
-  const choiceLabel = choice === 'helix' ? 'Helix recommendation: ' + c.rec : choice === 'sysA' ? c.sysA : choice === 'sysB' ? c.sysB : 'Deferred';
+  const choiceLabel = choice === 'helix' ? 'Engine recommendation: ' + c.rec : choice === 'sysA' ? c.sysA : choice === 'sysB' ? c.sysB : 'Deferred';
   c.status = choice === 'defer' ? 'deferred' : 'resolved';
   c.choice = choice;
   if (CM.status === 'published') CM.status = 'dirty';
@@ -5665,7 +5665,7 @@ function generateMissingAssets() {
     </div>`).join('');
   const bodyHtml = `
     <div style="margin-bottom:12px; font-size:13px; color:var(--txt2);">
-      Helix identified <strong>${missing.length} asset types</strong> that haven't been generated for this campaign. Select items to generate:
+      Engine identified <strong>${missing.length} asset types</strong> that haven't been generated for this campaign. Select items to generate:
     </div>
     <div style="margin-bottom:16px;">${rows}</div>
     <div style="display:flex; gap:8px; justify-content:flex-end;">
@@ -6161,7 +6161,7 @@ OCC Circular 2023-17 — NA financial services, CRO/CCO audience
 EU AI Act (Feb 2026 enforcement) — UK + Western Europe, CCO/CRO audience
 MAS TRM / APRA CPS 230 — APAC financial services, CIO audience
 
-Helix AI · GTM Context Engine · Generated from Canonical GTM Model`;
+Engine · GTM Context Engine · Generated from Canonical GTM Model`;
 
   dlFile('sdr_brief_' + campaignName.replace(/\s+/g,'_').toLowerCase() + '.txt', brief, 'text/plain');
   _addSAActivity('Downloaded SDR Brief (' + campaignName + ').');
@@ -6254,7 +6254,7 @@ const IM = { activity: [], recGenerated: false, campaign2Created: false };
 
 const IM_MEMORY_CARDS = {
   'model-version': { title:'Model Version', what:'The current version of the Canonical GTM Model. Increments each time execution results are fed back and confidence scores update.', source:'Set during Foundation Setup. Incremented by Analytics feedback loop.', usedIn:'All downstream workstreams reference the model version for traceability.' },
-  'campaigns':     { title:'Campaigns Processed', what:'Number of campaigns that have run through the full Helix workflow and fed results back to the model.', source:'Incremented each time Analytics → Feed Results Back is completed.', usedIn:'Model confidence calculation. Recommendation engine weighting. Institutional Memory summary.' },
+  'campaigns':     { title:'Campaigns Processed', what:'Number of campaigns that have run through the full Engine workflow and fed results back to the model.', source:'Incremented each time Analytics → Feed Results Back is completed.', usedIn:'Model confidence calculation. Recommendation engine weighting. Institutional Memory summary.' },
   'personas':      { title:'Personas Validated', what:'Canonical personas whose pain definitions, offer affinities, and messaging angles have been confirmed by actual campaign execution data.', source:'Canonical GTM Model persona library, validated by Gong calls + win/loss outcomes.', usedIn:'All sequences, asset generation, contact scoring, SDR briefs, Snowflake dimensions.' },
   'mappings':      { title:'Mappings Validated', what:'Canonical field mappings (Salesforce, Marketo, Outreach) that have been reviewed, approved, and used in at least one live campaign without revision.', source:'Canonical Model → Field Mapping Review. Confidence increases with each campaign that uses a mapping without change.', usedIn:'Salesforce campaign setup, Marketo token injection, Outreach sequence assignment, Snowflake canonical table.' },
   'segments':      { title:'Segments Validated', what:'Audience segment templates with confirmed contact counts, geo filters, and targeting rules — ready to apply to any future campaign without re-derivation.', source:'ICP Document + CRM contact matching. Validated by actual campaign member enrollment.', usedIn:'Campaign audience targeting, contact scoring, SDR queue filtering, PowerBI segment performance.' },
@@ -6424,7 +6424,7 @@ function generateRecommendedCampaign() {
 // ─── RECOMMENDATION ACTIONS ────────────────────────────────────
 function _imCreateFromRec() {
   openModal('Create Campaign From Recommendation', `
-    <div style="margin-bottom:12px; font-size:13px; color:var(--txt2);">Pre-filled from Helix recommendation. Edit any field before creating.</div>
+    <div style="margin-bottom:12px; font-size:13px; color:var(--txt2);">Pre-filled from Engine recommendation. Edit any field before creating.</div>
     <div style="display:flex; flex-direction:column; gap:9px; margin-bottom:16px;">
       ${[
         ['Campaign Name', 'im-c2-name', 'AgentOps Platform Expansion — Q2'],
@@ -6604,7 +6604,7 @@ function exportMemoryReport() {
     '',
     '--- KEY LEARNINGS ---',
     'The first campaign is the most expensive to build. Every campaign after it starts from a higher baseline.',
-    'Helix retained: ontology, canonical model, mappings, personas, segments, offers, governance rules, analytics feedback.',
+    'Engine retained: ontology, canonical model, mappings, personas, segments, offers, governance rules, analytics feedback.',
     'Campaign 2 skips Foundation Setup, Org Discovery, and Ontology Review entirely.',
     'Model confidence compounds with each campaign cycle.',
     '',
@@ -6922,8 +6922,8 @@ function openPowerBIDashboard() {
   openModal('Demo Mode: PowerBI Dashboard', `
     <div style="text-align:center; margin-bottom:16px;">
       <div style="font-size:28px; margin-bottom:8px;">📊</div>
-      <div style="font-size:14px; font-weight:600; color:var(--txt); margin-bottom:3px;">Helix GTM Performance</div>
-      <div style="font-size:11px; color:var(--txt3);">Semantic Model: Helix Canonical GTM</div>
+      <div style="font-size:14px; font-weight:600; color:var(--txt); margin-bottom:3px;">Engine GTM Performance</div>
+      <div style="font-size:11px; color:var(--txt3);">Semantic Model: Engine Canonical GTM</div>
     </div>
     <div style="background:var(--surface2); border-radius:6px; padding:10px 12px; font-size:12px; margin-bottom:14px;">
       <div style="margin-bottom:6px;"><span style="color:var(--txt3);">Dimensions: </span><span style="color:var(--txt);">Persona · Offer · Region · Segment · Regulatory Driver · BC Role</span></div>
