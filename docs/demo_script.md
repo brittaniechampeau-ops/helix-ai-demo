@@ -1,4 +1,4 @@
-# Helix AI — Demo Script
+# Engine — Demo Script
 ## For: Paul Yacoubian
 ## Format: Same-day executive demo | ~20 minutes
 ## Tone: Founder-to-founder | Concrete, fast, no fluff
@@ -9,7 +9,7 @@
 
 Have three windows open and ready to tab between:
 1. The Northstar AgentOps GTM deck (PDF or markdown rendered)
-2. The Helix AI "context extraction" output (the sample_context_output.md)
+2. The Engine "context extraction" output (the sample_context_output.md)
 3. The Salesforce campaign structure + target contact list (the CSVs, ideally in a spreadsheet)
 
 You're not demoing a product UI. You're demoing a workflow. The demo IS the output.
@@ -39,7 +39,7 @@ The problem isn't AI content generation. Everyone's already got that. The proble
 
 **What you say:**
 
-"Helix AI is a GTM context engine. You upload a deck. You get back Salesforce-ready execution context.
+"Engine is a GTM context engine. You upload a deck. You get back Salesforce-ready execution context.
 
 Campaign hierarchy. Audience segments. Targeting rules. Buying committee structure. Persona-specific messaging. Contact matching against your CRM. And a scored, deduplicated target list — ready to import.
 
@@ -75,7 +75,7 @@ This is what lives in Google Drive or Notion right now at every enterprise compa
 
 **What you say:**
 
-"Now here's what Helix produces. First: a plain-language executive summary. Three sentences that tell a Salesforce admin exactly what this campaign is for, who it's targeting, and what action to drive — without them ever reading the deck.
+"Now here's what Engine produces. First: a plain-language executive summary. Three sentences that tell a Salesforce admin exactly what this campaign is for, who it's targeting, and what action to drive — without them ever reading the deck.
 
 But that's the easy part. Here's the real output."
 
@@ -87,7 +87,7 @@ This isn't a summary. This is data that can pipe directly into a CRM. Every fiel
 
 **Then show Section 3 — Salesforce Campaign Hierarchy.**
 
-"And here's where it gets operationally useful. Helix doesn't just extract the data — it generates the campaign structure. Parent campaign, child campaigns by segment and region, recommended types, descriptions, CTAs. This is a Salesforce import file. Day one."
+"And here's where it gets operationally useful. Engine doesn't just extract the data — it generates the campaign structure. Parent campaign, child campaigns by segment and region, recommended types, descriptions, CTAs. This is a Salesforce import file. Day one."
 
 **Pause here.** Let Paul react. He'll probably ask about the confidence scoring or the inference labeling. That's your opening to talk about the data quality layer.
 
@@ -103,7 +103,7 @@ This isn't a summary. This is data that can pipe directly into a CRM. Every fiel
 
 We fed in 75 fake CRM contacts — intentionally messy. Missing fields. Duplicate records. Out-of-ICP accounts. Sanctioned entities that got into the database. This is what real CRM data looks like.
 
-Helix processes the full dataset against the extracted ICP and targeting rules. Hard exclusions first — two contacts flagged DO NOT CONTACT, three duplicate pairs identified. Then scoring."
+Engine processes the full dataset against the extracted ICP and targeting rules. Hard exclusions first — two contacts flagged DO NOT CONTACT, three duplicate pairs identified. Then scoring."
 
 **Scroll to the Top 20 contacts.**
 
@@ -131,7 +131,7 @@ That's the kind of insight your ops team is manually building in a spreadsheet r
 
 Target contact list — 38 contacts, sorted by match score, with campaign member status, recommended offer, buying committee role, enrichment flags.
 
-From deck to this: fully automated. The human adds judgment. Helix removes the translation work."
+From deck to this: fully automated. The human adds judgment. Engine removes the translation work."
 
 ---
 
@@ -143,9 +143,9 @@ From deck to this: fully automated. The human adds judgment. Helix removes the t
 
 Every campaign is a new translation project. New deck, new brief, new Google Doc — and then a two-week process of re-explaining it to ops, to the MAP team, to the SDRs.
 
-Helix removes that tax. And because the output is structured and labeled, it gets better as data improves. You add a sales play doc, confidence goes up. You add a competitive battlecard, the messaging layer gets richer. The system compounds.
+Engine removes that tax. And because the output is structured and labeled, it gets better as data improves. You add a sales play doc, confidence goes up. You add a competitive battlecard, the messaging layer gets richer. The system compounds.
 
-This is the wedge. Once you're inside a marketing tech stack as the context layer, every piece of strategy that flows through that org becomes a Helix input. Decks, briefs, playbooks, call transcripts, win/loss reports. All of it translates into execution context."
+This is the wedge. Once you're inside a marketing tech stack as the context layer, every piece of strategy that flows through that org becomes a Engine input. Decks, briefs, playbooks, call transcripts, win/loss reports. All of it translates into execution context."
 
 ---
 
@@ -157,7 +157,7 @@ This is the wedge. Once you're inside a marketing tech stack as the context laye
 
 One: Salesforce is where marketing execution actually lives for enterprise companies. The campaign hierarchy, the contact records, the opportunity data — that's the source of truth for go-to-market.
 
-Two: Salesforce has the cleanest, most structured data model. Campaign objects, contact objects, campaign member objects — they map cleanly to what Helix extracts. The import path is straightforward.
+Two: Salesforce has the cleanest, most structured data model. Campaign objects, contact objects, campaign member objects — they map cleanly to what Engine extracts. The import path is straightforward.
 
 Three: Salesforce is the hub that connects to everything else. Build the context layer in Salesforce, and you get HubSpot, Marketo, Eloqua, and ServiceNow for free — because they all sync to or from Salesforce.
 
@@ -173,13 +173,13 @@ The deck parser is the wedge. Salesforce is the right first integration. But the
 
 Step one: deck in, Salesforce data out. That's what we just showed. That's the wedge — it's immediately useful, obviously valuable, easy to demo.
 
-Step two: the context graph. Every input — deck, brief, transcript, battlecard, ICP doc — enriches a persistent campaign context model. Over time, Helix knows your ICP better than your last PMM who left. It knows which segments work, which offers convert, which personas actually buy.
+Step two: the context graph. Every input — deck, brief, transcript, battlecard, ICP doc — enriches a persistent campaign context model. Over time, Engine knows your ICP better than your last PMM who left. It knows which segments work, which offers convert, which personas actually buy.
 
-Step three: bidirectional sync. Helix doesn't just extract from strategy docs — it reads back from execution systems. Opportunity closed? Helix updates the ICP confidence model. Email campaign underperformed? Helix flags the messaging hypothesis.
+Step three: bidirectional sync. Engine doesn't just extract from strategy docs — it reads back from execution systems. Opportunity closed? Engine updates the ICP confidence model. Email campaign underperformed? Engine flags the messaging hypothesis.
 
 The pricing model is straightforward: per seat for RevOps teams, plus per-extraction for high-volume campaigns. Enterprise deal size: $80K–$200K ARR. Six to eight enterprise customers is $1M ARR. Land ten Fortune 500 marketing orgs and you're at $10M without a consumer business in sight.
 
-The moat is the context model. Salesforce has the data. Helix has the intelligence layer that makes it usable."
+The moat is the context model. Salesforce has the data. Engine has the intelligence layer that makes it usable."
 
 ---
 
@@ -187,19 +187,19 @@ The moat is the context model. Salesforce has the data. Helix has the intelligen
 
 "The question for every enterprise marketing team right now is: how do we move faster without losing quality? The answer they keep trying is more headcount, more tools, more AI-generated content. None of that solves the translation problem.
 
-Helix solves the translation problem. And every marketing team that uses it compounds its advantage over every team that doesn't."
+Engine solves the translation problem. And every marketing team that uses it compounds its advantage over every team that doesn't."
 
 ---
 
 ## ANTICIPATED QUESTIONS + ANSWERS
 
 **"How is this different from just using ChatGPT on the deck?"**
-ChatGPT gives you prose. Helix gives you structured data with confidence labels, CRM-compatible output, and a campaign hierarchy. A CMO doesn't need a summary. They need import-ready CSVs and a scored contact list. That's the difference between a language model and a context engine.
+ChatGPT gives you prose. Engine gives you structured data with confidence labels, CRM-compatible output, and a campaign hierarchy. A CMO doesn't need a summary. They need import-ready CSVs and a scored contact list. That's the difference between a language model and a context engine.
 
 **"What stops a buyer from just doing this with their own LLM?"**
 Prompt engineering the extraction is the easy part. The hard parts are: (1) the output schema that maps to Salesforce/HubSpot/Marketo field models, (2) the contact scoring and deduplication logic, (3) the confidence labeling and gap identification that makes the output trustworthy enough for ops teams to actually use. Those are the product. The LLM is the commodity underneath.
 
-**"What's the go-to-market for Helix itself?"**
+**"What's the go-to-market for Engine itself?"**
 Land in RevOps and demand gen teams at mid-market and enterprise B2B companies. The buyer is the VP of Marketing Operations or the VP Demand Gen. The champion is whoever is tired of manually translating strategy docs into campaign builds. Initial outreach: direct to RevOps communities, conference sponsorship at Ops Stars / MOPS, content marketing around the "context tax" problem frame.
 
 **"Is this a point solution or a platform?"**

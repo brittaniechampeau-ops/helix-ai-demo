@@ -190,10 +190,10 @@ hr { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
   <span class="pnav-brand">✦</span>
   <div class="pnav-sep"></div>
   <span class="pnav-tool"><span class="pnav-dot" style="background:var(--d)"></span>Discover</span>
-  <span class="pnav-tool"><span class="pnav-dot" style="background:var(--f)"></span>Fuse</span>
-  <span class="pnav-tool"><span class="pnav-dot" style="background:var(--s)"></span>Signal</span>
+  <span class="pnav-tool"><span class="pnav-dot" style="background:var(--f)"></span>Resolve</span>
+  <span class="pnav-tool"><span class="pnav-dot" style="background:var(--s)"></span>Intelligence</span>
   <span class="pnav-tool"><span class="pnav-dot" style="background:var(--v)"></span>Vector</span>
-  <span class="pnav-tool"><span class="pnav-dot" style="background:var(--h)"></span>Helix</span>
+  <span class="pnav-tool"><span class="pnav-dot" style="background:var(--h)"></span>Engine</span>
 </div>
 
 <p class="page-eyebrow">Britt Bowman LLC · Platform overview</p>
@@ -208,14 +208,14 @@ hr { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
   </div>
   <div class="flow-arrow">→</div>
   <div class="flow-tool">
-    <div class="flow-icon" style="background:#063d4a">F</div>
-    <div class="flow-label" style="color:var(--f)">Fuse</div>
+    <div class="flow-icon" style="background:#063d4a">R</div>
+    <div class="flow-label" style="color:var(--f)">Resolve</div>
     <div class="flow-sub">Taxonomy</div>
   </div>
   <div class="flow-arrow">→</div>
   <div class="flow-tool">
-    <div class="flow-icon" style="background:#0e2060">S</div>
-    <div class="flow-label" style="color:var(--s)">Signal</div>
+    <div class="flow-icon" style="background:#0e2060">I</div>
+    <div class="flow-label" style="color:var(--s)">Intelligence</div>
     <div class="flow-sub">Intelligence</div>
   </div>
   <div class="flow-arrow">→</div>
@@ -226,14 +226,14 @@ hr { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
   </div>
   <div class="flow-arrow">→</div>
   <div class="flow-tool">
-    <div class="flow-icon" style="background:#3d2008">H</div>
-    <div class="flow-label" style="color:var(--h)">Helix</div>
+    <div class="flow-icon" style="background:#3d2008">E</div>
+    <div class="flow-label" style="color:var(--h)">Engine</div>
     <div class="flow-sub">Execution</div>
   </div>
 </div>
 
 <div class="callout">
-  All five tools share a single <code>practices</code> table in Supabase, keyed by email. Discover writes the readiness assessment. Vector reads it back and surfaces a track recommendation before the diagnostic starts. Fuse and Signal persist their own state in namespaced columns. One login, one record, five tools.
+  All five tools share a single <code>practices</code> table in Supabase, keyed by email. Discover writes the readiness assessment. Vector reads it back and surfaces a track recommendation before the diagnostic starts. Resolve and Intelligence persist their own state in namespaced columns. One login, one record, five tools.
 </div>
 
 <p class="section-eyebrow">Tool 1 — Discover</p>
@@ -255,14 +255,14 @@ hr { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
       <div class="rr-headline">Muoro — Strategy + Execution</div>
       <div class="rr-sub">Based on the readiness assessment, we recommend a 3-tool engagement in the sequence below.</div>
       <div class="module-row">
-        <div class="mod" style="color:rgba(255,255,255,0.2);border-color:rgba(255,255,255,0.07)">◈ Fuse · not yet</div>
-        <div class="mod" style="color:var(--s);border-color:rgba(91,140,255,0.3)">◉ Signal</div>
+        <div class="mod" style="color:rgba(255,255,255,0.2);border-color:rgba(255,255,255,0.07)">◈ Resolve · not yet</div>
+        <div class="mod" style="color:var(--s);border-color:rgba(91,140,255,0.3)">◉ Intelligence</div>
         <div class="mod" style="color:var(--v);border-color:rgba(59,191,163,0.3)">◆ Vector</div>
-        <div class="mod" style="color:var(--h);border-color:rgba(255,138,61,0.3)">◇ Helix</div>
+        <div class="mod" style="color:var(--h);border-color:rgba(255,138,61,0.3)">◇ Engine</div>
       </div>
       <div class="score-grid">
         <div class="score-cell">
-          <div class="sc-label" style="color:var(--f)">Fuse — Taxonomy</div>
+          <div class="sc-label" style="color:var(--f)">Resolve — Taxonomy</div>
           <div class="sc-bar-bg"><div class="sc-bar" style="background:var(--f);width:100%"></div></div>
           <div class="sc-row">
             <span class="sc-badge" style="background:rgba(16,185,129,0.12);color:#10b981">High</span>
@@ -270,7 +270,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
           </div>
         </div>
         <div class="score-cell">
-          <div class="sc-label" style="color:var(--s)">Signal — Signal</div>
+          <div class="sc-label" style="color:var(--s)">Intelligence — Intelligence</div>
           <div class="sc-bar-bg"><div class="sc-bar" style="background:var(--s);width:100%"></div></div>
           <div class="sc-row">
             <span class="sc-badge" style="background:rgba(16,185,129,0.12);color:#10b981">High</span>
@@ -286,7 +286,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
           </div>
         </div>
         <div class="score-cell">
-          <div class="sc-label" style="color:var(--h)">Helix — Execution</div>
+          <div class="sc-label" style="color:var(--h)">Engine — Execution</div>
           <div class="sc-bar-bg"><div class="sc-bar" style="background:var(--h);width:87.5%"></div></div>
           <div class="sc-row">
             <span class="sc-badge" style="background:rgba(16,185,129,0.12);color:#10b981">High</span>
@@ -358,7 +358,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
   </tr>
   <tr>
     <td><code>modules_unlocked</code></td>
-    <td><span class="schema-owner"><span class="schema-dot" style="background:var(--d)"></span> written by Discover (Fuse / Signal / Vector / Helix)</span></td>
+    <td><span class="schema-owner"><span class="schema-dot" style="background:var(--d)"></span> written by Discover (Resolve / Intelligence / Vector / Engine)</span></td>
   </tr>
   <tr>
     <td><code>state</code></td>
@@ -366,11 +366,11 @@ hr { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
   </tr>
   <tr>
     <td><code>fuse_state</code></td>
-    <td><span class="schema-owner"><span class="schema-dot" style="background:var(--f)"></span> Fuse resolution state</span></td>
+    <td><span class="schema-owner"><span class="schema-dot" style="background:var(--f)"></span> Resolve resolution state</span></td>
   </tr>
   <tr>
     <td><code>signal_state</code></td>
-    <td><span class="schema-owner"><span class="schema-dot" style="background:var(--s)"></span> Signal APP_STATE (minus deck file)</span></td>
+    <td><span class="schema-owner"><span class="schema-dot" style="background:var(--s)"></span> Intelligence APP_STATE (minus deck file)</span></td>
   </tr>
   <tr>
     <td><code>updated_at</code></td>

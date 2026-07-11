@@ -1,11 +1,11 @@
-# Helix AI — Product Positioning Document
+# Engine — Product Positioning Document
 ## Version 1.0 | Internal Use | Pre-Launch
 
 ---
 
 ## ONE-LINE POSITIONING
 
-**Helix AI turns messy GTM strategy into structured execution context for marketing systems.**
+**Engine turns messy GTM strategy into structured execution context for marketing systems.**
 
 ---
 
@@ -19,13 +19,13 @@ Enterprise marketing teams have a context translation problem. Strategy lives in
 
 **GTM Context Engine** — a new category between strategy tools (Google Docs, PowerPoint, Notion) and execution systems (Salesforce, HubSpot, Marketo, Eloqua).
 
-Helix is not:
+Engine is not:
 - A content generation tool (not another AI writer)
 - A CRM (not replacing Salesforce)
 - A data enrichment vendor (not ZoomInfo)
 - A campaign management platform (not Marketo)
 
-Helix is the intelligence layer that translates strategy context into execution-ready data that CRM and MAP systems can consume.
+Engine is the intelligence layer that translates strategy context into execution-ready data that CRM and MAP systems can consume.
 
 ---
 
@@ -37,7 +37,7 @@ Salesforce knows who your contacts are. It doesn't know why they matter for this
 
 The problem is not a lack of data. Enterprise companies have enormous amounts of marketing data. The problem is that strategic context — the *why* behind a campaign — never makes it into the systems that run the campaign.
 
-Helix closes that gap. Not by generating more content, but by extracting, structuring, and translating the context that already exists.
+Engine closes that gap. Not by generating more content, but by extracting, structuring, and translating the context that already exists.
 
 ---
 
@@ -45,10 +45,10 @@ Helix closes that gap. Not by generating more content, but by extracting, struct
 
 **For** enterprise B2B marketing and RevOps teams
 **Who are frustrated by** the manual process of translating GTM strategy into CRM-ready campaign execution context
-**Helix AI is a** GTM context engine
+**Engine is a** GTM context engine
 **That** extracts structured campaign context from any strategy document and produces Salesforce-ready campaign hierarchies, audience segments, targeting rules, and scored contact lists
 **Unlike** manual translation, general-purpose AI tools, or data enrichment vendors
-**Helix** delivers execution-ready structured data with confidence labeling — not prose summaries — that maps directly to CRM and MAP field models
+**Engine** delivers execution-ready structured data with confidence labeling — not prose summaries — that maps directly to CRM and MAP field models
 
 ---
 
@@ -87,7 +87,7 @@ Helix closes that gap. Not by generating more content, but by extracting, struct
 → Enables rapid campaign iteration without restarting the ops process
 
 ### Tier 4: Intelligence (Platform)
-"Helix knows our ICP better than our last PMM."
+"Engine knows our ICP better than our last PMM."
 → Campaign context accumulates over time into a persistent knowledge model
 → Bidirectional sync between strategy inputs and execution outcomes
 
@@ -96,22 +96,22 @@ Helix closes that gap. Not by generating more content, but by extracting, struct
 ## MESSAGING THEMES
 
 ### Theme 1: The Translation Tax
-Every campaign is a translation project. Every translation project costs time, money, and strategic fidelity. Helix removes the translation tax.
+Every campaign is a translation project. Every translation project costs time, money, and strategic fidelity. Engine removes the translation tax.
 
 ### Theme 2: Strategy ≠ Context
-A great deck is not execution context. A great brief is not a Salesforce segment. Helix converts strategy into the structured data your CRM actually needs.
+A great deck is not execution context. A great brief is not a Salesforce segment. Engine converts strategy into the structured data your CRM actually needs.
 
 ### Theme 3: Not More AI Content — More AI Context
 The market is saturated with AI tools that generate content. Enterprise marketers don't need more content. They need context: structured, labeled, CRM-ready data that tells their systems what to do and why.
 
 ### Theme 4: The Context Layer
-CRM is the execution layer. Strategy docs are the intelligence layer. Helix is the context layer that connects them. Every CRM needs a context layer. Helix is the first one built for GTM.
+CRM is the execution layer. Strategy docs are the intelligence layer. Engine is the context layer that connects them. Every CRM needs a context layer. Engine is the first one built for GTM.
 
 ---
 
 ## COMPETITIVE DIFFERENTIATION
 
-| Dimension | Generic LLMs (ChatGPT, Claude) | Data Enrichment (ZoomInfo, Clearbit) | CRM AI Features (Salesforce Einstein) | **Helix AI** |
+| Dimension | Generic LLMs (ChatGPT, Claude) | Data Enrichment (ZoomInfo, Clearbit) | CRM AI Features (Salesforce Einstein) | **Engine** |
 |---|---|---|---|---|
 | Reads strategy documents | ✅ | ❌ | ❌ | ✅ |
 | Produces structured JSON output | ❌ (prose only) | ✅ | Partial | ✅ |
@@ -156,9 +156,9 @@ CRM is the execution layer. Strategy docs are the intelligence layer. Helix is t
 
 **The Expansion (v2):** Multi-document ingestion — briefs, transcripts, battlecards, ICP docs, win/loss reports. Persistent campaign context model that improves over time.
 
-**The Platform (v3):** Bidirectional sync. Helix reads from execution outcomes (opportunity progression, email engagement, pipeline velocity) to update and refine the context model. Becomes the institutional memory of GTM strategy.
+**The Platform (v3):** Bidirectional sync. Engine reads from execution outcomes (opportunity progression, email engagement, pipeline velocity) to update and refine the context model. Becomes the institutional memory of GTM strategy.
 
-**The Moat:** The context model. Helix learns what works for each company, each segment, each persona. That model is not portable. Switching means starting over.
+**The Moat:** The context model. Engine learns what works for each company, each segment, each persona. That model is not portable. Switching means starting over.
 
 ---
 
@@ -168,11 +168,11 @@ Enterprise marketing is not failing because of bad strategy. It's failing becaus
 
 The gap between a PowerPoint and a Salesforce campaign is still a human. Three weeks, three handoffs, 30% fidelity loss. For every campaign.
 
-Helix AI closes that gap. We built the context translation layer that enterprise GTM teams have been trying to hire their way through.
+Engine closes that gap. We built the context translation layer that enterprise GTM teams have been trying to hire their way through.
 
 The result: faster campaigns, higher fidelity execution, and for the first time — a CRM that actually knows what your strategy says.
 
 ---
 
-*Helix AI | GTM Context Engine*
+*Engine | GTM Context Engine*
 *"From deck to execution. Instantly."*

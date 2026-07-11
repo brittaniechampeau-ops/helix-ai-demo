@@ -302,16 +302,16 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
     <span class="pnav-dot" style="background:#8B7FEC"></span>Discover
   </a>
   <a class="pnav-tool pnav-locked" href="#">
-    <span class="pnav-dot" style="background:#4DE8FF"></span>Fuse
+    <span class="pnav-dot" style="background:#4DE8FF"></span>Resolve
   </a>
   <a class="pnav-tool pnav-locked" href="#">
-    <span class="pnav-dot" style="background:#5B8CFF"></span>Signal
+    <span class="pnav-dot" style="background:#5B8CFF"></span>Intelligence
   </a>
   <a class="pnav-tool" href="/vector.html">
     <span class="pnav-dot" style="background:#3BBFA3"></span>Vector
   </a>
   <a class="pnav-tool pnav-locked" href="#">
-    <span class="pnav-dot" style="background:#FF8A3D"></span>Helix
+    <span class="pnav-dot" style="background:#FF8A3D"></span>Engine
   </a>
 </div>
 
@@ -501,9 +501,9 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
       <!-- STEP 1: TAXONOMY -->
       <div class="section-panel" id="panel-1">
         <div class="step-header">
-          <div class="step-eyebrow" style="color:var(--cyan)">Fuse — Taxonomy readiness</div>
+          <div class="step-eyebrow" style="color:var(--cyan)">Resolve — Taxonomy readiness</div>
           <div class="step-title">Vocabulary + segmentation</div>
-          <div class="step-desc">How clearly defined is their language for who they serve and what they do? This determines whether Fuse is a foundation or a refinement.</div>
+          <div class="step-desc">How clearly defined is their language for who they serve and what they do? This determines whether Resolve is a foundation or a refinement.</div>
         </div>
         <div class="question-list" id="qlist-0"></div>
       </div>
@@ -511,9 +511,9 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
       <!-- STEP 2: SIGNAL -->
       <div class="section-panel" id="panel-2">
         <div class="step-header">
-          <div class="step-eyebrow" style="color:var(--blue)">Signal — Data readiness</div>
+          <div class="step-eyebrow" style="color:var(--blue)">Intelligence — Data readiness</div>
           <div class="step-title">Intelligence + tracking</div>
-          <div class="step-desc">How much usable data do they have? Signal is most valuable when there's existing engagement and pipeline data worth analyzing.</div>
+          <div class="step-desc">How much usable data do they have? Intelligence is most valuable when there's existing engagement and pipeline data worth analyzing.</div>
         </div>
         <div class="question-list" id="qlist-1"></div>
       </div>
@@ -531,9 +531,9 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
       <!-- STEP 4: EXECUTION -->
       <div class="section-panel" id="panel-4">
         <div class="step-header">
-          <div class="step-eyebrow" style="color:var(--orange)">Helix — Execution readiness</div>
+          <div class="step-eyebrow" style="color:var(--orange)">Engine — Execution readiness</div>
           <div class="step-title">Content + delivery</div>
-          <div class="step-desc">Do they have the infrastructure to execute? Helix accelerates orgs that are already in motion — it doesn't create motion from nothing.</div>
+          <div class="step-desc">Do they have the infrastructure to execute? Engine accelerates orgs that are already in motion — it doesn't create motion from nothing.</div>
         </div>
         <div class="question-list" id="qlist-3"></div>
       </div>
@@ -825,7 +825,7 @@ function updateFooter() {
 // ── RESULTS ──────────────────────────────────────────────
 const SECTION_META = [
   { name: 'Taxonomy', tool: 'FUSE', color: 'var(--cyan)', bg: 'var(--cyan-bg)', border: 'var(--cyan-border)' },
-  { name: 'Signal', tool: 'SIGNAL', color: 'var(--blue)', bg: 'var(--blue-bg)', border: 'var(--blue-border)' },
+  { name: 'Intelligence', tool: 'SIGNAL', color: 'var(--blue)', bg: 'var(--blue-bg)', border: 'var(--blue-border)' },
   { name: 'Strategy', tool: 'VECTOR', color: 'var(--teal)', bg: 'var(--teal-bg)', border: 'var(--teal-dim)' },
   { name: 'Execution', tool: 'HELIX', color: 'var(--orange)', bg: 'var(--orange-bg)', border: 'var(--orange-border)' },
 ];
@@ -839,15 +839,15 @@ function levelFor(score) {
 const RECS = [
   // Taxonomy
   [
-    'Fuse is essential — vocabulary and segmentation need to be built from scratch before anything else.',
-    'Fuse will sharpen segmentation and standardize language across the team — high-value early step.',
-    'Taxonomy is solid. Fuse can be a refinement exercise or skipped — Vector can start immediately.',
+    'Resolve is essential — vocabulary and segmentation need to be built from scratch before anything else.',
+    'Resolve will sharpen segmentation and standardize language across the team — high-value early step.',
+    'Taxonomy is solid. Resolve can be a refinement exercise or skipped — Vector can start immediately.',
   ],
   // Signal
   [
-    'Signal isn\'t ready yet — not enough data in the system. Revisit after 90 days of active tracking.',
-    'Signal is worth activating. There\'s enough data to surface meaningful patterns and funnel insights.',
-    'Signal is a strong fit. Rich data exists — activate it early to inform positioning and content strategy.',
+    'Intelligence isn\'t ready yet — not enough data in the system. Revisit after 90 days of active tracking.',
+    'Intelligence is worth activating. There\'s enough data to surface meaningful patterns and funnel insights.',
+    'Intelligence is a strong fit. Rich data exists — activate it early to inform positioning and content strategy.',
   ],
   // Strategy
   [
@@ -857,18 +857,18 @@ const RECS = [
   ],
   // Execution
   [
-    'Helix is premature — execution infrastructure needs to be built first. Not recommended this cycle.',
-    'Helix is a solid Phase 2. Get the strategy locked first, then activate the content engine.',
-    'Helix is ready to activate. Content infrastructure exists — plug it in and scale what\'s working.',
+    'Engine is premature — execution infrastructure needs to be built first. Not recommended this cycle.',
+    'Engine is a solid Phase 2. Get the strategy locked first, then activate the content engine.',
+    'Engine is ready to activate. Content infrastructure exists — plug it in and scale what\'s working.',
   ],
 ];
 
 function moduleConfig(tool, included) {
   const configs = {
-    FUSE:   { icon:'◈', label:'Fuse',   color:'var(--cyan)',   bg:'var(--cyan-bg)',   border:'var(--cyan-border)' },
-    SIGNAL: { icon:'◉', label:'Signal', color:'var(--blue)',   bg:'var(--blue-bg)',   border:'var(--blue-border)' },
-    VECTOR: { icon:'◆', label:'Vector', color:'var(--teal)',   bg:'var(--teal-bg)',   border:'var(--teal-dim)' },
-    HELIX:  { icon:'◇', label:'Helix',  color:'var(--orange)', bg:'var(--orange-bg)', border:'var(--orange-border)' },
+    FUSE:   { icon:'◈', label:'Resolve',      color:'var(--cyan)',   bg:'var(--cyan-bg)',   border:'var(--cyan-border)' },
+    SIGNAL: { icon:'◉', label:'Intelligence', color:'var(--blue)',   bg:'var(--blue-bg)',   border:'var(--blue-border)' },
+    VECTOR: { icon:'◆', label:'Vector',       color:'var(--teal)',   bg:'var(--teal-bg)',   border:'var(--teal-dim)' },
+    HELIX:  { icon:'◇', label:'Engine',       color:'var(--orange)', bg:'var(--orange-bg)', border:'var(--orange-border)' },
   };
   const c = configs[tool];
   return { ...c, included };
@@ -894,7 +894,7 @@ function buildRoadmap(scores) {
     steps.push({
       tool: 'SIGNAL', color: 'var(--blue)', bg: 'var(--blue-bg)', border: 'var(--blue-border)',
       action: 'Activate intelligence layer',
-      detail: 'Connect CRM and engagement data. Signal surfaces which channels, content, and client archetypes are already working — so Vector positioning is grounded in evidence.',
+      detail: 'Connect CRM and engagement data. Intelligence surfaces which channels, content, and client archetypes are already working — so Vector positioning is grounded in evidence.',
       weeks: '2–3 wks',
     });
   }
@@ -911,7 +911,7 @@ function buildRoadmap(scores) {
     steps.push({
       tool: 'HELIX', color: 'var(--orange)', bg: 'var(--orange-bg)', border: 'var(--orange-border)',
       action: 'Launch content engine',
-      detail: 'Take Vector\'s positioning and offer framework into Helix — generate campaign plans, content assets, and wire into the delivery stack (HubSpot, CRM, etc.).',
+      detail: 'Take Vector\'s positioning and offer framework into Engine — generate campaign plans, content assets, and wire into the delivery stack (HubSpot, CRM, etc.).',
       weeks: ex >= 6 ? '2–4 wks' : '4–6 wks',
     });
   }
@@ -922,13 +922,13 @@ function buildRoadmap(scores) {
 function first30Items(scores, modules) {
   const [tx, sig, str, ex] = scores;
   const items = [];
-  if (modules.includes('fuse')) items.push('Complete Fuse taxonomy session — audience segments, vocabulary, content categories');
-  if (modules.includes('signal')) items.push('Connect CRM to Signal and run first engagement analysis');
+  if (modules.includes('fuse')) items.push('Complete Resolve taxonomy session — audience segments, vocabulary, content categories');
+  if (modules.includes('signal')) items.push('Connect CRM to Intelligence and run first engagement analysis');
   items.push('Run Vector diagnostic — complete all 6 steps with the practice');
   items.push('Finalize offer language and pricing from Vector\'s Positioning & Offers output');
   items.push('Send first 5 warm intro requests from Vector\'s Referral Engine');
-  if (modules.includes('helix')) items.push('Brief Helix on positioning — generate first campaign plan and content batch');
-  else items.push('Revisit Helix eligibility after first 90 days of Vector activation');
+  if (modules.includes('helix')) items.push('Brief Engine on positioning — generate first campaign plan and content batch');
+  else items.push('Revisit Engine eligibility after first 90 days of Vector activation');
   return items.slice(0,5);
 }
 
