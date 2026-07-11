@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intelligence — Market Signal Extraction</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #07090C;
+  --surface:   #0E1218;
+  --surface2:  #131920;
+  --surface3:  #171F2A;
+  --accent:    #3BBFA3;
+  --accent-dim:#1E6B5E;
+  --accent-bg: #0D2E27;
+  --blue:      #4BA8C8;
+  --blue-dim:  #1a4a6b;
+  --blue-bg:   #0D2535;
+  --purple:    #9B8FE8;
+  --purple-dim:#3a2a6b;
+  --purple-bg: #1a1535;
+  --orange:    #E8836B;
+  --orange-bg: #2e1a14;
+  --green:     #7EC87E;
+  --green-bg:  #12261a;
+  --red:       #E87070;
+  --red-bg:    #2e1414;
+  --amber:     #E8C36B;
+  --amber-bg:  #2e2414;
+  --text:      #E8EDF3;
+  --muted:     #6B7A8D;
+  --faint:     #2A3544;
+  --border:    #1C2535;
+  --border2:   #243040;
+  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+  --mono: 'SF Mono', 'Fira Code', monospace;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-size: 14px;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px; height: 52px;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  flex-shrink: 0; gap: 12px;
+}
+.topbar-left { display: flex; align-items: center; gap: 12px; }
+.logo-mark {
+  width: 28px; height: 28px; border-radius: 7px; flex-shrink: 0;
+  background: linear-gradient(135deg, #9B8FE8 0%, #6B5FD8 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+}
+.logo-name { font-size: 16px; font-weight: 700; letter-spacing: -0.3px; }
+.logo-sub  { font-size: 12px; color: var(--muted); margin-left: 4px; }
+.topbar-divider { width: 1px; height: 20px; background: var(--border); }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.api-status {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--muted);
+}
+.status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.status-dot.ok  { background: var(--green); box-shadow: 0 0 6px rgba(126,200,126,0.5); }
+.status-dot.err { background: var(--red); }
+.user-email { font-size: 12px; color: var(--muted); }
+.btn-signout {
+  background: none; border: 1px solid var(--border2); color: var(--muted);
+  padding: 4px 10px; border-radius: 6px; font-size: 12px; cursor: pointer;
+  font-family: var(--font); transition: all 0.12s;
+}
+.btn-signout:hover { border-color: var(--muted); color: var(--text); }
+
+/* ── PLATFORM NAV ── */
+.platform-nav {
+  display: flex; align-items: center; gap: 2px;
+  padding: 0 20px; height: 44px;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  flex-shrink: 0; overflow-x: auto;
+}
+.pnav-item {
+  display: flex; align-items: center; gap: 7px;
+  padding: 5px 13px; border-radius: 6px; cursor: pointer;
+  font-size: 13px; color: var(--muted); font-weight: 500;
+  border: none; background: none; font-family: var(--font);
+  text-decoration: none; transition: all 0.12s; white-space: nowrap;
+}
+.pnav-item:hover { background: var(--surface2); color: var(--text); }
+.pnav-item.active { background: var(--purple-bg); color: var(--purple); }
+.pnav-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.pnav-sep { width: 1px; height: 16px; background: var(--border); margin: 0 4px; }
+
+/* ── API KEY BANNER ── */
+.api-banner {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 20px; background: rgba(155,143,232,0.08);
+  border-bottom: 1px solid rgba(155,143,232,0.2); flex-shrink: 0;
+}
+.api-banner-text { font-size: 13px; color: var(--text); flex: 1; }
+.api-banner input {
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 6px; padding: 6px 10px; font-size: 12px; color: var(--text);
+  font-family: var(--mono); width: 340px; outline: none;
+}
+.api-banner input:focus { border-color: var(--purple); }
+.btn-sm {
+  padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 500;
+  cursor: pointer; border: none; font-family: var(--font); transition: all 0.12s;
+}
+.btn-purple { background: var(--purple); color: #fff; }
+.btn-purple:hover { background: #8a7ed6; }
+.btn-ghost-sm {
+  background: none; border: 1px solid var(--border2); color: var(--muted);
+  padding: 5px 10px; border-radius: 6px; font-size: 12px; cursor: pointer;
+  font-family: var(--font);
+}
+.btn-ghost-sm:hover { border-color: var(--muted); color: var(--text); }
+
+/* ── MAIN LAYOUT ── */
+.main { display: flex; flex: 1; overflow: hidden; }
+
+/* ── LEFT PANEL ── */
+.left-panel {
+  width: 420px; flex-shrink: 0;
+  background: var(--surface); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.panel-header {
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.panel-title { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; }
+
+/* Drop zone */
+.drop-zone {
+  margin: 14px; border: 2px dashed var(--border2);
+  border-radius: 10px; padding: 24px 16px; text-align: center;
+  cursor: pointer; transition: all 0.15s; background: var(--surface2);
+  flex-shrink: 0;
+}
+.drop-zone:hover, .drop-zone.dragover {
+  border-color: var(--purple); background: rgba(155,143,232,0.05);
+}
+.drop-zone-icon { font-size: 28px; margin-bottom: 8px; }
+.drop-zone-label { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+.drop-zone-sub   { font-size: 12px; color: var(--muted); }
+#fileInput { display: none; }
+
+/* File list */
+.file-list { flex: 1; overflow-y: auto; padding: 0 14px 14px; }
+.file-card {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 12px; margin-bottom: 8px;
+}
+.file-card-top {
+  display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px;
+}
+.file-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.file-meta { flex: 1; min-width: 0; }
+.file-name {
+  font-size: 13px; font-weight: 500; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.file-size { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.file-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.file-status {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.3px; padding: 2px 7px;
+  border-radius: 4px; text-transform: uppercase;
+}
+.status-queued     { background: var(--surface3); color: var(--muted); }
+.status-processing { background: rgba(155,143,232,0.15); color: var(--purple); }
+.status-complete   { background: rgba(126,200,126,0.12); color: var(--green); }
+.status-error      { background: var(--red-bg); color: var(--red); }
+.signal-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; background: var(--purple-bg); color: var(--purple);
+  padding: 2px 7px; border-radius: 10px; font-weight: 600;
+}
+.btn-del {
+  background: none; border: none; color: var(--muted); cursor: pointer;
+  font-size: 16px; padding: 0 2px; line-height: 1; transition: color 0.12s;
+}
+.btn-del:hover { color: var(--red); }
+.progress-bar {
+  height: 3px; background: var(--border); border-radius: 2px; overflow: hidden;
+  margin-bottom: 8px;
+}
+.progress-fill {
+  height: 100%; background: var(--purple);
+  border-radius: 2px; transition: width 0.3s ease;
+}
+.file-card-actions { display: flex; gap: 6px; }
+.btn-extract {
+  background: var(--purple-bg); border: 1px solid rgba(155,143,232,0.3);
+  color: var(--purple); padding: 5px 12px; border-radius: 6px;
+  font-size: 12px; font-weight: 500; cursor: pointer; font-family: var(--font);
+  transition: all 0.12s;
+}
+.btn-extract:hover { background: rgba(155,143,232,0.2); }
+.file-error-text { font-size: 11px; color: var(--red); margin-top: 4px; }
+
+/* ── RIGHT PANEL ── */
+.right-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+.filter-bar {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 12px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+  background: var(--surface);
+}
+.filter-pills { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; }
+.pill {
+  padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500;
+  cursor: pointer; border: 1px solid var(--border2); background: var(--surface2);
+  color: var(--muted); transition: all 0.12s; font-family: var(--font);
+}
+.pill:hover { border-color: var(--muted); color: var(--text); }
+.pill.active { border-color: var(--purple); background: var(--purple-bg); color: var(--purple); }
+.signal-total {
+  font-size: 12px; color: var(--muted);
+  white-space: nowrap;
+}
+.filter-actions { display: flex; gap: 6px; }
+.btn-export {
+  background: var(--accent-bg); border: 1px solid rgba(59,191,163,0.3);
+  color: var(--accent); padding: 5px 12px; border-radius: 6px;
+  font-size: 12px; font-weight: 500; cursor: pointer; font-family: var(--font);
+  transition: all 0.12s;
+}
+.btn-export:hover { background: rgba(59,191,163,0.15); }
+.btn-clear {
+  background: none; border: 1px solid var(--border2); color: var(--muted);
+  padding: 5px 10px; border-radius: 6px; font-size: 12px; cursor: pointer;
+  font-family: var(--font); transition: all 0.12s;
+}
+.btn-clear:hover { border-color: var(--red); color: var(--red); }
+
+/* Signals grid */
+.signals-area { flex: 1; overflow-y: auto; padding: 20px; }
+.signals-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+}
+
+.signal-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px; position: relative;
+  transition: border-color 0.12s;
+}
+.signal-card:hover { border-color: var(--border2); }
+.signal-card:hover .signal-del { opacity: 1; }
+.signal-del {
+  position: absolute; top: 10px; right: 10px;
+  background: none; border: none; color: var(--muted); cursor: pointer;
+  font-size: 16px; opacity: 0; transition: opacity 0.12s, color 0.12s;
+  padding: 0; line-height: 1;
+}
+.signal-del:hover { color: var(--red); }
+.signal-type-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 9px; border-radius: 4px; font-size: 11px; font-weight: 600;
+  letter-spacing: 0.4px; text-transform: uppercase; margin-bottom: 10px;
+}
+.type-BUYER_SIGNAL   { background: var(--blue-bg);   color: var(--blue);   border: 1px solid rgba(75,168,200,0.25); }
+.type-MARKET_SIGNAL  { background: var(--purple-bg); color: var(--purple); border: 1px solid rgba(155,143,232,0.25); }
+.type-COMPETITIVE    { background: var(--orange-bg); color: var(--orange); border: 1px solid rgba(232,131,107,0.25); }
+.type-TREND          { background: var(--accent-bg); color: var(--accent); border: 1px solid rgba(59,191,163,0.25); }
+.type-PAIN           { background: var(--red-bg);    color: var(--red);    border: 1px solid rgba(232,112,112,0.25); }
+.type-BUDGET         { background: var(--green-bg);  color: var(--green);  border: 1px solid rgba(126,200,126,0.25); }
+.signal-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px; line-height: 1.4; padding-right: 20px; }
+.signal-text  { font-size: 12px; color: var(--muted); line-height: 1.6; margin-bottom: 10px; }
+.signal-footer { display: flex; align-items: center; justify-content: space-between; }
+.confidence-dot {
+  width: 7px; height: 7px; border-radius: 50%; display: inline-block;
+  margin-right: 5px; vertical-align: middle;
+}
+.conf-high   { background: var(--green); }
+.conf-medium { background: var(--amber); }
+.conf-low    { background: var(--muted); }
+.confidence-label { font-size: 11px; color: var(--muted); text-transform: capitalize; vertical-align: middle; }
+.signal-source { font-size: 11px; color: var(--faint); font-family: var(--mono);
+  max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Empty state */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 100%; text-align: center; color: var(--muted); padding: 40px;
+}
+.empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.4; }
+.empty-title { font-size: 16px; font-weight: 600; color: var(--muted); margin-bottom: 8px; }
+.empty-sub   { font-size: 13px; color: var(--faint); max-width: 320px; line-height: 1.6; }
+
+/* ── BOTTOM BAR ── */
+.bottom-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px; height: 52px; flex-shrink: 0;
+  background: var(--surface); border-top: 1px solid var(--border);
+}
+.bottom-stat { font-size: 13px; color: var(--muted); }
+.bottom-stat strong { color: var(--text); }
+.btn-continue {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--accent); color: #fff; padding: 8px 18px;
+  border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
+  border: none; font-family: var(--font); text-decoration: none;
+  transition: background 0.12s;
+}
+.btn-continue:hover { background: #32a98e; }
+
+/* ── TOASTS ── */
+.toast-container {
+  position: fixed; bottom: 68px; right: 20px; z-index: 5000;
+  display: flex; flex-direction: column; gap: 8px; pointer-events: none;
+}
+.toast {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 8px; padding: 10px 14px; font-size: 13px;
+  color: var(--text); min-width: 240px; max-width: 360px;
+  animation: slideIn 0.2s ease; pointer-events: all;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+.toast.error { border-color: rgba(232,112,112,0.4); }
+.toast.success { border-color: rgba(59,191,163,0.4); }
+@keyframes slideIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+@keyframes slideOut { from { opacity:1; } to { opacity:0; transform:translateY(4px); } }
+.toast.removing { animation: slideOut 0.15s ease forwards; }
+
+/* ── LOGIN SCREEN ── */
+#loginScreen {
+  display: none; position: fixed; inset: 0;
+  background: var(--bg); z-index: 9999;
+  align-items: center; justify-content: center;
+}
+.login-box {
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 14px; padding: 36px 32px; width: 360px;
+}
+.login-logo {
+  width: 44px; height: 44px; border-radius: 12px; margin: 0 auto 18px;
+  background: linear-gradient(135deg, #9B8FE8 0%, #6B5FD8 100%);
+  display: flex; align-items: center; justify-content: center; font-size: 22px;
+}
+.login-title { font-size: 22px; font-weight: 700; text-align: center; margin-bottom: 6px; }
+.login-sub   { font-size: 13px; color: var(--muted); text-align: center; margin-bottom: 24px; }
+.login-input {
+  width: 100%; padding: 10px 14px; background: var(--surface2);
+  border: 1px solid var(--border2); border-radius: 8px; color: var(--text);
+  font-size: 14px; margin-bottom: 12px; outline: none; font-family: var(--font);
+}
+.login-input:focus { border-color: var(--purple); }
+.btn-magic {
+  width: 100%; padding: 11px; background: var(--purple);
+  border: none; border-radius: 8px; color: white;
+  font-size: 15px; font-weight: 600; cursor: pointer; font-family: var(--font);
+  transition: background 0.12s;
+}
+.btn-magic:hover { background: #8a7ed6; }
+.login-sent  { display: none; text-align: center; color: var(--muted); font-size: 13px; padding: 8px 0; }
+.login-error { display: none; color: var(--red); font-size: 13px; margin-top: 8px; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">🧠</div>
+    <h2 class="login-title">Intelligence</h2>
+    <p class="login-sub">Market Signal Extraction · Sign in to continue</p>
+    <div id="loginForm">
+      <input id="loginEmail" class="login-input" type="email" placeholder="your@email.com">
+      <button class="btn-magic" onclick="sendMagicLink()">Send magic link</button>
+    </div>
+    <div id="loginSent" class="login-sent">
+      <div style="font-size:28px;margin-bottom:10px;">📬</div>
+      <strong style="color:var(--text)">Check your email</strong>
+      <p style="margin-top:6px;">Click the link we sent to sign in.</p>
+    </div>
+    <p id="loginError" class="login-error"></p>
+  </div>
+</div>
+
+<!-- APP SHELL -->
+<div id="app" style="display:none;flex-direction:column;height:100vh;">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="logo-mark">🧠</div>
+      <span class="logo-name">Intelligence</span>
+      <span class="logo-sub">Market Signals</span>
+    </div>
+    <div class="topbar-right">
+      <div class="api-status">
+        <div class="status-dot" id="apiDot"></div>
+        <span id="apiLabel">No API key</span>
+      </div>
+      <div class="topbar-divider"></div>
+      <span class="user-email" id="userEmail"></span>
+      <button class="btn-signout" onclick="signOut()">Sign out</button>
+    </div>
+  </div>
+
+  <!-- PLATFORM NAV -->
+  <nav class="platform-nav">
+    <a class="pnav-item" href="discover.html">
+      <span class="pnav-dot" style="background:#8B7FEC"></span>Discover
+    </a>
+    <div class="pnav-sep"></div>
+    <a class="pnav-item" href="resolve.html">
+      <span class="pnav-dot" style="background:#4BA8C8"></span>Resolve
+    </a>
+    <div class="pnav-sep"></div>
+    <span class="pnav-item active">
+      <span class="pnav-dot" style="background:#9B8FE8"></span>Intelligence
+    </span>
+    <div class="pnav-sep"></div>
+    <a class="pnav-item" href="vector.html">
+      <span class="pnav-dot" style="background:#3BBFA3"></span>Vector
+    </a>
+    <div class="pnav-sep"></div>
+    <a class="pnav-item" href="#">
+      <span class="pnav-dot" style="background:#E8836B"></span>Engine
+    </a>
+  </nav>
+
+  <!-- API KEY BANNER -->
+  <div id="apiBanner" class="api-banner" style="display:none;">
+    <span class="api-banner-text">⚠️ No Anthropic API key set — paste yours to enable signal extraction.</span>
+    <input id="apiKeyInput" type="password" placeholder="sk-ant-api03-…" autocomplete="off">
+    <button class="btn-sm btn-purple" onclick="saveApiKey()">Save</button>
+    <button class="btn-ghost-sm" onclick="dismissBanner()">✕</button>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- LEFT PANEL -->
+    <div class="left-panel">
+      <div class="panel-header">
+        <div class="panel-title">Documents</div>
+      </div>
+
+      <!-- DROP ZONE -->
+      <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+        <div class="drop-zone-icon">📂</div>
+        <div class="drop-zone-label">Drop files here or click to upload</div>
+        <div class="drop-zone-sub">.vtt · .txt · .pdf · .docx · .pptx · .xlsx · .csv</div>
+      </div>
+      <input type="file" id="fileInput" multiple accept=".vtt,.txt,.pdf,.docx,.pptx,.xlsx,.csv">
+
+      <!-- FILE LIST -->
+      <div class="file-list" id="fileList">
+        <!-- file cards injected here -->
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="right-panel">
+
+      <!-- FILTER BAR -->
+      <div class="filter-bar">
+        <div class="filter-pills" id="filterPills">
+          <button class="pill active" data-filter="ALL" onclick="setFilter('ALL',this)">All</button>
+          <button class="pill" data-filter="BUYER_SIGNAL" onclick="setFilter('BUYER_SIGNAL',this)">Buyer Signal</button>
+          <button class="pill" data-filter="MARKET_SIGNAL" onclick="setFilter('MARKET_SIGNAL',this)">Market Signal</button>
+          <button class="pill" data-filter="COMPETITIVE" onclick="setFilter('COMPETITIVE',this)">Competitive</button>
+          <button class="pill" data-filter="TREND" onclick="setFilter('TREND',this)">Trend</button>
+          <button class="pill" data-filter="PAIN" onclick="setFilter('PAIN',this)">Pain</button>
+          <button class="pill" data-filter="BUDGET" onclick="setFilter('BUDGET',this)">Budget</button>
+        </div>
+        <span class="signal-total" id="signalTotal">0 signals</span>
+        <div class="filter-actions">
+          <button class="btn-export" onclick="exportSignals()">↓ Export Signals</button>
+          <button class="btn-clear" onclick="clearAllSignals()">Clear All</button>
+        </div>
+      </div>
+
+      <!-- SIGNALS AREA -->
+      <div class="signals-area" id="signalsArea">
+        <div class="empty-state" id="emptyState">
+          <div class="empty-icon">🔍</div>
+          <div class="empty-title">No signals yet</div>
+          <div class="empty-sub">Upload discovery call transcripts, deal briefs, research PDFs, or competitive docs on the left to extract buyer and market signals.</div>
+        </div>
+        <div class="signals-grid" id="signalsGrid" style="display:none;"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- BOTTOM BAR -->
+  <div class="bottom-bar">
+    <div class="bottom-stat"><strong id="totalCount">0</strong> signals extracted across all documents</div>
+    <a class="btn-continue" href="vector.html">Continue to Vector →</a>
+  </div>
+
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+/* ── CONFIG ── */
+const SUPA_URL = 'https://ilhljjkiijmjpwinovzj.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsaGxqamtpaWptanB3aW5vdnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MTk4MjIsImV4cCI6MjA5OTE5NTgyMn0.w8asDSA-rXuaDfujC2dr4J-EKCzlCVABOuq3VQeeFsE';
+const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+/* ── API KEY ── */
+function getApiKey() { return localStorage.getItem('vec_anthropic_key'); }
+
+function updateApiStatus() {
+  const key = getApiKey();
+  const dot = document.getElementById('apiDot');
+  const lbl = document.getElementById('apiLabel');
+  if (key) {
+    dot.className = 'status-dot ok';
+    lbl.textContent = 'API key set';
+    document.getElementById('apiBanner').style.display = 'none';
+  } else {
+    dot.className = 'status-dot err';
+    lbl.textContent = 'No API key';
+    document.getElementById('apiBanner').style.display = 'flex';
+  }
+}
+
+function saveApiKey() {
+  const val = document.getElementById('apiKeyInput').value.trim();
+  if (!val) return;
+  localStorage.setItem('vec_anthropic_key', val);
+  document.getElementById('apiKeyInput').value = '';
+  updateApiStatus();
+  showToast('API key saved', 'success');
+}
+
+function dismissBanner() {
+  document.getElementById('apiBanner').style.display = 'none';
+}
+
+/* ── AUTH ── */
+async function sendMagicLink() {
+  const email = document.getElementById('loginEmail').value.trim();
+  if (!email) return;
+  document.getElementById('loginError').style.display = 'none';
+  const { error } = await supa.auth.signInWithOtp({
+    email,
+    options: { emailRedirectTo: 'https://vector.brittbowman.ai/intelligence.html' }
+  });
+  if (error) {
+    document.getElementById('loginError').textContent = error.message;
+    document.getElementById('loginError').style.display = 'block';
+    return;
+  }
+  document.getElementById('loginForm').style.display = 'none';
+  document.getElementById('loginSent').style.display = 'block';
+}
+
+async function signOut() {
+  await supa.auth.signOut();
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+}
+
+async function initAuth() {
+  const { data: { session } } = await supa.auth.getSession();
+  if (session) {
+    showApp(session.user);
+  } else {
+    document.getElementById('loginScreen').style.display = 'flex';
+  }
+  supa.auth.onAuthStateChange((event, session) => {
+    if (session) showApp(session.user);
+    else {
+      document.getElementById('app').style.display = 'none';
+      document.getElementById('loginScreen').style.display = 'flex';
+    }
+  });
+}
+
+function showApp(user) {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  if (user?.email) document.getElementById('userEmail').textContent = user.email;
+  updateApiStatus();
+  loadSignals();
+  renderFileList();
+}
+
+/* ── STATE ── */
+let files = [];      // { id, file, name, size, status, progress, signals, error }
+let signals = [];    // persisted signal objects
+let activeFilter = 'ALL';
+
+/* ── TOAST ── */
+function showToast(msg, type = 'info') {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ';
+  toast.innerHTML = `<span style="font-size:15px">${icon}</span><span>${msg}</span>`;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.add('removing');
+    setTimeout(() => toast.remove(), 200);
+  }, 3500);
+}
+
+/* ── DRAG & DROP ── */
+const dropZone = document.getElementById('dropZone');
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  handleFiles([...e.dataTransfer.files]);
+});
+document.getElementById('fileInput').addEventListener('change', e => {
+  handleFiles([...e.target.files]);
+  e.target.value = '';
+});
+
+/* ── FILE HANDLING ── */
+const ACCEPTED = ['.vtt','.txt','.pdf','.docx','.pptx','.xlsx','.csv'];
+
+function fileIcon(name) {
+  const ext = name.split('.').pop().toLowerCase();
+  const map = { vtt:'🎙️', txt:'📄', pdf:'📕', docx:'📝', pptx:'📊', xlsx:'📈', csv:'📋' };
+  return map[ext] || '📄';
+}
+
+function fmtSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/1024/1024).toFixed(1) + ' MB';
+}
+
+function handleFiles(fileList) {
+  fileList.forEach(f => {
+    const ext = '.' + f.name.split('.').pop().toLowerCase();
+    if (!ACCEPTED.includes(ext)) {
+      showToast(`Skipped ${f.name} — unsupported type`, 'error');
+      return;
+    }
+    const id = crypto.randomUUID();
+    files.push({ id, file: f, name: f.name, size: f.size, status: 'queued', progress: 0, signals: [], error: null });
+    showToast(`Added ${f.name}`);
+  });
+  renderFileList();
+}
+
+function renderFileList() {
+  const container = document.getElementById('fileList');
+  if (files.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+  container.innerHTML = files.map(f => `
+    <div class="file-card" id="fc-${f.id}">
+      <div class="file-card-top">
+        <div class="file-icon">${fileIcon(f.name)}</div>
+        <div class="file-meta">
+          <div class="file-name" title="${escHtml(f.name)}">${escHtml(f.name)}</div>
+          <div class="file-size">${fmtSize(f.size)}</div>
+        </div>
+        <div class="file-actions">
+          ${f.status === 'complete' ? `<span class="signal-badge">✦ ${f.signals.length}</span>` : ''}
+          <span class="file-status status-${f.status}">${f.status}</span>
+          <button class="btn-del" onclick="removeFile('${f.id}')" title="Remove">×</button>
+        </div>
+      </div>
+      ${f.status === 'processing' ? `
+        <div class="progress-bar"><div class="progress-fill" id="prog-${f.id}" style="width:${f.progress}%"></div></div>
+      ` : ''}
+      ${f.error ? `<div class="file-error-text">⚠ ${escHtml(f.error)}</div>` : ''}
+      <div class="file-card-actions">
+        ${(f.status === 'queued' || f.status === 'error') ? `
+          <button class="btn-extract" onclick="extractFile('${f.id}')">▶ Extract signals</button>
+        ` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateFileCard(id) {
+  const f = files.find(x => x.id === id);
+  if (!f) return;
+  const old = document.getElementById(`fc-${id}`);
+  if (!old) return;
+  const tmp = document.createElement('div');
+  tmp.innerHTML = `
+    <div class="file-card" id="fc-${f.id}">
+      <div class="file-card-top">
+        <div class="file-icon">${fileIcon(f.name)}</div>
+        <div class="file-meta">
+          <div class="file-name" title="${escHtml(f.name)}">${escHtml(f.name)}</div>
+          <div class="file-size">${fmtSize(f.size)}</div>
+        </div>
+        <div class="file-actions">
+          ${f.status === 'complete' ? `<span class="signal-badge">✦ ${f.signals.length}</span>` : ''}
+          <span class="file-status status-${f.status}">${f.status}</span>
+          <button class="btn-del" onclick="removeFile('${f.id}')" title="Remove">×</button>
+        </div>
+      </div>
+      ${f.status === 'processing' ? `
+        <div class="progress-bar"><div class="progress-fill" id="prog-${f.id}" style="width:${f.progress}%"></div></div>
+      ` : ''}
+      ${f.error ? `<div class="file-error-text">⚠ ${escHtml(f.error)}</div>` : ''}
+      <div class="file-card-actions">
+        ${(f.status === 'queued' || f.status === 'error') ? `
+          <button class="btn-extract" onclick="extractFile('${f.id}')">▶ Extract signals</button>
+        ` : ''}
+      </div>
+    </div>
+  `;
+  old.replaceWith(tmp.firstElementChild);
+}
+
+function removeFile(id) {
+  files = files.filter(f => f.id !== id);
+  renderFileList();
+}
+
+/* ── FILE READING ── */
+async function readFileContent(f) {
+  const ext = f.name.split('.').pop().toLowerCase();
+
+  if (ext === 'vtt' || ext === 'txt') {
+    return await readAsText(f.file);
+  }
+
+  if (ext === 'pdf' || ext === 'docx') {
+    // Best effort in browser — read raw bytes, extract printable ASCII
+    const buf = await readAsArrayBuffer(f.file);
+    const bytes = new Uint8Array(buf);
+    let text = '';
+    for (let i = 0; i < bytes.length; i++) {
+      const c = bytes[i];
+      if (c >= 32 && c < 127) text += String.fromCharCode(c);
+      else if (c === 10 || c === 13) text += '\n';
+    }
+    // Collapse whitespace runs
+    text = text.replace(/[^\S\n]{3,}/g, ' ').replace(/\n{4,}/g, '\n\n');
+    return text.substring(0, 40000);
+  }
+
+  if (ext === 'pptx') {
+    const buf = await readAsArrayBuffer(f.file);
+    const bytes = new Uint8Array(buf);
+    let raw = '';
+    for (let i = 0; i < bytes.length; i++) {
+      raw += String.fromCharCode(bytes[i]);
+    }
+    // Extract <a:t> text nodes from OOXML
+    const matches = raw.match(/<a:t[^>]*>([^<]+)<\/a:t>/g) || [];
+    return matches.map(m => m.replace(/<[^>]+>/g, '')).join(' ').substring(0, 40000);
+  }
+
+  if (ext === 'xlsx' || ext === 'csv') {
+    const buf = await readAsArrayBuffer(f.file);
+    const wb = XLSX.read(buf, { type: 'array' });
+    let result = '';
+    wb.SheetNames.forEach(name => {
+      const ws = wb.Sheets[name];
+      const json = XLSX.utils.sheet_to_json(ws, { defval: '' });
+      result += `\n--- Sheet: ${name} ---\n`;
+      result += JSON.stringify(json, null, 2).substring(0, 10000);
+    });
+    return result.substring(0, 40000);
+  }
+
+  return '';
+}
+
+function readAsText(file) {
+  return new Promise((res, rej) => {
+    const reader = new FileReader();
+    reader.onload = e => res(e.target.result);
+    reader.onerror = rej;
+    reader.readAsText(file);
+  });
+}
+
+function readAsArrayBuffer(file) {
+  return new Promise((res, rej) => {
+    const reader = new FileReader();
+    reader.onload = e => res(e.target.result);
+    reader.onerror = rej;
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+/* ── AI EXTRACTION ── */
+async function callClaude(system, user) {
+  const key = getApiKey();
+  if (!key) throw new Error('No API key');
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 1500,
+      system,
+      messages: [{ role: 'user', content: user }]
+    })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || `HTTP ${res.status}`);
+  }
+  const data = await res.json();
+  return data.content[0].text;
+}
+
+const EXTRACT_SYSTEM = `You are a B2B consulting market intelligence analyst. Extract buyer and market signals from the provided document. Return ONLY valid JSON in this exact format:
+{
+  "signals": [
+    {
+      "type": "BUYER_SIGNAL" | "MARKET_SIGNAL" | "COMPETITIVE" | "TREND" | "PAIN" | "BUDGET",
+      "title": "short 4-6 word title",
+      "text": "1-2 sentence insight, specific and actionable",
+      "confidence": "high" | "medium" | "low"
+    }
+  ]
+}
+Extract 4-8 signals. Focus on what would help a consulting firm sharpen their positioning and identify qualified buyers.`;
+
+async function extractFile(id) {
+  const f = files.find(x => x.id === id);
+  if (!f) return;
+
+  if (!getApiKey()) {
+    document.getElementById('apiBanner').style.display = 'flex';
+    document.getElementById('apiKeyInput').focus();
+    showToast('Paste your Anthropic API key to extract signals', 'error');
+    return;
+  }
+
+  f.status = 'processing';
+  f.progress = 10;
+  f.error = null;
+  updateFileCard(id);
+
+  try {
+    // Read content
+    f.progress = 30;
+    setProgress(id, 30);
+    const content = await readFileContent(f);
+    if (!content || content.trim().length < 50) throw new Error('Could not extract readable text from this file');
+
+    f.progress = 60;
+    setProgress(id, 60);
+
+    // Truncate for safety
+    const truncated = content.substring(0, 12000);
+
+    // Call Claude
+    const raw = await callClaude(EXTRACT_SYSTEM, truncated);
+    f.progress = 90;
+    setProgress(id, 90);
+
+    // Parse JSON
+    let parsed;
+    try {
+      // Extract JSON block if wrapped in markdown
+      const jsonMatch = raw.match(/\{[\s\S]*\}/);
+      parsed = JSON.parse(jsonMatch ? jsonMatch[0] : raw);
+    } catch (e) {
+      throw new Error('AI returned invalid JSON — try again');
+    }
+
+    if (!parsed.signals || !Array.isArray(parsed.signals)) throw new Error('Unexpected AI response format');
+
+    // Attach source + id
+    const newSignals = parsed.signals.map(s => ({
+      id: crypto.randomUUID(),
+      type: s.type,
+      title: s.title,
+      text: s.text,
+      confidence: s.confidence || 'medium',
+      source: f.name,
+      createdAt: new Date().toISOString()
+    }));
+
+    f.signals = newSignals;
+    f.status = 'complete';
+    f.progress = 100;
+
+    // Merge into global signals
+    signals = [...signals, ...newSignals];
+    persistSignals();
+    renderSignals();
+    updateFileCard(id);
+    showToast(`${newSignals.length} signals extracted from ${f.name}`, 'success');
+
+  } catch (err) {
+    f.status = 'error';
+    f.error = err.message;
+    updateFileCard(id);
+    showToast(`Error: ${err.message}`, 'error');
+  }
+}
+
+function setProgress(id, pct) {
+  const el = document.getElementById(`prog-${id}`);
+  if (el) el.style.width = pct + '%';
+}
+
+/* ── SIGNALS RENDER ── */
+const TYPE_LABELS = {
+  BUYER_SIGNAL: 'Buyer Signal',
+  MARKET_SIGNAL: 'Market Signal',
+  COMPETITIVE: 'Competitive',
+  TREND: 'Trend',
+  PAIN: 'Pain',
+  BUDGET: 'Budget'
+};
+
+function renderSignals() {
+  const filtered = activeFilter === 'ALL' ? signals : signals.filter(s => s.type === activeFilter);
+  const grid = document.getElementById('signalsGrid');
+  const empty = document.getElementById('emptyState');
+  const total = document.getElementById('signalTotal');
+  const count = document.getElementById('totalCount');
+
+  count.textContent = signals.length;
+  total.textContent = filtered.length + ' signal' + (filtered.length !== 1 ? 's' : '');
+
+  if (signals.length === 0) {
+    empty.style.display = 'flex';
+    grid.style.display = 'none';
+    return;
+  }
+
+  empty.style.display = 'none';
+  grid.style.display = filtered.length > 0 ? 'grid' : 'none';
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '';
+    empty.style.display = 'flex';
+    empty.querySelector('.empty-title').textContent = 'No signals match this filter';
+    empty.querySelector('.empty-sub').textContent = 'Try selecting a different signal type.';
+    empty.style.display = 'flex';
+    grid.style.display = 'none';
+    return;
+  }
+
+  empty.querySelector('.empty-title').textContent = 'No signals yet';
+  empty.querySelector('.empty-sub').textContent = 'Upload documents on the left to extract buyer and market signals.';
+
+  grid.innerHTML = filtered.map(s => `
+    <div class="signal-card" id="sc-${s.id}">
+      <button class="signal-del" onclick="deleteSignal('${s.id}')" title="Remove">×</button>
+      <div class="signal-type-badge type-${s.type}">${TYPE_LABELS[s.type] || s.type}</div>
+      <div class="signal-title">${escHtml(s.title)}</div>
+      <div class="signal-text">${escHtml(s.text)}</div>
+      <div class="signal-footer">
+        <span>
+          <span class="confidence-dot conf-${s.confidence}"></span>
+          <span class="confidence-label">${s.confidence}</span>
+        </span>
+        <span class="signal-source" title="${escHtml(s.source)}">${escHtml(s.source)}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function setFilter(type, btn) {
+  activeFilter = type;
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  renderSignals();
+}
+
+function deleteSignal(id) {
+  signals = signals.filter(s => s.id !== id);
+  // Also remove from file cards
+  files.forEach(f => { f.signals = f.signals.filter(s => s.id !== id); });
+  persistSignals();
+  renderSignals();
+}
+
+function clearAllSignals() {
+  if (signals.length === 0) return;
+  if (!confirm('Remove all extracted signals?')) return;
+  signals = [];
+  files.forEach(f => { f.signals = []; f.status = f.status === 'complete' ? 'queued' : f.status; });
+  persistSignals();
+  renderSignals();
+  renderFileList();
+  showToast('All signals cleared');
+}
+
+/* ── EXPORT ── */
+function exportSignals() {
+  if (signals.length === 0) { showToast('No signals to export', 'error'); return; }
+  const json = JSON.stringify(signals, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'intelligence-signals.json';
+  a.click(); URL.revokeObjectURL(url);
+  showToast('Signals exported', 'success');
+}
+
+/* ── PERSISTENCE ── */
+function persistSignals() {
+  localStorage.setItem('intel_signals', JSON.stringify(signals));
+
+  // Write summary for Vector
+  const summary = signals.map(s => `[${s.type}] ${s.title}: ${s.text}`).join('\n');
+  localStorage.setItem('intel_summary', summary);
+
+  // Supabase upsert — fail silently
+  try {
+    supa.from('intelligence_signals').upsert(
+      signals.map(s => ({ ...s, updated_at: new Date().toISOString() }))
+    ).then(() => {}).catch(() => {});
+  } catch (_) {}
+}
+
+function loadSignals() {
+  try {
+    const stored = localStorage.getItem('intel_signals');
+    if (stored) signals = JSON.parse(stored);
+  } catch (_) { signals = []; }
+  renderSignals();
+}
+
+/* ── UTILS ── */
+function escHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+/* ── BOOT ── */
+initAuth();
+</script>
+</body>
+</html>
