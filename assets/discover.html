@@ -3,227 +3,200 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Discover — Platform Readiness Assessment</title>
+<title>Discover — DRIVE Intake · Britt Bowman LLC</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#07090C;--panel:#0E1218;--card:#131920;--card2:#171F2A;
-  --teal:#3BBFA3;--teal-dim:#1E6B5E;--teal-bg:#0D2E27;
-  --text:#E8EDF3;--muted:#6B7A8D;--faint:#1C2535;--faint2:#243040;
-  --border:#1C2535;--border2:#243040;
-  --cyan:#4DE8FF;--cyan-bg:rgba(77,232,255,.07);--cyan-border:rgba(77,232,255,.2);
+  --bg:#060E1C;--panel:#0C1830;--card:#102040;--card2:#162850;
+  --teal:#00C8FF;--teal-dim:#0088BB;--teal-bg:#001C30;
+  --text:#EEF2FF;--muted:#7A90B5;--faint:#1A2C48;--faint2:#243858;
+  --border:#1A2C48;--border2:#243858;
+  --cyan:#00C8FF;--cyan-bg:rgba(0,200,255,.07);--cyan-border:rgba(0,200,255,.2);
   --blue:#5B8CFF;--blue-bg:rgba(91,140,255,.07);--blue-border:rgba(91,140,255,.2);
   --purple:#8B7FEC;--purple-bg:rgba(139,127,236,.07);--purple-border:rgba(139,127,236,.2);
   --orange:#FF8A3D;--orange-bg:rgba(255,138,61,.07);--orange-border:rgba(255,138,61,.2);
+  --green:#10B981;--green-bg:rgba(16,185,129,.07);--green-border:rgba(16,185,129,.2);
   --sidebar:260px;
   --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-serif;
   --mono:'SF Mono','Fira Code',monospace;
 }
 html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--text);overflow:hidden}
 
-/* ── LOGIN / RESULT GATE ── */
-#loginScreen{
-  position:fixed;inset:0;top:36px;background:var(--bg);
-  display:flex;align-items:center;justify-content:center;
-  z-index:999;
-}
-#resultGate{
-  position:fixed;inset:0;top:36px;background:rgba(7,9,12,0.96);
-  display:none;align-items:center;justify-content:center;
-  z-index:998;backdrop-filter:blur(4px);
-}
-.login-box{
-  width:100%;max-width:380px;padding:0 24px;
-  display:flex;flex-direction:column;align-items:center;gap:24px;
-}
-.login-logo{
-  width:60px;height:60px;border-radius:15px;
-  background:var(--teal-bg);border:1.5px solid var(--teal-dim);
-  display:flex;align-items:center;justify-content:center;
-  font-size:22px;font-weight:700;color:var(--teal);letter-spacing:-.5px;
-}
+/* ── LOGIN / GATE ── */
+#loginScreen{position:fixed;inset:0;top:36px;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999}
+#resultGate{position:fixed;inset:0;top:36px;background:rgba(7,9,12,0.96);display:none;align-items:center;justify-content:center;z-index:998;backdrop-filter:blur(4px)}
+.login-box{width:100%;max-width:380px;padding:0 24px;display:flex;flex-direction:column;align-items:center;gap:24px}
+.login-logo{width:60px;height:60px;border-radius:15px;background:var(--purple-bg);border:1.5px solid var(--purple-border);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:var(--purple);letter-spacing:-.5px}
 .login-head{text-align:center}
 .login-head h1{font-size:22px;font-weight:700;letter-spacing:-.03em;margin-bottom:6px}
 .login-head p{font-size:13px;color:var(--muted)}
 .login-form{width:100%;display:flex;flex-direction:column;gap:10px}
 .login-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px}
-.login-input{
-  height:44px;background:var(--card);border:1px solid var(--border2);
-  border-radius:8px;padding:0 14px;color:var(--text);font-size:14px;
-  outline:none;width:100%;
-}
-.login-input:focus{border-color:var(--teal-dim)}
-.login-btn{
-  height:44px;background:var(--teal);border:none;border-radius:8px;
-  color:#07090C;font-size:14px;font-weight:600;cursor:pointer;
-  width:100%;
-}
-.login-btn:hover{background:#2ea68f}
+.login-input{height:44px;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:0 14px;color:var(--text);font-size:14px;outline:none;width:100%}
+.login-input:focus{border-color:var(--purple-border)}
+.login-btn{height:44px;background:var(--purple);border:none;border-radius:8px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;width:100%}
+.login-btn:hover{opacity:.9}
 .login-sent{display:none;text-align:center;font-size:13px;color:var(--muted);line-height:1.6}
-.login-sent strong{color:var(--teal)}
+.login-sent strong{color:var(--purple)}
 .login-error{display:none;font-size:12px;color:#e05555;padding:8px 12px;background:rgba(224,85,85,.1);border-radius:6px;border:1px solid rgba(224,85,85,.2)}
 .login-secure{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px;justify-content:center}
 
 /* ── APP SHELL ── */
-#app{display:none;height:calc(100vh - 36px);margin-top:36px;display:none;grid-template-columns:var(--sidebar) 1fr;grid-template-rows:54px 1fr}
+#app{display:none;height:calc(100vh - 36px);margin-top:36px;grid-template-columns:var(--sidebar) 1fr;grid-template-rows:54px 1fr}
 
 /* ── TOPBAR ── */
-.topbar{
-  grid-column:1/-1;
-  background:var(--panel);border-bottom:1px solid var(--border);
-  display:flex;align-items:center;padding:0 20px;gap:16px;
-}
+.topbar{grid-column:1/-1;background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:16px}
 .tb-logo{display:flex;align-items:center;gap:10px}
-.tb-mark{
-  width:30px;height:30px;border-radius:8px;
-  background:var(--teal-bg);border:1px solid var(--teal-dim);
-  display:flex;align-items:center;justify-content:center;
-  font-size:13px;font-weight:700;color:var(--teal);
-}
+.tb-mark{width:30px;height:30px;border-radius:8px;background:var(--purple-bg);border:1px solid var(--purple-border);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--purple)}
 .tb-name{font-size:15px;font-weight:700;letter-spacing:-.02em}
 .tb-sep{width:1px;height:18px;background:var(--border2)}
 .tb-practice{font-size:12px;color:var(--muted)}
 .tb-practice span{color:var(--text);font-weight:500}
 .tb-right{margin-left:auto;display:flex;align-items:center;gap:10px}
-.tb-phase{
-  font-size:11px;font-weight:600;letter-spacing:.08em;
-  padding:4px 10px;border-radius:5px;
-}
-.phase-assess{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border)}
+.tb-phase{font-size:11px;font-weight:600;letter-spacing:.08em;padding:4px 10px;border-radius:5px}
+.phase-intake{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border)}
+.phase-scoping{background:var(--cyan-bg);color:var(--cyan);border:1px solid var(--cyan-border)}
 .phase-results{background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-dim)}
-.tb-save{
-  height:32px;padding:0 14px;background:var(--teal);color:#07090C;
-  font-size:12px;font-weight:600;border:none;border-radius:7px;cursor:pointer;
-  display:none;
-}
-.tb-save:hover{background:#2ea68f}
-.tb-user{
-  height:30px;padding:0 12px;background:var(--card);border:1px solid var(--border2);
-  border-radius:6px;font-size:12px;color:var(--muted);cursor:pointer;
-}
+.tb-save{height:32px;padding:0 14px;background:var(--purple);color:#fff;font-size:12px;font-weight:600;border:none;border-radius:7px;cursor:pointer;display:none}
+.tb-save:hover{opacity:.9}
+.tb-user{height:30px;padding:0 12px;background:var(--card);border:1px solid var(--border2);border-radius:6px;font-size:12px;color:var(--muted);cursor:pointer}
 
 /* ── SIDEBAR ── */
-.sidebar{
-  background:var(--panel);border-right:1px solid var(--border);
-  display:flex;flex-direction:column;overflow:hidden;
-}
+.sidebar{background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
 .sidebar-org{padding:20px 20px 14px;border-bottom:1px solid var(--faint)}
 .org-name{font-size:14px;font-weight:600;margin-bottom:3px}
 .org-meta{font-size:11px;color:var(--muted)}
 .sidebar-sections{flex:1;overflow-y:auto;padding:12px 0}
-.sec-item{
-  display:flex;align-items:center;padding:10px 20px;gap:12px;
-  cursor:pointer;border-left:2px solid transparent;
-  transition:all .15s;
-}
+.sec-item{display:flex;align-items:center;padding:10px 20px;gap:12px;cursor:pointer;border-left:2px solid transparent;transition:all .15s}
 .sec-item:hover{background:var(--card)}
-.sec-item.active{background:var(--card);border-left-color:var(--teal)}
-.sec-item.done{opacity:.7}
-.sec-dot{
-  width:28px;height:28px;border-radius:8px;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;
-}
+.sec-item.active{background:var(--card);border-left-color:var(--purple)}
+.sec-dot{width:28px;height:28px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
 .sec-info{flex:1;min-width:0}
 .sec-label{font-size:12px;font-weight:600}
 .sec-sublabel{font-size:10px;color:var(--muted);margin-top:1px}
 .sec-score{font-size:11px;font-weight:700;font-family:var(--mono)}
 .sidebar-totals{padding:16px 20px;border-top:1px solid var(--faint)}
-.total-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.total-label{font-size:11px;color:var(--muted)}
 .total-bars{display:flex;flex-direction:column;gap:6px}
 .mini-bar-wrap{display:flex;align-items:center;gap:8px}
-.mini-bar-label{font-size:10px;color:var(--muted);width:60px;flex-shrink:0}
+.mini-bar-label{font-size:10px;color:var(--muted);width:64px;flex-shrink:0}
 .mini-bar-track{flex:1;height:3px;background:var(--faint2);border-radius:2px}
 .mini-bar-fill{height:100%;border-radius:2px;transition:width .4s ease}
 .mini-bar-val{font-size:10px;font-weight:600;font-family:var(--mono);width:24px;text-align:right;flex-shrink:0}
 
-/* ── MAIN CONTENT ── */
+/* ── MAIN ── */
 .main{display:flex;flex-direction:column;overflow:hidden}
 .content-area{flex:1;overflow-y:auto;padding:32px 40px}
 
-/* ── ORG CONTEXT STEP ── */
+/* ── STEP HEADER ── */
 .step-header{margin-bottom:28px}
-.step-eyebrow{
-  font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
-  margin-bottom:10px;
-}
+.step-eyebrow{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px}
 .step-title{font-size:24px;font-weight:700;letter-spacing:-.03em;margin-bottom:8px}
 .step-desc{font-size:14px;color:var(--muted);line-height:1.6;max-width:540px}
+
+/* ── FIELDS ── */
 .field-group{display:flex;flex-direction:column;gap:6px;margin-bottom:20px}
 .field-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:600}
-.field-input{
-  height:44px;background:var(--card);border:1px solid var(--border2);
-  border-radius:8px;padding:0 14px;color:var(--text);font-size:14px;
-  outline:none;max-width:480px;width:100%;
-}
-.field-input:focus{border-color:var(--teal-dim)}
-.field-select{
-  height:44px;background:var(--card);border:1px solid var(--border2);
-  border-radius:8px;padding:0 14px;color:var(--text);font-size:14px;
-  outline:none;max-width:480px;width:100%;cursor:pointer;
-  appearance:none;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7A8D' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;background-position:right 14px center;
-}
-.field-select:focus{border-color:var(--teal-dim)}
+.field-input{height:44px;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:0 14px;color:var(--text);font-size:14px;outline:none;max-width:480px;width:100%}
+.field-input:focus{border-color:var(--purple-border)}
+.field-input.input-error{border-color:#e05555}
+.field-select{height:44px;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:0 14px;color:var(--text);font-size:14px;outline:none;max-width:480px;width:100%;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7A8D' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+.field-select:focus{border-color:var(--purple-border)}
 .chips-wrap{display:flex;flex-wrap:wrap;gap:8px;max-width:520px}
-.chip{
-  height:32px;padding:0 14px;border-radius:16px;font-size:12px;font-weight:500;
-  border:1px solid var(--border2);color:var(--muted);background:var(--card);
-  cursor:pointer;transition:all .15s;
-}
-.chip:hover{border-color:var(--border2);color:var(--text)}
-.chip.sel{background:var(--teal-bg);border-color:var(--teal-dim);color:var(--teal)}
+.chip{height:32px;padding:0 14px;border-radius:16px;font-size:12px;font-weight:500;border:1px solid var(--border2);color:var(--muted);background:var(--card);cursor:pointer;transition:all .15s}
+.chip:hover{color:var(--text)}
+.chip.sel{background:var(--purple-bg);border-color:var(--purple-border);color:var(--purple)}
 
-/* ── QUESTION SECTION ── */
+/* ── SECTION PANELS ── */
 .section-panel{display:none}
 .section-panel.active{display:block}
-.question-list{display:flex;flex-direction:column;gap:16px;max-width:620px}
-.question-card{
-  background:var(--card);border:1px solid var(--border2);border-radius:10px;
-  padding:18px 20px;
+
+/* ── INTAKE SECTION ── */
+.intake-block{background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:24px;margin-bottom:20px}
+.intake-block-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px}
+.intake-block-title{font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px}
+.intake-block-title span{font-size:15px}
+.intake-block-sub{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.5}
+.intake-gate{margin-bottom:14px}
+.intake-gate-q{font-size:13px;color:var(--text);margin-bottom:10px;font-weight:500}
+.intake-drop{
+  border:1.5px dashed var(--border2);border-radius:10px;padding:28px 20px;
+  text-align:center;cursor:pointer;transition:all .2s;margin-top:12px;
 }
+.intake-drop:hover{border-color:var(--purple-border);background:var(--purple-bg)}
+.intake-drop-icon{font-size:22px;margin-bottom:6px}
+.intake-drop-label{font-size:13px;color:var(--muted);line-height:1.5}
+.intake-drop-label strong{color:var(--purple)}
+.intake-drop-hint{font-size:11px;color:var(--faint2);margin-top:6px}
+.intake-files{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.intake-file-item{
+  display:flex;align-items:center;gap:12px;padding:10px 14px;
+  background:var(--card2);border:1px solid var(--border2);border-radius:8px;
+}
+.intake-file-icon{font-size:16px;flex-shrink:0}
+.intake-file-info{flex:1;min-width:0}
+.intake-file-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.intake-file-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.intake-file-label{
+  font-size:11px;padding:3px 8px;border-radius:5px;font-weight:600;
+  background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border);
+}
+.intake-file-remove{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:2px 6px;border-radius:4px;flex-shrink:0}
+.intake-file-remove:hover{color:#e05555;background:rgba(224,85,85,.1)}
+.intake-note{font-size:12px;color:var(--muted);background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:12px 14px;margin-top:12px;line-height:1.5}
+.intake-note strong{color:var(--text)}
+
+/* URL intake */
+.url-input-row{display:flex;gap:8px;margin-top:12px}
+.url-input{flex:1;height:40px;background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:0 12px;color:var(--text);font-size:13px;outline:none}
+.url-input:focus{border-color:var(--purple-border)}
+.url-add-btn{height:40px;padding:0 16px;background:var(--purple-bg);border:1px solid var(--purple-border);color:var(--purple);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer}
+.url-add-btn:hover{background:rgba(139,127,236,.15)}
+.url-list{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.url-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--card2);border:1px solid var(--border2);border-radius:8px}
+.url-item-icon{font-size:14px;flex-shrink:0}
+.url-item-text{flex:1;min-width:0}
+.url-item-url{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--cyan)}
+.url-item-preview{font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.url-item-remove{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:2px 6px;border-radius:4px;flex-shrink:0}
+.url-item-remove:hover{color:#e05555;background:rgba(224,85,85,.1)}
+
+/* materials summary badge */
+.intake-summary{display:flex;align-items:center;gap:6px;margin-top:8px;flex-wrap:wrap}
+.intake-badge{font-size:11px;font-weight:600;padding:3px 8px;border-radius:5px;background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border)}
+
+/* ── DRIVE SCOPING QUESTIONS ── */
+.question-list{display:flex;flex-direction:column;gap:16px;max-width:620px}
+.question-card{background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:18px 20px}
 .question-text{font-size:14px;font-weight:500;line-height:1.5;margin-bottom:14px}
 .answer-row{display:flex;gap:8px}
-.ans-btn{
-  flex:1;height:36px;border-radius:7px;font-size:12px;font-weight:600;
-  border:1px solid var(--border2);background:var(--card2);color:var(--muted);
-  cursor:pointer;transition:all .15s;
-}
+.ans-btn{flex:1;height:36px;border-radius:7px;font-size:12px;font-weight:600;border:1px solid var(--border2);background:var(--card2);color:var(--muted);cursor:pointer;transition:all .15s}
 .ans-btn:hover{color:var(--text);border-color:var(--border2)}
 .ans-btn.sel-yes{background:var(--teal-bg);border-color:var(--teal-dim);color:var(--teal)}
 .ans-btn.sel-some{background:#1A1A10;border-color:#3A3A20;color:#C8B84A}
 .ans-btn.sel-no{background:#1A0E0E;border-color:#3A1E1E;color:#C85A5A}
 
-/* ── NAV FOOTER ── */
-.step-footer{
-  padding:16px 40px;border-top:1px solid var(--border);
-  display:flex;justify-content:space-between;align-items:center;
-  background:var(--panel);
-}
+/* ── FOOTER NAV ── */
+.step-footer{padding:16px 40px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:var(--panel)}
 .footer-hint{font-size:12px;color:var(--muted)}
+.footer-error{color:#e05555!important}
 .footer-btns{display:flex;gap:10px}
-.btn-back{
-  height:38px;padding:0 18px;background:transparent;
-  border:1px solid var(--border2);color:var(--muted);
-  font-size:13px;border-radius:8px;cursor:pointer;
-}
+.btn-back{height:38px;padding:0 18px;background:transparent;border:1px solid var(--border2);color:var(--muted);font-size:13px;border-radius:8px;cursor:pointer}
 .btn-back:hover{color:var(--text);border-color:var(--text)}
-.btn-next{
-  height:38px;padding:0 22px;background:var(--teal);color:#07090C;
-  font-size:13px;font-weight:600;border:none;border-radius:8px;cursor:pointer;
-}
-.btn-next:hover{background:#2ea68f}
-.btn-next:disabled{background:var(--faint2);color:var(--muted);cursor:default}
+.btn-next{height:38px;padding:0 22px;background:var(--purple);color:#fff;font-size:13px;font-weight:600;border:none;border-radius:8px;cursor:pointer}
+.btn-next:hover{opacity:.9}
+.btn-next:disabled{background:var(--faint2);color:var(--muted);cursor:default;opacity:1}
+
+/* ── SIZE BANNER ── */
+.size-banner{background:var(--purple-bg);border:1px solid var(--purple-border);border-radius:10px;padding:14px 18px;margin-bottom:24px;display:none;align-items:center;gap:12px}
+.size-banner.visible{display:flex}
+.sb-badge{font-size:10px;font-weight:700;letter-spacing:.1em;padding:4px 9px;border-radius:5px;white-space:nowrap;flex-shrink:0}
+.sb-text{font-size:13px;color:var(--text);line-height:1.4}
 
 /* ── RESULTS ── */
 #resultsPanel{display:none}
 .results-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px}
-.readiness-card{
-  background:var(--card);border:1px solid var(--border2);border-radius:10px;
-  padding:20px;
-}
+.readiness-card{background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:20px}
 .rc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .rc-name{font-size:12px;font-weight:700;letter-spacing:.08em}
 .rc-score{font-size:20px;font-weight:700;font-family:var(--mono)}
@@ -231,108 +204,54 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 .rc-bar-fill{height:100%;border-radius:3px;transition:width .8s ease}
 .rc-level{font-size:11px;font-weight:600;padding:3px 8px;border-radius:4px;align-self:flex-start;display:inline-block;margin-bottom:8px}
 .rc-recommendation{font-size:12px;color:var(--muted);line-height:1.5}
-
-.roadmap-wrap{
-  background:var(--card);border:1px solid var(--border2);border-radius:10px;
-  padding:24px;margin-bottom:24px;
-}
+.roadmap-wrap{background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:24px;margin-bottom:24px}
 .roadmap-title{font-size:13px;font-weight:600;margin-bottom:20px;display:flex;align-items:center;gap:8px}
-.roadmap-title::before{content:'';width:3px;height:13px;background:var(--teal);border-radius:2px;display:block}
+.roadmap-title::before{content:'';width:3px;height:13px;background:var(--purple);border-radius:2px;display:block}
 .roadmap-steps{display:flex;flex-direction:column;gap:0}
-.roadmap-step{
-  display:flex;align-items:flex-start;gap:16px;padding:16px 0;
-  border-bottom:1px solid var(--faint);
-}
+.roadmap-step{display:flex;align-items:flex-start;gap:16px;padding:16px 0;border-bottom:1px solid var(--faint)}
 .roadmap-step:last-child{border-bottom:none;padding-bottom:0}
-.rs-num{
-  width:32px;height:32px;border-radius:9px;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-  font-size:13px;font-weight:700;
-}
+.rs-num{width:32px;height:32px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
 .rs-body{flex:1}
 .rs-tool{font-size:11px;font-weight:700;letter-spacing:.08em;margin-bottom:3px}
 .rs-action{font-size:13px;font-weight:600;margin-bottom:4px}
 .rs-detail{font-size:12px;color:var(--muted);line-height:1.5}
-.rs-weeks{
-  font-size:10px;font-weight:600;font-family:var(--mono);
-  padding:3px 8px;background:var(--faint2);border-radius:4px;
-  color:var(--muted);align-self:flex-start;flex-shrink:0;margin-top:4px;
-}
-
+.rs-weeks{font-size:10px;font-weight:600;font-family:var(--mono);padding:3px 8px;background:var(--faint2);border-radius:4px;color:var(--muted);align-self:flex-start;flex-shrink:0;margin-top:4px}
 .module-pills{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px}
-.module-pill{
-  display:flex;align-items:center;gap:8px;padding:10px 16px;
-  border-radius:10px;border:1px solid;font-size:12px;font-weight:600;
-}
+.module-pill{display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:10px;border:1px solid;font-size:12px;font-weight:600}
 .module-pill .pill-icon{font-size:16px}
-.pill-locked{
-  background:var(--card);border-color:var(--border2);color:var(--muted);
-  opacity:.5;
-}
+.pill-locked{background:var(--card);border-color:var(--border2);color:var(--muted);opacity:.5}
 .pill-link{cursor:pointer;text-decoration:none;transition:opacity .15s,transform .1s}
 .pill-link:hover{opacity:.8;transform:translateY(-1px)}
-.field-input.input-error{border-color:#e05555}
-.footer-error{color:#e05555!important}
+.size-tier-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:8px;font-size:11px;font-weight:700;letter-spacing:.08em;margin-bottom:16px}
+.launch-cta{background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:24px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.launch-cta-text h3{font-size:15px;font-weight:700;margin-bottom:4px}
+.launch-cta-text p{font-size:13px;color:var(--muted);line-height:1.5}
+.launch-cta-btn{height:42px;padding:0 22px;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;text-decoration:none;display:inline-flex;align-items:center}
+.first30{background:var(--purple-bg);border:1px solid var(--purple-border);border-radius:10px;padding:20px 24px}
+.f30-title{font-size:12px;font-weight:700;color:var(--purple);letter-spacing:.08em;margin-bottom:12px}
+.f30-items{display:flex;flex-direction:column;gap:8px}
+.f30-item{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--text)}
+.f30-item::before{content:'→';color:var(--purple);flex-shrink:0;margin-top:1px}
+
+/* materials collected panel in results */
+.materials-panel{background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:20px;margin-bottom:24px}
+.materials-panel-title{font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:14px}
+.materials-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.material-cell{background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:12px 14px}
+.material-cell-label{font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:6px}
+.material-cell-count{font-size:20px;font-weight:700;color:var(--purple)}
+.material-cell-items{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.6}
+
 @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
 .question-card.card-error{border-color:#e05555;animation:shake .35s ease}
 
-.first30{
-  background:var(--teal-bg);border:1px solid var(--teal-dim);border-radius:10px;
-  padding:20px 24px;
-}
-.f30-title{font-size:12px;font-weight:700;color:var(--teal);letter-spacing:.08em;margin-bottom:12px}
-.f30-items{display:flex;flex-direction:column;gap:8px}
-.f30-item{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--text)}
-.f30-item::before{content:'→';color:var(--teal);flex-shrink:0;margin-top:1px}
-
-/* ── SIZE BANNER ── */
-.size-banner{
-  background:var(--purple-bg);border:1px solid var(--purple-border);border-radius:10px;
-  padding:14px 18px;margin-bottom:24px;display:none;align-items:center;gap:12px;
-}
-.size-banner.visible{display:flex}
-.sb-badge{
-  font-size:10px;font-weight:700;letter-spacing:.1em;padding:4px 9px;
-  border-radius:5px;white-space:nowrap;flex-shrink:0;
-}
-.sb-text{font-size:13px;color:var(--text);line-height:1.4}
-.sb-text strong{color:var(--purple)}
-
-/* ── RESULTS SIZE BADGE ── */
-.size-tier-badge{
-  display:inline-flex;align-items:center;gap:8px;
-  padding:6px 14px;border-radius:8px;font-size:11px;font-weight:700;letter-spacing:.08em;
-  margin-bottom:16px;
-}
-
-/* ── RESULTS LAUNCH CTA ── */
-.launch-cta{
-  background:var(--card);border:1px solid var(--border2);border-radius:12px;
-  padding:24px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;gap:20px;
-}
-.launch-cta-text h3{font-size:15px;font-weight:700;margin-bottom:4px}
-.launch-cta-text p{font-size:13px;color:var(--muted);line-height:1.5}
-.launch-cta-btn{
-  height:42px;padding:0 22px;border:none;border-radius:9px;
-  font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;
-  text-decoration:none;display:inline-flex;align-items:center;
-}
-
 /* ── PLATFORM NAV ── */
-.pnav{
-  height:36px;background:#050709;border-bottom:1px solid #0E1218;
-  display:flex;align-items:center;padding:0 16px;gap:4px;
-  position:fixed;top:0;left:0;right:0;z-index:10000;
-}
-.pnav-brand{font-size:13px;font-weight:700;color:var(--teal);letter-spacing:-.01em;margin-right:10px;flex-shrink:0}
+.pnav{height:36px;background:#050709;border-bottom:1px solid #0E1218;display:flex;align-items:center;padding:0 16px;gap:4px;position:fixed;top:0;left:0;right:0;z-index:10000}
+.pnav-brand{font-size:13px;font-weight:700;color:var(--purple);letter-spacing:-.01em;margin-right:10px;flex-shrink:0}
 .pnav-sep{width:1px;height:14px;background:#1C2535;margin:0 6px;flex-shrink:0}
-.pnav-tool{
-  display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:6px;
-  font-size:12px;font-weight:500;color:#4A5270;text-decoration:none;transition:all .15s;white-space:nowrap;
-}
+.pnav-tool{display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:500;color:#4A5270;text-decoration:none;transition:all .15s;white-space:nowrap}
 .pnav-tool:hover{background:#0E1218;color:var(--text)}
 .pnav-tool.pnav-active{background:#0E1218;color:var(--text)}
-.pnav-tool.pnav-locked{opacity:.3;pointer-events:none;cursor:default}
 .pnav-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 </style>
 </head>
@@ -345,16 +264,16 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
   <a class="pnav-tool pnav-active" href="/discover.html">
     <span class="pnav-dot" style="background:#8B7FEC"></span>Discover
   </a>
-  <a class="pnav-tool pnav-locked" href="#">
+  <a class="pnav-tool" href="/resolve.html">
     <span class="pnav-dot" style="background:#4DE8FF"></span>Resolve
   </a>
-  <a class="pnav-tool pnav-locked" href="#">
+  <a class="pnav-tool" href="/intelligence.html">
     <span class="pnav-dot" style="background:#5B8CFF"></span>Intelligence
   </a>
-  <a class="pnav-tool" href="/vector.html?client=1">
+  <a class="pnav-tool" href="/vector.html">
     <span class="pnav-dot" style="background:#3BBFA3"></span>Vector
   </a>
-  <a class="pnav-tool pnav-locked" href="#">
+  <a class="pnav-tool" href="/engine.html">
     <span class="pnav-dot" style="background:#FF8A3D"></span>Engine
   </a>
 </div>
@@ -365,7 +284,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
     <div class="login-logo">D</div>
     <div class="login-head">
       <h1>Discover</h1>
-      <p>Platform Readiness Assessment · Britt Bowman LLC</p>
+      <p>DRIVE Intake &amp; Scoping · Britt Bowman LLC</p>
     </div>
     <div class="login-form">
       <div id="loginForm" style="display:flex;flex-direction:column;gap:10px">
@@ -378,7 +297,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
       </div>
       <div id="loginSent" class="login-sent">
         <strong>Check your inbox.</strong><br>
-        We sent a magic link — click it to open the assessment.
+        We sent a magic link — click it to open Discovery.
       </div>
     </div>
     <div class="login-secure">✦ No passwords — secure magic link only</div>
@@ -391,7 +310,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
     <div class="login-logo" style="font-size:26px">✦</div>
     <div class="login-head">
       <h1>Your report is ready</h1>
-      <p>Enter your email to unlock your full readiness score and stack recommendation.</p>
+      <p>Enter your email to unlock your full DRIVE scoping results.</p>
     </div>
     <div class="login-form">
       <div id="gateForm" style="display:flex;flex-direction:column;gap:10px">
@@ -425,11 +344,11 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
       <span class="tb-name">Discover</span>
     </div>
     <div class="tb-sep"></div>
-    <div class="tb-practice">Assessment for <span id="tbPracticeName">—</span></div>
+    <div class="tb-practice">Discovery for <span id="tbPracticeName">—</span></div>
     <div class="tb-right">
-      <div class="tb-phase phase-assess" id="tbPhase">Assessment</div>
+      <div class="tb-phase phase-intake" id="tbPhase">Intake</div>
       <button class="tb-save" id="tbSaveBtn" onclick="saveToSupabase()" style="display:none">Save to record</button>
-      <span id="sync-indicator" style="font-size:10px;color:#4BA8C8;opacity:0;transition:opacity .3s;margin-left:10px">● Synced</span>
+      <span id="sync-indicator" style="font-size:10px;color:#8B7FEC;opacity:0;transition:opacity .3s;margin-left:10px">● Synced</span>
       <button class="tb-user" onclick="signOut()" id="tbUser" style="display:none">Sign out</button>
     </div>
   </nav>
@@ -437,46 +356,60 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="sidebar-org">
-      <div class="org-name" id="sideOrgName">New assessment</div>
-      <div class="org-meta" id="sideOrgMeta">Complete context to begin</div>
+      <div class="org-name" id="sideOrgName">New discovery</div>
+      <div class="org-meta" id="sideOrgMeta">Complete org profile to begin</div>
     </div>
     <div class="sidebar-sections" id="sidebarSections">
+      <!-- Step 0: Profile -->
       <div class="sec-item active" onclick="goToSection(0)" id="secnav-0">
-        <div class="sec-dot" style="background:var(--faint2);color:var(--muted)" data-active-bg="#1A1A2E" data-active-color="var(--purple)">D</div>
+        <div class="sec-dot" style="background:var(--faint2);color:var(--muted)" data-active-bg="var(--purple-bg)" data-active-color="var(--purple)">✦</div>
         <div class="sec-info">
-          <div class="sec-label">Discover</div>
-          <div class="sec-sublabel">Your org profile</div>
+          <div class="sec-label">Org Profile</div>
+          <div class="sec-sublabel">Who they are</div>
         </div>
       </div>
+      <!-- Step 1: Materials -->
       <div class="sec-item" onclick="goToSection(1)" id="secnav-1">
+        <div class="sec-dot" style="background:var(--faint2);color:var(--muted)" data-active-bg="var(--purple-bg)" data-active-color="var(--purple)">◈</div>
+        <div class="sec-info">
+          <div class="sec-label">Materials</div>
+          <div class="sec-sublabel">Intake &amp; harvest</div>
+        </div>
+        <div class="sec-score" id="materials-badge" style="color:var(--purple)"></div>
+      </div>
+      <!-- Step 2: Resolve scoping -->
+      <div class="sec-item" onclick="goToSection(2)" id="secnav-2">
         <div class="sec-dot" style="background:var(--faint2);color:var(--muted)" data-active-bg="var(--cyan-bg)" data-active-color="var(--cyan)">R</div>
         <div class="sec-info">
           <div class="sec-label">Resolve</div>
-          <div class="sec-sublabel">Language + segments</div>
+          <div class="sec-sublabel">Taxonomy readiness</div>
         </div>
         <div class="sec-score" id="score-label-0" style="color:var(--cyan)">—</div>
       </div>
-      <div class="sec-item" onclick="goToSection(2)" id="secnav-2">
+      <!-- Step 3: Intelligence scoping -->
+      <div class="sec-item" onclick="goToSection(3)" id="secnav-3">
         <div class="sec-dot" style="background:var(--faint2);color:var(--muted)" data-active-bg="var(--blue-bg)" data-active-color="var(--blue)">I</div>
         <div class="sec-info">
           <div class="sec-label">Intelligence</div>
-          <div class="sec-sublabel">Data + signals</div>
+          <div class="sec-sublabel">Data &amp; signals</div>
         </div>
         <div class="sec-score" id="score-label-1" style="color:var(--blue)">—</div>
       </div>
-      <div class="sec-item" onclick="goToSection(3)" id="secnav-3">
+      <!-- Step 4: Vector scoping -->
+      <div class="sec-item" onclick="goToSection(4)" id="secnav-4">
         <div class="sec-dot" style="background:var(--faint2);color:var(--muted)" data-active-bg="var(--teal-bg)" data-active-color="var(--teal)">V</div>
         <div class="sec-info">
           <div class="sec-label">Vector</div>
-          <div class="sec-sublabel">Positioning + offers</div>
+          <div class="sec-sublabel">Strategy readiness</div>
         </div>
         <div class="sec-score" id="score-label-2" style="color:var(--teal)">—</div>
       </div>
-      <div class="sec-item" onclick="goToSection(4)" id="secnav-4">
+      <!-- Step 5: Engine scoping -->
+      <div class="sec-item" onclick="goToSection(5)" id="secnav-5">
         <div class="sec-dot" style="background:var(--faint2);color:var(--muted)" data-active-bg="var(--orange-bg)" data-active-color="var(--orange)">E</div>
         <div class="sec-info">
           <div class="sec-label">Engine</div>
-          <div class="sec-sublabel">Content + delivery</div>
+          <div class="sec-sublabel">Execution readiness</div>
         </div>
         <div class="sec-score" id="score-label-3" style="color:var(--orange)">—</div>
       </div>
@@ -511,12 +444,12 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
   <div class="main">
     <div class="content-area" id="contentArea">
 
-      <!-- STEP 0: ORG CONTEXT -->
+      <!-- ═══ STEP 0: ORG PROFILE ═══ -->
       <div class="section-panel active" id="panel-0">
         <div class="step-header">
-          <div class="step-eyebrow" style="color:var(--purple)">Getting started</div>
+          <div class="step-eyebrow" style="color:var(--purple)">Discovery · Step 1 of 6</div>
           <div class="step-title">Tell us about the organization</div>
-          <div class="step-desc">This becomes the header for their readiness report. Take 60 seconds to fill it in accurately.</div>
+          <div class="step-desc">This anchors everything — it becomes the header for their DRIVE scoping report and feeds all downstream tools.</div>
         </div>
         <div class="field-group">
           <div class="field-label">Organization name</div>
@@ -573,63 +506,149 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
         </div>
       </div>
 
-      <!-- SIZE BANNER (shown after step 0 for micro accounts) -->
+      <!-- SIZE BANNER -->
       <div class="size-banner" id="sizeBanner">
         <div class="sb-badge" id="sizeBadge"></div>
         <div class="sb-text" id="sizeBannerText"></div>
       </div>
 
-      <!-- STEP 1: TAXONOMY -->
+      <!-- ═══ STEP 1: MATERIAL INTAKE ═══ -->
       <div class="section-panel" id="panel-1">
         <div class="step-header">
-          <div class="step-eyebrow" style="color:var(--cyan)">Resolve — Taxonomy readiness</div>
-          <div class="step-title">Vocabulary + segmentation</div>
+          <div class="step-eyebrow" style="color:var(--purple)">Discovery · Step 2 of 6</div>
+          <div class="step-title">Gather everything</div>
+          <div class="step-desc">Harvest all available materials before scoping. Taxonomy files feed Resolve. Documents and transcripts feed Intelligence and Vector. Web sources are fetched automatically.</div>
+        </div>
+
+        <!-- Taxonomy sources -->
+        <div class="intake-block">
+          <div class="intake-block-header">
+            <div>
+              <div class="intake-block-title"><span>◈</span> Taxonomy sources</div>
+              <div class="intake-block-sub">Field definitions from DAM, CRM, marketing automation, or other GTM systems</div>
+            </div>
+          </div>
+          <div class="intake-gate">
+            <div class="intake-gate-q">Does this org have an existing taxonomy or controlled vocabulary?</div>
+            <div class="chips-wrap" id="taxGateChips">
+              <div class="chip" onclick="selectTaxGate('yes',this)">Yes — upload it</div>
+              <div class="chip" onclick="selectTaxGate('no',this)">No — Resolve will propose one</div>
+              <div class="chip" onclick="selectTaxGate('unsure',this)">Not sure yet</div>
+            </div>
+          </div>
+          <div id="taxUploadWrap" style="display:none">
+            <div class="intake-drop" onclick="document.getElementById('taxFileInput').click()" id="taxDropZone">
+              <div class="intake-drop-icon">📋</div>
+              <div class="intake-drop-label">Drop taxonomy exports here<br><strong>or click to browse</strong></div>
+              <div class="intake-drop-hint">CSV, XLSX — from HubSpot, Salesforce, Marketo, DAM, or any tool</div>
+            </div>
+            <input type="file" id="taxFileInput" accept=".csv,.xlsx,.xls" multiple style="display:none" onchange="handleTaxFiles(event)">
+            <div class="intake-files" id="taxFileList"></div>
+          </div>
+          <div id="taxProposeNote" class="intake-note" style="display:none">
+            <strong>Resolve will propose a taxonomy</strong> based on their positioning and industry after the Vector diagnostic runs. You can return here to upload their existing vocabulary if it surfaces later.
+          </div>
+        </div>
+
+        <!-- Discovery documents -->
+        <div class="intake-block">
+          <div class="intake-block-header">
+            <div>
+              <div class="intake-block-title"><span>◉</span> Discovery documents</div>
+              <div class="intake-block-sub">Transcripts, pitch decks, proposals, case studies, brand guidelines, strategy docs</div>
+            </div>
+          </div>
+          <div class="intake-drop" onclick="document.getElementById('docFileInput').click()" id="docDropZone">
+            <div class="intake-drop-icon">📄</div>
+            <div class="intake-drop-label">Drop documents here<br><strong>or click to browse</strong></div>
+            <div class="intake-drop-hint">PDF, DOCX, PPTX, VTT, TXT — any format with readable text</div>
+          </div>
+          <input type="file" id="docFileInput" accept=".pdf,.docx,.pptx,.vtt,.txt,.doc" multiple style="display:none" onchange="handleDocFiles(event)">
+          <div class="intake-files" id="docFileList"></div>
+        </div>
+
+        <!-- Web sources -->
+        <div class="intake-block">
+          <div class="intake-block-header">
+            <div>
+              <div class="intake-block-title"><span>⬡</span> Web sources</div>
+              <div class="intake-block-sub">Website, landing pages, case study URLs — fetched automatically via Jina Reader</div>
+            </div>
+          </div>
+          <div class="url-input-row">
+            <input class="url-input" id="urlInput" type="url" placeholder="https://www.clientwebsite.com" onkeydown="if(event.key==='Enter')addWebUrl()">
+            <button class="url-add-btn" onclick="addWebUrl()">+ Add URL</button>
+          </div>
+          <div class="url-list" id="urlList"></div>
+        </div>
+
+        <!-- LinkedIn -->
+        <div class="intake-block">
+          <div class="intake-block-header">
+            <div>
+              <div class="intake-block-title"><span>🔗</span> LinkedIn</div>
+              <div class="intake-block-sub">Founder or company LinkedIn — paste profile text directly (LinkedIn blocks automated fetching)</div>
+            </div>
+          </div>
+          <textarea id="linkedinText" placeholder="Paste LinkedIn profile text here — About section, experience, posts, recommendations…" style="width:100%;min-height:100px;padding:12px 14px;background:var(--card2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:13px;resize:vertical;font-family:inherit;line-height:1.6;outline:none" oninput="updateMaterialsBadge()"></textarea>
+        </div>
+
+      </div>
+
+      <!-- ═══ STEP 2–5: DRIVE SCOPING ═══ -->
+      <div class="section-panel" id="panel-2">
+        <div class="step-header">
+          <div class="step-eyebrow" style="color:var(--cyan)">Discovery · Step 3 of 6 · Resolve</div>
+          <div class="step-title">Taxonomy readiness</div>
           <div class="step-desc">How clearly defined is their language for who they serve and what they do? This determines whether Resolve is a foundation or a refinement.</div>
         </div>
         <div class="question-list" id="qlist-0"></div>
       </div>
 
-      <!-- STEP 2: SIGNAL -->
-      <div class="section-panel" id="panel-2">
+      <div class="section-panel" id="panel-3">
         <div class="step-header">
-          <div class="step-eyebrow" style="color:var(--blue)">Intelligence — Data readiness</div>
-          <div class="step-title">Intelligence + tracking</div>
+          <div class="step-eyebrow" style="color:var(--blue)">Discovery · Step 4 of 6 · Intelligence</div>
+          <div class="step-title">Intelligence readiness</div>
           <div class="step-desc">How much usable data do they have? Intelligence is most valuable when there's existing engagement and pipeline data worth analyzing.</div>
         </div>
         <div class="question-list" id="qlist-1"></div>
       </div>
 
-      <!-- STEP 3: STRATEGY -->
-      <div class="section-panel" id="panel-3">
+      <div class="section-panel" id="panel-4">
         <div class="step-header">
-          <div class="step-eyebrow" style="color:var(--teal)">Vector — Strategy readiness</div>
-          <div class="step-title">Positioning + offers</div>
+          <div class="step-eyebrow" style="color:var(--teal)">Discovery · Step 5 of 6 · Vector</div>
+          <div class="step-title">Strategy readiness</div>
           <div class="step-desc">How developed is their growth strategy? A low score means Vector is urgent core work. A high score means Vector refines and activates what's already solid.</div>
         </div>
         <div class="question-list" id="qlist-2"></div>
       </div>
 
-      <!-- STEP 4: EXECUTION -->
-      <div class="section-panel" id="panel-4">
+      <div class="section-panel" id="panel-5">
         <div class="step-header">
-          <div class="step-eyebrow" style="color:var(--orange)">Engine — Execution readiness</div>
-          <div class="step-title">Content + delivery</div>
+          <div class="step-eyebrow" style="color:var(--orange)">Discovery · Step 6 of 6 · Engine</div>
+          <div class="step-title">Execution readiness</div>
           <div class="step-desc">Do they have the infrastructure to execute? Engine accelerates orgs that are already in motion — it doesn't create motion from nothing.</div>
         </div>
         <div class="question-list" id="qlist-3"></div>
       </div>
 
-      <!-- RESULTS -->
+      <!-- ═══ RESULTS ═══ -->
       <div id="resultsPanel" style="display:none">
         <div class="step-header">
-          <div class="step-eyebrow" style="color:var(--teal)">Readiness report</div>
-          <div class="step-title" id="resTitle">Platform recommendation</div>
+          <div class="step-eyebrow" style="color:var(--purple)">Discovery complete</div>
+          <div class="step-title" id="resTitle">DRIVE recommendation</div>
           <div class="step-desc" id="resDesc"></div>
         </div>
 
         <div style="margin-bottom:16px">
           <div style="font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--muted);margin-bottom:12px">RECOMMENDED MODULES</div>
           <div class="module-pills" id="modulePills"></div>
+        </div>
+
+        <!-- Materials collected summary -->
+        <div class="materials-panel" id="materialsSummary" style="display:none">
+          <div class="materials-panel-title">Materials collected</div>
+          <div class="materials-grid" id="materialsGrid"></div>
         </div>
 
         <div class="results-grid" id="resultsGrid"></div>
@@ -649,7 +668,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 
     <!-- FOOTER NAV -->
     <div class="step-footer" id="stepFooter">
-      <div class="footer-hint" id="footerHint">Fill in org details to begin assessment</div>
+      <div class="footer-hint" id="footerHint">Fill in org profile to continue</div>
       <div class="footer-btns">
         <button class="btn-back" id="btnBack" onclick="navBack()" style="display:none">← Back</button>
         <button class="btn-next" id="btnNext" onclick="navNext()">Continue →</button>
@@ -664,66 +683,37 @@ const SUPA_URL = 'https://ilhljjkiijmjpwinovzj.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsaGxqamtpaWptanB3aW5vdnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MTk4MjIsImV4cCI6MjA5OTE5NTgyMn0.w8asDSA-rXuaDfujC2dr4J-EKCzlCVABOuq3VQeeFsE';
 const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
 
-// ── ORG STORE ─────────────────────────────────────────────
+// ── ORG STORE ────────────────────────────────────────────
 const OrgStore = {
-  orgId: null,
-  userEmail: null,
-
+  orgId: null, userEmail: null,
   init(session) {
     this.userEmail = session?.user?.email || '';
-    this.orgId = this.userEmail.includes('@')
-      ? this.userEmail.split('@')[1]
-      : 'default';
+    this.orgId = this.userEmail.includes('@') ? this.userEmail.split('@')[1] : 'default';
   },
-
   async save(table, data) {
     if (!this.orgId) return;
-    try {
-      await supa.from(table).upsert({
-        org_id: this.orgId,
-        data: data,
-        updated_at: new Date().toISOString(),
-        updated_by: this.userEmail
-      }, { onConflict: 'org_id' });
-    } catch (_) {}
+    try { await supa.from(table).upsert({ org_id: this.orgId, data, updated_at: new Date().toISOString(), updated_by: this.userEmail }, { onConflict: 'org_id' }); } catch (_) {}
   },
-
   async load(table) {
     if (!this.orgId) return null;
     try {
-      const { data, error } = await supa
-        .from(table)
-        .select('data')
-        .eq('org_id', this.orgId)
-        .single();
+      const { data, error } = await supa.from(table).select('data').eq('org_id', this.orgId).single();
       if (error || !data) return null;
       return data.data;
     } catch (_) { return null; }
   }
 };
-// ──────────────────────────────────────────────────────────
 
 let currentUser = null;
 let currentPracticeId = null;
 
-// ── AUTH ──────────────────────────────────────────────
+// ── AUTH ─────────────────────────────────────────────────
 async function sendMagicLink() {
   const email = document.getElementById('loginEmail').value.trim();
-  if (!email) {
-    const errEl = document.getElementById('loginError');
-    if (errEl) { errEl.textContent = 'Please enter your email address'; errEl.style.display = 'block'; }
-    return;
-  }
+  if (!email) { const e = document.getElementById('loginError'); e.textContent = 'Please enter your email address'; e.style.display = 'block'; return; }
   document.getElementById('loginError').style.display = 'none';
-  const { error } = await supa.auth.signInWithOtp({
-    email,
-    options: { emailRedirectTo: window.location.href }
-  });
-  if (error) {
-    document.getElementById('loginError').textContent = error.message;
-    document.getElementById('loginError').style.display = 'block';
-    return;
-  }
+  const { error } = await supa.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.href } });
+  if (error) { const e = document.getElementById('loginError'); e.textContent = error.message; e.style.display = 'block'; return; }
   localStorage.setItem('disc_last_email', email);
   document.getElementById('loginForm').style.display = 'none';
   document.getElementById('loginSent').style.display = 'block';
@@ -733,8 +723,8 @@ function restoreDiscoverState(data) {
   if (!data) return;
   try {
     if (data.org_name) { state.orgName = data.org_name; document.getElementById('orgName').value = data.org_name; }
-    if (data.org_industry) { document.getElementById('orgIndustry').value = data.org_industry; }
-    if (data.org_challenge) { document.getElementById('orgChallenge').value = data.org_challenge; }
+    if (data.org_industry) document.getElementById('orgIndustry').value = data.org_industry;
+    if (data.org_challenge) document.getElementById('orgChallenge').value = data.org_challenge;
     if (data.org_team) { state.orgTeam = data.org_team; document.querySelectorAll('#teamChips .chip').forEach(c => { if (c.textContent.trim() === data.org_team) c.classList.add('sel'); }); }
     if (data.org_rev) { state.orgRev = data.org_rev; document.querySelectorAll('#revChips .chip').forEach(c => { if (c.textContent.trim() === data.org_rev) c.classList.add('sel'); }); }
     updateOrgDisplay();
@@ -748,13 +738,13 @@ function restoreAnonState() {
     if (!raw) return;
     const anon = JSON.parse(raw);
     if (anon.answers) state.answers = anon.answers;
-    if (anon.scores)  state.scores  = anon.scores;
+    if (anon.scores) state.scores = anon.scores;
     if (anon.accountSize) accountSize = anon.accountSize;
-    if (anon.orgName)     { state.orgName = anon.orgName; const el = document.getElementById('orgName'); if (el) el.value = anon.orgName; }
-    if (anon.orgIndustry) { state.orgIndustry = anon.orgIndustry; const el = document.getElementById('orgIndustry'); if (el) el.value = anon.orgIndustry; }
-    if (anon.orgChallenge){ state.orgChallenge = anon.orgChallenge; const el = document.getElementById('orgChallenge'); if (el) el.value = anon.orgChallenge; }
-    if (anon.orgTeam)     { state.orgTeam = anon.orgTeam; document.querySelectorAll('#teamChips .chip').forEach(c => { if (c.textContent.trim() === anon.orgTeam) c.classList.add('sel'); }); }
-    if (anon.orgRev)      { state.orgRev  = anon.orgRev;  document.querySelectorAll('#revChips .chip').forEach(c => { if (c.textContent.trim() === anon.orgRev) c.classList.add('sel'); }); }
+    if (anon.orgName) { state.orgName = anon.orgName; const el = document.getElementById('orgName'); if (el) el.value = anon.orgName; }
+    if (anon.orgIndustry) { const el = document.getElementById('orgIndustry'); if (el) el.value = anon.orgIndustry; }
+    if (anon.orgChallenge) { const el = document.getElementById('orgChallenge'); if (el) el.value = anon.orgChallenge; }
+    if (anon.orgTeam) { state.orgTeam = anon.orgTeam; document.querySelectorAll('#teamChips .chip').forEach(c => { if (c.textContent.trim() === anon.orgTeam) c.classList.add('sel'); }); }
+    if (anon.orgRev) { state.orgRev = anon.orgRev; document.querySelectorAll('#revChips .chip').forEach(c => { if (c.textContent.trim() === anon.orgRev) c.classList.add('sel'); }); }
     if (accountSize) applySizePath();
     localStorage.removeItem('disc_anon');
   } catch (_) {}
@@ -765,7 +755,6 @@ async function sendGateLink() {
   const errEl = document.getElementById('gateError');
   if (!email) { errEl.textContent = 'Please enter your email address'; errEl.style.display = 'block'; return; }
   errEl.style.display = 'none';
-  // Parse optional teammate emails and store for use after auth
   const teamRaw = document.getElementById('gateTeamEmails').value;
   const teamEmails = teamRaw.split(',').map(e => e.trim()).filter(e => e && e.includes('@'));
   if (teamEmails.length) localStorage.setItem('disc_team_emails', JSON.stringify(teamEmails));
@@ -774,15 +763,9 @@ async function sendGateLink() {
   localStorage.setItem('disc_last_email', email);
   document.getElementById('gateForm').style.display = 'none';
   document.getElementById('gateSent').style.display = 'block';
-  // Notify admin of new lead (fire-and-forget)
   try {
     const anon = JSON.parse(localStorage.getItem('disc_anon') || '{}');
-    supa.functions.invoke('notify-lead', { body: {
-      type: 'gate', email,
-      org_name: anon.orgName, org_industry: anon.orgIndustry,
-      org_team: anon.orgTeam, org_rev: anon.orgRev,
-      anon_scores: anon.scores, path: anon.accountSize,
-    }});
+    supa.functions.invoke('notify-lead', { body: { type: 'gate', email, org_name: anon.orgName, org_industry: anon.orgIndustry, org_team: anon.orgTeam, org_rev: anon.orgRev, anon_scores: anon.scores, path: anon.accountSize } });
   } catch (_) {}
 }
 
@@ -791,7 +774,6 @@ async function initAuth() {
   if (session) {
     currentUser = session.user;
     OrgStore.init(session);
-    // Returning from magic link after result gate — restore anon state and show results
     if (localStorage.getItem('disc_goto_results') === '1') {
       localStorage.removeItem('disc_goto_results');
       restoreAnonState();
@@ -800,14 +782,9 @@ async function initAuth() {
       return;
     }
     const cloudState = await OrgStore.load('org_discover');
-    if (cloudState) {
-      restoreDiscoverState(cloudState);
-    } else {
-      const localState = localStorage.getItem('discover_state');
-      if (localState) { try { restoreDiscoverState(JSON.parse(localState)); } catch (_) {} }
-    }
+    if (cloudState) { restoreDiscoverState(cloudState); }
+    else { const localState = localStorage.getItem('discover_state'); if (localState) { try { restoreDiscoverState(JSON.parse(localState)); } catch (_) {} } }
   } else {
-    // Anonymous: pre-fill login email if known, but show app immediately
     const saved = localStorage.getItem('disc_last_email');
     if (saved) { document.getElementById('loginEmail').value = saved; document.getElementById('gateEmail').value = saved; }
   }
@@ -841,19 +818,22 @@ function showApp() {
   if (currentUser) activateLoggedInUI();
 }
 
-async function signOut() {
-  await supa.auth.signOut();
-  window.location.reload();
-}
+async function signOut() { await supa.auth.signOut(); window.location.reload(); }
 
-// ── STATE ──────────────────────────────────────────────
+// ── STATE ────────────────────────────────────────────────
 const state = {
   orgName: '', orgIndustry: '', orgTeam: '', orgRev: '', orgChallenge: '',
   answers: [[null,null,null,null],[null,null,null,null],[null,null,null,null],[null,null,null,null]],
-  scores: [0,0,0,0]
+  scores: [0,0,0,0],
+  intake: {
+    taxGate: null,      // 'yes' | 'no' | 'unsure'
+    taxFiles: [],       // [{name, size, label}]
+    docs: [],           // [{name, type, size, label}]
+    urls: [],           // [{url, preview}]
+    linkedin: '',
+  }
 };
-let currentStep = 0; // 0=context, 1-4=questions, 5=results
-
+let currentStep = 0; // 0=profile, 1=intake, 2-5=RIVE scoping, 6=results
 const chipSelections = { team: null, rev: null };
 
 function selectChip(group, val, el) {
@@ -868,100 +848,205 @@ function selectChip(group, val, el) {
 function updateOrgDisplay() {
   const name = document.getElementById('orgName').value.trim();
   state.orgName = name;
-  document.getElementById('sideOrgName').textContent = name || 'New assessment';
+  document.getElementById('sideOrgName').textContent = name || 'New discovery';
   document.getElementById('tbPracticeName').textContent = name || '—';
-  const rev = state.orgRev;
-  const team = state.orgTeam;
-  const meta = [team ? `${team} people` : null, rev || null].filter(Boolean).join(' · ');
-  document.getElementById('sideOrgMeta').textContent = meta || 'Complete context to begin';
+  const meta = [state.orgTeam ? `${state.orgTeam} people` : null, state.orgRev || null].filter(Boolean).join(' · ');
+  document.getElementById('sideOrgMeta').textContent = meta || 'Complete org profile to begin';
   updateFooter();
 }
 
-// ── ACCOUNT SIZE ──────────────────────────────────────
+// ── ACCOUNT SIZE ─────────────────────────────────────────
 function getAccountSize() {
-  const team = state.orgTeam;
-  const rev  = state.orgRev;
-  // Enterprise: 51+ OR $10M+
+  const team = state.orgTeam, rev = state.orgRev;
   if (team === '51-200' || team === '200+' || rev === '$10M–$50M' || rev === '$50M+') return 'enterprise';
-  // Mid: 21-50 OR $2M-$10M
   if (team === '21-50' || rev === '$2M–$10M') return 'mid';
-  // Micro: 1-5 OR <$500K
   if (team === '1-5' || rev === '<$500K') return 'micro';
-  // Small: 6-20 OR $500K-$2M
   return 'small';
 }
 
 const SIZE_CONFIG = {
   micro:      { label: 'MICRO',      color: 'var(--purple)', bg: 'var(--purple-bg)', border: 'var(--purple-border)',
-                sections: [2, 3], // Strategy + Execution only (0-indexed: skip Taxonomy=0, Signal=1)
                 bannerText: '<strong>Streamlined path.</strong> At your stage, we focus on Strategy and Execution. Taxonomy and Intelligence come later as you scale.' },
   small:      { label: 'SMALL',      color: 'var(--cyan)',   bg: 'var(--cyan-bg)',   border: 'var(--cyan-border)',
-                sections: [0, 1, 2, 3],
-                bannerText: '<strong>Growth-stage assessment.</strong> All four dimensions are relevant — we\'ll flag where to start first.' },
+                bannerText: '<strong>Growth-stage discovery.</strong> All four dimensions are relevant — we\'ll flag where to start first.' },
   mid:        { label: 'MID-MARKET', color: 'var(--blue)',   bg: 'var(--blue-bg)',   border: 'var(--blue-border)',
-                sections: [0, 1, 2, 3],
-                bannerText: '<strong>Full-stack assessment.</strong> You have the infrastructure for the complete platform — we\'ll sequence it for maximum impact.' },
+                bannerText: '<strong>Full-stack discovery.</strong> You have the infrastructure for the complete platform — we\'ll sequence it for maximum impact.' },
   enterprise: { label: 'ENTERPRISE', color: 'var(--teal)',   bg: 'var(--teal-bg)',   border: 'var(--teal-dim)',
-                sections: [0, 1, 2, 3],
-                bannerText: '<strong>Enterprise engagement.</strong> Full platform assessment across all four dimensions. Implementation sequencing included in the recommendation.' },
+                bannerText: '<strong>Enterprise engagement.</strong> Full platform scoping across all four dimensions. Implementation sequencing included in the recommendation.' },
 };
-
-let accountSize = null;  // set after step 0
+let accountSize = null;
 
 function applySizePath() {
   accountSize = getAccountSize();
   const cfg = SIZE_CONFIG[accountSize];
-
-  // Show banner
   const banner = document.getElementById('sizeBanner');
-  const badge  = document.getElementById('sizeBadge');
-  const bannerText = document.getElementById('sizeBannerText');
-  badge.textContent = cfg.label;
-  badge.style.cssText = `background:${cfg.bg};color:${cfg.color};border:1px solid ${cfg.border}`;
-  bannerText.innerHTML = cfg.bannerText;
+  document.getElementById('sizeBadge').textContent = cfg.label;
+  document.getElementById('sizeBadge').style.cssText = `background:${cfg.bg};color:${cfg.color};border:1px solid ${cfg.border}`;
+  document.getElementById('sizeBannerText').innerHTML = cfg.bannerText;
   banner.classList.add('visible');
-
-  // For micro: dim Taxonomy + Signal in sidebar but keep them clickable
   if (accountSize === 'micro') {
-    ['secnav-1','secnav-2'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) { el.style.opacity = '0.4'; }
-    });
-    ['bar-0','bar-1','barval-0','barval-1','score-label-0','score-label-1'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.style.opacity = '0.4';
-    });
-    // Pre-fill taxonomy + signal as adequate-but-not-blocking scores
-    // tx=6 (won't trigger Resolve), sig=3 (won't trigger Intel) — micro is Vector-only
-    state.answers[0] = [2,2,1,1]; recalcScore(0); // taxonomy = 6
-    state.answers[1] = [1,1,1,0]; recalcScore(1); // signal = 3
+    ['secnav-2','secnav-3'].forEach(id => { const el = document.getElementById(id); if (el) el.style.opacity = '0.4'; });
+    ['bar-0','bar-1','barval-0','barval-1','score-label-0','score-label-1'].forEach(id => { const el = document.getElementById(id); if (el) el.style.opacity = '0.4'; });
+    state.answers[0] = [2,2,1,1]; recalcScore(0);
+    state.answers[1] = [1,1,1,0]; recalcScore(1);
   }
 }
 
-// ── QUESTIONS ──────────────────────────────────────────
+// ── MATERIAL INTAKE ──────────────────────────────────────
+function selectTaxGate(val, el) {
+  document.querySelectorAll('#taxGateChips .chip').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+  state.intake.taxGate = val;
+  document.getElementById('taxUploadWrap').style.display = val === 'yes' ? 'block' : 'none';
+  document.getElementById('taxProposeNote').style.display = val === 'no' ? 'block' : 'none';
+  updateMaterialsBadge();
+}
+
+function handleTaxFiles(e) {
+  const files = Array.from(e.target.files);
+  files.forEach(f => {
+    state.intake.taxFiles.push({ name: f.name, size: f.size, label: guessTaxLabel(f.name) });
+  });
+  renderTaxFiles();
+  updateMaterialsBadge();
+  e.target.value = '';
+}
+
+function guessTaxLabel(name) {
+  const n = name.toLowerCase();
+  if (n.includes('hubspot')) return 'HubSpot';
+  if (n.includes('salesforce') || n.includes('sfdc')) return 'Salesforce';
+  if (n.includes('marketo')) return 'Marketo';
+  if (n.includes('dam')) return 'DAM';
+  if (n.includes('taxonomy')) return 'Taxonomy';
+  return 'GTM system';
+}
+
+function renderTaxFiles() {
+  const list = document.getElementById('taxFileList');
+  list.innerHTML = '';
+  state.intake.taxFiles.forEach((f, i) => {
+    const item = document.createElement('div');
+    item.className = 'intake-file-item';
+    item.innerHTML = `<div class="intake-file-icon">📋</div><div class="intake-file-info"><div class="intake-file-name">${f.name}</div><div class="intake-file-meta">${(f.size/1024).toFixed(0)} KB · ${f.label}</div></div><span class="intake-file-label">${f.label}</span><button class="intake-file-remove" onclick="removeTaxFile(${i})">✕</button>`;
+    list.appendChild(item);
+  });
+}
+
+function removeTaxFile(i) {
+  state.intake.taxFiles.splice(i, 1);
+  renderTaxFiles();
+  updateMaterialsBadge();
+}
+
+const DOC_ICONS = { pdf: '📄', docx: '📝', doc: '📝', pptx: '📊', vtt: '🎙️', txt: '📃', default: '📄' };
+const DOC_LABELS = {
+  vtt: 'Transcript', txt: 'Document',
+  pdf: 'Document', docx: 'Document', doc: 'Document', pptx: 'Presentation',
+};
+
+function handleDocFiles(e) {
+  const files = Array.from(e.target.files);
+  files.forEach(f => {
+    const ext = f.name.split('.').pop().toLowerCase();
+    state.intake.docs.push({ name: f.name, type: ext, size: f.size, label: DOC_LABELS[ext] || 'Document' });
+  });
+  renderDocFiles();
+  updateMaterialsBadge();
+  e.target.value = '';
+}
+
+function renderDocFiles() {
+  const list = document.getElementById('docFileList');
+  list.innerHTML = '';
+  state.intake.docs.forEach((f, i) => {
+    const icon = DOC_ICONS[f.type] || DOC_ICONS.default;
+    const item = document.createElement('div');
+    item.className = 'intake-file-item';
+    item.innerHTML = `<div class="intake-file-icon">${icon}</div><div class="intake-file-info"><div class="intake-file-name">${f.name}</div><div class="intake-file-meta">${(f.size/1024).toFixed(0)} KB · ${f.type.toUpperCase()}</div></div><span class="intake-file-label">${f.label}</span><button class="intake-file-remove" onclick="removeDocFile(${i})">✕</button>`;
+    list.appendChild(item);
+  });
+}
+
+function removeDocFile(i) {
+  state.intake.docs.splice(i, 1);
+  renderDocFiles();
+  updateMaterialsBadge();
+}
+
+async function addWebUrl() {
+  const input = document.getElementById('urlInput');
+  const url = input.value.trim();
+  if (!url || !url.startsWith('http')) return;
+  input.value = '';
+  const entry = { url, preview: 'Fetching…' };
+  state.intake.urls.push(entry);
+  renderUrls();
+  updateMaterialsBadge();
+  // Jina fetch preview
+  try {
+    const res = await fetch(`https://r.jina.ai/${url}`, { headers: { 'Accept': 'text/plain', 'X-Return-Format': 'text' }, signal: AbortSignal.timeout(10000) });
+    if (res.ok) {
+      const text = await res.text();
+      entry.preview = text.trim().replace(/\s+/g, ' ').slice(0, 140) || 'No preview available';
+    } else {
+      entry.preview = 'Could not fetch — URL may require login';
+    }
+  } catch (_) {
+    entry.preview = 'Could not fetch — check URL and try again';
+  }
+  renderUrls();
+}
+
+function renderUrls() {
+  const list = document.getElementById('urlList');
+  list.innerHTML = '';
+  state.intake.urls.forEach((u, i) => {
+    const item = document.createElement('div');
+    item.className = 'url-item';
+    item.innerHTML = `<div class="url-item-icon">🌐</div><div class="url-item-text"><div class="url-item-url">${u.url}</div><div class="url-item-preview">${u.preview || ''}</div></div><button class="url-item-remove" onclick="removeUrl(${i})">✕</button>`;
+    list.appendChild(item);
+  });
+}
+
+function removeUrl(i) {
+  state.intake.urls.splice(i, 1);
+  renderUrls();
+  updateMaterialsBadge();
+}
+
+function updateMaterialsBadge() {
+  state.intake.linkedin = document.getElementById('linkedinText')?.value || '';
+  const total = state.intake.taxFiles.length + state.intake.docs.length + state.intake.urls.length + (state.intake.linkedin.length > 20 ? 1 : 0);
+  const badge = document.getElementById('materials-badge');
+  if (badge) badge.textContent = total > 0 ? `${total}` : '';
+  updateFooter();
+}
+
+// ── DRIVE SCOPING QUESTIONS ──────────────────────────────
 const QUESTIONS = [
-  // Taxonomy (Fuse)
+  // Resolve / Taxonomy
   [
     'Do you have defined audience segments with clear names and criteria?',
     'Does your team use consistent language to describe your ideal client?',
     'Are your content categories and tags standardized across channels?',
     'Could a new hire describe exactly who you serve from existing materials alone?',
   ],
-  // Signal (data)
+  // Intelligence / Signal
   [
     'Do you have a CRM with at least 6 months of contact and interaction history?',
     'Do you track which content, campaigns, or outreach activities convert to pipeline?',
     'Can you see conversion rates at each stage of your funnel?',
     'Do you know which channels or referral sources generate your highest-value clients?',
   ],
-  // Strategy (Vector)
+  // Vector / Strategy
   [
     'Do you have clearly defined service offers with names and published pricing?',
     'Do you have a positioning statement you would share confidently with a prospect?',
     'Is there an active referral or partner channel consistently generating leads?',
     'Do you know which client archetype generates the highest lifetime value?',
   ],
-  // Execution (Helix)
+  // Engine / Execution
   [
     'Do you publish content on a consistent cadence — weekly or more?',
     'Do you have templates or playbooks that make content creation repeatable?',
@@ -970,8 +1055,6 @@ const QUESTIONS = [
   ],
 ];
 
-const SECTION_COLORS = ['var(--cyan)','var(--blue)','var(--teal)','var(--orange)'];
-
 function buildQuestions() {
   QUESTIONS.forEach((qs, si) => {
     const list = document.getElementById(`qlist-${si}`);
@@ -979,13 +1062,7 @@ function buildQuestions() {
     qs.forEach((q, qi) => {
       const card = document.createElement('div');
       card.className = 'question-card';
-      card.innerHTML = `
-        <div class="question-text">${q}</div>
-        <div class="answer-row">
-          <button class="ans-btn" onclick="setAnswer(${si},${qi},2,this)">Yes</button>
-          <button class="ans-btn" onclick="setAnswer(${si},${qi},1,this)">Somewhat</button>
-          <button class="ans-btn" onclick="setAnswer(${si},${qi},0,this)">No</button>
-        </div>`;
+      card.innerHTML = `<div class="question-text">${q}</div><div class="answer-row"><button class="ans-btn" onclick="setAnswer(${si},${qi},2,this)">Yes</button><button class="ans-btn" onclick="setAnswer(${si},${qi},1,this)">Somewhat</button><button class="ans-btn" onclick="setAnswer(${si},${qi},0,this)">No</button></div>`;
       list.appendChild(card);
     });
   });
@@ -1002,56 +1079,58 @@ function setAnswer(si, qi, val, btn) {
 }
 
 function recalcScore(si) {
-  const answers = state.answers[si];
-  const score = answers.reduce((s, v) => s + (v ?? 0), 0);
+  const score = state.answers[si].reduce((s, v) => s + (v ?? 0), 0);
   state.scores[si] = score;
   document.getElementById(`score-label-${si}`).textContent = `${score}/8`;
   document.getElementById(`bar-${si}`).style.width = `${(score/8)*100}%`;
   document.getElementById(`barval-${si}`).textContent = `${score}/8`;
 }
 
-// ── NAVIGATION ──────────────────────────────────────────
+// ── NAVIGATION ───────────────────────────────────────────
+// Steps: 0=profile, 1=intake, 2=Resolve, 3=Intel, 4=Vector, 5=Engine, 6=results
+// Scoping question index = currentStep - 2 (for steps 2-5)
+
+function panelId(step) {
+  if (step >= 2 && step <= 5) return `panel-${step}`;
+  if (step === 0) return 'panel-0';
+  if (step === 1) return 'panel-1';
+  return null;
+}
+
 function updateFooterHint() {
-  if (document.getElementById('resultsPanel').style.display === 'block') return;
-  const hints = [
-    state.orgName ? `Assessing ${state.orgName}` : 'Enter practice name to continue',
-    'Answer all 4 questions to continue',
-    'Answer all 4 questions to continue',
-    'Answer all 4 questions to continue',
-    'Answer all 4 questions to see the recommendation',
-  ];
+  if (currentStep === 6) return;
+  const hints = {
+    0: state.orgName ? `Profiling ${state.orgName}` : 'Enter org name to continue',
+    1: 'Upload materials or continue without — intake is optional',
+    2: 'Answer all 4 questions to continue',
+    3: 'Answer all 4 questions to continue',
+    4: 'Answer all 4 questions to continue',
+    5: 'Answer all 4 questions to see the recommendation',
+  };
   document.getElementById('footerHint').textContent = hints[currentStep] || '';
 }
 
 function navNext() {
   if (currentStep === 0) {
-    const nameInput = document.getElementById('orgName');
     if (!state.orgName) {
-      nameInput.classList.add('input-error');
-      nameInput.focus();
+      const input = document.getElementById('orgName');
+      input.classList.add('input-error');
+      input.focus();
       const hint = document.getElementById('footerHint');
       hint.textContent = 'Please enter the organization name to continue.';
       hint.classList.add('footer-error');
-      nameInput.addEventListener('input', function clearErr() {
-        nameInput.classList.remove('input-error');
-        hint.classList.remove('footer-error');
-        nameInput.removeEventListener('input', clearErr);
-      });
+      input.addEventListener('input', function clearErr() { input.classList.remove('input-error'); hint.classList.remove('footer-error'); input.removeEventListener('input', clearErr); });
       return;
     }
+    applySizePath();
   }
-  if (currentStep >= 1 && currentStep <= 4) {
-    const si = currentStep - 1;
+
+  if (currentStep >= 2 && currentStep <= 5) {
+    const si = currentStep - 2;
     const unanswered = state.answers[si].map((v, qi) => v === null ? qi : -1).filter(i => i !== -1);
     if (unanswered.length > 0) {
       const cards = document.getElementById(`qlist-${si}`).querySelectorAll('.question-card');
-      unanswered.forEach(qi => {
-        const card = cards[qi];
-        card.classList.remove('card-error');
-        void card.offsetWidth;
-        card.classList.add('card-error');
-        card.addEventListener('animationend', () => card.classList.remove('card-error'), { once: true });
-      });
+      unanswered.forEach(qi => { const card = cards[qi]; card.classList.remove('card-error'); void card.offsetWidth; card.classList.add('card-error'); card.addEventListener('animationend', () => card.classList.remove('card-error'), { once: true }); });
       const hint = document.getElementById('footerHint');
       hint.textContent = 'Please answer all questions before continuing.';
       hint.classList.add('footer-error');
@@ -1059,36 +1138,30 @@ function navNext() {
       return;
     }
   }
+
   document.getElementById('footerHint').classList.remove('footer-error');
 
-  // Apply size path after step 0
-  if (currentStep === 0) applySizePath();
+  // Determine next step
+  let next = currentStep + 1;
+  // Micro: skip Resolve (2) and Intel (3), go 1→4
+  if (accountSize === 'micro' && currentStep === 1) next = 4;
 
-  const lastSection = 4;
-  if (currentStep < lastSection) {
-    document.getElementById(`panel-${currentStep}`).classList.remove('active');
-    let nextStep = currentStep + 1;
-    // Micro: skip Taxonomy (step 1) and Signal (step 2), go straight to Strategy (step 3)
-    if (accountSize === 'micro' && currentStep === 0) nextStep = 3;
-    currentStep = nextStep;
-    document.getElementById(`panel-${currentStep}`).classList.add('active');
+  if (next <= 5) {
+    hideCurrentPanel();
+    currentStep = next;
+    showCurrentPanel();
     updateSidebar();
     updateFooter();
     document.getElementById('contentArea').scrollTop = 0;
-    window.scrollTo(0, 0);
   } else {
+    // Show results
     if (!currentUser) {
-      // Save everything so it survives the magic-link redirect
       try {
         localStorage.setItem('disc_anon', JSON.stringify({
-          answers: state.answers,
-          scores:  state.scores,
-          accountSize,
-          orgName:      state.orgName,
-          orgIndustry:  document.getElementById('orgIndustry').value,
+          answers: state.answers, scores: state.scores, accountSize,
+          orgName: state.orgName, orgIndustry: document.getElementById('orgIndustry').value,
           orgChallenge: document.getElementById('orgChallenge').value,
-          orgTeam:      state.orgTeam,
-          orgRev:       state.orgRev,
+          orgTeam: state.orgTeam, orgRev: state.orgRev,
         }));
       } catch (_) {}
       localStorage.setItem('disc_goto_results', '1');
@@ -1103,47 +1176,62 @@ function navNext() {
 
 function navBack() {
   if (currentStep <= 0) return;
-  document.getElementById(`panel-${Math.min(currentStep,4)}`).classList.remove('active');
-  let prevStep = currentStep - 1;
-  // Micro: skip back over Signal (step 2) and Taxonomy (step 1), return to step 0
-  if (accountSize === 'micro' && currentStep === 3) prevStep = 0;
-  if (accountSize === 'micro' && currentStep === 4) prevStep = 3;
-  currentStep = prevStep;
-  document.getElementById(`panel-${currentStep}`).classList.add('active');
+  hideCurrentPanel();
+  let prev = currentStep - 1;
+  // Micro: skip back over Intel (3) and Resolve (2)
+  if (accountSize === 'micro' && currentStep === 4) prev = 1;
+  currentStep = prev;
+  showCurrentPanel();
   updateSidebar();
   updateFooter();
   document.getElementById('contentArea').scrollTop = 0;
-  window.scrollTo(0, 0);
 }
 
 function goToSection(n) {
-  if (n === currentStep) return;
-  document.getElementById(`panel-${Math.min(currentStep,4)}`).classList.remove('active');
+  if (n === currentStep || n === 6) return;
+  hideCurrentPanel();
   currentStep = n;
-  document.getElementById(`panel-${n}`).classList.add('active');
+  showCurrentPanel();
   document.getElementById('resultsPanel').style.display = 'none';
   updateSidebar();
   updateFooter();
   document.getElementById('contentArea').scrollTop = 0;
-  window.scrollTo(0, 0);
+}
+
+function hideCurrentPanel() {
+  if (currentStep === 6) { document.getElementById('resultsPanel').style.display = 'none'; return; }
+  const pid = panelId(currentStep);
+  if (pid) document.getElementById(pid).classList.remove('active');
+}
+
+function showCurrentPanel() {
+  if (currentStep === 6) { document.getElementById('resultsPanel').style.display = 'block'; return; }
+  const pid = panelId(currentStep);
+  if (pid) document.getElementById(pid).classList.add('active');
 }
 
 function updateSidebar() {
-  for (let i = 0; i <= 4; i++) {
-    const el = document.getElementById(`secnav-${i}`);
-    const isActive = i === currentStep;
-    el.classList.toggle('active', isActive);
+  const sectionMap = { 0: 'secnav-0', 1: 'secnav-1', 2: 'secnav-2', 3: 'secnav-3', 4: 'secnav-4', 5: 'secnav-5' };
+  Object.values(sectionMap).forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove('active');
     const dot = el.querySelector('.sec-dot');
-    if (dot) {
-      if (isActive) {
-        dot.style.background = dot.dataset.activeBg || 'var(--faint2)';
-        dot.style.color = dot.dataset.activeColor || 'var(--text)';
-      } else {
-        dot.style.background = 'var(--faint2)';
-        dot.style.color = 'var(--muted)';
-      }
+    if (dot) { dot.style.background = 'var(--faint2)'; dot.style.color = 'var(--muted)'; }
+  });
+  const activeId = sectionMap[currentStep];
+  if (activeId) {
+    const el = document.getElementById(activeId);
+    if (el) {
+      el.classList.add('active');
+      const dot = el.querySelector('.sec-dot');
+      if (dot) { dot.style.background = dot.dataset.activeBg || 'var(--faint2)'; dot.style.color = dot.dataset.activeColor || 'var(--text)'; }
     }
   }
+  // Update topbar phase
+  const phaseEl = document.getElementById('tbPhase');
+  if (currentStep <= 1) { phaseEl.textContent = 'Intake'; phaseEl.className = 'tb-phase phase-intake'; }
+  else if (currentStep <= 5) { phaseEl.textContent = 'Scoping'; phaseEl.className = 'tb-phase phase-scoping'; }
 }
 
 function updateFooter() {
@@ -1151,13 +1239,18 @@ function updateFooter() {
   const btnNext = document.getElementById('btnNext');
   btnBack.style.display = currentStep > 0 ? 'block' : 'none';
   if (currentStep === 0) {
-    btnNext.textContent = 'Start assessment →';
+    btnNext.textContent = 'Continue →';
     btnNext.disabled = !state.orgName || !state.orgTeam;
-  } else if (currentStep <= 4) {
-    const sectionAnswered = state.answers[currentStep-1].every(v => v !== null);
-    const isLastSection = (currentStep === 4);
-    btnNext.textContent = isLastSection ? 'See recommendation →' : 'Next section →';
-    btnNext.disabled = !sectionAnswered;
+    btnNext.style.display = 'block';
+  } else if (currentStep === 1) {
+    btnNext.textContent = 'Begin scoping →';
+    btnNext.disabled = false;
+    btnNext.style.display = 'block';
+  } else if (currentStep >= 2 && currentStep <= 5) {
+    const si = currentStep - 2;
+    const answered = state.answers[si].every(v => v !== null);
+    btnNext.textContent = currentStep === 5 ? 'See recommendation →' : 'Next →';
+    btnNext.disabled = !answered;
     btnNext.style.display = 'block';
   } else {
     btnNext.style.display = 'none';
@@ -1180,85 +1273,38 @@ function levelFor(score) {
 }
 
 const RECS = [
-  // Taxonomy
-  [
-    'Resolve is essential — vocabulary and segmentation need to be built from scratch before anything else.',
-    'Resolve will sharpen segmentation and standardize language across the team — high-value early step.',
-    'Taxonomy is solid. Resolve can be a refinement exercise or skipped — Vector can start immediately.',
-  ],
-  // Signal
-  [
-    'Intelligence isn\'t ready yet — not enough data in the system. Revisit after 90 days of active tracking.',
-    'Intelligence is worth activating. There\'s enough data to surface meaningful patterns and funnel insights.',
-    'Intelligence is a strong fit. Rich data exists — activate it early to inform positioning and content strategy.',
-  ],
-  // Strategy
-  [
-    'Vector is the core engagement — major positioning and offer work needed before anything else moves.',
-    'Vector will sharpen and systematize an emerging strategy. 2–3 months of focused work expected.',
-    'Strategy is developed. Vector accelerates refinement and activates the growth motion quickly.',
-  ],
-  // Execution
-  [
-    'Engine is premature — execution infrastructure needs to be built first. Not recommended this cycle.',
-    'Engine is a solid Phase 2. Get the strategy locked first, then activate the content engine.',
-    'Engine is ready to activate. Content infrastructure exists — plug it in and scale what\'s working.',
-  ],
+  ['Resolve is essential — vocabulary and segmentation need to be built from scratch before anything else.','Resolve will sharpen segmentation and standardize language across the team — high-value early step.','Taxonomy is solid. Resolve can be a refinement exercise or skipped — Vector can start immediately.'],
+  ['Intelligence isn\'t ready yet — not enough data in the system. Revisit after 90 days of active tracking.','Intelligence is worth activating. There\'s enough data to surface meaningful patterns and funnel insights.','Intelligence is a strong fit. Rich data exists — activate it early to inform positioning and content strategy.'],
+  ['Vector is the core engagement — major positioning and offer work needed before anything else moves.','Vector will sharpen and systematize an emerging strategy. 2–3 months of focused work expected.','Strategy is developed. Vector accelerates refinement and activates the growth motion quickly.'],
+  ['Engine is premature — execution infrastructure needs to be built first. Not recommended this cycle.','Engine is a solid Phase 2. Get the strategy locked first, then activate the content engine.','Engine is ready to activate. Content infrastructure exists — plug it in and scale what\'s working.'],
 ];
 
 function moduleConfig(tool, included) {
   const configs = {
-    RESOLVE: { icon:'◈', label:'Resolve',      color:'var(--cyan)',   bg:'var(--cyan-bg)',   border:'var(--cyan-border)' },
-    INTEL:   { icon:'◉', label:'Intelligence', color:'var(--blue)',   bg:'var(--blue-bg)',   border:'var(--blue-border)' },
-    VECTOR: { icon:'◆', label:'Vector',       color:'var(--teal)',   bg:'var(--teal-bg)',   border:'var(--teal-dim)' },
-    ENGINE: { icon:'◇', label:'Engine',       color:'var(--orange)', bg:'var(--orange-bg)', border:'var(--orange-border)' },
+    RESOLVE: { icon: '◈', label: 'Resolve', color: 'var(--cyan)', bg: 'var(--cyan-bg)', border: 'var(--cyan-border)' },
+    INTEL:   { icon: '◉', label: 'Intelligence', color: 'var(--blue)', bg: 'var(--blue-bg)', border: 'var(--blue-border)' },
+    VECTOR:  { icon: '◆', label: 'Vector', color: 'var(--teal)', bg: 'var(--teal-bg)', border: 'var(--teal-dim)' },
+    ENGINE:  { icon: '◇', label: 'Engine', color: 'var(--orange)', bg: 'var(--orange-bg)', border: 'var(--orange-border)' },
   };
-  const c = configs[tool];
-  return { ...c, included };
+  return { ...configs[tool], included };
 }
 
 function buildRoadmap(scores) {
   const [tx, sig, str, ex] = scores;
-  const steps = [];
-  const modules = ['vector'];
-
+  const steps = [], modules = ['vector'];
   if (tx < 6) {
     modules.unshift('fuse');
-    steps.push({
-      tool: 'RESOLVE', color: 'var(--cyan)', bg: 'var(--cyan-bg)', border: 'var(--cyan-border)',
-      action: 'Build taxonomy foundation',
-      detail: 'Define audience segments, standardize vocabulary, and map content categories. This feeds positioning language directly into Vector.',
-      weeks: tx <= 3 ? '3–4 wks' : '1–2 wks',
-    });
+    steps.push({ tool: 'RESOLVE', color: 'var(--cyan)', bg: 'var(--cyan-bg)', border: 'var(--cyan-border)', action: 'Build taxonomy foundation', detail: 'Define audience segments, standardize vocabulary, and map content categories. This feeds positioning language directly into Vector.', weeks: tx <= 3 ? '3–4 wks' : '1–2 wks' });
   }
-
   if (sig >= 4) {
     modules.push('signal');
-    steps.push({
-      tool: 'INTEL', color: 'var(--blue)', bg: 'var(--blue-bg)', border: 'var(--blue-border)',
-      action: 'Activate intelligence layer',
-      detail: 'Connect CRM and engagement data. Intelligence surfaces which channels, content, and client archetypes are already working — so Vector positioning is grounded in evidence.',
-      weeks: '2–3 wks',
-    });
+    steps.push({ tool: 'INTEL', color: 'var(--blue)', bg: 'var(--blue-bg)', border: 'var(--blue-border)', action: 'Activate intelligence layer', detail: 'Connect CRM and engagement data. Intelligence surfaces which channels, content, and client archetypes are already working — so Vector positioning is grounded in evidence.', weeks: '2–3 wks' });
   }
-
-  steps.push({
-    tool: 'VECTOR', color: 'var(--teal)', bg: 'var(--teal-bg)', border: 'var(--teal-dim)',
-    action: str <= 3 ? 'Build growth strategy' : str <= 5 ? 'Sharpen and systematize strategy' : 'Activate and refine growth motion',
-    detail: 'Run the full Vector diagnostic — positioning, offers, referral engine, credibility assets, intake system, and 30-60-90 activation plan.',
-    weeks: str <= 3 ? '4–6 wks' : str <= 5 ? '2–4 wks' : '1–2 wks',
-  });
-
+  steps.push({ tool: 'VECTOR', color: 'var(--teal)', bg: 'var(--teal-bg)', border: 'var(--teal-dim)', action: str <= 3 ? 'Build growth strategy' : str <= 5 ? 'Sharpen and systematize strategy' : 'Activate and refine growth motion', detail: 'Run the full Vector diagnostic — positioning, offers, referral engine, credibility assets, client delivery kit, and 30-60-90 activation plan.', weeks: str <= 3 ? '4–6 wks' : str <= 5 ? '2–4 wks' : '1–2 wks' });
   if (ex >= 4) {
     modules.push('helix');
-    steps.push({
-      tool: 'ENGINE', color: 'var(--orange)', bg: 'var(--orange-bg)', border: 'var(--orange-border)',
-      action: 'Launch content engine',
-      detail: 'Take Vector\'s positioning and offer framework into Engine — generate campaign plans, content assets, and wire into the delivery stack (HubSpot, CRM, etc.).',
-      weeks: ex >= 6 ? '2–4 wks' : '4–6 wks',
-    });
+    steps.push({ tool: 'ENGINE', color: 'var(--orange)', bg: 'var(--orange-bg)', border: 'var(--orange-border)', action: 'Launch content engine', detail: 'Take Vector\'s positioning and offer framework into Engine — generate campaign plans, content assets, and wire into the delivery stack.', weeks: ex >= 6 ? '2–4 wks' : '4–6 wks' });
   }
-
   return { steps, modules };
 }
 
@@ -1267,12 +1313,12 @@ function first30Items(scores, modules) {
   const items = [];
   if (modules.includes('fuse')) items.push('Complete Resolve taxonomy session — audience segments, vocabulary, content categories');
   if (modules.includes('signal')) items.push('Connect CRM to Intelligence and run first engagement analysis');
-  items.push('Run Vector diagnostic — complete all 6 steps with the practice');
+  items.push('Run Vector diagnostic — complete all steps with the practice');
   items.push('Finalize offer language and pricing from Vector\'s Positioning & Offers output');
   items.push('Send first 5 warm intro requests from Vector\'s Referral Engine');
   if (modules.includes('helix')) items.push('Brief Engine on positioning — generate first campaign plan and content batch');
   else items.push('Revisit Engine eligibility after first 90 days of Vector activation');
-  return items.slice(0,5);
+  return items.slice(0, 5);
 }
 
 function pathLabel(modules) {
@@ -1285,29 +1331,21 @@ function pathLabel(modules) {
 }
 
 function showResults() {
-  // Hide all panels, show results
-  for (let i = 0; i <= 4; i++) {
-    document.getElementById(`panel-${i}`).classList.remove('active');
-  }
+  hideCurrentPanel();
+  currentStep = 6;
   document.getElementById('resultsPanel').style.display = 'block';
-  currentStep = 5;
-
-  // Update header phase
-  document.getElementById('tbPhase').textContent = 'Recommendation ready';
+  document.getElementById('tbPhase').textContent = 'Report ready';
   document.getElementById('tbPhase').className = 'tb-phase phase-results';
   document.getElementById('tbSaveBtn').style.display = 'block';
-
-  // Update sidebar
   updateSidebar();
   document.getElementById('btnNext').style.display = 'none';
   document.getElementById('btnBack').style.display = 'block';
   document.getElementById('btnBack').onclick = () => {
     document.getElementById('resultsPanel').style.display = 'none';
-    const backStep = 4;
-    currentStep = backStep;
-    document.getElementById(`panel-${backStep}`).classList.add('active');
-    document.getElementById('tbPhase').textContent = 'Assessment';
-    document.getElementById('tbPhase').className = 'tb-phase phase-assess';
+    currentStep = 5;
+    document.getElementById(`panel-5`).classList.add('active');
+    document.getElementById('tbPhase').textContent = 'Scoping';
+    document.getElementById('tbPhase').className = 'tb-phase phase-scoping';
     document.getElementById('tbSaveBtn').style.display = 'none';
     document.getElementById('btnNext').style.display = 'block';
     document.getElementById('btnNext').textContent = 'See recommendation →';
@@ -1321,9 +1359,9 @@ function showResults() {
   const size = accountSize || getAccountSize();
   const sizeCfg = SIZE_CONFIG[size] || SIZE_CONFIG.mid;
 
-  // Account size tier badge
-  const existingBadge = document.getElementById('resSizeBadge');
-  if (existingBadge) existingBadge.remove();
+  // Size badge
+  const existing = document.getElementById('resSizeBadge');
+  if (existing) existing.remove();
   const tierBadge = document.createElement('div');
   tierBadge.id = 'resSizeBadge';
   tierBadge.className = 'size-tier-badge';
@@ -1331,58 +1369,59 @@ function showResults() {
   tierBadge.textContent = sizeCfg.label;
   document.querySelector('#resultsPanel .step-header').prepend(tierBadge);
 
-  // Title
   const path = pathLabel(modules);
   const displayName = (state.orgName || 'This org').substring(0, 40);
   document.getElementById('resTitle').textContent = `${displayName} — ${path}`;
 
   const sizeDescs = {
-    micro:      `At your stage, Vector is the core engagement. One focused sprint to lock positioning, build the offer stack, and activate your referral engine. Everything else unlocks as you scale.`,
-    small:      `Based on the readiness assessment, we recommend a ${modules.length}-tool engagement in the sequence below. This becomes the scope for your proposal.`,
-    mid:        `Based on the readiness assessment, we recommend a ${modules.length}-tool engagement in the sequence below. This becomes the scope for your proposal.`,
-    enterprise: `Full-platform engagement recommended. The sequence below is optimized for your team size and existing infrastructure. Implementation support is advised.`,
+    micro: 'At your stage, Vector is the core engagement. One focused sprint to lock positioning, build the offer stack, and activate your referral engine. Everything else unlocks as you scale.',
+    small: `Based on Discovery, we recommend a ${modules.length}-tool engagement in the sequence below. This becomes the scope for your proposal.`,
+    mid: `Based on Discovery, we recommend a ${modules.length}-tool engagement in the sequence below. This becomes the scope for your proposal.`,
+    enterprise: 'Full-platform engagement recommended. The sequence below is optimized for your team size and existing infrastructure. Implementation support is advised.',
   };
   document.getElementById('resDesc').textContent = sizeDescs[size] || sizeDescs.mid;
 
-  // Launch CTA (size-specific)
+  // Launch CTA
   const existingCta = document.getElementById('launchCta');
   if (existingCta) existingCta.remove();
   const ctaDiv = document.createElement('div');
   ctaDiv.id = 'launchCta';
   ctaDiv.className = 'launch-cta';
-  const ctaConfigs = {
-    micro:      { heading: 'Start with Vector', sub: 'Your fastest path to growth — one focused sprint to lock positioning, offers, and referral engine.', btn: 'Open Vector →', href: '/vector.html?client=1', color: '#3BBFA3', bg: '#3BBFA3', text: '#07090C' },
-    small:      { heading: modules.includes('fuse') ? 'Start with Resolve' : 'Start with Vector', sub: 'Build the vocabulary and segmentation foundation, then move straight into Vector.', btn: modules.includes('fuse') ? 'Open Resolve →' : 'Open Vector →', href: modules.includes('fuse') ? '/resolve.html' : '/vector.html', color: '#4DE8FF', bg: '#3BBFA3', text: '#07090C' },
-    mid:        { heading: 'Begin implementation', sub: `${modules.length}-tool engagement across ${modules.join(', ')}. Kick off with the first tool in sequence.`, btn: 'Open Vector →', href: '/vector.html?client=1', color: '#3BBFA3', bg: '#3BBFA3', text: '#07090C' },
-    enterprise: { heading: 'Full-stack engagement', sub: `Recommended for your team size: all ${modules.length} tools in sequence. Vector anchors the strategy; Resolve, Intelligence, and Engine activate around it.`, btn: 'Open Vector →', href: '/vector.html?client=1', color: '#3BBFA3', bg: '#3BBFA3', text: '#07090C' },
-  };
-  const cta = ctaConfigs[size] || ctaConfigs.mid;
-  ctaDiv.innerHTML = `
-    <div class="launch-cta-text">
-      <h3>${cta.heading}</h3>
-      <p>${cta.sub}</p>
-    </div>
-    <a class="launch-cta-btn" href="${cta.href}" style="background:${cta.bg};color:${cta.text}">${cta.btn}</a>`;
-  document.getElementById('resultsPanel').insertBefore(ctaDiv,
-    document.getElementById('resultsPanel').querySelector('.results-grid'));
+  const ctaHref = modules.includes('fuse') ? '/resolve.html' : '/vector.html';
+  const ctaLabel = modules.includes('fuse') ? 'Open Resolve →' : 'Open Vector →';
+  const ctaHeading = modules.includes('fuse') ? 'Start with Resolve' : 'Start with Vector';
+  ctaDiv.innerHTML = `<div class="launch-cta-text"><h3>${ctaHeading}</h3><p>${modules.includes('fuse') ? 'Build the vocabulary and segmentation foundation first, then move into Vector.' : 'Strategy is ready — launch the Vector diagnostic now.'}</p></div><a class="launch-cta-btn" href="${ctaHref}" style="background:var(--purple);color:#fff">${ctaLabel}</a>`;
+  document.getElementById('resultsPanel').insertBefore(ctaDiv, document.getElementById('resultsPanel').querySelector('.results-grid') || document.getElementById('materialsSummary'));
 
   // Module pills
   const pillsEl = document.getElementById('modulePills');
   pillsEl.innerHTML = '';
   const PILL_HREFS = { RESOLVE: '/resolve.html', INTEL: '/intelligence.html', VECTOR: '/vector.html', ENGINE: '/engine.html' };
-  const PILL_MODULE_KEYS = { RESOLVE: 'fuse', INTEL: 'signal', VECTOR: 'vector', ENGINE: 'helix' };
+  const PILL_KEYS = { RESOLVE: 'fuse', INTEL: 'signal', VECTOR: 'vector', ENGINE: 'helix' };
   ['RESOLVE','INTEL','VECTOR','ENGINE'].forEach(tool => {
-    const included = modules.includes(PILL_MODULE_KEYS[tool]);
+    const included = modules.includes(PILL_KEYS[tool]);
     const c = moduleConfig(tool, included);
     const pill = document.createElement('a');
     pill.href = PILL_HREFS[tool];
     pill.className = `module-pill pill-link${included ? '' : ' pill-locked'}`;
-    pill.style.cssText = included
-      ? `background:${c.bg};border-color:${c.border};color:${c.color}`
-      : '';
+    pill.style.cssText = included ? `background:${c.bg};border-color:${c.border};color:${c.color}` : '';
     pill.innerHTML = `<span class="pill-icon">${c.icon}</span><span>${c.label}</span>${included ? '' : '<span style="font-size:10px;opacity:.6;margin-left:4px">not yet</span>'}`;
     pillsEl.appendChild(pill);
   });
+
+  // Materials summary
+  const totalMats = state.intake.taxFiles.length + state.intake.docs.length + state.intake.urls.length + (state.intake.linkedin.length > 20 ? 1 : 0);
+  const matPanel = document.getElementById('materialsSummary');
+  if (totalMats > 0) {
+    matPanel.style.display = 'block';
+    const grid = document.getElementById('materialsGrid');
+    grid.innerHTML = `
+      <div class="material-cell"><div class="material-cell-label">Taxonomy files</div><div class="material-cell-count">${state.intake.taxFiles.length}</div><div class="material-cell-items">${state.intake.taxFiles.map(f => f.name).join(', ') || '—'}</div></div>
+      <div class="material-cell"><div class="material-cell-label">Documents</div><div class="material-cell-count">${state.intake.docs.length}</div><div class="material-cell-items">${(state.intake.docs.slice(0,3).map(f => f.name).join(', ') + (state.intake.docs.length > 3 ? ` +${state.intake.docs.length - 3} more` : '')) || '—'}</div></div>
+      <div class="material-cell"><div class="material-cell-label">Web + LinkedIn</div><div class="material-cell-count">${state.intake.urls.length + (state.intake.linkedin.length > 20 ? 1 : 0)}</div><div class="material-cell-items">${state.intake.urls.map(u => u.url).slice(0,2).join(', ') || '—'}</div></div>`;
+  } else {
+    matPanel.style.display = 'none';
+  }
 
   // Readiness cards
   const grid = document.getElementById('resultsGrid');
@@ -1393,16 +1432,7 @@ function showResults() {
     const recIdx = score <= 3 ? 0 : score <= 5 ? 1 : 2;
     const card = document.createElement('div');
     card.className = 'readiness-card';
-    card.innerHTML = `
-      <div class="rc-header">
-        <div class="rc-name" style="color:${sm.color}">${sm.tool} — ${sm.name}</div>
-        <div class="rc-score" style="color:${sm.color}">${score}<span style="font-size:13px;color:var(--muted)">/8</span></div>
-      </div>
-      <div class="rc-bar-track">
-        <div class="rc-bar-fill" style="width:${(score/8)*100}%;background:${sm.color}"></div>
-      </div>
-      <div class="rc-level" style="background:${lvl.bg};color:${lvl.color};border:1px solid ${lvl.border}">${lvl.label}</div>
-      <div class="rc-recommendation">${RECS[i][recIdx]}</div>`;
+    card.innerHTML = `<div class="rc-header"><div class="rc-name" style="color:${sm.color}">${sm.tool} — ${sm.name}</div><div class="rc-score" style="color:${sm.color}">${score}<span style="font-size:13px;color:var(--muted)">/8</span></div></div><div class="rc-bar-track"><div class="rc-bar-fill" style="width:${(score/8)*100}%;background:${sm.color}"></div></div><div class="rc-level" style="background:${lvl.bg};color:${lvl.color};border:1px solid ${lvl.border}">${lvl.label}</div><div class="rc-recommendation">${RECS[i][recIdx]}</div>`;
     grid.appendChild(card);
   });
 
@@ -1412,18 +1442,11 @@ function showResults() {
   steps.forEach((s, i) => {
     const row = document.createElement('div');
     row.className = 'roadmap-step';
-    row.innerHTML = `
-      <div class="rs-num" style="background:${s.bg};color:${s.color};border:1px solid ${s.border}">${i+1}</div>
-      <div class="rs-body">
-        <div class="rs-tool" style="color:${s.color}">${s.tool}</div>
-        <div class="rs-action">${s.action}</div>
-        <div class="rs-detail">${s.detail}</div>
-      </div>
-      <div class="rs-weeks">${s.weeks}</div>`;
+    row.innerHTML = `<div class="rs-num" style="background:${s.bg};color:${s.color};border:1px solid ${s.border}">${i+1}</div><div class="rs-body"><div class="rs-tool" style="color:${s.color}">${s.tool}</div><div class="rs-action">${s.action}</div><div class="rs-detail">${s.detail}</div></div><div class="rs-weeks">${s.weeks}</div>`;
     stepsEl.appendChild(row);
   });
 
-  // First 30 days
+  // First 30
   const f30 = document.getElementById('first30Items');
   f30.innerHTML = '';
   first30Items(scores, modules).forEach(item => {
@@ -1436,62 +1459,47 @@ function showResults() {
   document.getElementById('contentArea').scrollTop = 0;
 }
 
-// ── SAVE TO SUPABASE ──────────────────────────────────
+// ── SAVE TO SUPABASE ──────────────────────────────────────
 async function saveToSupabase() {
   if (!currentUser) return;
   const { steps, modules } = buildRoadmap(state.scores);
   const readiness = {
-    taxonomy: state.scores[0],
-    signal:   state.scores[1],
-    strategy: state.scores[2],
-    execution: state.scores[3],
+    taxonomy: state.scores[0], signal: state.scores[1], strategy: state.scores[2], execution: state.scores[3],
     assessed_at: new Date().toISOString(),
     org_name: state.orgName,
     org_industry: document.getElementById('orgIndustry').value,
-    org_team: state.orgTeam,
-    org_rev: state.orgRev,
+    org_team: state.orgTeam, org_rev: state.orgRev,
     org_challenge: document.getElementById('orgChallenge').value,
     path: pathLabel(modules),
+    intake: {
+      taxGate: state.intake.taxGate,
+      taxFiles: state.intake.taxFiles.map(f => ({ name: f.name, label: f.label })),
+      docs: state.intake.docs.map(f => ({ name: f.name, type: f.type, label: f.label })),
+      urls: state.intake.urls.map(u => ({ url: u.url, preview: u.preview })),
+      hasLinkedin: state.intake.linkedin.length > 20,
+    }
   };
-
   const btn = document.getElementById('tbSaveBtn');
   btn.textContent = 'Saving…';
   btn.disabled = true;
-
-  // Collect teammate emails stored at gate
-  const teamEmails = (() => {
-    try { return JSON.parse(localStorage.getItem('disc_team_emails') || '[]'); } catch { return []; }
-  })();
-
+  const teamEmails = (() => { try { return JSON.parse(localStorage.getItem('disc_team_emails') || '[]'); } catch { return []; } })();
   try {
-    // Upsert practice record (match by email)
-    const { data, error } = await supa
-      .from('practices')
-      .upsert({
-        email: currentUser.email,
-        readiness,
-        modules_unlocked: modules,
-        team_emails: teamEmails,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'email' })
-      .select('id')
-      .single();
-
+    const { data, error } = await supa.from('practices').upsert({
+      email: currentUser.email, readiness, modules_unlocked: modules, team_emails: teamEmails,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'email' }).select('id').single();
     if (error) throw error;
     currentPracticeId = data?.id;
     localStorage.removeItem('disc_team_emails');
-    // Persist locally and to org layer
     localStorage.setItem('discover_state', JSON.stringify(readiness));
     try { OrgStore.save('org_discover', readiness); } catch (_) {}
     const syncEl = document.getElementById('sync-indicator');
     if (syncEl) { syncEl.style.opacity = '1'; setTimeout(() => { syncEl.style.opacity = '0'; }, 2000); }
     btn.textContent = '✓ Saved';
     setTimeout(() => { btn.textContent = 'Save to record'; btn.disabled = false; }, 2000);
-    // Notify admin + all team members with full assessment data (fire-and-forget)
     try {
       supa.functions.invoke('notify-lead', { body: {
-        type: 'saved', email: currentUser.email,
-        team_emails: teamEmails,
+        type: 'saved', email: currentUser.email, team_emails: teamEmails,
         org_name: readiness.org_name, org_industry: readiness.org_industry,
         org_team: readiness.org_team, org_rev: readiness.org_rev,
         scores: { taxonomy: readiness.taxonomy, signal: readiness.signal, strategy: readiness.strategy, execution: readiness.execution },
@@ -1505,15 +1513,11 @@ async function saveToSupabase() {
   }
 }
 
-// ── INIT ──────────────────────────────────────────────
+// ── INIT ─────────────────────────────────────────────────
 buildQuestions();
 updateFooter();
 initAuth();
-
-// Watch org name to re-enable Continue
-document.getElementById('orgName').addEventListener('input', () => {
-  updateFooter();
-});
+document.getElementById('orgName').addEventListener('input', updateFooter);
 </script>
 </body>
 </html>

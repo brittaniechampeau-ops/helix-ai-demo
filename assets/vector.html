@@ -554,16 +554,16 @@
   <a class="pnav-tool" href="/discover.html">
     <span class="pnav-dot" style="background:#8B7FEC"></span>Discover
   </a>
-  <a class="pnav-tool pnav-locked" href="#">
+  <a class="pnav-tool" href="/resolve.html">
     <span class="pnav-dot" style="background:#4DE8FF"></span>Resolve
   </a>
-  <a class="pnav-tool pnav-locked" href="#">
+  <a class="pnav-tool" href="/intelligence.html">
     <span class="pnav-dot" style="background:#5B8CFF"></span>Intelligence
   </a>
   <a class="pnav-tool pnav-active" href="/vector.html">
     <span class="pnav-dot" style="background:#3BBFA3"></span>Vector
   </a>
-  <a class="pnav-tool pnav-locked" href="#">
+  <a class="pnav-tool" href="/engine.html">
     <span class="pnav-dot" style="background:#FF8A3D"></span>Engine
   </a>
 </div>
@@ -1362,6 +1362,9 @@
           </div>
         </div>
         <input type="file" id="taxUploadInput" accept=".csv,.xlsx" style="display:none" onchange="handleTaxUpload(event)">
+        <div id="resolveTaxBanner" style="display:none;background:rgba(77,232,255,.06);border:1px solid rgba(77,232,255,.18);border-radius:7px;padding:9px 13px;margin-bottom:12px;font-size:12px;color:#7A90B5">
+          <strong style="color:#4DE8FF">✓ Taxonomy from Resolve</strong> — canonical fields and defined terms loaded automatically. Upload a CSV to override.
+        </div>
         <p style="font-size:13px;color:var(--txt2);margin:0 0 14px">Define your real taxonomy field names and allowed values. Vector will map Campaign DNA to these exact terms when generating payloads.</p>
 
         <div style="display:grid;grid-template-columns:180px 1fr 28px;gap:6px;margin-bottom:6px">
@@ -1376,6 +1379,16 @@
           <div style="font-size:11px;font-weight:600;color:var(--txt3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">Taxonomy preview</div>
           <div id="taxPreviewChips" style="display:flex;flex-wrap:wrap;gap:4px"></div>
         </div>
+      </div>
+
+      <!-- Stale DNA banner (shown when Resolve updated after last DNA generation) -->
+      <div id="staleDNABanner" style="display:none;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:8px;padding:11px 16px;margin-bottom:14px;display:none;align-items:center;gap:12px">
+        <span style="font-size:16px">⚠</span>
+        <div style="flex:1;font-size:13px;color:#EEF2FF">
+          <strong style="color:#F59E0B">Taxonomy updated in Resolve</strong> — your Campaign DNA was generated before the latest changes. Re-run to apply the updated vocabulary.
+        </div>
+        <button onclick="generateCampaignDNA()" style="flex-shrink:0;height:30px;padding:0 14px;background:#F59E0B;border:none;border-radius:6px;color:#050709;font-size:12px;font-weight:700;cursor:pointer">Re-run DNA →</button>
+        <button onclick="hideStaleDNABanner()" style="background:none;border:none;color:#7A90B5;cursor:pointer;font-size:18px;line-height:1;padding:0 2px">×</button>
       </div>
 
       <!-- Campaign DNA card -->
@@ -1843,6 +1856,58 @@ async function signOut() {
 async function cloudSave() {
   if (!currentUser) return;
   await supa.from('practices').upsert({ email: currentUser.email, practice_name: VEC.practice.name || null, state: { VEC, PHASE }, updated_at: new Date().toISOString() }, { onConflict: 'email' });
+}
+
+function showStaleDNABanner() {
+  const el = document.getElementById('staleDNABanner');
+  if (el) el.style.display = 'flex';
+}
+function hideStaleDNABanner() {
+  const el = document.getElementById('staleDNABanner');
+  if (el) el.style.display = 'none';
+}
+
+// ── LOAD CONTEXT FROM RESOLVE + INTELLIGENCE ─────────────
+async function loadDRIVEContext() {
+  if (!OrgStore.orgId) return;
+  // 1. Canonical taxonomy from Resolve → pre-populate VEC.taxFields if not yet set by user
+  try {
+    const resolveData = await OrgStore.load('org_resolve');
+    if (resolveData?.taxonomy?.categories?.length && (!VEC.taxFields || VEC.taxFields === JSON.parse(JSON.stringify(DEFAULT_TAX_FIELDS)) || !VEC._taxFromUser)) {
+      const fromResolve = resolveData.taxonomy.categories.map(cat => ({
+        key: cat.label,
+        values: cat.terms.filter(t => t.status === 'defined').map(t => t.text),
+        _fromResolve: true,
+      }));
+      if (fromResolve.length) {
+        VEC.taxFields = fromResolve;
+        VEC._taxFromResolve = true;
+        initTaxFields();
+        const banner = document.getElementById('resolveTaxBanner');
+        if (banner) banner.style.display = 'block';
+      }
+    }
+    // Naming convention → Campaign Name Template field
+    if (resolveData?.naming?.status === 'approved' && resolveData.naming.pattern) {
+      const tmpl = VEC.taxFields.find(f => f.key === 'Campaign Name Template');
+      if (tmpl) tmpl.values = [resolveData.naming.pattern];
+    }
+    // Stale DNA check: if Resolve was updated after the last DNA generation, warn user
+    if (VEC._cdnaGeneratedAt && resolveData?._updatedAt) {
+      const resolveUpdated = new Date(resolveData._updatedAt);
+      const dnaGenerated = new Date(VEC._cdnaGeneratedAt);
+      if (resolveUpdated > dnaGenerated) showStaleDNABanner();
+    }
+  } catch (_) {}
+
+  // 2. Starred Intelligence signals → attach to VEC for use in AI prompts
+  try {
+    const intelData = await OrgStore.load('org_intelligence');
+    const starred = (intelData?.signals || []).filter(s => s.starred);
+    if (starred.length) {
+      VEC._intelligenceSignals = starred;
+    }
+  } catch (_) {}
 }
 
 async function cloudLoad() {
@@ -3198,6 +3263,10 @@ async function handleTaxUpload(e) {
         values: rows.map(r => String(r[col] || '').trim()).filter(Boolean)
       }));
     }
+    VEC._taxFromUser = true;
+    VEC._taxFromResolve = false;
+    const banner = document.getElementById('resolveTaxBanner');
+    if (banner) banner.style.display = 'none';
     renderTaxFields();
     showToast(`Taxonomy loaded — ${VEC.taxFields.length} fields`);
   } catch(err) {
@@ -3360,6 +3429,10 @@ ${taxInstruction}
 
 For array fields (like content themes), return a JSON array of strings. For all others, return a string. Match allowed values exactly when provided.`;
 
+  const intelligenceSummary = (VEC._intelligenceSignals || []).length
+    ? `\n\nBuyer signals from Intelligence (starred):\n${VEC._intelligenceSignals.slice(0,8).map(s=>`- [${s.type}] ${s.title}: ${s.text}`).join('\n')}`
+    : '';
+
   const user = `Practice: ${VEC.practice.name || 'Consulting Practice'}
 Track: ${d.track || ''}
 Size: ${d.size || ''}
@@ -3369,13 +3442,15 @@ Core constraint they face: ${p.constraint || ''}
 Positioning one-liner: ${p.oneline || ''}
 Proof point: ${p.proof || ''}
 Offers:
-${offers}`;
+${offers}${intelligenceSummary}`;
 
   try {
     const dna = await callClaude(system, user, { maxTokens: 900 });
     cdnaState = dna;
     VEC.cdna = dna;
+    VEC._cdnaGeneratedAt = new Date().toISOString();
     renderCDNA(dna);
+    hideStaleDNABanner();
     document.getElementById('dest-card').style.display = 'block';
     renderDestPanels();
     logEvent('cdna_generated', { practice: VEC.practice.name });
@@ -5319,6 +5394,7 @@ supa.auth.onAuthStateChange(async (event, session) => {
         } else if (restoreFromSave()) { restoreUI(); cloudSave(); showClientHome(); }
         else { updateSidebar(); }
       }
+      await loadDRIVEContext();
     }
   } else {
     currentUser = null;

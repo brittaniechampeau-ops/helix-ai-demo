@@ -9,30 +9,30 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg:        #07090C;
-  --surface:   #0E1218;
-  --surface2:  #131920;
-  --surface3:  #171F2A;
-  --accent:    #3BBFA3;
-  --accent-dim:#1E6B5E;
-  --accent-bg: #0D2E27;
-  --blue:      #4BA8C8;
-  --blue-dim:  #1a4a6b;
-  --blue-bg:   #0D2535;
-  --purple:    #9B8FE8;
-  --purple-dim:#3a2a6b;
-  --purple-bg: #1a1535;
-  --orange:    #E8836B;
-  --orange-bg: #2e1a14;
-  --orange-dim:#5a3020;
-  --green:     #7EC87E;
-  --green-bg:  #12261a;
-  --green-dim: #2a4a2a;
-  --text:      #E8EDF3;
-  --muted:     #6B7A8D;
-  --faint:     #2A3544;
-  --border:    #1C2535;
-  --border2:   #243040;
+  --bg:        #060E1C;
+  --surface:   #0C1830;
+  --surface2:  #102040;
+  --surface3:  #162850;
+  --accent:    #00C8FF;
+  --accent-dim:#0088BB;
+  --accent-bg: #001C30;
+  --blue:      #5B8CFF;
+  --blue-dim:  #1a3080;
+  --blue-bg:   #0D1840;
+  --purple:    #E01870;
+  --purple-dim:#801040;
+  --purple-bg: #200818;
+  --orange:    #FF8A3D;
+  --orange-bg: #2e1a0a;
+  --orange-dim:#5a3010;
+  --green:     #00FF88;
+  --green-bg:  #001C10;
+  --green-dim: #003820;
+  --text:      #EEF2FF;
+  --muted:     #7A90B5;
+  --faint:     #1A2C48;
+  --border:    #1A2C48;
+  --border2:   #243858;
   --font:      -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
   --mono:      'SF Mono', 'Fira Code', monospace;
   --red:       #ef4444;
@@ -293,19 +293,19 @@ body {
   <span class="pnav-brand">✦ DRIVE</span>
   <div class="pnav-sep"></div>
   <a class="pnav-tool" href="/discover.html">
-    <span class="pnav-dot" style="background:#9B8FE8"></span>Discover
+    <span class="pnav-dot" style="background:#8B7FEC"></span>Discover
   </a>
   <a class="pnav-tool" href="/resolve.html">
     <span class="pnav-dot" style="background:#4DE8FF"></span>Resolve
   </a>
   <a class="pnav-tool" href="/intelligence.html">
-    <span class="pnav-dot" style="background:#4BA8C8"></span>Intelligence
+    <span class="pnav-dot" style="background:#5B8CFF"></span>Intelligence
   </a>
   <a class="pnav-tool" href="/vector.html">
     <span class="pnav-dot" style="background:#3BBFA3"></span>Vector
   </a>
   <a class="pnav-tool pnav-active" href="/engine.html">
-    <span class="pnav-dot" style="background:#E8836B"></span>Engine
+    <span class="pnav-dot" style="background:#FF8A3D"></span>Engine
   </a>
 </div>
 
@@ -483,29 +483,39 @@ let activeId     = null;
 let saveTimer    = null;
 
 // ─── LOAD DATA ────────────────────────────────────────────────────────────────
-function loadLocalData() {
+let namingPattern = null; // approved naming convention from Resolve
+
+async function loadDRIVEData() {
+  // Vector: practice profile + campaign DNA
   try {
-    const vecRaw = localStorage.getItem('vec_state');
-    if (vecRaw) {
-      const vec = JSON.parse(vecRaw);
-      practiceData = vec.practice || {};
-      cdna = vec.cdna || {};
+    const vecData = await OrgStore.load('org_vec_state');
+    if (vecData) {
+      practiceData = vecData.practice || vecData.pos || {};
+      cdna = vecData.cdna || {};
+    } else {
+      // Fallback: try legacy localStorage key
+      const vecRaw = localStorage.getItem('vec_v1');
+      if (vecRaw) { const v = JSON.parse(vecRaw); practiceData = v.VEC?.practice || {}; cdna = v.VEC?.cdna || {}; }
     }
   } catch(e) {}
 
+  // Resolve: canonical taxonomy + naming convention
   try {
-    const taxRaw = localStorage.getItem('resolve_taxonomy');
-    if (taxRaw) taxonomy = JSON.parse(taxRaw);
+    const resolveData = await OrgStore.load('org_resolve');
+    if (resolveData) {
+      taxonomy = resolveData.taxonomy || {};
+      if (resolveData.naming?.status === 'approved' && resolveData.naming?.pattern) {
+        namingPattern = resolveData.naming.pattern;
+      }
+    }
   } catch(e) {}
 
+  // Intelligence: starred signals for content theme suggestions
   try {
-    const intelRaw = localStorage.getItem('intel_signals');
-    if (intelRaw) intelSignals = JSON.parse(intelRaw);
-  } catch(e) {}
-
-  try {
-    const savedRaw = localStorage.getItem('engine_assets');
-    if (savedRaw) savedAssets = JSON.parse(savedRaw);
+    const intelData = await OrgStore.load('org_intelligence');
+    if (intelData?.signals) {
+      intelSignals = intelData.signals.filter(s => s.starred);
+    }
   } catch(e) {}
 }
 
@@ -533,6 +543,12 @@ function getPersona() { return cdna.buyer_persona || DEFAULT_PERSONA; }
 function getThemes() {
   if (cdna.content_themes) {
     return cdna.content_themes.split(/[,;]+/).map(s => s.trim()).filter(Boolean);
+  }
+  // Fall back to starred Intelligence signals as theme prompts
+  const taxThemes = getTaxonomyTerms('content');
+  if (taxThemes.length) return taxThemes;
+  if (intelSignals.length) {
+    return intelSignals.slice(0, 6).map(s => s.title);
   }
   return DEFAULT_THEMES;
 }
@@ -774,6 +790,16 @@ function buildForm(asset, saved) {
   // Suggested title
   const suggestedTitle = `${asset.type} — ${getPracticeName()}`;
 
+  // Campaign name: use approved Resolve naming pattern if set, else fallback
+  const suggestedCampaign = s('campaign', namingPattern
+    ? namingPattern.replace(/\[Product\]/i, getOffers()[0] || getPracticeName()).replace(/\[Quarter\]/i, `Q${Math.ceil((new Date().getMonth()+1)/3)} ${new Date().getFullYear()}`)
+    : campaign);
+
+  // Naming convention hint
+  const namingHint = namingPattern
+    ? `<div style="font-size:10px;color:#4DE8FF;margin-top:4px;font-weight:600">Pattern from Resolve: ${escHtml(namingPattern)}</div>`
+    : '';
+
   // Common fields
   let html = `<div class="form-section">
     <div class="form-section-title">Core Metadata</div>
@@ -781,7 +807,7 @@ function buildForm(asset, saved) {
     <div class="form-grid">
       ${fld('type', 'Asset Type', `<input type="text" id="field-type" class="form-input" value="${escHtml(asset.type)}" readonly style="opacity:0.6;">`)}
       ${fld('status', 'Status', sel('status', ['Draft', 'In Review', 'Approved', 'Live'], s('status', 'Draft')))}
-      ${fld('campaign', 'Campaign', inp('campaign', s('campaign', campaign), 'Campaign name'))}
+      ${fld('campaign', 'Campaign', inp('campaign', suggestedCampaign, 'Campaign name') + namingHint)}
       ${fld('practice_area', 'Practice Area', inp('practice_area', s('practice_area', practiceArea), 'Practice area'))}
       ${fld('offer', 'Offer Association', sel('offer', offers, s('offer', offers[0] || '')))}
       ${fld('buyer_persona', 'Buyer Persona', inp('buyer_persona', s('buyer_persona', persona), 'Target persona'))}
@@ -1148,7 +1174,7 @@ async function initApp(session) {
     try { localStorage.setItem('engine_assets', JSON.stringify(savedAssets)); } catch(_) {}
   }
 
-  loadLocalData();
+  await loadDRIVEData();
 
   const practiceName = getPracticeName();
   document.getElementById('practiceNamePill').textContent = practiceName;
