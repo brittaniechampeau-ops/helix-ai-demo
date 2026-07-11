@@ -975,8 +975,8 @@ function updateOrgDisplay() {
 // ── ACCOUNT SIZE ─────────────────────────────────────────
 function getAccountSize() {
   const team = state.orgTeam, rev = state.orgRev;
-  if (team === '51-200' || team === '200+' || rev === '$10M–$50M' || rev === '$50M+') return 'enterprise';
-  if (team === '21-50' || rev === '$2M–$10M') return 'mid';
+  if (team === '200+' || rev === '$10M–$50M' || rev === '$50M+') return 'enterprise';
+  if (team === '51-200' || team === '21-50' || rev === '$2M–$10M') return 'mid';
   if (team === '1-5' || rev === '<$500K') return 'micro';
   return 'small';
 }
@@ -1002,10 +1002,11 @@ function applySizePath() {
   document.getElementById('sizeBannerText').innerHTML = cfg.bannerText;
   banner.classList.add('visible');
   if (accountSize === 'micro') {
-    ['secnav-2','secnav-3'].forEach(id => { const el = document.getElementById(id); if (el) el.style.opacity = '0.4'; });
+    ['secnav-2','secnav-3'].forEach(id => { const el = document.getElementById(id); if (el) { el.style.opacity = '0.4'; el.style.pointerEvents = 'none'; } });
     ['bar-0','bar-1','barval-0','barval-1','score-label-0','score-label-1'].forEach(id => { const el = document.getElementById(id); if (el) el.style.opacity = '0.4'; });
     state.answers[0] = [2,2,1,1]; recalcScore(0);
     state.answers[1] = [1,1,1,0]; recalcScore(1);
+    state.autoScoredSections = ['resolve','intelligence'];
   }
 }
 
@@ -1577,6 +1578,19 @@ function getTrack(size, modules) {
     };
   }
 
+  if (hasFuse && hasHelix) {
+    return {
+      name:         'Full DRIVE Engagement',
+      tagline:      'End-to-end from taxonomy to content operations',
+      color:        'var(--blue)',  bg: 'var(--blue-bg)',  border: 'var(--blue-border)',
+      duration:     '10–16 weeks',
+      stakeholders: 'Marketing lead, founder/owner, data owner',
+      deliverables: ['Canonical taxonomy', 'Market signals report', 'Campaign DNA', 'Offer architecture', 'Content operations plan'],
+      focus:        'All five DRIVE tools in sequence. Taxonomy foundation sets shared vocabulary. Intelligence surfaces what\'s working in market. Vector builds the growth strategy. Engine operationalizes it.',
+      firstStep:    'resolve',
+    };
+  }
+
   if (!hasFuse && hasHelix) {
     return {
       name:         'Strategy + Execution',
@@ -1614,9 +1628,10 @@ function showResults() {
   document.getElementById('btnNext').style.display = 'none';
   document.getElementById('btnBack').style.display = 'block';
   document.getElementById('btnBack').onclick = () => {
+    const prevStep = (accountSize === 'micro') ? 4 : 5;
     document.getElementById('resultsPanel').style.display = 'none';
-    currentStep = 5;
-    document.getElementById(`panel-5`).classList.add('active');
+    currentStep = prevStep;
+    document.getElementById(`panel-${prevStep}`).classList.add('active');
     document.getElementById('tbPhase').textContent = 'Scoping';
     document.getElementById('tbPhase').className = 'tb-phase phase-scoping';
     document.getElementById('tbSaveBtn').style.display = 'none';
@@ -1672,6 +1687,17 @@ function showResults() {
   // Insert after the step-header
   const stepHeader = document.querySelector('#resultsPanel .step-header');
   stepHeader.insertAdjacentElement('afterend', tc);
+
+  // Auto-score disclaimer for micro path
+  const existingDisclaimer = document.getElementById('autoScoreDisclaimer');
+  if (existingDisclaimer) existingDisclaimer.remove();
+  if (state.autoScoredSections?.length) {
+    const disclaimer = document.createElement('div');
+    disclaimer.id = 'autoScoreDisclaimer';
+    disclaimer.style.cssText = 'font-size:12px;color:var(--muted);background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;margin-bottom:16px;line-height:1.5';
+    disclaimer.textContent = 'Note: Resolve and Intelligence scores are estimated defaults — these sections were not completed.';
+    tc.insertAdjacentElement('afterend', disclaimer);
+  }
 
   // Module pills
   const pillsEl = document.getElementById('modulePills');

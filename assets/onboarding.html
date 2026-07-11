@@ -18,6 +18,13 @@
   --orange:#FF8A3D;--orange-bg:rgba(255,138,61,.1);--orange-border:rgba(255,138,61,.25);
   --green:#3BBFA3;--green-bg:rgba(59,191,163,.08);--green-border:rgba(59,191,163,.22);
   --warn:#F0C040;--warn-bg:rgba(240,192,64,.08);--warn-border:rgba(240,192,64,.22);
+  /* Extended ink/bg tokens used throughout inline styles */
+  --ink: var(--text);
+  --ink2: #8892A4;
+  --ink3: var(--muted);
+  --ink4: var(--muted);
+  --bg2: var(--card);
+  --bg3: var(--faint);
 }
 html{scroll-behavior:smooth}
 body{
@@ -138,6 +145,14 @@ body{
 .tb-v{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
 .tb-e{background:var(--orange-bg);color:var(--orange);border:1px solid var(--orange-border)}
 
+/* TRACK CHIPS */
+.track-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px;padding:12px 16px;background:var(--panel);border:1px solid var(--border);border-radius:8px;align-items:center}
+.track-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-right:4px;flex-shrink:0}
+.track-chip{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600}
+.track-chip.included{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.track-chip.excluded{background:var(--faint);color:var(--muted);border:1px solid var(--border2);text-decoration:line-through;opacity:.6}
+.track-sep{color:var(--faint2);font-size:11px;padding:0 4px}
+
 /* DIVIDER */
 .guide-divider{border:none;border-top:1px solid var(--border);margin:48px 0}
 
@@ -154,6 +169,12 @@ body{
     --orange:#b84800;--orange-bg:#fff0e6;--orange-border:#f5c090;
     --green:#1a7a60;--green-bg:#e4f5ef;--green-border:#90d8c0;
     --warn:#8a5a00;--warn-bg:#fff8e0;--warn-border:#f0d870;
+    --ink: #0d0d12;
+    --ink2: #4a4a5a;
+    --ink3: #6a6a7a;
+    --ink4: #6a6a7a;
+    --bg2: #f0f0f4;
+    --bg3: #d8d8e0;
   }
   .topbar,.no-print,.phase-nav{display:none!important}
   .page{padding:28px 20px;max-width:100%}
@@ -232,6 +253,8 @@ body{
       </div>
     </div>
 
+    <div class="callout good" style="margin-bottom:16px"><strong>Accessing the platform:</strong> You'll receive a magic link by email — click it to sign in. No password required. Your workspace is at <strong>drive.brittbowman.ai</strong> — bookmark this URL so you can return directly between sessions.</div>
+
     <div class="callout info"><strong>Why this matters:</strong> DRIVE is only as good as the inputs you give it. Vague or missing materials produce generic outputs. Specific, honest materials — even if they're messy — produce outputs that are actually usable.</div>
 
     <div class="card">
@@ -262,7 +285,7 @@ body{
 
     <div class="card">
       <div class="card-title">Files to gather and bring to session 1</div>
-      <div class="callout tip" style="margin-top:0;margin-bottom:14px"><strong>Format note:</strong> PDF is preferred. DOCX and TXT also work. Spreadsheets: export as CSV. Slides: export as PDF. VTT/SRT files work for call transcripts.</div>
+      <div class="callout tip" style="margin-top:0;margin-bottom:14px"><strong>Format note:</strong> PDF is preferred. DOCX and TXT also work. Spreadsheets: export as CSV. Slides: PPTX or PDF both accepted. VTT/SRT files work for call transcripts.</div>
       <table class="file-table">
         <thead><tr><th>File type</th><th>What to bring</th><th>Goes to</th></tr></thead>
         <tbody>
@@ -291,6 +314,7 @@ body{
       <div class="section-num" style="background:#EEF2FF;color:#4338CA">D</div>
       <div>
         <div class="section-title">Discover <span style="font-size:14px;font-weight:500;color:var(--ink3)">— Scoping &amp; readiness</span></div>
+        <div class="track-row" style="margin-top:10px"><span class="track-label">Included in:</span><span class="track-chip included">All tracks</span></div>
         <div class="section-sub">Discover is where the engagement scope is set. You'll walk through six sections together. By the end, the system has enough to recommend which DRIVE tools you need, in what order, and why. This is typically done in a 60–90 min session.</div>
         <div class="section-meta">
           <div class="section-meta-item">⏱ <strong>60–90 min</strong></div>
@@ -467,6 +491,21 @@ body{
       </div>
     </div>
 
+    <div class="card">
+      <div class="card-title">Final step — Save your results</div>
+      <div class="card-body">
+        <div class="steps">
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#EEF2FF;color:#4338CA">✓</div></div>
+            <div class="step-body">
+              <div class="step-title">Click the Save button in the top bar</div>
+              <div class="step-desc">After completing the readiness sections, look for the <span class="click">Save to record</span> button in the top bar. Click it before navigating away from Discover. This syncs your scoping results to Hub and unlocks the downstream tools with your data pre-loaded. <strong>Don't skip this step</strong> — Resolve, Intelligence, and Vector will open without your context if you do.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="output-card">
       <div class="output-card-header">What you'll see at the end of Discover</div>
       <div class="output-card-body">
@@ -492,6 +531,7 @@ body{
       <div class="section-num" style="background:#ECFEFF;color:#0E7490">R</div>
       <div>
         <div class="section-title">Resolve <span style="font-size:14px;font-weight:500;color:var(--ink3)">— Taxonomy Workbench</span></div>
+        <div class="track-row" style="margin-top:10px"><span class="track-label">Included in:</span><span class="track-chip included">Full DRIVE Engagement</span><span class="track-chip included">Foundation + Strategy</span><span class="track-chip included">Enterprise Governance</span><span class="track-chip included">Strategy + Execution</span><span class="track-sep">·</span><span class="track-label">Not included in:</span><span class="track-chip excluded">Vector Sprint</span><span class="track-chip excluded">Growth Sprint</span></div>
         <div class="section-sub">Resolve builds the canonical vocabulary that all other tools depend on. It reads your existing CRM exports and brand materials, detects conflicts and inconsistencies, and proposes a clean taxonomy — field definitions, picklist values, and naming conventions — that you review and approve before anything else is built on top of it.</div>
         <div class="section-meta">
           <div class="section-meta-item">⏱ <strong>45–90 min (AI run: ~3 min)</strong></div>
@@ -591,7 +631,7 @@ body{
             <div class="step-line"><div class="step-dot" style="background:#ECFEFF;color:#0E7490">2</div><div class="step-connector"></div></div>
             <div class="step-body">
               <div class="step-title">Enter the stakeholder's contact info</div>
-              <div class="step-desc">Type their name and work email. This is whoever needs to sign off on the taxonomy — typically the RevOps lead, marketing director, or whoever owns the CRM. Click <span class="click">Send</span>.</div>
+              <div class="step-desc">Type their name and work email. This is whoever needs to sign off on the taxonomy — typically the RevOps lead, marketing director, or whoever owns the CRM (skip if you're the sole decision-maker — use the Approve button in the toolbar instead). Click <span class="click">Send</span>.</div>
             </div>
           </div>
           <div class="step">
@@ -603,6 +643,7 @@ body{
           </div>
         </div>
         <div class="callout warn" style="margin-top:16px"><strong>Don't skip this.</strong> Taxonomy decisions affect every downstream system. Getting explicit sign-off before implementation prevents the most common source of rework in marketing ops engagements.</div>
+        <div class="callout tip" style="margin-top:8px"><strong>Solo operator or small team?</strong> You are the stakeholder — click <span class="click">Approve</span> in the toolbar directly instead of sending an external approval email. The "Don't skip this" warning above applies to teams with multiple stakeholders who need explicit alignment before CRM changes are made.</div>
       </div>
     </div>
 
@@ -629,6 +670,7 @@ body{
       <div class="section-num" style="background:#EFF6FF;color:#1D4ED8">I</div>
       <div>
         <div class="section-title">Intelligence <span style="font-size:14px;font-weight:500;color:var(--ink3)">— Market Signals</span></div>
+        <div class="track-row" style="margin-top:10px"><span class="track-label">Included in:</span><span class="track-chip included">Full DRIVE Engagement</span><span class="track-chip included">Foundation + Strategy</span><span class="track-chip included">Enterprise Governance</span><span class="track-chip included">Strategy + Execution</span><span class="track-sep">·</span><span class="track-label">Not included in:</span><span class="track-chip excluded">Vector Sprint</span><span class="track-chip excluded">Growth Sprint</span></div>
         <div class="section-sub">Intelligence reads your transcripts, case studies, competitive research, and market documents, then extracts buyer signals, market trends, and competitive intelligence — categorized and starred so the most important ones rise to the top. These signals directly inform the positioning work in Vector.</div>
         <div class="section-meta">
           <div class="section-meta-item">⏱ <strong>30–60 min (AI run: 1–2 min per file)</strong></div>
@@ -727,6 +769,7 @@ body{
       <div class="section-num" style="background:#F0FDF4;color:#15803D">V</div>
       <div>
         <div class="section-title">Vector <span style="font-size:14px;font-weight:500;color:var(--ink3)">— Growth Strategy</span></div>
+        <div class="track-row" style="margin-top:10px"><span class="track-label">Included in:</span><span class="track-chip included">All tracks</span></div>
         <div class="section-sub">Vector is where strategy gets built. Starting from your discovery scores and Intelligence signals, Vector runs a positioning diagnostic across six areas — ideal buyer, offer stack, referral engine, credibility, planning, and systems — and outputs the Campaign DNA, positioning framework, and 90-day activation plan. This is the longest and most interactive session.</div>
         <div class="section-meta">
           <div class="section-meta-item">⏱ <strong>90–120 min</strong></div>
@@ -859,6 +902,7 @@ body{
       <div class="section-num" style="background:#FFF7ED;color:#C2410C">E</div>
       <div>
         <div class="section-title">Engine <span style="font-size:14px;font-weight:500;color:var(--ink3)">— Content Operations</span></div>
+        <div class="track-row" style="margin-top:10px"><span class="track-label">Included in:</span><span class="track-chip included">Full DRIVE Engagement</span><span class="track-chip included">Strategy + Execution</span><span class="track-chip included">Enterprise Governance</span><span class="track-sep">·</span><span class="track-label">Not included in:</span><span class="track-chip excluded">Vector Sprint</span><span class="track-chip excluded">Growth Sprint</span><span class="track-chip excluded">Foundation + Strategy</span></div>
         <div class="section-sub">Engine is the production layer. It takes the Campaign DNA from Vector and the taxonomy from Resolve, and uses them to produce on-brand content — emails, LinkedIn posts, ad copy, long-form — at scale. Engine is most powerful when Vector is complete and the positioning is stable.</div>
         <div class="section-meta">
           <div class="section-meta-item">⏱ <strong>Ongoing — 30–60 min to set up, then runs continuously</strong></div>
@@ -956,7 +1000,7 @@ body{
 
     <div class="card">
       <div class="card-title">90-Day Activation Plan</div>
-      <div class="card-body">A sequenced campaign plan — specific initiatives with owners, timelines, and success metrics — downloadable as a standalone one-pager from Discover results → <span class="click">↓ Download Roadmap</span>.</div>
+      <div class="card-body">A sequenced campaign plan — specific initiatives with owners, timelines, and success metrics — included in your Client Export from Hub.</div>
     </div>
 
     <div class="card">

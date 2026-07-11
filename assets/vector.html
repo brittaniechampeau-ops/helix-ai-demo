@@ -1758,6 +1758,7 @@ let PHASE = 0;
 const STEP_MIN = [0, 1, 2, 3, 4, 5, 6, 6];
 let _contactEditId = null;
 let _caseEditId = null;
+let _pendingAction = null;
 
 // ─── NAVIGATION ────────────────────────────────────────
 let currentStep = 0;
@@ -2587,7 +2588,7 @@ function runPositioning() {
   const constr = document.getElementById('pos-constraint').value.trim();
   const oneline = document.getElementById('pos-oneline').value.trim();
   if (!buyer || !constr || !oneline) { showToast('Fill in buyer, constraint, and one-line before generating'); return; }
-  if (!getApiKey()) { openModal('apiKeyModal'); return; }
+  if (!getApiKey()) { _pendingAction = () => runPositioning(); openModal('apiKeyModal'); return; }
 
   VEC.pos.buyer      = buyer;
   VEC.pos.constraint = constr;
@@ -2626,7 +2627,7 @@ function runPositioning() {
 // ─── STEP 2: REFERRAL ENGINE ───────────────────────────
 function runReferralEngine() {
   if (!VEC.ref.contacts.length) { showToast('Add at least one contact before generating scripts'); return; }
-  if (!getApiKey()) { openModal('apiKeyModal'); return; }
+  if (!getApiKey()) { _pendingAction = () => runReferralEngine(); openModal('apiKeyModal'); return; }
 
   runProcessing('Foundation 2', 'Building Referral Scripts',
     ['Analyzing relationship types...', 'Mapping value delivered to ask strength...', 'Identifying two-conversation targets...', 'Drafting introduction requests...', 'Personalizing by relationship type...'],
@@ -2658,7 +2659,7 @@ function runReferralEngine() {
 // ─── STEP 3: CREDIBILITY ───────────────────────────────
 function runCredibility() {
   if (!VEC.cred.cases.length) { showToast('Add at least one case study before generating'); return; }
-  if (!getApiKey()) { openModal('apiKeyModal'); return; }
+  if (!getApiKey()) { _pendingAction = () => runCredibility(); openModal('apiKeyModal'); return; }
   VEC.cred.placements = [
     'place-linkedin','place-instagram','place-x','place-facebook','place-youtube','place-tiktok',
     'place-blog','place-substack','place-webinar','place-email',
@@ -3892,7 +3893,7 @@ function renderSessionLog() {
     const d = new Date(entry.date);
     const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) +
       ' · ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-    const text = (entry.text || '').replace(/\n/g, '<br>');
+    const text = escHtml(entry.text || '').replace(/\n/g, '<br>');
     return `<div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
         <span style="font-size:11px;color:var(--txt3)">${label}</span>
@@ -4056,7 +4057,7 @@ async function runDiscoveryPrep() {
   const goal     = document.getElementById('dp-goal').value.trim();
 
   const key = getApiKey();
-  if (!key) { showToast('Add your Anthropic API key first'); return; }
+  if (!key) { _pendingAction = () => runDiscoveryPrep(); openModal('apiKeyModal'); return; }
 
   const btn = document.querySelector('#discoveryPrepForm .btn-primary');
   btn.disabled = true; btn.textContent = '⏳ Generating…';
@@ -4574,6 +4575,7 @@ function saveApiKey() {
   if (!key.startsWith('sk-ant-')) { showToast('Invalid key format'); return; }
   localStorage.setItem(ANTHROPIC_KEY_STORAGE, key);
   closeModal('apiKeyModal');
+  if (_pendingAction) { const fn = _pendingAction; _pendingAction = null; fn(); }
 }
 
 function _openTranscriptModal() {
@@ -4583,8 +4585,9 @@ function _openTranscriptModal() {
 
 function openTranscriptImport() {
   if (!getApiKey()) {
+    _pendingAction = () => openTranscriptImport();
     openModal('apiKeyModal');
-    return; // saveApiKey() will open transcript modal after key is saved
+    return;
   }
   _openTranscriptModal();
 }

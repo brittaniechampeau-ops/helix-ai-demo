@@ -431,7 +431,7 @@ function cardHTML(eng, activeId) {
     <div class="eng-actions">
       ${isActive
         ? `<a class="btn btn-ghost btn-sm" href="/discover.html">Open in Discover</a>`
-        : `<button class="btn btn-primary btn-sm" onclick="setActive('${eng.id}','${esc(eng.client_name)}')">Set Active</button>`}
+        : `<button class="btn btn-primary btn-sm" onclick="setActive('${eng.id}','${jsEsc(eng.client_name)}')">Set Active</button>`}
       <button class="btn btn-ghost btn-sm" onclick="generateReport('${eng.id}')">↓ Internal Report</button>
       <button class="btn btn-ghost btn-sm" onclick="generateClientExport('${eng.id}')">↓ Client Export</button>
       <button class="btn btn-ghost btn-sm" onclick="shareGuide()" title="Copy onboarding guide link">↗ Share Guide</button>
@@ -780,7 +780,7 @@ body{background:#050709;color:#E8EAF0;font-family:-apple-system,BlinkMacSystemFo
   `) : ''}
 
   <!-- TAXONOMY -->
-  ${section('Canonical Taxonomy', '#4DE8FF', `
+  ${(taxFields.length > 0 || namingConvention || govRules.length > 0) ? section('Canonical Taxonomy', '#4DE8FF', `
     ${namingConvention ? card(`
       <div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#4DE8FF;margin-bottom:6px">Naming Convention</div>
       <div style="font-size:14px;font-family:monospace;color:#E8EAF0">${rEsc(namingConvention)}</div>
@@ -790,10 +790,10 @@ body{background:#050709;color:#E8EAF0;font-family:-apple-system,BlinkMacSystemFo
       <div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#4DE8FF;margin-bottom:10px">Governance Rules</div>
       ${govRules.map(r => `<div style="font-size:13px;color:#8892A4;padding:6px 0;border-bottom:1px solid #1C2535;line-height:1.5">${rEsc(typeof r==='string'?r:r.text||r.rule||JSON.stringify(r))}</div>`).join('')}
     `) : ''}
-  `)}
+  `) : ''}
 
   <!-- SIGNALS -->
-  ${section('Market Intelligence', '#5B8CFF', signalHTML)}
+  ${Object.keys(signalsByType).length > 0 ? section('Market Intelligence', '#5B8CFF', signalHTML) : ''}
 
   <!-- POSITIONING -->
   ${section('Go-to-Market Positioning', '#3BBFA3', `
@@ -857,6 +857,27 @@ async function generateClientExport(engId) {
 
   const date = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
   const trackName = D.track_name || HUB_TRACK_NAMES[eng.size_tier] || 'DRIVE Engagement';
+
+  // FIX 4: early-return if no tool data is populated
+  {
+    const _baseline = D.baseline || {};
+    const _hasTaxonomy = (R.taxonomy||[]).length > 0 || (R.naming?.pattern||'') || (R.rules||[]).length > 0;
+    const _starred = (I.signals || []).filter(s => s.starred);
+    const _pos = V.pos || V.practice || {};
+    const _hasPositioning = _pos.name || _pos.oneline || (V.cdna||'');
+    const _themes = E.themes || [];
+    const populated = [
+      !!(Object.keys(_baseline).length),
+      !!_hasTaxonomy,
+      !!_starred.length,
+      !!_hasPositioning,
+      !!_themes.length,
+    ].filter(Boolean).length;
+    if (populated === 0) {
+      showToast('Run at least one tool before generating a client export');
+      return;
+    }
+  }
 
   function rEsc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
@@ -1011,7 +1032,6 @@ tr:last-child td{border-bottom:none}
       ${blNums.pipeline ? `<div><div class="num-label">Active Pipeline</div><div class="num-value">${rEsc(blNums.pipeline)}</div></div>` : ''}
       ${blNums.mrr ? `<div><div class="num-label">MRR / ARR</div><div class="num-value">${rEsc(blNums.mrr)}</div></div>` : ''}
     </div></div>` : ''}
-    ${baseline.notes ? `<div class="card"><div style="font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">In Their Words</div><div style="font-size:14px;color:#374151;line-height:1.7;font-style:italic">"${rEsc(baseline.notes)}"</div></div>` : ''}
   </div>` : ''}
 
   <!-- ROADMAP -->
@@ -1145,6 +1165,7 @@ function shareGuide() {
 }
 
 function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function jsEsc(s) { return esc(s).replace(/'/g, "&#39;"); }
 
 function showToast(msg) {
   const t = document.getElementById('toast');

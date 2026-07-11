@@ -432,14 +432,13 @@ const OrgStore = {
 
   async save(table, data) {
     if (!this.orgId) return;
-    try {
-      await supa.from(table).upsert({
-        org_id: this.orgId,
-        data: data,
-        updated_at: new Date().toISOString(),
-        updated_by: this.userEmail
-      }, { onConflict: 'org_id' });
-    } catch (_) {}
+    const { error } = await supa.from(table).upsert({
+      org_id: this.orgId,
+      data: data,
+      updated_at: new Date().toISOString(),
+      updated_by: this.userEmail
+    }, { onConflict: 'org_id' });
+    if (error) throw error;
   },
 
   async load(table) {
@@ -727,7 +726,7 @@ function debounceSave() {
   saveTimer = setTimeout(saveCurrentAsset, 600);
 }
 
-function saveCurrentAsset() {
+async function saveCurrentAsset() {
   if (!activeId) return;
   const formEl = document.getElementById('metadataForm');
   if (!formEl) return;
@@ -744,10 +743,34 @@ function saveCurrentAsset() {
   if (tokens.length) vals['personalization_tokens'] = tokens.join(', ');
 
   savedAssets[activeId] = vals;
-  localStorage.setItem('engine_assets', JSON.stringify(savedAssets));
-  OrgStore.save('org_engine_assets', savedAssets);
-  const si = document.getElementById('sync-indicator');
-  if (si) { si.style.opacity='1'; clearTimeout(si._t); si._t = setTimeout(()=>si.style.opacity='0', 2000); }
+  // FIX 2: Always mirror to localStorage so data survives Supabase outages
+  try { localStorage.setItem('engine_assets', JSON.stringify(savedAssets)); } catch(_) {}
+
+  // FIX 1: Await save and only show Synced on success; show error indicator on failure
+  try {
+    await OrgStore.save('org_engine_assets', savedAssets);
+    const si = document.getElementById('sync-indicator');
+    if (si) {
+      si.textContent = '● Synced';
+      si.style.color = '#E8836B';
+      si.style.opacity = '1';
+      clearTimeout(si._t);
+      si._t = setTimeout(() => si.style.opacity = '0', 2000);
+    }
+  } catch(_) {
+    const si = document.getElementById('sync-indicator');
+    if (si) {
+      si.textContent = '● Save failed — check your connection';
+      si.style.color = 'var(--red)';
+      si.style.opacity = '1';
+      clearTimeout(si._t);
+      si._t = setTimeout(() => {
+        si.style.opacity = '0';
+        si.textContent = '● Synced';
+        si.style.color = '#E8836B';
+      }, 4000);
+    }
+  }
   updateBottomCount();
 }
 
@@ -1074,9 +1097,10 @@ function exportCSV() {
 }
 
 function exportAllCSV() {
+  // FIX 3: Include type-specific fields in every row (blank for types that don't use them)
   const rows = assets.map(a => {
     const saved = savedAssets[a.id] || {};
-    return {
+    const core = {
       asset_id:   a.id,
       asset_type: a.type,
       channel:    a.channel,
@@ -1093,8 +1117,34 @@ function exportAllCSV() {
       dam_folder: saved.dam_folder || '',
       tags:       saved.tags || '',
     };
+    // Merge type-specific fields, normalising arrays/nulls to strings
+    const typeFields = buildTypeJSON(a.type, saved);
+    const normalizedTypeFields = {};
+    Object.entries(typeFields).forEach(([k, v]) => {
+      if (Array.isArray(v)) normalizedTypeFields[k] = v.join(', ');
+      else normalizedTypeFields[k] = (v === null || v === undefined) ? '' : String(v);
+    });
+    return { ...core, ...normalizedTypeFields };
   });
-  downloadCSV(rows, 'engine-all-assets.csv');
+
+  if (!rows.length) return;
+  // Collect all unique column headers across every row (different asset types add different keys)
+  const allKeys = [];
+  const seen = new Set();
+  rows.forEach(r => Object.keys(r).forEach(k => { if (!seen.has(k)) { seen.add(k); allKeys.push(k); } }));
+
+  const lines = [allKeys.join(',')];
+  rows.forEach(r => {
+    lines.push(allKeys.map(h => {
+      const v = (r[h] === null || r[h] === undefined) ? '' : String(r[h]);
+      return '"' + v.replace(/"/g, '""') + '"';
+    }).join(','));
+  });
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = 'engine-all-assets.csv'; a.click();
+  URL.revokeObjectURL(url);
 }
 
 function downloadCSV(rows, filename) {
@@ -1176,6 +1226,10 @@ async function initApp(session) {
   if (orgData !== null) {
     savedAssets = orgData;
     try { localStorage.setItem('engine_assets', JSON.stringify(savedAssets)); } catch(_) {}
+  } else {
+    // FIX 2: Supabase returned null (unreachable or no row) — load from localStorage
+    const raw = localStorage.getItem('engine_assets');
+    if (raw) { try { savedAssets = JSON.parse(raw); } catch(_) {} }
   }
 
   await loadDRIVEData();

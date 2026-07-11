@@ -738,13 +738,14 @@ function showPanel(id) {
 }
 
 // ── SOURCE FILE HANDLING ─────────────────────────────────
-function handleSourceFiles(e) {
+async function handleSourceFiles(e) {
   const files = Array.from(e.target.files);
-  files.forEach(f => {
-    const ext = f.name.split('.').pop().toLowerCase();
+  for (const f of files) {
     const label = guessSystemLabel(f.name);
-    RS.sources.push({ id: uid(), name: f.name, systemLabel: label, fields: [], size: f.size });
-  });
+    let text = '';
+    try { text = await f.text(); } catch (_) {}
+    RS.sources.push({ id: uid(), name: f.name, systemLabel: label, fields: [], size: f.size, text });
+  }
   e.target.value = '';
   renderSources();
   updateRunBtn();
