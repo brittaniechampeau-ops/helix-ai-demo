@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Engine — Content Ops Metadata Engine</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #07090C;
+  --surface:   #0E1218;
+  --surface2:  #131920;
+  --surface3:  #171F2A;
+  --accent:    #3BBFA3;
+  --accent-dim:#1E6B5E;
+  --accent-bg: #0D2E27;
+  --blue:      #4BA8C8;
+  --blue-dim:  #1a4a6b;
+  --blue-bg:   #0D2535;
+  --purple:    #9B8FE8;
+  --purple-dim:#3a2a6b;
+  --purple-bg: #1a1535;
+  --orange:    #E8836B;
+  --orange-bg: #2e1a14;
+  --orange-dim:#5a3020;
+  --green:     #7EC87E;
+  --green-bg:  #12261a;
+  --green-dim: #2a4a2a;
+  --text:      #E8EDF3;
+  --muted:     #6B7A8D;
+  --faint:     #2A3544;
+  --border:    #1C2535;
+  --border2:   #243040;
+  --font:      -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+  --mono:      'SF Mono', 'Fira Code', monospace;
+  --red:       #ef4444;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-size: 14px;
+}
+
+/* ── PLATFORM NAV ── */
+.pnav {
+  display: flex; align-items: center;
+  height: 36px; padding: 0 16px; gap: 2px;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.pnav-brand { font-size: 14px; color: var(--muted); margin-right: 8px; }
+.pnav-sep { width: 1px; height: 16px; background: var(--border); margin-right: 8px; }
+.pnav-tool {
+  display: flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 5px; font-size: 12px; font-weight: 500;
+  color: var(--muted); text-decoration: none; transition: all 0.12s;
+}
+.pnav-tool:hover { color: var(--text); background: var(--surface2); }
+.pnav-tool.pnav-active { color: var(--orange); background: var(--orange-bg); }
+.pnav-tool.pnav-locked { opacity: 0.4; pointer-events: none; }
+.pnav-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── TOPBAR ── */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px; height: 52px;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.topbar-left { display: flex; align-items: center; gap: 10px; }
+.logo { display: flex; align-items: center; gap: 8px; }
+.logo-mark {
+  width: 30px; height: 30px;
+  background: var(--orange);
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+.logo-text { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
+.logo-tag {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;
+  color: var(--orange); background: var(--orange-bg);
+  padding: 2px 8px; border-radius: 4px; margin-left: 2px;
+}
+.topbar-divider { width: 1px; height: 20px; background: var(--border); }
+.context-pill {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 3px 10px; font-size: 12px; color: var(--muted);
+}
+.context-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--orange); }
+.topbar-right { display: flex; align-items: center; gap: 8px; }
+.user-email { font-size: 12px; color: var(--muted); }
+.btn-signout {
+  font-size: 12px; color: var(--muted); background: none; border: none;
+  cursor: pointer; padding: 4px 8px; border-radius: 5px;
+  transition: all 0.12s;
+}
+.btn-signout:hover { color: var(--text); background: var(--surface2); }
+
+/* ── MAIN LAYOUT ── */
+.main { display: flex; flex: 1; overflow: hidden; }
+
+/* ── LEFT PANEL: CONTENT PLAN ── */
+.left-panel {
+  width: 260px; flex-shrink: 0;
+  background: var(--surface); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.left-panel-header {
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.left-panel-header h2 { font-size: 12px; font-weight: 700; letter-spacing: 0.7px; text-transform: uppercase; color: var(--muted); }
+.left-panel-list { flex: 1; overflow-y: auto; padding: 8px 0; }
+.channel-group { margin-bottom: 4px; }
+.channel-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase;
+  color: var(--faint); padding: 8px 16px 4px;
+}
+.asset-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px 8px 16px; cursor: pointer;
+  transition: background 0.1s; border-left: 2px solid transparent;
+  position: relative;
+}
+.asset-item:hover { background: var(--surface2); }
+.asset-item.active {
+  background: var(--orange-bg);
+  border-left-color: var(--orange);
+}
+.asset-item-icon { font-size: 14px; flex-shrink: 0; width: 20px; text-align: center; }
+.asset-item-body { flex: 1; min-width: 0; }
+.asset-item-name { font-size: 12px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.asset-item-sub { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.status-badge {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.3px;
+  padding: 2px 6px; border-radius: 3px; flex-shrink: 0;
+}
+.status-draft    { background: var(--surface3); color: var(--muted); }
+.status-review   { background: rgba(75,168,200,0.15); color: var(--blue); }
+.status-approved { background: var(--orange-bg); color: var(--orange); }
+.status-live     { background: var(--green-bg); color: var(--green); }
+
+/* ── CENTER PANEL ── */
+.center-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.center-header {
+  padding: 14px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+  display: flex; align-items: center; gap: 10px;
+}
+.center-header .asset-type-badge {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;
+  padding: 3px 9px; border-radius: 4px;
+  background: var(--orange-bg); color: var(--orange);
+}
+.center-header h1 { font-size: 16px; font-weight: 600; flex: 1; }
+.center-body { flex: 1; overflow-y: auto; padding: 20px; }
+
+.form-section { margin-bottom: 24px; }
+.form-section-title {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 12px; padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-grid.single { grid-template-columns: 1fr; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-label {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase;
+  color: var(--muted);
+}
+.form-input, .form-select, .form-textarea {
+  width: 100%; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 7px 10px; font-size: 13px; color: var(--text);
+  font-family: var(--font); transition: border-color 0.12s; outline: none;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--orange); }
+.form-select { appearance: none; cursor: pointer; }
+.form-textarea { resize: vertical; min-height: 68px; line-height: 1.5; }
+.char-counter { font-size: 11px; color: var(--muted); text-align: right; margin-top: 2px; }
+.char-counter.warn { color: var(--orange); }
+
+.copy-variant-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.copy-variant-label { font-size: 11px; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
+
+.chip-group { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 9px; border-radius: 4px; font-size: 12px; font-weight: 500;
+  background: var(--surface3); color: var(--text); cursor: pointer;
+  border: 1px solid var(--border); transition: all 0.1s;
+}
+.chip.selected { background: var(--orange-bg); color: var(--orange); border-color: var(--orange); }
+.chip:hover { border-color: var(--orange); }
+
+/* empty state */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 100%; padding: 40px; text-align: center;
+}
+.empty-state-icon { font-size: 48px; margin-bottom: 16px; }
+.empty-state h2 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+.empty-state p { font-size: 14px; color: var(--muted); max-width: 340px; line-height: 1.6; margin-bottom: 20px; }
+.btn-orange {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 18px; border-radius: 7px; font-size: 13px; font-weight: 600;
+  background: var(--orange); color: #fff; border: none; cursor: pointer;
+  text-decoration: none; transition: opacity 0.12s;
+}
+.btn-orange:hover { opacity: 0.88; }
+
+/* ── RIGHT PANEL: DAM PREVIEW ── */
+.right-panel {
+  width: 280px; flex-shrink: 0;
+  background: var(--surface); border-left: 1px solid var(--border);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.right-panel-header {
+  padding: 14px 16px 10px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.right-panel-header h2 { font-size: 12px; font-weight: 700; letter-spacing: 0.7px; text-transform: uppercase; color: var(--muted); }
+.right-panel-body { flex: 1; overflow-y: auto; padding: 12px; }
+.json-preview {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px; font-family: var(--mono);
+  font-size: 11px; line-height: 1.7; overflow-x: auto; white-space: pre;
+}
+.json-key { color: var(--orange); }
+.json-str { color: var(--accent); }
+.json-num { color: var(--blue); }
+.json-null { color: var(--muted); }
+.right-panel-actions { padding: 12px; border-top: 1px solid var(--border); flex-shrink: 0; display: flex; gap: 8px; }
+
+/* ── BOTTOM BAR ── */
+.bottom-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px; height: 46px;
+  background: var(--surface); border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.bottom-count { font-size: 12px; color: var(--muted); }
+.bottom-count strong { color: var(--text); }
+.bottom-back { font-size: 12px; color: var(--muted); text-decoration: none; transition: color 0.12s; }
+.bottom-back:hover { color: var(--orange); }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 6px; font-size: 12px; font-weight: 600;
+  cursor: pointer; border: none; transition: all 0.12s;
+}
+.btn-ghost {
+  background: var(--surface2); color: var(--muted); border: 1px solid var(--border);
+}
+.btn-ghost:hover { background: var(--surface3); color: var(--text); }
+.btn-sm { padding: 5px 10px; font-size: 11px; }
+
+/* ── TOAST ── */
+#toast {
+  position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
+  background: var(--green-bg); color: var(--green); border: 1px solid var(--green-dim);
+  padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 500;
+  z-index: 9999; opacity: 0; transition: opacity 0.2s; pointer-events: none;
+}
+#toast.show { opacity: 1; }
+
+/* ── LOGIN ── */
+#loginScreen {
+  display: none; position: fixed; inset: 0; background: var(--bg);
+  z-index: 9999; align-items: center; justify-content: center;
+}
+#loginScreen.visible { display: flex; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--faint); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- ── PLATFORM NAV ── -->
+<div class="pnav">
+  <span class="pnav-brand">✦</span>
+  <div class="pnav-sep"></div>
+  <a class="pnav-tool" href="/discover.html">
+    <span class="pnav-dot" style="background:#9B8FE8"></span>Discover
+  </a>
+  <a class="pnav-tool" href="/resolve.html">
+    <span class="pnav-dot" style="background:#4DE8FF"></span>Resolve
+  </a>
+  <a class="pnav-tool" href="/intelligence.html">
+    <span class="pnav-dot" style="background:#4BA8C8"></span>Intelligence
+  </a>
+  <a class="pnav-tool" href="/vector.html">
+    <span class="pnav-dot" style="background:#3BBFA3"></span>Vector
+  </a>
+  <a class="pnav-tool pnav-active" href="/engine.html">
+    <span class="pnav-dot" style="background:#E8836B"></span>Engine
+  </a>
+</div>
+
+<!-- ── LOGIN SCREEN ── -->
+<div id="loginScreen">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:48px 40px;max-width:420px;width:100%;text-align:center;">
+    <div style="width:48px;height:48px;background:var(--orange);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:24px;">⚙️</div>
+    <h2 style="font-size:22px;font-weight:700;margin-bottom:8px;color:var(--text)">Engine</h2>
+    <p style="color:var(--muted);margin-bottom:32px;font-size:14px;">Content Ops Metadata Engine · Britt Bowman LLC</p>
+    <div id="loginForm">
+      <input id="loginEmail" type="email" placeholder="your@email.com"
+        style="width:100%;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:15px;margin-bottom:12px;outline:none;font-family:var(--font);">
+      <button onclick="sendMagicLink()"
+        style="width:100%;padding:11px;background:var(--orange);border:none;border-radius:8px;color:white;font-size:15px;font-weight:600;cursor:pointer;">Send magic link</button>
+    </div>
+    <div id="loginSent" style="display:none;">
+      <p style="color:var(--green);font-size:15px;">✓ Check your email for a sign-in link</p>
+      <p style="color:var(--muted);font-size:13px;margin-top:8px;">You can close this tab — click the link in your email to open Engine.</p>
+    </div>
+    <p id="loginError" style="color:var(--red);font-size:13px;margin-top:10px;display:none;"></p>
+  </div>
+</div>
+
+<!-- ── TOPBAR ── -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo">
+      <div class="logo-mark">⚙️</div>
+      <span class="logo-text">Engine</span>
+      <span class="logo-tag">Content Ops</span>
+    </div>
+    <div class="topbar-divider"></div>
+    <div class="context-pill">
+      <span class="dot"></span>
+      <span id="practiceNamePill">No practice loaded</span>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <span class="user-email" id="userEmailDisplay"></span>
+    <button class="btn-signout" onclick="signOut()">Sign out</button>
+  </div>
+</div>
+
+<!-- ── MAIN ── -->
+<div class="main">
+
+  <!-- LEFT: CONTENT PLAN -->
+  <div class="left-panel">
+    <div class="left-panel-header">
+      <h2>Content Plan</h2>
+    </div>
+    <div class="left-panel-list" id="assetList">
+      <!-- populated by JS -->
+    </div>
+  </div>
+
+  <!-- CENTER: METADATA FORM -->
+  <div class="center-panel">
+    <div class="center-header" id="centerHeader" style="display:none;">
+      <span class="asset-type-badge" id="assetTypeBadge"></span>
+      <h1 id="centerTitle">Select an asset</h1>
+    </div>
+    <div class="center-body" id="centerBody">
+      <!-- empty state shown initially -->
+      <div class="empty-state" id="emptyState">
+        <div class="empty-state-icon">📭</div>
+        <h2>No practice data found</h2>
+        <p>Complete the Vector diagnostic first to generate your content plan. Your Campaign DNA drives the asset list and pre-fills all metadata fields.</p>
+        <a href="/vector.html" class="btn-orange">→ Go to Vector</a>
+      </div>
+      <!-- form injected here -->
+      <div id="metadataForm" style="display:none;"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT: DAM PREVIEW -->
+  <div class="right-panel">
+    <div class="right-panel-header">
+      <h2>DAM Metadata Preview</h2>
+    </div>
+    <div class="right-panel-body">
+      <div class="json-preview" id="jsonPreview"><span style="color:var(--muted)">Select an asset to preview its metadata specification.</span></div>
+    </div>
+    <div class="right-panel-actions">
+      <button class="btn btn-ghost btn-sm" onclick="copyJSON()" style="flex:1;">Copy JSON</button>
+      <button class="btn btn-ghost btn-sm" onclick="exportCSV()" style="flex:1;">↓ Export CSV</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── BOTTOM BAR ── -->
+<div class="bottom-bar">
+  <span class="bottom-count" id="assetCount"><strong>0</strong> assets · <strong>0</strong> approved</span>
+  <button class="btn btn-ghost" onclick="exportAllCSV()">↓ Export All Metadata</button>
+  <a href="/vector.html" class="bottom-back">← Back to Vector</a>
+</div>
+
+<!-- ── TOAST ── -->
+<div id="toast"></div>
+
+<script>
+// ─── CONSTANTS ────────────────────────────────────────────────────────────────
+const SUPA_URL = 'https://ilhljjkiijmjpwinovzj.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsaGxqamtpaWptanB3aW5vdnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MTk4MjIsImV4cCI6MjA5OTE5NTgyMn0.w8asDSA-rXuaDfujC2dr4J-EKCzlCVABOuq3VQeeFsE';
+const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+const DEFAULT_PRACTICE = 'Your Practice';
+const DEFAULT_OFFERS   = ['Advisory Retainer', 'Project Sprint', 'Diagnostic'];
+const DEFAULT_CHANNELS = ['LinkedIn Outbound', 'Email Outbound', 'Warm Referral Network', 'Event/Webinar', 'Partner Co-Sell'];
+const DEFAULT_PERSONA  = 'Senior Decision Maker';
+const DEFAULT_THEMES   = ['Thought Leadership', 'Case Study', 'How-To', 'Market Insight'];
+
+const CHANNEL_ASSETS = {
+  'Event/Webinar':          [{ type: 'Webinar', icon: '🎙' }, { type: 'Slide Deck', icon: '📊' }, { type: 'Recording', icon: '📹' }],
+  'LinkedIn Outbound':      [{ type: 'LinkedIn Post Series', icon: '📱' }, { type: 'LinkedIn Article', icon: '✍️' }],
+  'Email Outbound':         [{ type: 'Email Sequence', icon: '💌' }, { type: 'Email Template', icon: '📧' }],
+  'Warm Referral Network':  [{ type: 'One-Pager', icon: '📄' }, { type: 'Email Introduction', icon: '🤝' }],
+  'Partner Co-Sell':        [{ type: 'Co-Branded Deck', icon: '🤝' }, { type: 'Partner Brief', icon: '📋' }],
+  'Thought Leadership':     [{ type: 'Blog Article', icon: '📝' }, { type: 'White Paper', icon: '📃' }],
+  'Direct Outbound':        [{ type: 'Cold Outreach Sequence', icon: '📤' }, { type: 'Follow-Up Template', icon: '↩️' }],
+  'Account-Based':          [{ type: 'ABM Landing Page', icon: '🎯' }, { type: 'Personalized Deck', icon: '🗂' }],
+};
+
+const TOKEN_OPTIONS = ['{{first_name}}', '{{last_name}}', '{{company}}', '{{title}}', '{{industry}}', '{{pain_point}}'];
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let practiceData = {};
+let cdna         = {};
+let taxonomy     = {};
+let intelSignals = [];
+let assets       = []; // flat array of asset descriptors
+let savedAssets  = {}; // keyed by asset_id, stores form values
+let activeId     = null;
+let saveTimer    = null;
+
+// ─── LOAD DATA ────────────────────────────────────────────────────────────────
+function loadLocalData() {
+  try {
+    const vecRaw = localStorage.getItem('vec_state');
+    if (vecRaw) {
+      const vec = JSON.parse(vecRaw);
+      practiceData = vec.practice || {};
+      cdna = vec.cdna || {};
+    }
+  } catch(e) {}
+
+  try {
+    const taxRaw = localStorage.getItem('resolve_taxonomy');
+    if (taxRaw) taxonomy = JSON.parse(taxRaw);
+  } catch(e) {}
+
+  try {
+    const intelRaw = localStorage.getItem('intel_signals');
+    if (intelRaw) intelSignals = JSON.parse(intelRaw);
+  } catch(e) {}
+
+  try {
+    const savedRaw = localStorage.getItem('engine_assets');
+    if (savedRaw) savedAssets = JSON.parse(savedRaw);
+  } catch(e) {}
+}
+
+function getPracticeName() {
+  return practiceData.name || cdna.practice_area || DEFAULT_PRACTICE;
+}
+
+function getOffers() {
+  const o = [];
+  if (practiceData.offer1 || cdna.offer1) o.push(practiceData.offer1 || cdna.offer1);
+  if (practiceData.offer2 || cdna.offer2) o.push(practiceData.offer2 || cdna.offer2);
+  if (practiceData.offer3 || cdna.offer3) o.push(practiceData.offer3 || cdna.offer3);
+  return o.length ? o : DEFAULT_OFFERS;
+}
+
+function getChannels() {
+  if (cdna.channel_motion) {
+    return cdna.channel_motion.split(/[,;]+/).map(s => s.trim()).filter(Boolean);
+  }
+  return DEFAULT_CHANNELS;
+}
+
+function getPersona() { return cdna.buyer_persona || DEFAULT_PERSONA; }
+
+function getThemes() {
+  if (cdna.content_themes) {
+    return cdna.content_themes.split(/[,;]+/).map(s => s.trim()).filter(Boolean);
+  }
+  return DEFAULT_THEMES;
+}
+
+function getPracticeArea() { return cdna.practice_area || 'consulting'; }
+function getLifecycleStage() { return cdna.lifecycle_stage || 'Awareness'; }
+function getCampaignType() { return cdna.campaign_type || ''; }
+
+function getTaxonomyTerms(categoryLabel) {
+  if (!taxonomy.categories) return [];
+  const cat = taxonomy.categories.find(c => c.label && c.label.toLowerCase().includes(categoryLabel.toLowerCase()));
+  if (!cat) return [];
+  return (cat.terms || []).filter(t => t.status !== 'removed').map(t => t.text);
+}
+
+function slugify(str) {
+  return (str || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+function damFolder(practiceArea, assetType) {
+  const year = new Date().getFullYear();
+  const typeSlug = slugify(assetType);
+  return `/${slugify(practiceArea)}/${typeSlug}/${year}/`;
+}
+
+// ─── BUILD ASSET LIST ─────────────────────────────────────────────────────────
+function buildAssets() {
+  const channels = getChannels();
+  assets = [];
+
+  channels.forEach(channel => {
+    const defs = CHANNEL_ASSETS[channel];
+    if (!defs) return;
+    defs.forEach(def => {
+      const id = slugify(def.type) + '-' + (assets.length + 1);
+      assets.push({
+        id,
+        type:    def.type,
+        icon:    def.icon,
+        channel: channel,
+        offer:   getOffers()[0] || '',
+      });
+    });
+  });
+
+  // If no channel mapped assets, show defaults
+  if (!assets.length) {
+    DEFAULT_CHANNELS.forEach(channel => {
+      const defs = CHANNEL_ASSETS[channel] || [];
+      defs.forEach(def => {
+        const id = slugify(def.type) + '-' + (assets.length + 1);
+        assets.push({ id, type: def.type, icon: def.icon, channel, offer: DEFAULT_OFFERS[0] });
+      });
+    });
+  }
+}
+
+function renderAssetList() {
+  const list = document.getElementById('assetList');
+  if (!list) return;
+
+  // Group by channel
+  const byChannel = {};
+  assets.forEach(a => {
+    if (!byChannel[a.channel]) byChannel[a.channel] = [];
+    byChannel[a.channel].push(a);
+  });
+
+  let html = '';
+  Object.keys(byChannel).forEach(channel => {
+    html += `<div class="channel-group">`;
+    html += `<div class="channel-label">${channel}</div>`;
+    byChannel[channel].forEach(a => {
+      const saved = savedAssets[a.id] || {};
+      const status = saved.status || 'Draft';
+      const statusClass = { 'Draft': 'status-draft', 'In Review': 'status-review', 'Approved': 'status-approved', 'Live': 'status-live' }[status] || 'status-draft';
+      const title = saved.title || a.type;
+      html += `<div class="asset-item${activeId === a.id ? ' active' : ''}" id="item-${a.id}" onclick="selectAsset('${a.id}')">
+        <span class="asset-item-icon">${a.icon}</span>
+        <div class="asset-item-body">
+          <div class="asset-item-name">${escHtml(title)}</div>
+          <div class="asset-item-sub">${escHtml(a.offer || '')}</div>
+        </div>
+        <span class="status-badge ${statusClass}">${escHtml(status)}</span>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+
+  list.innerHTML = html;
+  updateBottomCount();
+}
+
+function updateBottomCount() {
+  const total    = assets.length;
+  const approved = assets.filter(a => {
+    const s = (savedAssets[a.id] || {}).status;
+    return s === 'Approved' || s === 'Live';
+  }).length;
+  const el = document.getElementById('assetCount');
+  if (el) el.innerHTML = `<strong>${total}</strong> assets · <strong>${approved}</strong> approved`;
+}
+
+// ─── ASSET SELECTION & FORM ───────────────────────────────────────────────────
+function selectAsset(id) {
+  activeId = id;
+  const asset = assets.find(a => a.id === id);
+  if (!asset) return;
+
+  // Update active state in list
+  document.querySelectorAll('.asset-item').forEach(el => el.classList.remove('active'));
+  const itemEl = document.getElementById(`item-${id}`);
+  if (itemEl) itemEl.classList.add('active');
+
+  // Show header
+  const header = document.getElementById('centerHeader');
+  const badge  = document.getElementById('assetTypeBadge');
+  const title  = document.getElementById('centerTitle');
+  header.style.display = 'flex';
+  badge.textContent    = asset.type;
+
+  const saved = savedAssets[id] || {};
+  title.textContent = saved.title || asset.type;
+
+  // Render form
+  document.getElementById('emptyState').style.display  = 'none';
+  const formEl = document.getElementById('metadataForm');
+  formEl.style.display = 'block';
+  formEl.innerHTML = buildForm(asset, saved);
+
+  // Init char counters
+  document.querySelectorAll('[data-maxlen]').forEach(el => {
+    updateCharCounter(el);
+    el.addEventListener('input', () => updateCharCounter(el));
+  });
+
+  // Init chips
+  document.querySelectorAll('.chip[data-chip]').forEach(el => {
+    el.addEventListener('click', () => {
+      el.classList.toggle('selected');
+      debounceSave();
+      updatePreview();
+    });
+  });
+
+  // Watch all inputs/selects/textareas
+  formEl.querySelectorAll('input,select,textarea').forEach(el => {
+    el.addEventListener('input', () => { onFieldChange(asset, el); });
+    el.addEventListener('change', () => { onFieldChange(asset, el); });
+  });
+
+  updatePreview();
+}
+
+function onFieldChange(asset, el) {
+  if (el.id === 'field-title') {
+    document.getElementById('centerTitle').textContent = el.value || asset.type;
+  }
+  debounceSave();
+  updatePreview();
+  // refresh list badge if status changed
+  if (el.id === 'field-status') {
+    renderAssetList();
+    // reapply active
+    const itemEl = document.getElementById(`item-${asset.id}`);
+    if (itemEl) itemEl.classList.add('active');
+  }
+}
+
+function debounceSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveCurrentAsset, 600);
+}
+
+function saveCurrentAsset() {
+  if (!activeId) return;
+  const formEl = document.getElementById('metadataForm');
+  if (!formEl) return;
+  const vals = {};
+  formEl.querySelectorAll('input,select,textarea').forEach(el => {
+    if (el.id && el.id.startsWith('field-')) {
+      const key = el.id.replace('field-', '');
+      vals[key] = el.type === 'checkbox' ? el.checked : el.value;
+    }
+  });
+  // collect chips
+  const tokens = [];
+  formEl.querySelectorAll('.chip.selected[data-chip]').forEach(el => tokens.push(el.dataset.chip));
+  if (tokens.length) vals['personalization_tokens'] = tokens.join(', ');
+
+  savedAssets[activeId] = vals;
+  localStorage.setItem('engine_assets', JSON.stringify(savedAssets));
+  updateBottomCount();
+}
+
+// ─── FORM BUILDER ─────────────────────────────────────────────────────────────
+function fld(id, label, input) {
+  return `<div class="form-group"><label class="form-label">${label}</label>${input}</div>`;
+}
+
+function sel(id, options, value) {
+  const opts = options.map(o => {
+    const v = typeof o === 'object' ? o.value : o;
+    const l = typeof o === 'object' ? o.label : o;
+    return `<option value="${escHtml(v)}"${value === v ? ' selected' : ''}>${escHtml(l)}</option>`;
+  }).join('');
+  return `<select id="field-${id}" class="form-select">${opts}</select>`;
+}
+
+function inp(id, value, placeholder) {
+  return `<input type="text" id="field-${id}" class="form-input" value="${escHtml(value || '')}" placeholder="${escHtml(placeholder || '')}">`;
+}
+
+function dateinp(id, value) {
+  return `<input type="date" id="field-${id}" class="form-input" value="${escHtml(value || '')}">`;
+}
+
+function textarea(id, value, rows, maxlen, placeholder) {
+  const ml = maxlen ? ` data-maxlen="${maxlen}" data-counter="counter-${id}"` : '';
+  const ta = `<textarea id="field-${id}" class="form-textarea" rows="${rows||3}"${ml} placeholder="${escHtml(placeholder||'')}">${escHtml(value||'')}</textarea>`;
+  const counter = maxlen ? `<div class="char-counter" id="counter-${id}">${(value||'').length} / ${maxlen}</div>` : '';
+  return ta + counter;
+}
+
+function buildForm(asset, saved) {
+  const offers       = getOffers();
+  const themes       = getThemes();
+  const persona      = getPersona();
+  const practiceArea = getPracticeArea();
+  const stage        = getLifecycleStage();
+  const campaign     = getCampaignType();
+  const year         = new Date().getFullYear();
+
+  const s = (key, fallback) => saved[key] !== undefined ? saved[key] : fallback;
+
+  // Suggested title
+  const suggestedTitle = `${asset.type} — ${getPracticeName()}`;
+
+  // Common fields
+  let html = `<div class="form-section">
+    <div class="form-section-title">Core Metadata</div>
+    <div class="form-grid single">${fld('title', 'Asset Title', inp('title', s('title', suggestedTitle), 'Asset title'))}</div>
+    <div class="form-grid">
+      ${fld('type', 'Asset Type', `<input type="text" id="field-type" class="form-input" value="${escHtml(asset.type)}" readonly style="opacity:0.6;">`)}
+      ${fld('status', 'Status', sel('status', ['Draft', 'In Review', 'Approved', 'Live'], s('status', 'Draft')))}
+      ${fld('campaign', 'Campaign', inp('campaign', s('campaign', campaign), 'Campaign name'))}
+      ${fld('practice_area', 'Practice Area', inp('practice_area', s('practice_area', practiceArea), 'Practice area'))}
+      ${fld('offer', 'Offer Association', sel('offer', offers, s('offer', offers[0] || '')))}
+      ${fld('buyer_persona', 'Buyer Persona', inp('buyer_persona', s('buyer_persona', persona), 'Target persona'))}
+      ${fld('lifecycle_stage', 'Lifecycle Stage', sel('lifecycle_stage', ['Awareness', 'Consideration', 'Decision', 'Retention'], s('lifecycle_stage', stage)))}
+      ${fld('content_theme', 'Content Theme', sel('content_theme', themes.length ? themes : DEFAULT_THEMES, s('content_theme', themes[0] || '')))}
+      ${fld('owner', 'Owner', inp('owner', s('owner', ''), 'Team or person'))}
+      ${fld('publish_date', 'Target Publish Date', dateinp('publish_date', s('publish_date', '')))}
+    </div>
+  </div>`;
+
+  // Asset-type-specific fields
+  html += buildTypeFields(asset, saved, practiceArea, year);
+
+  return html;
+}
+
+function buildTypeFields(asset, saved, practiceArea, year) {
+  const s = (key, fallback) => saved[key] !== undefined ? saved[key] : fallback;
+  const t = asset.type;
+
+  if (t === 'Webinar' || t === 'Recording') {
+    return `<div class="form-section">
+      <div class="form-section-title">Webinar Details</div>
+      <div class="form-grid">
+        ${fld('session_format', 'Session Format', sel('session_format', ['Live', 'On-Demand', 'Hybrid'], s('session_format', 'Live')))}
+        ${fld('duration', 'Duration', sel('duration', ['30 min', '45 min', '60 min', '90 min'], s('duration', '60 min')))}
+        ${fld('speakers', 'Speaker(s)', inp('speakers', s('speakers', ''), 'Name(s)'))}
+        ${fld('registration_cta', 'Registration CTA', inp('registration_cta', s('registration_cta', 'Register Now'), 'CTA text'))}
+        ${fld('recording_format', 'Recording Format', sel('recording_format', ['MP4', 'Zoom Cloud', 'YouTube Unlisted'], s('recording_format', 'MP4')))}
+        ${fld('dam_folder', 'DAM Folder Path', inp('dam_folder', s('dam_folder', `/${slugify(practiceArea)}/webinars/${year}/`), '/path/to/folder/'))}
+        ${fld('tags', 'Tags', inp('tags', s('tags', ''), 'Comma-separated tags'))}
+      </div>
+    </div>`;
+  }
+
+  if (t === 'Slide Deck' || t === 'Co-Branded Deck' || t === 'Personalized Deck') {
+    return `<div class="form-section">
+      <div class="form-section-title">Deck Details</div>
+      <div class="form-grid">
+        ${fld('version', 'Version', inp('version', s('version', 'v1.0'), 'v1.0'))}
+        ${fld('slide_count', 'Slide Count', `<input type="number" id="field-slide_count" class="form-input" value="${escHtml(s('slide_count', '12'))}" min="1">`)}
+        ${fld('distribution_rights', 'Distribution Rights', sel('distribution_rights', ['Internal Only', 'Prospects', 'Public'], s('distribution_rights', 'Prospects')))}
+        ${fld('template_used', 'Template Used', inp('template_used', s('template_used', ''), 'Template name'))}
+        ${fld('dam_folder', 'DAM Folder Path', inp('dam_folder', s('dam_folder', `/${slugify(practiceArea)}/decks/`), '/path/'))}
+        ${fld('tags', 'Tags', inp('tags', s('tags', ''), 'Comma-separated tags'))}
+      </div>
+    </div>`;
+  }
+
+  if (t === 'Blog Article' || t === 'White Paper') {
+    return `<div class="form-section">
+      <div class="form-section-title">Content Details</div>
+      <div class="form-grid single">
+        ${fld('meta_title', 'Meta Title (max 60)', `<input type="text" id="field-meta_title" class="form-input" data-maxlen="60" data-counter="counter-meta_title" value="${escHtml(s('meta_title', ''))}" placeholder="SEO page title"><div class="char-counter" id="counter-meta_title">${(s('meta_title','')).length} / 60</div>`)}
+      </div>
+      <div class="form-grid single">
+        ${fld('meta_description', 'Meta Description (max 160)', textarea('meta_description', s('meta_description',''), 2, 160, 'SEO meta description'))}
+      </div>
+      <div class="form-grid">
+        ${fld('target_keywords', 'Target Keywords', inp('target_keywords', s('target_keywords', ''), 'keyword1, keyword2'))}
+        ${fld('word_count', 'Word Count Target', sel('word_count', ['500', '800', '1200', '2000+'], s('word_count', '1200')))}
+        ${fld('cta_type', 'CTA Type', sel('cta_type', ['Newsletter', 'Demo', 'Contact', 'Download'], s('cta_type', 'Contact')))}
+        ${fld('dam_folder', 'DAM Folder Path', inp('dam_folder', s('dam_folder', `/${slugify(practiceArea)}/content/`), '/path/'))}
+        ${fld('tags', 'Tags', inp('tags', s('tags', ''), 'Comma-separated tags'))}
+      </div>
+    </div>`;
+  }
+
+  if (t === 'LinkedIn Post Series' || t === 'LinkedIn Article') {
+    return `<div class="form-section">
+      <div class="form-section-title">LinkedIn Details</div>
+      <div class="copy-variant-pair" style="margin-bottom:12px;">
+        <div>
+          <div class="copy-variant-label">Copy Variant A</div>
+          ${textarea('copy_a', s('copy_a', ''), 4, 200, 'Variant A copy (~200 chars)')}
+        </div>
+        <div>
+          <div class="copy-variant-label">Copy Variant B</div>
+          ${textarea('copy_b', s('copy_b', ''), 4, 200, 'Variant B copy (~200 chars)')}
+        </div>
+      </div>
+      <div class="form-grid">
+        ${fld('image_spec', 'Image Spec', sel('image_spec', ['1200×628', '1080×1080', '1920×1080'], s('image_spec', '1200×628')))}
+        ${fld('hashtags', 'Hashtags', inp('hashtags', s('hashtags', ''), '#strategy, #consulting'))}
+        ${fld('target_audience', 'Target Audience', inp('target_audience', s('target_audience', getPersona()), 'Audience description'))}
+        ${fld('cta_link', 'CTA Link', inp('cta_link', s('cta_link', ''), 'https://'))}
+        ${fld('tags', 'Tags', inp('tags', s('tags', ''), 'Comma-separated tags'))}
+      </div>
+    </div>`;
+  }
+
+  if (t === 'Email Sequence' || t === 'Email Template' || t === 'Email Introduction' || t === 'Cold Outreach Sequence' || t === 'Follow-Up Template') {
+    const selectedTokens = (s('personalization_tokens', '') || '').split(',').map(x=>x.trim()).filter(Boolean);
+    const tokenChips = TOKEN_OPTIONS.map(tok =>
+      `<span class="chip${selectedTokens.includes(tok) ? ' selected' : ''}" data-chip="${escHtml(tok)}">${escHtml(tok)}</span>`
+    ).join('');
+    return `<div class="form-section">
+      <div class="form-section-title">Email Details</div>
+      <div class="form-grid">
+        ${fld('subject_line', 'Subject Line', inp('subject_line', s('subject_line', ''), 'Email subject'))}
+        ${fld('preview_text', 'Preview Text (max 90)', `<input type="text" id="field-preview_text" class="form-input" data-maxlen="90" data-counter="counter-preview_text" value="${escHtml(s('preview_text',''))}" placeholder="Preview snippet"><div class="char-counter" id="counter-preview_text">${(s('preview_text','')).length} / 90</div>`)}
+        ${fld('sequence_name', 'Sequence Name', inp('sequence_name', s('sequence_name', ''), 'Sequence label'))}
+        ${fld('send_cadence', 'Send Cadence', sel('send_cadence', ['Day 1', 'Day 3', 'Day 7', 'Day 14'], s('send_cadence', 'Day 1')))}
+        ${fld('segment', 'Segment', inp('segment', s('segment', getPersona()), 'Buyer segment'))}
+        ${fld('cta_button', 'CTA Button Text', inp('cta_button', s('cta_button', 'Book a Call'), 'CTA text'))}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group">
+          <label class="form-label">Email Position</label>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <input type="number" id="field-email_position" class="form-input" value="${escHtml(s('email_position','1'))}" min="1" style="width:70px;">
+            <span style="color:var(--muted);font-size:12px;">of</span>
+            <input type="number" id="field-email_total" class="form-input" value="${escHtml(s('email_total','5'))}" min="1" style="width:70px;">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tags</label>
+          ${inp('tags', s('tags', ''), 'Comma-separated tags')}
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:12px;">
+        <label class="form-label">Personalization Tokens</label>
+        <div class="chip-group">${tokenChips}</div>
+      </div>
+    </div>`;
+  }
+
+  if (t === 'One-Pager' || t === 'Partner Brief') {
+    return `<div class="form-section">
+      <div class="form-section-title">Document Details</div>
+      <div class="form-grid">
+        ${fld('format', 'Format', sel('format', ['PDF', 'Web', 'Print'], s('format', 'PDF')))}
+        ${fld('page_count', 'Page Count', sel('page_count', ['1', '2', '4'], s('page_count', '1')))}
+        ${fld('distribution_channel', 'Distribution Channel', inp('distribution_channel', s('distribution_channel', ''), 'e.g. Email, Events'))}
+        ${fld('dam_folder', 'DAM Folder Path', inp('dam_folder', s('dam_folder', `/${slugify(practiceArea)}/docs/`), '/path/'))}
+        ${fld('tags', 'Tags', inp('tags', s('tags', ''), 'Comma-separated tags'))}
+      </div>
+      <div class="form-group" style="margin-top:12px;">
+        <label class="form-label">Key Proof Points</label>
+        ${textarea('proof_points', s('proof_points', ''), 3, null, 'Key proof points for this asset')}
+      </div>
+    </div>`;
+  }
+
+  // Generic fallback
+  return `<div class="form-section">
+    <div class="form-section-title">Asset Details</div>
+    <div class="form-grid">
+      ${fld('dam_folder', 'DAM Folder Path', inp('dam_folder', s('dam_folder', `/${slugify(practiceArea)}/${slugify(t)}/`), '/path/'))}
+      ${fld('tags', 'Tags', inp('tags', s('tags', ''), 'Comma-separated tags'))}
+    </div>
+    <div class="form-group" style="margin-top:12px;">
+      <label class="form-label">Notes</label>
+      ${textarea('notes', s('notes', ''), 3, null, 'Additional notes')}
+    </div>
+  </div>`;
+}
+
+// ─── JSON PREVIEW ─────────────────────────────────────────────────────────────
+function collectCurrentValues() {
+  const asset  = assets.find(a => a.id === activeId);
+  if (!asset) return null;
+
+  const formEl = document.getElementById('metadataForm');
+  const vals   = {};
+  if (formEl) {
+    formEl.querySelectorAll('input,select,textarea').forEach(el => {
+      if (el.id && el.id.startsWith('field-')) {
+        const key = el.id.replace('field-', '');
+        vals[key] = el.value;
+      }
+    });
+    const tokens = [];
+    formEl.querySelectorAll('.chip.selected[data-chip]').forEach(el => tokens.push(el.dataset.chip));
+    if (tokens.length) vals['personalization_tokens'] = tokens;
+  }
+
+  return {
+    asset_id:   asset.id,
+    asset_type: asset.type,
+    channel:    asset.channel,
+    title:      vals.title || asset.type,
+    campaign:   vals.campaign || getCampaignType() || null,
+    practice_area: vals.practice_area || getPracticeArea(),
+    offer:      vals.offer || getOffers()[0] || null,
+    buyer_persona: vals.buyer_persona || getPersona(),
+    lifecycle_stage: vals.lifecycle_stage || getLifecycleStage(),
+    content_theme: vals.content_theme || getThemes()[0] || null,
+    status:     vals.status || 'Draft',
+    owner:      vals.owner || null,
+    publish_date: vals.publish_date || null,
+    dam_folder: vals.dam_folder || null,
+    tags:       vals.tags ? vals.tags.split(',').map(t=>t.trim()).filter(Boolean) : [],
+    ...buildTypeJSON(asset.type, vals),
+  };
+}
+
+function buildTypeJSON(type, vals) {
+  const t = type;
+  if (t === 'Webinar' || t === 'Recording') {
+    return { session_format: vals.session_format, duration: vals.duration, speakers: vals.speakers, registration_cta: vals.registration_cta, recording_format: vals.recording_format };
+  }
+  if (t === 'Slide Deck' || t === 'Co-Branded Deck' || t === 'Personalized Deck') {
+    return { version: vals.version, slide_count: vals.slide_count, distribution_rights: vals.distribution_rights, template_used: vals.template_used };
+  }
+  if (t === 'Blog Article' || t === 'White Paper') {
+    return { meta_title: vals.meta_title, meta_description: vals.meta_description, target_keywords: vals.target_keywords, word_count_target: vals.word_count, cta_type: vals.cta_type };
+  }
+  if (t === 'LinkedIn Post Series' || t === 'LinkedIn Article') {
+    return { copy_variant_a: vals.copy_a, copy_variant_b: vals.copy_b, image_spec: vals.image_spec, hashtags: vals.hashtags, target_audience: vals.target_audience, cta_link: vals.cta_link };
+  }
+  if (['Email Sequence','Email Template','Email Introduction','Cold Outreach Sequence','Follow-Up Template'].includes(t)) {
+    return { subject_line: vals.subject_line, preview_text: vals.preview_text, sequence_name: vals.sequence_name, email_position: vals.email_position, email_total: vals.email_total, segment: vals.segment, personalization_tokens: vals.personalization_tokens || [], cta_button: vals.cta_button, send_cadence: vals.send_cadence };
+  }
+  if (t === 'One-Pager' || t === 'Partner Brief') {
+    return { format: vals.format, page_count: vals.page_count, distribution_channel: vals.distribution_channel, key_proof_points: vals.proof_points };
+  }
+  return vals.notes ? { notes: vals.notes } : {};
+}
+
+function renderJSON(obj) {
+  if (!obj) return '<span style="color:var(--muted)">Select an asset to preview metadata.</span>';
+  let html = '{\n';
+  Object.entries(obj).forEach(([k, v], i, arr) => {
+    const comma = i < arr.length - 1 ? ',' : '';
+    const key   = `  <span class="json-key">"${escHtml(k)}"</span>: `;
+    let val;
+    if (v === null || v === undefined || v === '') {
+      val = `<span class="json-null">null</span>`;
+    } else if (Array.isArray(v)) {
+      if (!v.length) { val = `<span class="json-null">[]</span>`; }
+      else { val = `[${v.map(x => `<span class="json-str">"${escHtml(x)}"</span>`).join(', ')}]`; }
+    } else if (typeof v === 'number') {
+      val = `<span class="json-num">${v}</span>`;
+    } else {
+      val = `<span class="json-str">"${escHtml(v)}"</span>`;
+    }
+    html += key + val + comma + '\n';
+  });
+  html += '}';
+  return html;
+}
+
+function updatePreview() {
+  const obj = collectCurrentValues();
+  document.getElementById('jsonPreview').innerHTML = renderJSON(obj);
+}
+
+// ─── EXPORT ───────────────────────────────────────────────────────────────────
+function copyJSON() {
+  const obj = collectCurrentValues();
+  if (!obj) return;
+  navigator.clipboard.writeText(JSON.stringify(obj, null, 2)).then(() => showToast('Copied!'));
+}
+
+function exportCSV() {
+  const obj = collectCurrentValues();
+  if (!obj) return;
+  downloadCSV([obj], 'engine-asset.csv');
+}
+
+function exportAllCSV() {
+  const rows = assets.map(a => {
+    const saved = savedAssets[a.id] || {};
+    return {
+      asset_id:   a.id,
+      asset_type: a.type,
+      channel:    a.channel,
+      title:      saved.title || a.type,
+      campaign:   saved.campaign || getCampaignType() || '',
+      practice_area: saved.practice_area || getPracticeArea(),
+      offer:      saved.offer || getOffers()[0] || '',
+      buyer_persona: saved.buyer_persona || getPersona(),
+      lifecycle_stage: saved.lifecycle_stage || getLifecycleStage(),
+      content_theme: saved.content_theme || getThemes()[0] || '',
+      status:     saved.status || 'Draft',
+      owner:      saved.owner || '',
+      publish_date: saved.publish_date || '',
+      dam_folder: saved.dam_folder || '',
+      tags:       saved.tags || '',
+    };
+  });
+  downloadCSV(rows, 'engine-all-assets.csv');
+}
+
+function downloadCSV(rows, filename) {
+  if (!rows.length) return;
+  const headers = Object.keys(rows[0]);
+  const lines = [headers.join(',')];
+  rows.forEach(r => {
+    lines.push(headers.map(h => {
+      const v = r[h] === null || r[h] === undefined ? '' : String(r[h]);
+      return '"' + v.replace(/"/g, '""') + '"';
+    }).join(','));
+  });
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ─── UTILITIES ────────────────────────────────────────────────────────────────
+function escHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function updateCharCounter(el) {
+  const max   = parseInt(el.dataset.maxlen, 10);
+  const counterId = el.dataset.counter;
+  const counter = document.getElementById(counterId);
+  if (!counter) return;
+  const len = el.value.length;
+  counter.textContent = `${len} / ${max}`;
+  counter.classList.toggle('warn', len > max * 0.85);
+}
+
+// ─── SUPABASE AUTH ────────────────────────────────────────────────────────────
+async function sendMagicLink() {
+  const email = document.getElementById('loginEmail').value.trim();
+  if (!email) return;
+  document.getElementById('loginError').style.display = 'none';
+  const { error } = await supa.auth.signInWithOtp({
+    email,
+    options: { emailRedirectTo: 'https://vector.brittbowman.ai/engine.html' }
+  });
+  if (error) {
+    document.getElementById('loginError').textContent = error.message;
+    document.getElementById('loginError').style.display = 'block';
+    return;
+  }
+  document.getElementById('loginForm').style.display  = 'none';
+  document.getElementById('loginSent').style.display  = 'block';
+}
+
+async function signOut() {
+  await supa.auth.signOut();
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+function initApp(session) {
+  loadLocalData();
+
+  const practiceName = getPracticeName();
+  document.getElementById('practiceNamePill').textContent = practiceName;
+
+  const email = session?.user?.email || '';
+  document.getElementById('userEmailDisplay').textContent = email;
+
+  buildAssets();
+
+  const hasVecData = !!(Object.keys(practiceData).length || Object.keys(cdna).length);
+  if (hasVecData) {
+    document.getElementById('emptyState').style.display = 'none';
+  }
+
+  renderAssetList();
+
+  // Auto-select first asset if data present
+  if (assets.length && hasVecData) {
+    selectAsset(assets[0].id);
+  }
+}
+
+const loginScreen = document.getElementById('loginScreen');
+
+supa.auth.onAuthStateChange(async (event, session) => {
+  if (session) {
+    loginScreen.classList.remove('visible');
+    initApp(session);
+  } else {
+    loginScreen.classList.add('visible');
+    // Also try to init without auth (for local dev / demo)
+  }
+});
+
+// Kick off session check; also init without auth for demo purposes
+(async () => {
+  const { data: { session } } = await supa.auth.getSession();
+  if (!session) {
+    // Still init the UI so it's explorable
+    loadLocalData();
+    buildAssets();
+    renderAssetList();
+    const practiceName = getPracticeName();
+    document.getElementById('practiceNamePill').textContent = practiceName;
+    if (assets.length) selectAsset(assets[0].id);
+  }
+})();
+</script>
+</body>
+</html>
