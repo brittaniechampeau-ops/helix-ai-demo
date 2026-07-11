@@ -379,6 +379,14 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
         </div>
         <div class="sec-score" id="materials-badge" style="color:var(--purple)"></div>
       </div>
+      <!-- Step 1.5: Baseline -->
+      <div class="sec-item" onclick="goToSection(1.5)" id="secnav-baseline">
+        <div class="sec-dot" style="background:var(--faint2);color:var(--muted)" data-active-bg="var(--purple-bg)" data-active-color="var(--purple)">◐</div>
+        <div class="sec-info">
+          <div class="sec-label">Baseline</div>
+          <div class="sec-sublabel">Current state snapshot</div>
+        </div>
+      </div>
       <!-- Step 2: Resolve scoping -->
       <div class="sec-item" onclick="goToSection(2)" id="secnav-2">
         <div class="sec-dot" style="background:var(--faint2);color:var(--muted)" data-active-bg="var(--cyan-bg)" data-active-color="var(--cyan)">R</div>
@@ -595,6 +603,92 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
           <textarea id="linkedinText" placeholder="Paste LinkedIn profile text here — About section, experience, posts, recommendations…" style="width:100%;min-height:100px;padding:12px 14px;background:var(--card2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:13px;resize:vertical;font-family:inherit;line-height:1.6;outline:none" oninput="updateMaterialsBadge()"></textarea>
         </div>
 
+      </div>
+
+      <!-- ═══ STEP 1.5: BASELINE CAPTURE ═══ -->
+      <div class="section-panel" id="panel-baseline">
+        <div class="step-header">
+          <div class="step-eyebrow" style="color:var(--purple)">Discovery · Baseline</div>
+          <div class="step-title">Where they are today</div>
+          <div class="step-desc">Capture current marketing state before any engagement work begins. This becomes the "before" baseline in the final report and informs the engagement scope.</div>
+        </div>
+
+        <!-- Budget -->
+        <div class="field-group">
+          <div class="field-label">Annual marketing spend (approximate)</div>
+          <div class="chips-wrap" id="budgetChips">
+            <div class="chip" onclick="selectBaseline('budget','$0–$25K',this)">$0–$25K</div>
+            <div class="chip" onclick="selectBaseline('budget','$25K–$100K',this)">$25K–$100K</div>
+            <div class="chip" onclick="selectBaseline('budget','$100K–$500K',this)">$100K–$500K</div>
+            <div class="chip" onclick="selectBaseline('budget','$500K–$2M',this)">$500K–$2M</div>
+            <div class="chip" onclick="selectBaseline('budget','$2M+',this)">$2M+</div>
+            <div class="chip" onclick="selectBaseline('budget','Unknown',this)">Unknown</div>
+          </div>
+        </div>
+
+        <!-- Active channels -->
+        <div class="field-group">
+          <div class="field-label">Active marketing channels <span style="font-weight:400;color:var(--muted)">— click to add, then rate each</span></div>
+          <div class="chips-wrap" id="channelAddChips" style="margin-bottom:12px">
+            <div class="chip chip-sm" onclick="addChannel('Organic search / SEO')">+ SEO</div>
+            <div class="chip chip-sm" onclick="addChannel('Paid search (Google Ads)')">+ Paid search</div>
+            <div class="chip chip-sm" onclick="addChannel('Paid social (LinkedIn / Meta)')">+ Paid social</div>
+            <div class="chip chip-sm" onclick="addChannel('Email marketing')">+ Email</div>
+            <div class="chip chip-sm" onclick="addChannel('Content / blog')">+ Content</div>
+            <div class="chip chip-sm" onclick="addChannel('Events / conferences')">+ Events</div>
+            <div class="chip chip-sm" onclick="addChannel('Referrals / partners')">+ Referrals</div>
+            <div class="chip chip-sm" onclick="addChannel('Cold outreach (SDR/BDR)')">+ Cold outreach</div>
+            <div class="chip chip-sm" onclick="addChannel('Organic social')">+ Organic social</div>
+            <div class="chip chip-sm" onclick="addChannel('PR / media')">+ PR / media</div>
+          </div>
+          <div id="channelList" style="display:flex;flex-direction:column;gap:8px"></div>
+        </div>
+
+        <!-- Metrics tracked -->
+        <div class="field-group">
+          <div class="field-label">What do they actually measure?</div>
+          <div class="chips-wrap" id="metricsChips">
+            <div class="chip" onclick="toggleMetric('Pipeline',this)">Pipeline</div>
+            <div class="chip" onclick="toggleMetric('MRR / ARR',this)">MRR / ARR</div>
+            <div class="chip" onclick="toggleMetric('CAC',this)">CAC</div>
+            <div class="chip" onclick="toggleMetric('Close rate',this)">Close rate</div>
+            <div class="chip" onclick="toggleMetric('Lead volume',this)">Lead volume</div>
+            <div class="chip" onclick="toggleMetric('SQLs',this)">SQLs</div>
+            <div class="chip" onclick="toggleMetric('NPS',this)">NPS</div>
+            <div class="chip" onclick="toggleMetric('Website traffic',this)">Website traffic</div>
+            <div class="chip" onclick="toggleMetric('Email open rate',this)">Email open rate</div>
+            <div class="chip" onclick="toggleMetric('Nothing formal',this)">Nothing formal</div>
+          </div>
+        </div>
+
+        <!-- Key numbers -->
+        <div class="field-group">
+          <div class="field-label">Key numbers <span style="font-weight:400;color:var(--muted)">— fill in what they know (leave blank if unknown)</span></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:4px">CAC (cost to acquire a customer)</div>
+              <input class="field-input" id="baselineCAC" placeholder="e.g. $4,200" oninput="state.baseline.numbers.cac=this.value">
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Close rate</div>
+              <input class="field-input" id="baselineClose" placeholder="e.g. 22%" oninput="state.baseline.numbers.closeRate=this.value">
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Active pipeline value</div>
+              <input class="field-input" id="baselinePipeline" placeholder="e.g. $380K" oninput="state.baseline.numbers.pipeline=this.value">
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:4px">MRR / ARR (if applicable)</div>
+              <input class="field-input" id="baselineMRR" placeholder="e.g. $85K MRR" oninput="state.baseline.numbers.mrr=this.value">
+            </div>
+          </div>
+        </div>
+
+        <!-- What's not working -->
+        <div class="field-group">
+          <div class="field-label">In their words — what's not working?</div>
+          <textarea id="baselineNotes" placeholder="e.g. 'We get referrals but have no system for them. Paid ads burned through budget without results. Nobody knows what our positioning actually is.'" style="width:100%;min-height:100px;padding:12px 14px;background:var(--card2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:13px;resize:vertical;font-family:inherit;line-height:1.6;outline:none" oninput="state.baseline.notes=this.value"></textarea>
+        </div>
       </div>
 
       <!-- ═══ STEP 2–5: DRIVE SCOPING ═══ -->
@@ -832,14 +926,21 @@ const state = {
   answers: [[null,null,null,null],[null,null,null,null],[null,null,null,null],[null,null,null,null]],
   scores: [0,0,0,0],
   intake: {
-    taxGate: null,      // 'yes' | 'no' | 'unsure'
-    taxFiles: [],       // [{name, size, label}]
-    docs: [],           // [{name, type, size, label}]
-    urls: [],           // [{url, preview}]
+    taxGate: null,
+    taxFiles: [],
+    docs: [],
+    urls: [],
     linkedin: '',
+  },
+  baseline: {
+    budget: '',           // annual marketing spend range
+    channels: [],         // [{name, status}] status: 'working'|'mixed'|'not'
+    metrics: [],          // what they actually measure
+    numbers: { cac:'', closeRate:'', pipeline:'', mrr:'' },
+    notes: '',
   }
 };
-let currentStep = 0; // 0=profile, 1=intake, 2-5=RIVE scoping, 6=results
+let currentStep = 0; // 0=profile, 1=intake, 1.5=baseline, 2-5=RIVE scoping, 6=results
 const chipSelections = { team: null, rev: null };
 
 function selectChip(group, val, el) {
@@ -1113,14 +1214,63 @@ function recalcScore(si) {
   document.getElementById(`barval-${si}`).textContent = `${score}/8`;
 }
 
+// ── BASELINE INTERACTIONS ─────────────────────────────────
+function selectBaseline(field, val, el) {
+  document.querySelectorAll(`#budgetChips .chip`).forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+  state.baseline[field] = val;
+}
+
+const CHANNEL_STATUS = ['working', 'mixed', 'not'];
+const CHANNEL_STATUS_LABELS = { working: '✓ Working', mixed: '~ Mixed', not: '✗ Not working' };
+const CHANNEL_STATUS_COLORS = { working: 'var(--teal)', mixed: 'var(--yellow)', not: 'var(--red)' };
+
+function addChannel(name) {
+  if (state.baseline.channels.find(c => c.name === name)) return;
+  state.baseline.channels.push({ name, status: null });
+  renderChannels();
+}
+
+function setChannelStatus(name, status) {
+  const ch = state.baseline.channels.find(c => c.name === name);
+  if (ch) { ch.status = ch.status === status ? null : status; }
+  renderChannels();
+}
+
+function removeChannel(name) {
+  state.baseline.channels = state.baseline.channels.filter(c => c.name !== name);
+  renderChannels();
+}
+
+function renderChannels() {
+  const el = document.getElementById('channelList');
+  if (!el) return;
+  el.innerHTML = state.baseline.channels.map(ch => `
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card2);border:1px solid var(--border2);border-radius:8px">
+      <div style="flex:1;font-size:13px;color:var(--text)">${ch.name}</div>
+      <div style="display:flex;gap:4px">
+        ${CHANNEL_STATUS.map(s => `<button onclick="setChannelStatus('${ch.name}','${s}')" style="padding:3px 9px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid ${ch.status===s ? CHANNEL_STATUS_COLORS[s] : 'var(--border2)'};background:${ch.status===s ? CHANNEL_STATUS_COLORS[s]+'22' : 'transparent'};color:${ch.status===s ? CHANNEL_STATUS_COLORS[s] : 'var(--muted)'}">${CHANNEL_STATUS_LABELS[s]}</button>`).join('')}
+      </div>
+      <button onclick="removeChannel('${ch.name}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:2px 4px">×</button>
+    </div>
+  `).join('');
+}
+
+function toggleMetric(name, el) {
+  const idx = state.baseline.metrics.indexOf(name);
+  if (idx === -1) { state.baseline.metrics.push(name); el.classList.add('sel'); }
+  else { state.baseline.metrics.splice(idx, 1); el.classList.remove('sel'); }
+}
+
 // ── NAVIGATION ───────────────────────────────────────────
 // Steps: 0=profile, 1=intake, 2=Resolve, 3=Intel, 4=Vector, 5=Engine, 6=results
 // Scoping question index = currentStep - 2 (for steps 2-5)
 
 function panelId(step) {
-  if (step >= 2 && step <= 5) return `panel-${step}`;
   if (step === 0) return 'panel-0';
   if (step === 1) return 'panel-1';
+  if (step === 1.5) return 'panel-baseline';
+  if (step >= 2 && step <= 5) return `panel-${step}`;
   return null;
 }
 
@@ -1129,6 +1279,7 @@ function updateFooterHint() {
   const hints = {
     0: state.orgName ? `Profiling ${state.orgName}` : 'Enter org name to continue',
     1: 'Upload materials or continue without — intake is optional',
+    1.5: 'Fill in what you know — all fields are optional',
     2: 'Answer all 4 questions to continue',
     3: 'Answer all 4 questions to continue',
     4: 'Answer all 4 questions to continue',
@@ -1169,9 +1320,9 @@ function navNext() {
   document.getElementById('footerHint').classList.remove('footer-error');
 
   // Determine next step
-  let next = currentStep + 1;
-  // Micro: skip Resolve (2) and Intel (3), go 1→4
-  if (accountSize === 'micro' && currentStep === 1) next = 4;
+  let next = currentStep === 1 ? 1.5 : currentStep === 1.5 ? 2 : currentStep + 1;
+  // Micro: skip Resolve (2) and Intel (3), go baseline→4
+  if (accountSize === 'micro' && currentStep === 1.5) next = 4;
 
   if (next <= 5) {
     hideCurrentPanel();
@@ -1204,9 +1355,9 @@ function navNext() {
 function navBack() {
   if (currentStep <= 0) return;
   hideCurrentPanel();
-  let prev = currentStep - 1;
+  let prev = currentStep === 2 ? 1.5 : currentStep === 1.5 ? 1 : currentStep - 1;
   // Micro: skip back over Intel (3) and Resolve (2)
-  if (accountSize === 'micro' && currentStep === 4) prev = 1;
+  if (accountSize === 'micro' && currentStep === 4) prev = 1.5;
   currentStep = prev;
   showCurrentPanel();
   updateSidebar();
@@ -1238,7 +1389,7 @@ function showCurrentPanel() {
 }
 
 function updateSidebar() {
-  const sectionMap = { 0: 'secnav-0', 1: 'secnav-1', 2: 'secnav-2', 3: 'secnav-3', 4: 'secnav-4', 5: 'secnav-5' };
+  const sectionMap = { 0: 'secnav-0', 1: 'secnav-1', 1.5: 'secnav-baseline', 2: 'secnav-2', 3: 'secnav-3', 4: 'secnav-4', 5: 'secnav-5' };
   Object.values(sectionMap).forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
@@ -1257,7 +1408,7 @@ function updateSidebar() {
   }
   // Update topbar phase
   const phaseEl = document.getElementById('tbPhase');
-  if (currentStep <= 1) { phaseEl.textContent = 'Intake'; phaseEl.className = 'tb-phase phase-intake'; }
+  if (currentStep <= 1.5) { phaseEl.textContent = 'Intake'; phaseEl.className = 'tb-phase phase-intake'; }
   else if (currentStep <= 5) { phaseEl.textContent = 'Scoping'; phaseEl.className = 'tb-phase phase-scoping'; }
 }
 
@@ -1270,6 +1421,10 @@ function updateFooter() {
     btnNext.disabled = !state.orgName || !state.orgTeam;
     btnNext.style.display = 'block';
   } else if (currentStep === 1) {
+    btnNext.textContent = 'Capture baseline →';
+    btnNext.disabled = false;
+    btnNext.style.display = 'block';
+  } else if (currentStep === 1.5) {
     btnNext.textContent = 'Begin scoping →';
     btnNext.disabled = false;
     btnNext.style.display = 'block';
@@ -1573,6 +1728,7 @@ async function saveToSupabase() {
     path: pathLabel(modules),
     roadmap: steps.map(s => ({ tool: s.tool, action: s.action, detail: s.detail, weeks: s.weeks })),
     first30: first30Items(state.scores, modules),
+    baseline: state.baseline,
     intake: {
       taxGate: state.intake.taxGate,
       taxFiles: state.intake.taxFiles.map(f => ({ name: f.name, label: f.label })),

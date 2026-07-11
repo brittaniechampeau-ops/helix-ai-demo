@@ -536,6 +536,12 @@ async function generateReport(engId) {
     { label:'Execution Readiness', val: (D.execution || 0) / 8, color:'#FF8A3D' },
   ];
 
+  // Baseline
+  const baseline = D.baseline || {};
+  const blChannels = baseline.channels || [];
+  const blMetrics = baseline.metrics || [];
+  const blNums = baseline.numbers || {};
+
   // Roadmap
   const roadmapSteps = D.roadmap || [];
   const first30 = D.first30 || [];
@@ -663,6 +669,35 @@ body{background:#050709;color:#E8EAF0;font-family:-apple-system,BlinkMacSystemFo
     </div>
     ${eng.notes ? `<div style="margin-top:20px;padding:14px 16px;background:#0E1218;border:1px solid #1C2535;border-radius:8px;font-size:13px;color:#8892A4;line-height:1.6">${rEsc(eng.notes)}</div>` : ''}
   </div>
+
+  <!-- BASELINE -->
+  ${(baseline.budget || blChannels.length || blMetrics.length || baseline.notes) ? section('Current State Baseline', '#8892A4', `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      ${baseline.budget ? card(`<div style="font-size:11px;color:#4A5270;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Annual Marketing Spend</div><div style="font-size:15px;font-weight:700;color:#E8EAF0">${rEsc(baseline.budget)}</div>`) : ''}
+      ${blMetrics.length ? card(`<div style="font-size:11px;color:#4A5270;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Metrics Tracked</div><div>${blMetrics.map(m=>`<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;background:#1C2535;color:#8892A4;margin:2px 3px 2px 0">${rEsc(m)}</span>`).join('')}</div>`) : ''}
+    </div>
+    ${blChannels.length ? card(`
+      <div style="font-size:11px;color:#4A5270;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Active Channels</div>
+      ${blChannels.map(ch => {
+        const statusColor = {working:'#3BBFA3',mixed:'#F0C040',not:'#FF5A5A'}[ch.status] || '#4A5270';
+        const statusLabel = {working:'Working',mixed:'Mixed',not:'Not working'}[ch.status] || 'Not rated';
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #1C2535;font-size:13px">
+          <span style="color:#E8EAF0">${rEsc(ch.name)}</span>
+          <span style="font-size:11px;font-weight:600;color:${statusColor}">${statusLabel}</span>
+        </div>`;
+      }).join('')}
+    `) : ''}
+    ${Object.values(blNums).some(v=>v) ? card(`
+      <div style="font-size:11px;color:#4A5270;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Key Numbers</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        ${blNums.cac ? `<div><div style="font-size:11px;color:#4A5270;margin-bottom:2px">CAC</div><div style="font-size:13px;color:#E8EAF0">${rEsc(blNums.cac)}</div></div>` : ''}
+        ${blNums.closeRate ? `<div><div style="font-size:11px;color:#4A5270;margin-bottom:2px">Close Rate</div><div style="font-size:13px;color:#E8EAF0">${rEsc(blNums.closeRate)}</div></div>` : ''}
+        ${blNums.pipeline ? `<div><div style="font-size:11px;color:#4A5270;margin-bottom:2px">Pipeline</div><div style="font-size:13px;color:#E8EAF0">${rEsc(blNums.pipeline)}</div></div>` : ''}
+        ${blNums.mrr ? `<div><div style="font-size:11px;color:#4A5270;margin-bottom:2px">MRR / ARR</div><div style="font-size:13px;color:#E8EAF0">${rEsc(blNums.mrr)}</div></div>` : ''}
+      </div>
+    `) : ''}
+    ${baseline.notes ? card(`<div style="font-size:11px;color:#4A5270;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">In Their Words</div><div style="font-size:13px;color:#8892A4;line-height:1.7;font-style:italic">"${rEsc(baseline.notes)}"</div>`) : ''}
+  `) : ''}
 
   <!-- READINESS -->
   ${section('Marketing Readiness Assessment', '#8B7FEC', `
