@@ -230,10 +230,38 @@ async function callClaude(model: string, stage: string, system: string, userCont
   const cleanJson = jsonStr.replace(/\/\/[^\n\r"]*/g, '')
   try {
     return JSON.parse(cleanJson)
-  } catch (e) {
-    console.error(`[${stage}] JSON parse failed. First 500 chars of cleaned response:`, cleanJson.slice(0, 500))
-    throw new Error(`[${stage}] JSON parse failed: ${(e as Error).message}`)
+  } catch (_e1) {
+    // Repair: escape unescaped control characters inside string literals
+    const repaired = repairJson(cleanJson)
+    try {
+      return JSON.parse(repaired)
+    } catch (e2) {
+      console.error(`[${stage}] JSON parse failed after repair. First 500 chars:`, repaired.slice(0, 500))
+      throw new Error(`[${stage}] JSON parse failed: ${(e2 as Error).message}`)
+    }
   }
+}
+
+function repairJson(str: string): string {
+  let result = '';
+  let inString = false;
+  for (let i = 0; i < str.length; i++) {
+    const ch = str[i];
+    const prev = i > 0 ? str[i - 1] : '';
+    if (ch === '"' && prev !== '\\') {
+      inString = !inString;
+      result += ch;
+    } else if (inString && ch === '\n') {
+      result += '\\n';
+    } else if (inString && ch === '\r') {
+      result += '\\r';
+    } else if (inString && ch === '\t') {
+      result += '\\t';
+    } else {
+      result += ch;
+    }
+  }
+  return result;
 }
 
 function corsHeaders() {
