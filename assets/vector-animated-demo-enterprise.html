@@ -4,6 +4,8 @@
 :root{
   --bg:#07090C;--panel:#0E1218;--card:#131920;--card2:#171F2A;
   --teal:#3BBFA3;--teal-dim:#1E6B5E;--teal-bg:#0D2E27;
+  --blue:#4BA8C8;--blue-dim:#1a4a6b;--blue-bg:#0D2535;
+  --purple:#9B8FE8;--purple-dim:#3a2a6b;--purple-bg:#1a1535;
   --text:#E8EDF3;--muted:#6B7A8D;--faint:#2A3544;
   --border:#1C2535;--border2:#243040;
   --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-serif;
@@ -11,6 +13,8 @@
 }
 html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--text);overflow:hidden}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+
+/* Layout */
 .stage{position:relative;width:100%;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px 80px;}
 .browser{width:100%;max-width:860px;border-radius:14px;border:1px solid var(--border2);background:var(--panel);overflow:hidden;flex-shrink:0;}
 .browser-chrome{height:40px;background:#0B1016;display:flex;align-items:center;padding:0 14px;gap:12px;border-bottom:1px solid var(--border);}
@@ -18,6 +22,8 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 .dot{width:11px;height:11px;border-radius:50%;background:#3a3a3a}
 .url-bar{flex:1;height:24px;background:var(--faint);border-radius:6px;display:flex;align-items:center;padding:0 10px;font-size:11px;color:var(--muted);font-family:var(--mono);}
 .url-bar .lock{color:var(--teal);margin-right:5px;font-size:10px}
+
+/* Platform nav */
 .pnav{height:34px;background:#090D12;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 10px;gap:2px;}
 .pnav-item{display:flex;align-items:center;gap:5px;padding:0 10px;height:100%;opacity:.4;transition:opacity .15s;cursor:default;border-radius:4px;}
 .pnav-item.active{opacity:1;background:rgba(59,191,163,.06);}
@@ -25,42 +31,32 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 .pnav-label{font-size:10px;font-weight:500;color:var(--muted);letter-spacing:.02em}
 .pnav-item.active .pnav-label{color:var(--teal)}
 .pnav-item[data-tool="resolve"].active{background:rgba(75,168,200,.07);}
-.pnav-item[data-tool="resolve"].active .pnav-label{color:#4BA8C8}
+.pnav-item[data-tool="resolve"].active .pnav-label{color:var(--blue)}
 .pnav-item[data-tool="intelligence"].active{background:rgba(139,127,232,.07);}
-.pnav-item[data-tool="intelligence"].active .pnav-label{color:#9B8FE8}
-.rsw-wrap{padding:22px 28px;display:flex;flex-direction:column;gap:14px;height:100%}
-.step-num-r{font-size:10px;font-weight:700;letter-spacing:.12em;color:#4BA8C8;background:#0D2535;border:1px solid #1a4a6b;border-radius:4px;padding:2px 7px;}
-.step-num-i{font-size:10px;font-weight:700;letter-spacing:.12em;color:#9B8FE8;background:#1a1535;border:1px solid #3a2a6b;border-radius:4px;padding:2px 7px;}
-.tax-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;flex:1}
-.tax-col{background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;}
-.tax-head{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
-.tax-chips{display:flex;flex-direction:column;gap:5px}
-.tax-chip{font-size:11px;padding:5px 9px;border-radius:6px;border:1px solid var(--border2);color:var(--muted);display:flex;align-items:center;justify-content:space-between;}
-.tax-chip.done{background:#0D2E27;border-color:#1E6B5E;color:#3BBFA3;}
-.tax-chip.act{border-color:#1a4a6b;color:#4BA8C8;background:#0D2535;}
-.tc-check{font-size:9px;opacity:.8}.tc-dot{font-size:6px;animation:blink .9s step-end infinite}
-.tax-footer{display:flex;justify-content:space-between;align-items:center}
-.tax-status{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px}
-.intel-wrap{padding:22px 28px;display:flex;flex-direction:column;gap:14px;height:100%}
-.files-area{background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;}
-.file-row{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border-radius:6px;background:var(--card2);border:1px solid var(--border);opacity:0;transform:translateX(-6px);transition:opacity .3s ease,transform .3s ease;}
-.file-row.show{opacity:1;transform:none}
-.file-ico{font-size:16px;flex-shrink:0;width:22px;text-align:center;padding-top:1px}
-.file-info{flex:1;min-width:0}
-.file-nm{font-size:11px;font-weight:500;color:var(--text)}
-.file-st{font-size:10px;color:var(--muted);margin-top:3px}
-.file-st.done{color:#3BBFA3}.file-st.proc{color:#4BA8C8}
-.proc-bar{height:2px;background:var(--faint);border-radius:1px;margin-top:5px;overflow:hidden}
-.proc-bar-fill{height:100%;background:#4BA8C8;border-radius:1px;width:0;transition:width 2s ease}
-.sigs-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.sig-card{background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:11px 13px;opacity:0;transition:opacity .35s ease;}
-.sig-card.show{opacity:1}
-.sig-tag{font-size:9px;font-weight:700;letter-spacing:.1em;color:#9B8FE8;background:#1a1535;border:1px solid #3a2a6b;border-radius:4px;padding:2px 6px;display:inline-block;margin-bottom:5px;}
-.sig-tag.buyer{color:#4BA8C8;background:#0D2535;border-color:#1a4a6b;}
-.sig-text{font-size:11px;color:var(--muted);line-height:1.45}
+.pnav-item[data-tool="intelligence"].active .pnav-label{color:var(--purple)}
+
+/* Scene container */
 .browser-body{min-height:420px;position:relative;overflow:hidden}
 .scene{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .5s ease,visibility 0s linear .5s;pointer-events:none;}
 .scene.active{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .5s ease,visibility 0s linear 0s;}
+
+/* Shared layout wrappers */
+.wrap{padding:22px 28px;display:flex;flex-direction:column;gap:14px;height:100%}
+.step-eyebrow{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.step-num{font-size:10px;font-weight:700;letter-spacing:.12em;color:var(--teal);background:var(--teal-bg);border:1px solid var(--teal-dim);border-radius:4px;padding:2px 7px;}
+.step-num-r{font-size:10px;font-weight:700;letter-spacing:.12em;color:var(--blue);background:var(--blue-bg);border:1px solid var(--blue-dim);border-radius:4px;padding:2px 7px;}
+.step-num-i{font-size:10px;font-weight:700;letter-spacing:.12em;color:var(--purple);background:var(--purple-bg);border:1px solid var(--purple-dim);border-radius:4px;padding:2px 7px;}
+.step-title{font-size:17px;font-weight:600}
+.step-sub{font-size:12px;color:var(--muted);margin-top:2px}
+
+/* Animations */
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes btnpulse{0%{transform:scale(1)}40%{transform:scale(.96);background:#2ea68f}100%{transform:scale(1);background:var(--teal)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes slideIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+
+/* LOGIN */
 .login-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:40px 24px;gap:28px;}
 .v-logo{width:64px;height:64px;border-radius:16px;background:var(--teal-bg);border:1.5px solid var(--teal-dim);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:var(--teal);}
 .login-form{width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px}
@@ -70,13 +66,41 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 .btn-magic{height:42px;background:var(--teal);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#07090C;cursor:pointer;margin-top:4px;}
 .btn-magic.pulse{animation:btnpulse 1.2s ease forwards}
 .login-secure{font-size:11px;color:var(--muted);text-align:center;display:flex;align-items:center;gap:5px}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
-@keyframes btnpulse{0%{transform:scale(1)}40%{transform:scale(.96);background:#2ea68f}100%{transform:scale(1);background:var(--teal)}}
-.diag-wrap{padding:24px 28px;display:flex;flex-direction:column;gap:18px;height:100%}
-.step-eyebrow{display:flex;align-items:center;gap:10px;margin-bottom:4px}
-.step-num{font-size:10px;font-weight:700;letter-spacing:.12em;color:var(--teal);background:var(--teal-bg);border:1px solid var(--teal-dim);border-radius:4px;padding:2px 7px;}
-.step-title{font-size:17px;font-weight:600}
-.step-sub{font-size:12px;color:var(--muted);margin-top:2px}
+
+/* RESOLVE */
+.tax-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;flex:1}
+.tax-col{background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;}
+.tax-head{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.tax-chips{display:flex;flex-direction:column;gap:5px}
+.tax-chip{font-size:11px;padding:5px 9px;border-radius:6px;border:1px solid var(--border2);color:var(--muted);display:flex;align-items:center;justify-content:space-between;opacity:0;transform:translateX(-6px);transition:opacity .3s ease,transform .3s ease;}
+.tax-chip.show{opacity:1;transform:none}
+.tax-chip.done{background:var(--teal-bg);border-color:var(--teal-dim);color:var(--teal);}
+.tax-chip.act{border-color:var(--blue-dim);color:var(--blue);background:var(--blue-bg);}
+.tc-check{font-size:9px;opacity:.8}.tc-dot{font-size:6px;animation:blink .9s step-end infinite}
+.tax-footer{display:flex;justify-content:space-between;align-items:center}
+.tax-status{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px}
+.btn-next{height:36px;padding:0 20px;background:var(--teal);color:#07090C;font-size:13px;font-weight:600;border-radius:7px;display:flex;align-items:center;gap:6px;opacity:0;transition:opacity .6s ease;}
+.btn-next.show{opacity:1}
+
+/* INTELLIGENCE */
+.files-area{background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;}
+.file-row{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border-radius:6px;background:var(--card2);border:1px solid var(--border);opacity:0;transform:translateX(-6px);transition:opacity .3s ease,transform .3s ease;}
+.file-row.show{opacity:1;transform:none}
+.file-ico{font-size:16px;flex-shrink:0;width:22px;text-align:center;padding-top:1px}
+.file-info{flex:1;min-width:0}
+.file-nm{font-size:11px;font-weight:500;color:var(--text)}
+.file-st{font-size:10px;color:var(--muted);margin-top:3px}
+.file-st.done{color:var(--teal)}.file-st.proc{color:var(--blue)}
+.proc-bar{height:2px;background:var(--faint);border-radius:1px;margin-top:5px;overflow:hidden}
+.proc-bar-fill{height:100%;background:var(--blue);border-radius:1px;width:0;transition:width 2s ease}
+.sigs-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sig-card{background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:11px 13px;opacity:0;transition:opacity .35s ease;}
+.sig-card.show{opacity:1}
+.sig-tag{font-size:9px;font-weight:700;letter-spacing:.1em;color:var(--purple);background:var(--purple-bg);border:1px solid var(--purple-dim);border-radius:4px;padding:2px 6px;display:inline-block;margin-bottom:5px;}
+.sig-tag.buyer{color:var(--blue);background:var(--blue-bg);border-color:var(--blue-dim);}
+.sig-text{font-size:11px;color:var(--muted);line-height:1.45}
+
+/* DIAGNOSTIC */
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;flex:1}
 .form-group{display:flex;flex-direction:column;gap:6px}
 .form-group.span2{grid-column:span 2}
@@ -91,9 +115,9 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 .range-thumb{position:absolute;top:50%;width:14px;height:14px;background:var(--teal);border-radius:50%;transform:translate(-50%,-50%);transition:left 1.2s ease;border:2.5px solid var(--panel);}
 .range-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--muted)}
 .diag-footer{display:flex;justify-content:flex-end;padding:8px 0 4px}
-.btn-next{height:36px;padding:0 20px;background:var(--teal);color:#07090C;font-size:13px;font-weight:600;border-radius:7px;display:flex;align-items:center;gap:6px;opacity:0;transition:opacity .6s ease;}
-.btn-next.show{opacity:1}
-.proc-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:32px;padding:32px 28px;}
+
+/* AI PIPELINE */
+.proc-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:28px;padding:28px 28px;}
 .proc-logo{width:56px;height:56px;border-radius:14px;background:var(--teal-bg);border:1.5px solid var(--teal-dim);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:var(--teal);}
 .proc-title{font-size:15px;color:var(--muted);text-align:center}
 .proc-title span{color:var(--text);font-weight:600}
@@ -106,12 +130,12 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 .agent-status{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
 .spinner{width:10px;height:10px;border:1.5px solid var(--faint);border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite}
 .done-check{color:var(--teal);font-size:12px}
-@keyframes spin{to{transform:rotate(360deg)}}
 .proc-bar-wrap{width:100%;max-width:320px}
 .proc-bar-track{height:3px;background:var(--faint);border-radius:2px;overflow:hidden}
-.proc-bar-fill{height:100%;background:var(--teal);border-radius:2px;width:0;transition:width .3s ease}
+.proc-bar-fill2{height:100%;background:var(--teal);border-radius:2px;width:0;transition:width .3s ease}
 .proc-steps-label{font-size:10px;color:var(--muted);margin-top:8px;text-align:center;font-family:var(--mono)}
-.pos-wrap{padding:22px 28px;display:flex;flex-direction:column;gap:16px;height:100%}
+
+/* POSITIONING */
 .offers-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;flex:1}
 .offer-card{background:var(--card);border:1px solid var(--border2);border-radius:9px;padding:16px;display:flex;flex-direction:column;gap:10px;opacity:0;transform:translateY(10px);transition:opacity .4s ease,transform .4s ease;}
 .offer-card.show{opacity:1;transform:none}
@@ -126,7 +150,8 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 .pos-footer{display:flex;gap:10px;justify-content:flex-end}
 .btn-outline{height:34px;padding:0 16px;border:1px solid var(--border2);color:var(--muted);font-size:12px;border-radius:7px;display:flex;align-items:center;gap:6px;}
 .btn-regen{height:34px;padding:0 16px;background:var(--teal-bg);border:1px solid var(--teal-dim);color:var(--teal);font-size:12px;font-weight:500;border-radius:7px;display:flex;align-items:center;gap:6px;}
-.ref-wrap{padding:22px 28px;display:flex;flex-direction:column;gap:14px;height:100%}
+
+/* REFERRAL ENGINE */
 .ref-list{display:flex;flex-direction:column;gap:8px;flex:1}
 .ref-card{background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:12px 14px;display:flex;align-items:flex-start;gap:12px;opacity:0;transform:translateX(-8px);transition:opacity .35s ease,transform .35s ease;}
 .ref-card.show{opacity:1;transform:none}
@@ -136,7 +161,59 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 .ref-role{font-size:11px;color:var(--muted);margin-top:1px}
 .ref-intro{font-size:11px;color:var(--muted);margin-top:6px;font-style:italic;line-height:1.45;border-left:2px solid var(--teal-dim);padding-left:8px}
 .ref-badge{font-size:9px;background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-dim);border-radius:4px;padding:1px 6px;font-weight:600;letter-spacing:.05em}
-.gcc-wrap{padding:20px 28px;display:flex;flex-direction:column;gap:14px;height:100%}
+
+/* CREDIBILITY KIT */
+.cred-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;flex:1}
+.cred-card{background:var(--card);border:1px solid var(--border2);border-radius:9px;padding:14px 15px;display:flex;flex-direction:column;gap:8px;opacity:0;transform:translateY(10px);transition:opacity .4s ease,transform .4s ease;}
+.cred-card.show{opacity:1;transform:none}
+.cred-tag{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);background:var(--blue-bg);border:1px solid var(--blue-dim);border-radius:4px;padding:2px 7px;align-self:flex-start;}
+.cred-co{font-size:12px;font-weight:600;line-height:1.3}
+.cred-result{font-size:19px;font-weight:700;color:var(--teal);margin:2px 0}
+.cred-result span{font-size:10px;color:var(--muted);font-weight:400}
+.cred-desc{font-size:10px;color:var(--muted);line-height:1.5;flex:1}
+.proof-row{display:flex;gap:8px}
+.proof-pill{flex:1;background:var(--card);border:1px solid var(--border2);border-radius:7px;padding:8px 12px;display:flex;flex-direction:column;gap:3px;opacity:0;transition:opacity .4s ease;}
+.proof-pill.show{opacity:1}
+.proof-num{font-size:18px;font-weight:700;color:var(--teal);font-family:var(--mono)}
+.proof-lbl{font-size:10px;color:var(--muted)}
+
+/* INTAKE */
+.intake-upload{background:var(--card);border:2px dashed var(--border2);border-radius:10px;padding:20px;display:flex;flex-direction:column;align-items:center;gap:8px;}
+.intake-icon{font-size:28px;margin-bottom:4px}
+.intake-hint{font-size:12px;color:var(--muted);text-align:center}
+.intake-types{font-size:10px;color:var(--muted);opacity:.6}
+.intake-files{display:flex;flex-direction:column;gap:6px;flex:1}
+.intake-file{display:flex;align-items:flex-start;gap:10px;padding:9px 11px;border-radius:7px;background:var(--card2);border:1px solid var(--border);opacity:0;transform:translateX(-6px);transition:opacity .3s ease,transform .3s ease;}
+.intake-file.show{opacity:1;transform:none}
+.intake-signals{display:flex;flex-direction:column;gap:6px}
+.isig{display:flex;gap:10px;padding:9px 12px;background:var(--card);border:1px solid var(--border2);border-radius:7px;opacity:0;transform:translateX(6px);transition:opacity .3s ease,transform .3s ease;}
+.isig.show{opacity:1;transform:none}
+.isig-tag{font-size:9px;font-weight:700;letter-spacing:.08em;white-space:nowrap;padding:2px 6px;border-radius:4px;align-self:flex-start;margin-top:1px}
+.isig-tag.pain{color:#E8836B;background:#2e1a14;border:1px solid #5a3020}
+.isig-tag.need{color:var(--blue);background:var(--blue-bg);border:1px solid var(--blue-dim)}
+.isig-tag.budget{color:#7EC87E;background:#12261a;border:1px solid #2a4a2a}
+.isig-tag.timing{color:var(--purple);background:var(--purple-bg);border:1px solid var(--purple-dim)}
+.isig-text{font-size:11px;color:var(--muted);line-height:1.4}
+
+/* 90-DAY PLAN */
+.plan-phases{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;flex:1}
+.plan-phase{background:var(--card);border:1px solid var(--border2);border-radius:9px;padding:14px 15px;display:flex;flex-direction:column;gap:8px;opacity:0;transform:translateY(8px);transition:opacity .4s ease,transform .4s ease;}
+.plan-phase.show{opacity:1;transform:none}
+.phase-label{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);background:var(--teal-bg);border:1px solid var(--teal-dim);border-radius:4px;padding:2px 7px;align-self:flex-start;}
+.phase-period{font-size:13px;font-weight:600;margin-top:2px}
+.phase-focus{font-size:10px;color:var(--muted);margin-bottom:4px}
+.phase-items{display:flex;flex-direction:column;gap:5px}
+.pitem{display:flex;gap:7px;font-size:10px;color:var(--muted);align-items:flex-start}
+.pitem-dot{width:5px;height:5px;border-radius:50%;background:var(--teal-dim);flex-shrink:0;margin-top:4px}
+.pitem-dot.done{background:var(--teal)}
+.pitem.done{color:var(--text)}
+.plan-kpi{display:flex;gap:8px}
+.kpi-card{flex:1;background:var(--card);border:1px solid var(--border2);border-radius:7px;padding:10px 12px;opacity:0;transition:opacity .4s ease;}
+.kpi-card.show{opacity:1}
+.kpi-val{font-size:20px;font-weight:700;color:var(--teal);font-family:var(--mono)}
+.kpi-lbl{font-size:10px;color:var(--muted);margin-top:2px}
+
+/* GROWTH COMMAND CENTER */
 .gcc-header{display:flex;justify-content:space-between;align-items:flex-start}
 .gcc-meta{display:flex;flex-direction:column;gap:2px}
 .gcc-title{font-size:17px;font-weight:600}
@@ -163,7 +240,22 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 .stage-warm{background:#1A2E1A;color:#4CAF50;border:1px solid #2A4A2A}
 .stage-prop{background:#1A1A2E;color:#7B7FEC;border:1px solid #2A2A4A}
 .stage-qual{background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-dim)}
+.stage-close{background:#2e1a14;color:#E8836B;border:1px solid #5a3020}
 .pipe-val{color:var(--muted);margin-left:auto;font-family:var(--mono)}
+
+/* ACTIVATE */
+.act-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;flex:1}
+.act-col{background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;}
+.act-chip{font-size:11px;padding:5px 9px;border-radius:6px;border:1px solid var(--border2);color:var(--muted);display:flex;align-items:center;justify-content:space-between;opacity:0;transform:translateX(-4px);transition:opacity .3s ease,transform .3s ease;}
+.act-chip.show{opacity:1;transform:none}
+.act-chip.done{background:var(--teal-bg);border-color:var(--teal-dim);color:var(--teal);}
+.act-chip.act{border-color:var(--blue-dim);color:var(--blue);background:var(--blue-bg);}
+.act-payload{font-size:11px;padding:5px 9px;border-radius:6px;border:1px solid var(--border2);color:var(--muted);display:flex;align-items:center;justify-content:space-between;opacity:0;transform:translateX(-4px);transition:opacity .3s ease,transform .3s ease;}
+.act-payload.show{opacity:1;transform:none}
+.act-payload.done{background:var(--teal-bg);border-color:var(--teal-dim);color:var(--teal);}
+.act-payload.act{border-color:var(--blue-dim);color:var(--blue);background:var(--blue-bg);}
+
+/* CAPTION BAR */
 .caption-bar{position:fixed;bottom:0;left:0;right:0;background:var(--panel);border-top:1px solid var(--border);padding:0 28px;height:70px;display:flex;align-items:center;gap:20px;}
 .cap-step-info{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
 .cap-step-label{font-size:10px;color:var(--teal);font-weight:600;letter-spacing:.1em;text-transform:uppercase}
@@ -173,7 +265,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 .cap-btn:hover{background:var(--card2);color:var(--text)}
 .cap-play{width:36px;height:36px;background:var(--teal);color:#07090C;border:none;border-radius:9px}
 .cap-play:hover{background:#2ea68f;color:#07090C}
-.step-dots{display:flex;gap:6px}
+.step-dots{display:flex;gap:6px;flex-wrap:wrap;max-width:200px}
 .sdot{width:6px;height:6px;border-radius:50%;background:var(--faint);cursor:pointer;transition:all .2s;}
 .sdot.active{background:var(--teal);width:18px;border-radius:3px}
 .progress-line{position:fixed;bottom:70px;left:0;height:2px;background:var(--teal);transition:width .1s linear;opacity:.7;}
@@ -196,12 +288,13 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
     </div>
     <div class="browser-body">
 
+      <!-- SCENE 1: LOGIN -->
       <div class="scene" id="s0">
         <div class="login-wrap">
           <div class="v-logo">V</div>
           <div style="text-align:center">
-            <div style="font-size:22px;font-weight:600">Growth Command Center</div>
-            <div style="font-size:13px;color:var(--muted);margin-top:6px">Britt Bowman LLC · Practice Growth Intelligence</div>
+            <div style="font-size:22px;font-weight:600">Vector</div>
+            <div style="font-size:13px;color:var(--muted);margin-top:6px">Ardent Group · Practice Growth Intelligence</div>
           </div>
           <div class="login-form">
             <div class="form-group">
@@ -214,56 +307,57 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
         </div>
       </div>
 
-      <!-- SCENE: RESOLVE -->
+      <!-- SCENE 2: RESOLVE -->
       <div class="scene" id="sR">
-        <div class="rsw-wrap">
+        <div class="wrap">
           <div>
             <div class="step-eyebrow"><div class="step-num-r">RESOLVE</div></div>
             <div class="step-title">Taxonomy Workbench</div>
-            <div class="step-sub">Define your practice vocabulary — Vector builds your positioning from this foundation</div>
+            <div class="step-sub">Define your practice vocabulary — Vector uses this to generate precisely-calibrated offers and positioning</div>
           </div>
           <div class="tax-grid">
             <div class="tax-col">
               <div class="tax-head">Practice Areas</div>
               <div class="tax-chips">
-                <div class="tax-chip done">Strategy Consulting <span class="tc-check">✓</span></div>
-                <div class="tax-chip done">Digital Transformation <span class="tc-check">✓</span></div>
-                <div class="tax-chip act">M&amp;A Integration <span class="tc-dot">●</span></div>
-                <div class="tax-chip">Talent &amp; Org</div>
+                <div class="tax-chip done" id="rt0">Strategy Consulting <span class="tc-check">✓</span></div>
+                <div class="tax-chip done" id="rt1">Digital Transformation <span class="tc-check">✓</span></div>
+                <div class="tax-chip done" id="rt2">M&amp;A Integration <span class="tc-check">✓</span></div>
+                <div class="tax-chip act" id="rt3">Talent &amp; Org Design <span class="tc-dot">●</span></div>
               </div>
             </div>
             <div class="tax-col">
               <div class="tax-head">Target Markets</div>
               <div class="tax-chips">
-                <div class="tax-chip done">Fortune 1000 <span class="tc-check">✓</span></div>
-                <div class="tax-chip done">High-Growth ($50M+) <span class="tc-check">✓</span></div>
-                <div class="tax-chip act">PE-Backed Enterprise <span class="tc-dot">●</span></div>
-                <div class="tax-chip">Government / Public Sector</div>
+                <div class="tax-chip done" id="rt4">Fortune 1000 <span class="tc-check">✓</span></div>
+                <div class="tax-chip done" id="rt5">High-Growth ($50M+) <span class="tc-check">✓</span></div>
+                <div class="tax-chip done" id="rt6">PE-Backed Enterprise <span class="tc-check">✓</span></div>
+                <div class="tax-chip act" id="rt7">Government / Public Sector <span class="tc-dot">●</span></div>
               </div>
             </div>
             <div class="tax-col">
-              <div class="tax-head">Delivery Methods</div>
+              <div class="tax-head">Delivery Models</div>
               <div class="tax-chips">
-                <div class="tax-chip done">Multi-Month Engagement <span class="tc-check">✓</span></div>
-                <div class="tax-chip done">Retainer Program <span class="tc-check">✓</span></div>
-                <div class="tax-chip">Co-Deliver with Client Team</div>
+                <div class="tax-chip done" id="rt8">Multi-Month Engagement <span class="tc-check">✓</span></div>
+                <div class="tax-chip done" id="rt9">Retainer Program <span class="tc-check">✓</span></div>
+                <div class="tax-chip done" id="rt10">Embedded Team <span class="tc-check">✓</span></div>
+                <div class="tax-chip act" id="rt11">Co-Deliver with Client <span class="tc-dot">●</span></div>
               </div>
             </div>
           </div>
           <div class="tax-footer">
-            <div class="tax-status"><span style="color:#4BA8C8">✦</span> Taxonomy 86% complete — 22 terms defined, 4 pending</div>
-            <div class="btn-next show" style="height:34px;padding:0 16px;font-size:12px">Continue to Intelligence →</div>
+            <div class="tax-status"><span style="color:var(--blue)">✦</span> Taxonomy 86% complete — 22 terms defined, 4 pending</div>
+            <div class="btn-next show" style="background:var(--blue-bg);border:1px solid var(--blue-dim);color:var(--blue);height:34px;padding:0 16px;font-size:12px;font-weight:600;border-radius:7px;display:flex;align-items:center;gap:6px;">Continue to Intelligence →</div>
           </div>
         </div>
       </div>
 
-      <!-- SCENE: INTELLIGENCE -->
+      <!-- SCENE 3: INTELLIGENCE -->
       <div class="scene" id="sI">
-        <div class="intel-wrap">
+        <div class="wrap">
           <div>
             <div class="step-eyebrow"><div class="step-num-i">INTELLIGENCE</div></div>
             <div class="step-title">Market Signals</div>
-            <div class="step-sub">Upload transcripts, research, and competitive docs — Intelligence extracts buyer signals that shape your offers</div>
+            <div class="step-sub">Upload transcripts, research docs, and competitive intel — Intelligence extracts buyer signals that sharpen every offer</div>
           </div>
           <div class="files-area">
             <div class="file-row" id="fi0">
@@ -283,7 +377,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
             <div class="file-row" id="fi2">
               <div class="file-ico">📊</div>
               <div class="file-info">
-                <div class="file-nm">AI Readiness Survey · 200 CXOs.pdf</div>
+                <div class="file-nm">AI Readiness Survey · 200 CXOs.xlsx</div>
                 <div class="file-st proc" id="fi2st">Extracting signals…</div>
                 <div class="proc-bar"><div class="proc-bar-fill" id="fi2bar"></div></div>
               </div>
@@ -302,8 +396,9 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
         </div>
       </div>
 
+      <!-- SCENE 4: DIAGNOSTIC -->
       <div class="scene" id="s1">
-        <div class="diag-wrap">
+        <div class="wrap" style="padding:24px 28px;gap:18px">
           <div>
             <div class="step-eyebrow"><div class="step-num">STEP 01</div></div>
             <div class="step-title">Practice Diagnostic</div>
@@ -346,25 +441,43 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
         </div>
       </div>
 
+      <!-- SCENE 5: AI PIPELINE -->
       <div class="scene" id="s2">
         <div class="proc-wrap">
           <div class="proc-logo">V</div>
           <div class="proc-title">Analyzing <span>Ardent Group</span></div>
           <div class="agents-grid">
-            <div class="agent-card span2" id="ag0"><div class="agent-name">Signal Extractor</div><div class="agent-model">claude-haiku-4-5 · fast extraction</div><div class="agent-status"><div class="spinner" id="sp0"></div><span id="st0">Extracting practice signals…</span></div></div>
-            <div class="agent-card" id="ag1"><div class="agent-name">Positioning Agent</div><div class="agent-model">claude-sonnet-5 · parallel</div><div class="agent-status"><div class="spinner" id="sp1" style="opacity:0"></div><span id="st1" style="opacity:0">Drafting positioning…</span></div></div>
-            <div class="agent-card" id="ag2"><div class="agent-name">Case Study Drafter</div><div class="agent-model">claude-sonnet-5 · parallel</div><div class="agent-status"><div class="spinner" id="sp2" style="opacity:0"></div><span id="st2" style="opacity:0">Drafting case studies…</span></div></div>
-            <div class="agent-card span2" id="ag3"><div class="agent-name">Offer Architect</div><div class="agent-model">claude-sonnet-5 · synthesis</div><div class="agent-status"><div class="spinner" id="sp3" style="opacity:0"></div><span id="st3" style="opacity:0">Architecting offers…</span></div></div>
+            <div class="agent-card span2" id="ag0">
+              <div class="agent-name">Signal Extractor</div>
+              <div class="agent-model">claude-haiku-4-5 · fast extraction</div>
+              <div class="agent-status"><div class="spinner" id="sp0"></div><span id="st0">Extracting practice signals…</span></div>
+            </div>
+            <div class="agent-card" id="ag1">
+              <div class="agent-name">Positioning Agent</div>
+              <div class="agent-model">claude-sonnet-5 · parallel</div>
+              <div class="agent-status"><div class="spinner" id="sp1" style="opacity:0"></div><span id="st1" style="opacity:0">Drafting positioning…</span></div>
+            </div>
+            <div class="agent-card" id="ag2">
+              <div class="agent-name">Credibility Drafter</div>
+              <div class="agent-model">claude-sonnet-5 · parallel</div>
+              <div class="agent-status"><div class="spinner" id="sp2" style="opacity:0"></div><span id="st2" style="opacity:0">Writing case studies…</span></div>
+            </div>
+            <div class="agent-card span2" id="ag3">
+              <div class="agent-name">Offer Architect</div>
+              <div class="agent-model">claude-sonnet-5 · synthesis</div>
+              <div class="agent-status"><div class="spinner" id="sp3" style="opacity:0"></div><span id="st3" style="opacity:0">Architecting offers…</span></div>
+            </div>
           </div>
           <div class="proc-bar-wrap">
-            <div class="proc-bar-track"><div class="proc-bar-fill" id="procBar"></div></div>
+            <div class="proc-bar-track"><div class="proc-bar-fill2" id="procBar"></div></div>
             <div class="proc-steps-label" id="procLabel">Initializing pipeline…</div>
           </div>
         </div>
       </div>
 
+      <!-- SCENE 6: POSITIONING & OFFERS -->
       <div class="scene" id="s3">
-        <div class="pos-wrap">
+        <div class="wrap" style="padding:22px 28px;gap:16px">
           <div>
             <div class="step-eyebrow"><div class="step-num">STEP 02</div></div>
             <div class="step-title">Positioning &amp; Offers</div>
@@ -375,10 +488,10 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
               <div class="offer-tag">Offer 01</div>
               <div class="offer-name">Strategic Transformation Practice</div>
               <div class="offer-price">$320K+<span>/engagement</span></div>
-              <div class="offer-desc">Multi-month enterprise transformation for Fortune 1000 and high-growth mid-market — strategy through execution, C-suite through frontline.</div>
+              <div class="offer-desc">Multi-month enterprise transformation for Fortune 1000 and PE-backed platforms — strategy through execution, C-suite through frontline.</div>
               <div class="offer-bullets">
-                <div class="ob">C-suite strategy alignment sessions</div>
-                <div class="ob">Full diagnostic + roadmap development</div>
+                <div class="ob">C-suite alignment + strategy sessions</div>
+                <div class="ob">Full diagnostic + transformation roadmap</div>
                 <div class="ob">6-month embedded implementation team</div>
               </div>
             </div>
@@ -412,12 +525,13 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
         </div>
       </div>
 
+      <!-- SCENE 7: REFERRAL ENGINE -->
       <div class="scene" id="s4">
-        <div class="ref-wrap">
+        <div class="wrap">
           <div>
             <div class="step-eyebrow"><div class="step-num">STEP 03</div></div>
             <div class="step-title">Referral Engine</div>
-            <div class="step-sub">AI-drafted warm intros for your top referral sources</div>
+            <div class="step-sub">AI-drafted warm intros for your top referral sources — ready to send, not just a list</div>
           </div>
           <div class="ref-list">
             <div class="ref-card" id="rc0">
@@ -448,8 +562,137 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
         </div>
       </div>
 
+      <!-- SCENE 8: CREDIBILITY KIT -->
+      <div class="scene" id="sC">
+        <div class="wrap">
+          <div>
+            <div class="step-eyebrow"><div class="step-num">STEP 04</div></div>
+            <div class="step-title">Credibility Kit</div>
+            <div class="step-sub">AI-written case studies, proof points, and your practice bio — ready to deploy in proposals, decks, and outreach</div>
+          </div>
+          <div class="cred-grid">
+            <div class="cred-card" id="cc0">
+              <div class="cred-tag">Case Study</div>
+              <div class="cred-co">Everfield Platform Integration</div>
+              <div class="cred-result">$180M<span> synergy captured</span></div>
+              <div class="cred-desc">PE-backed 3-firm platform play. Ardent stood up an IMO across all entities within 14 days of close. Unified operating model and leadership alignment delivered in 90 days.</div>
+            </div>
+            <div class="cred-card" id="cc1">
+              <div class="cred-tag">Case Study</div>
+              <div class="cred-co">Cascade Global Digital Transformation</div>
+              <div class="cred-result">47%<span> productivity gain</span></div>
+              <div class="cred-desc">12-month enterprise AI adoption program across 8,000 employees. Ardent designed the governance model, change management strategy, and executive rollout framework.</div>
+            </div>
+            <div class="cred-card" id="cc2">
+              <div class="cred-tag">Case Study</div>
+              <div class="cred-co">Ironwood Industries Strategy Refresh</div>
+              <div class="cred-result">3×<span> revenue in 36 months</span></div>
+              <div class="cred-desc">Board-to-frontline strategy alignment for a $400M industrial firm entering two new markets. Ardent facilitated the strategy cycle and designed the accountability operating system.</div>
+            </div>
+          </div>
+          <div class="proof-row">
+            <div class="proof-pill" id="pp0"><div class="proof-num">140</div><div class="proof-lbl">Practitioners firm-wide</div></div>
+            <div class="proof-pill" id="pp1"><div class="proof-num">$2.1B</div><div class="proof-lbl">Deal value integrated</div></div>
+            <div class="proof-pill" id="pp2"><div class="proof-num">94%</div><div class="proof-lbl">Client retention rate</div></div>
+            <div class="proof-pill" id="pp3"><div class="proof-num">4.8★</div><div class="proof-lbl">Avg. client satisfaction</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCENE 9: CLIENT INTAKE -->
+      <div class="scene" id="s5i">
+        <div class="wrap">
+          <div>
+            <div class="step-eyebrow"><div class="step-num">STEP 05</div></div>
+            <div class="step-title">Client Intake</div>
+            <div class="step-sub">Upload discovery call transcripts or meeting notes — Vector extracts buyer signals, pain points, and deal context automatically</div>
+          </div>
+          <div class="intake-files">
+            <div class="intake-file" id="if0">
+              <div class="file-ico">🎙️</div>
+              <div class="file-info">
+                <div class="file-nm">Discovery Call — Everfield Capital · David Whitmore.vtt</div>
+                <div class="file-st done" id="if0st">✓ Transcript parsed · Extracting signals…</div>
+                <div class="proc-bar"><div class="proc-bar-fill" id="if0bar" style="width:82%"></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="intake-signals">
+            <div class="isig" id="is0">
+              <div class="isig-tag pain">PAIN</div>
+              <div class="isig-text">Board pressure on 100-day integration plan — three acquired firms, no unified operating model, leadership conflict already surfacing</div>
+            </div>
+            <div class="isig" id="is1">
+              <div class="isig-tag need">NEED</div>
+              <div class="isig-text">Single integration lead who can hold accountability across all entities without getting lost in politics — "someone who's done this before at scale"</div>
+            </div>
+            <div class="isig" id="is2">
+              <div class="isig-tag budget">BUDGET</div>
+              <div class="isig-text">Board approved $400K+ for the right partner — PE fund has a 4-year hold, deal economics require fast synergy capture in Year 1</div>
+            </div>
+            <div class="isig" id="is3">
+              <div class="isig-tag timing">TIMING</div>
+              <div class="isig-text">Close expected in 30 days — wants engagement to start immediately at signing, not after 6-week procurement</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCENE 10: 90-DAY PLAN -->
+      <div class="scene" id="s6">
+        <div class="wrap">
+          <div>
+            <div class="step-eyebrow"><div class="step-num">STEP 06</div></div>
+            <div class="step-title">90-Day Activation Plan</div>
+            <div class="step-sub">Your personalized growth roadmap — phased milestones, owner assignments, and target outcomes built from your diagnostic</div>
+          </div>
+          <div class="plan-phases">
+            <div class="plan-phase" id="ph0">
+              <div class="phase-label">PHASE 1</div>
+              <div class="phase-period">Days 1–30 · Foundation</div>
+              <div class="phase-focus">Stand up the growth infrastructure</div>
+              <div class="phase-items">
+                <div class="pitem done"><div class="pitem-dot done"></div>Practice leads aligned on offer architecture</div>
+                <div class="pitem done"><div class="pitem-dot done"></div>Credibility kit deployed to BD team</div>
+                <div class="pitem done"><div class="pitem-dot done"></div>Referral campaign live — 14 warm targets</div>
+                <div class="pitem"><div class="pitem-dot"></div>HubSpot sequences activated</div>
+              </div>
+            </div>
+            <div class="plan-phase" id="ph1">
+              <div class="phase-label">PHASE 2</div>
+              <div class="phase-period">Days 31–60 · Activation</div>
+              <div class="phase-focus">Drive qualified conversations</div>
+              <div class="phase-items">
+                <div class="pitem"><div class="pitem-dot"></div>6 executive discovery meetings booked</div>
+                <div class="pitem"><div class="pitem-dot"></div>Everfield platform proposal submitted</div>
+                <div class="pitem"><div class="pitem-dot"></div>AI Governance thought leadership published</div>
+                <div class="pitem"><div class="pitem-dot"></div>Cascade Global scoping call completed</div>
+              </div>
+            </div>
+            <div class="plan-phase" id="ph2">
+              <div class="phase-label">PHASE 3</div>
+              <div class="phase-period">Days 61–90 · Pipeline</div>
+              <div class="phase-focus">Close and expand</div>
+              <div class="phase-items">
+                <div class="pitem"><div class="pitem-dot"></div>2 engagements closed — $465K committed</div>
+                <div class="pitem"><div class="pitem-dot"></div>3rd engagement in final proposal stage</div>
+                <div class="pitem"><div class="pitem-dot"></div>PE network introductions — 3 new opportunities</div>
+                <div class="pitem"><div class="pitem-dot"></div>Q4 retainer renewals initiated</div>
+              </div>
+            </div>
+          </div>
+          <div class="plan-kpi">
+            <div class="kpi-card" id="kpi0"><div class="kpi-val">$1.2M</div><div class="kpi-lbl">90-day pipeline target</div></div>
+            <div class="kpi-card" id="kpi1"><div class="kpi-val">24</div><div class="kpi-lbl">Referral targets queued</div></div>
+            <div class="kpi-card" id="kpi2"><div class="kpi-val">6</div><div class="kpi-lbl">Discovery meetings goal</div></div>
+            <div class="kpi-card" id="kpi3"><div class="kpi-val">Day 45</div><div class="kpi-lbl">First close target</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCENE 11: GROWTH COMMAND CENTER -->
       <div class="scene" id="s5">
-        <div class="gcc-wrap">
+        <div class="wrap" style="padding:20px 28px;gap:14px">
           <div class="gcc-header">
             <div class="gcc-meta">
               <div class="gcc-title">Growth Command Center</div>
@@ -458,21 +701,21 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
             <div class="gcc-badge">✦ ACTIVE</div>
           </div>
           <div class="metrics-row">
-            <div class="metric-card" id="mc0"><div class="metric-val">$1.2M</div><div class="metric-lbl">Monthly recurring target</div></div>
-            <div class="metric-card" id="mc1"><div class="metric-val">24</div><div class="metric-lbl">Referral targets queued</div></div>
-            <div class="metric-card" id="mc2"><div class="metric-val">3</div><div class="metric-lbl">Active offers</div></div>
-            <div class="metric-card" id="mc3"><div class="metric-val">90d</div><div class="metric-lbl">Activation timeline</div></div>
+            <div class="metric-card" id="mc0"><div class="metric-val">$1.2M</div><div class="metric-lbl">Pipeline target</div></div>
+            <div class="metric-card" id="mc1"><div class="metric-val">24</div><div class="metric-lbl">Referral targets</div></div>
+            <div class="metric-card" id="mc2"><div class="metric-val">$560K</div><div class="metric-lbl">Active pipeline</div></div>
+            <div class="metric-card" id="mc3"><div class="metric-val">Day 28</div><div class="metric-lbl">Timeline position</div></div>
           </div>
           <div class="gcc-bottom">
             <div class="gcc-panel" id="gp0">
               <div class="panel-title">90-Day Activation Checklist</div>
               <div class="checklist">
-                <div class="citem"><div class="cbox done">✓</div>Align practice leads on offer architecture</div>
-                <div class="citem"><div class="cbox done">✓</div>Update capability credentials + case studies</div>
-                <div class="citem"><div class="cbox">3</div>Activate BD team referral campaign (14 targets)</div>
-                <div class="citem"><div class="cbox">4</div>Publish thought leadership series (AI Governance)</div>
-                <div class="citem"><div class="cbox">5</div>Book 6 executive discovery meetings</div>
-                <div class="citem"><div class="cbox">6</div>Close Everfield platform proposal</div>
+                <div class="citem"><div class="cbox done" id="cb0">✓</div><span>Align practice leads on offer architecture</span></div>
+                <div class="citem"><div class="cbox done" id="cb1">✓</div><span>Deploy credibility kit to BD team</span></div>
+                <div class="citem"><div class="cbox done" id="cb2">✓</div><span>Launch referral campaign (14 warm targets)</span></div>
+                <div class="citem"><div class="cbox" id="cb3">4</div><span>Submit Everfield platform proposal</span></div>
+                <div class="citem"><div class="cbox" id="cb4">5</div><span>Book 6 executive discovery meetings</span></div>
+                <div class="citem"><div class="cbox" id="cb5">6</div><span>Close first engagement by Day 45</span></div>
               </div>
             </div>
             <div class="gcc-panel" id="gp1">
@@ -488,46 +731,48 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
         </div>
       </div>
 
-      <!-- SCENE: ACTIVATE -->
+      <!-- SCENE 12: ACTIVATE / CAMPAIGN DNA -->
       <div class="scene" id="sA">
-        <div class="rsw-wrap">
+        <div class="wrap">
           <div>
-            <div class="step-eyebrow"><div class="step-num-r" style="color:#3BBFA3;background:#0D2E27;border-color:#1E6B5E">ACTIVATE</div></div>
-            <div class="step-title">Campaign DNA</div>
-            <div class="step-sub">Vector maps positioning to your marketing taxonomy — generates ready-to-import payloads for HubSpot, Salesforce, Marketo, and Outreach</div>
+            <div class="step-eyebrow"><div class="step-num">STEP 08</div></div>
+            <div class="step-title">Activate — Campaign DNA</div>
+            <div class="step-sub">Vector maps your positioning to campaign taxonomy and generates ready-to-import payloads for HubSpot, Salesforce, Marketo, Outreach, and LinkedIn Ads</div>
           </div>
-          <div class="tax-grid">
-            <div class="tax-col">
-              <div class="tax-head">Taxonomy</div>
-              <div class="tax-chips">
-                <div class="tax-chip done">Practice Area · Strategy Consulting <span class="tc-check">✓</span></div>
-                <div class="tax-chip done">Buyer Persona · Enterprise CXO <span class="tc-check">✓</span></div>
-                <div class="tax-chip done">Channel Motion · Executive Referral <span class="tc-check">✓</span></div>
-                <div class="tax-chip act">Campaign Type · Account-Based <span class="tc-dot">●</span></div>
+          <div class="act-grid">
+            <div class="act-col">
+              <div class="tax-head">Campaign Taxonomy</div>
+              <div class="tax-chips" style="gap:5px">
+                <div class="act-chip done" id="ac0">Practice Area · Strategy Consulting <span class="tc-check">✓</span></div>
+                <div class="act-chip done" id="ac1">Buyer Persona · Enterprise CXO <span class="tc-check">✓</span></div>
+                <div class="act-chip done" id="ac2">Offer Type · Multi-Month Engagement <span class="tc-check">✓</span></div>
+                <div class="act-chip done" id="ac3">Channel Motion · Executive Referral <span class="tc-check">✓</span></div>
+                <div class="act-chip act" id="ac4">Campaign Type · Account-Based <span class="tc-dot">●</span></div>
               </div>
             </div>
-            <div class="tax-col">
+            <div class="act-col">
               <div class="tax-head">Destination Payloads</div>
-              <div class="tax-chips">
-                <div class="tax-chip done">HubSpot Campaign <span class="tc-check">↓</span></div>
-                <div class="tax-chip done">Salesforce Campaign <span class="tc-check">↓</span></div>
-                <div class="tax-chip done">Marketo Program <span class="tc-check">↓</span></div>
-                <div class="tax-chip done">Outreach Sequence <span class="tc-check">↓</span></div>
-                <div class="tax-chip act">LinkedIn Ads <span class="tc-dot">●</span></div>
+              <div class="tax-chips" style="gap:5px">
+                <div class="act-payload done" id="ap0">HubSpot Campaign <span class="tc-check">↓</span></div>
+                <div class="act-payload done" id="ap1">Salesforce Campaign <span class="tc-check">↓</span></div>
+                <div class="act-payload done" id="ap2">Marketo Program <span class="tc-check">↓</span></div>
+                <div class="act-payload done" id="ap3">Outreach Sequence <span class="tc-check">↓</span></div>
+                <div class="act-payload act" id="ap4">LinkedIn Ads <span class="tc-dot">●</span></div>
               </div>
             </div>
-            <div class="tax-col">
+            <div class="act-col">
               <div class="tax-head">Content Themes</div>
-              <div class="tax-chips">
-                <div class="tax-chip done">Enterprise Transformation ROI <span class="tc-check">✓</span></div>
-                <div class="tax-chip done">M&amp;A Integration Speed <span class="tc-check">✓</span></div>
-                <div class="tax-chip done">AI Readiness at Scale <span class="tc-check">✓</span></div>
-                <div class="tax-chip done">Board-Ready Strategy <span class="tc-check">✓</span></div>
+              <div class="tax-chips" style="gap:5px">
+                <div class="act-chip done" id="at0">Enterprise Transformation ROI <span class="tc-check">✓</span></div>
+                <div class="act-chip done" id="at1">M&amp;A Integration Speed <span class="tc-check">✓</span></div>
+                <div class="act-chip done" id="at2">AI Readiness at Scale <span class="tc-check">✓</span></div>
+                <div class="act-chip done" id="at3">Board-Ready Strategy <span class="tc-check">✓</span></div>
               </div>
             </div>
           </div>
           <div class="tax-footer">
-            <div class="tax-status"><span style="color:#3BBFA3">✦</span> 5 payloads ready · Primary KPI: Enterprise Pipeline Created</div>
+            <div class="tax-status"><span style="color:var(--teal)">✦</span> 5 payloads ready · Primary KPI: Enterprise Pipeline Created</div>
+            <div class="btn-next show" style="height:34px;padding:0 16px;font-size:12px">Export All Payloads ↓</div>
           </div>
         </div>
       </div>
@@ -537,7 +782,10 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 </div>
 
 <div class="caption-bar">
-  <div class="cap-step-info"><div class="cap-step-label" id="capLabel">—</div><div class="cap-text" id="capText">—</div></div>
+  <div class="cap-step-info">
+    <div class="cap-step-label" id="capLabel">—</div>
+    <div class="cap-text" id="capText">—</div>
+  </div>
   <div class="cap-controls">
     <div class="step-dots" id="stepDots"></div>
     <div class="cap-btn" onclick="goTo(cur-1)">‹</div>
@@ -549,32 +797,305 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 
 <script>
 const SCENES=[
-  {id:'s0',label:'Welcome',text:'Secure magic-link login — no passwords, no friction. Your practice data stays private.',dur:4200,tool:'vector'},
-  {id:'sR',label:'Resolve — Taxonomy Workbench',text:'Define your practice vocabulary in Resolve first. Vector uses this to generate precisely-calibrated offers and positioning.',dur:5000,tool:'resolve'},
-  {id:'sI',label:'Intelligence — Market Signals',text:'Upload transcripts, research docs, and competitive intel. Intelligence extracts buyer signals that sharpen every offer.',dur:5200,tool:'intelligence'},
-  {id:'s1',label:'Step 01 — Practice Diagnostic',text:'Answer 8 questions about your firm. Vector reads between the lines to find what makes you distinct.',dur:5500,tool:'vector'},
-  {id:'s2',label:'AI Pipeline',text:'Four specialized agents run in sequence and parallel — extracting signals, drafting positioning, architecting offers.',dur:5000,tool:'vector'},
-  {id:'s3',label:'Step 02 — Positioning & Offers',text:'Three fully-developed offers with pricing, framing, and activation plans — plus Regenerate and "Try a different angle" controls.',dur:5200,tool:'vector'},
-  {id:'s4',label:'Step 03 — Referral Engine',text:'AI-drafted warm intro language for your top referral sources — ready to send, not just a list.',dur:4800,tool:'vector'},
-  {id:'s5',label:'Growth Command Center',text:'Your complete growth system: metrics, 90-day activation checklist, and a live pipeline tracker — all assembled from your diagnostic.',dur:5500,tool:'vector'},
-  {id:'sA',label:'Activate — Campaign DNA',text:'Vector maps your positioning to campaign taxonomy and generates ready-to-import payloads for HubSpot, Salesforce, Marketo, Outreach, LinkedIn Ads, and more.',dur:5000,tool:'vector'},
+  {id:'s0',  label:'Welcome — Login',                  text:'Secure magic-link login — no passwords, no friction. Practice data stays private and org-isolated.',                                              dur:4500, tool:'vector'},
+  {id:'sR',  label:'Resolve — Taxonomy Workbench',     text:'Before Vector generates anything, Resolve locks in your practice vocabulary — the foundation every offer and campaign is built from.',           dur:5500, tool:'resolve'},
+  {id:'sI',  label:'Intelligence — Market Signals',    text:'Upload deal briefs, market research, and competitive docs. Intelligence extracts buyer signals that sharpen every offer and piece of content.',  dur:5500, tool:'intelligence'},
+  {id:'s1',  label:'Step 01 — Practice Diagnostic',    text:'Answer 8 questions about your firm. Vector reads between the lines to find what makes Ardent Group genuinely distinct in a crowded market.',     dur:6000, tool:'vector'},
+  {id:'s2',  label:'AI Pipeline — 4 Agents',           text:'Signal Extractor, Positioning Agent, Credibility Drafter, and Offer Architect run in sequence and parallel — full analysis in under 60 seconds.', dur:5500, tool:'vector'},
+  {id:'s3',  label:'Step 02 — Positioning & Offers',   text:'Three fully-developed offers with pricing, framing, and activation plans — plus Regenerate and "Try a different angle" controls.',                dur:5500, tool:'vector'},
+  {id:'s4',  label:'Step 03 — Referral Engine',        text:'AI-drafted warm intro language for your top referral sources — matched to the right offer, ready to send.',                                      dur:5500, tool:'vector'},
+  {id:'sC',  label:'Step 04 — Credibility Kit',        text:'AI-written case studies and proof points for Ardent Group — pulled from your diagnostic and calibrated for enterprise buyers.',                   dur:5500, tool:'vector'},
+  {id:'s5i', label:'Step 05 — Client Intake',          text:'Upload a discovery call transcript. Vector extracts pain points, needs, budget signals, and timeline — before you write a single proposal line.',  dur:5500, tool:'vector'},
+  {id:'s6',  label:'Step 06 — 90-Day Activation Plan', text:'A phased growth roadmap with milestone targets, owner assignments, and a Day 45 first-close goal — built entirely from your diagnostic data.',     dur:5500, tool:'vector'},
+  {id:'s5',  label:'Step 07 — Growth Command Center',  text:'Your live operating dashboard: pipeline tracker, 90-day checklist, metrics, and revenue targets — all auto-populated and always current.',         dur:5500, tool:'vector'},
+  {id:'sA',  label:'Step 08 — Activate / Campaign DNA','text':'Vector maps positioning to your marketing taxonomy and generates import-ready payloads for HubSpot, Salesforce, Marketo, Outreach, and LinkedIn.', dur:5500, tool:'vector'},
 ];
+
 let cur=0,playing=true,rafId=null,startT=0;
-function buildDots(){const el=document.getElementById('stepDots');el.innerHTML='';SCENES.forEach((_,i)=>{const d=document.createElement('div');d.className='sdot'+(i===cur?' active':'');d.onclick=()=>goTo(i);el.appendChild(d);});}
-function updatePnav(tool){document.querySelectorAll('.pnav-item').forEach(el=>{el.classList.toggle('active',el.dataset.tool===tool);});}
-function goTo(n){n=Math.max(0,Math.min(SCENES.length-1,n));document.getElementById(SCENES[cur].id).classList.remove('active');cur=n;const sc=SCENES[cur];document.getElementById(sc.id).classList.add('active');document.getElementById('capLabel').textContent=sc.label;document.getElementById('capText').textContent=sc.text;updatePnav(sc.tool||'vector');buildDots();runSceneAnim(cur);if(playing)resetTimer();}
-function resetTimer(){cancelAnimationFrame(rafId);startT=performance.now();const dur=SCENES[cur].dur;function tick(){if(!playing)return;const pct=Math.min(100,(performance.now()-startT)/dur*100);document.getElementById('progressLine').style.width=pct+'%';if(pct>=100)goTo((cur+1)%SCENES.length);else rafId=requestAnimationFrame(tick);}rafId=requestAnimationFrame(tick);}
-function togglePlay(){playing=!playing;document.getElementById('btnPlay').textContent=playing?'⏸':'▶';if(playing)resetTimer();}
-function runSceneAnim(n){const id=SCENES[n].id;if(id==='s0')animLogin();else if(id==='sR')animR();else if(id==='sI')animI();else if(id==='s1')animDiag();else if(id==='s2')animProc();else if(id==='s3')animPos();else if(id==='s4')animRef();else if(id==='s5')animGcc();else if(id==='sA')animA();}
-function animA(){}
-function animR(){}
-function animI(){['fi0','fi1','fi2'].forEach((id,i)=>{const r=document.getElementById(id);if(r){r.classList.remove('show');setTimeout(()=>r.classList.add('show'),300+i*400);}});['sc0','sc1'].forEach((id,i)=>{const c=document.getElementById(id);if(c){c.classList.remove('show');setTimeout(()=>c.classList.add('show'),1800+i*350);}});const bar=document.getElementById('fi2bar');if(bar){bar.style.width='0%';bar.style.transition='none';setTimeout(()=>{bar.style.transition='width 2s ease';bar.style.width='74%';},700);}}
-function typeText(el,text,speed,cb){el.textContent='';let i=0;(function step(){if(i<=text.length){el.textContent=text.slice(0,i++);setTimeout(step,speed);}else if(cb)cb();})();}
-function animLogin(){const t=document.getElementById('loginTyped');document.getElementById('btnMagic').classList.remove('pulse');setTimeout(()=>typeText(t,'c.hall@ardentgroup.com',50,()=>setTimeout(()=>document.getElementById('btnMagic').classList.add('pulse'),300)),600);}
-function animDiag(){const typed=document.getElementById('diagTyped');document.getElementById('diagName').classList.add('typing');typed.textContent='';['chip2','chip3','chip4','chip5'].forEach(id=>document.getElementById(id).classList.remove('sel'));document.getElementById('chip1').classList.add('sel');document.getElementById('revFill').style.width='0%';document.getElementById('revThumb').style.left='0%';document.getElementById('revLabel').textContent='—';document.getElementById('diagNext').classList.remove('show');setTimeout(()=>typeText(typed,'Ardent Group',48,()=>{setTimeout(()=>{document.getElementById('chip2').classList.add('sel');setTimeout(()=>{document.getElementById('chip3').classList.add('sel');setTimeout(()=>{document.getElementById('chip4').classList.add('sel');setTimeout(()=>{document.getElementById('revFill').style.width='100%';document.getElementById('revThumb').style.left='100%';document.getElementById('revLabel').textContent='$22M+ / year';setTimeout(()=>document.getElementById('diagNext').classList.add('show'),900);},500);},400);},500);},500);}),400);}
-function animProc(){const bar=document.getElementById('procBar');const lbl=document.getElementById('procLabel');[0,1,2,3].forEach(i=>{const c=document.getElementById('ag'+i);c.classList.remove('show');['sp'+i,'st'+i].forEach(id=>{const e=document.getElementById(id);if(e)e.style.opacity='0';});});bar.style.width='0%';bar.style.transition='none';lbl.textContent='Initializing pipeline…';const steps=[{t:300,fn:()=>{document.getElementById('ag0').classList.add('show');['sp0','st0'].forEach(id=>{document.getElementById(id).style.opacity='1';});document.getElementById('st0').textContent='Extracting practice signals…';bar.style.transition='width .8s ease';bar.style.width='15%';lbl.textContent='Signal Extractor → running';}},{t:1300,fn:()=>{document.getElementById('sp0').outerHTML='<span class="done-check" id="sp0">✓</span>';document.getElementById('st0').textContent='Complete — 18 signals extracted';bar.style.width='35%';}},{t:1900,fn:()=>{['ag1','ag2'].forEach(id=>document.getElementById(id).classList.add('show'));['sp1','sp2','st1','st2'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.opacity='1';});bar.style.width='55%';lbl.textContent='Positioning Agent + Case Study Drafter → parallel';}},{t:3000,fn:()=>{bar.style.width='75%';['sp1','sp2'].forEach(id=>{const e=document.getElementById(id);if(e&&e.className==='spinner')e.outerHTML='<span class="done-check" id="'+id+'">✓</span>';});const st1=document.getElementById('st1');if(st1)st1.textContent='3 offers positioned';const st2=document.getElementById('st2');if(st2)st2.textContent='4 case studies drafted';}},{t:3600,fn:()=>{document.getElementById('ag3').classList.add('show');['sp3','st3'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.opacity='1';});bar.style.width='90%';lbl.textContent='Offer Architect → synthesizing';}},{t:4500,fn:()=>{const sp3=document.getElementById('sp3');if(sp3&&sp3.className==='spinner')sp3.outerHTML='<span class="done-check" id="sp3">✓</span>';const st3=document.getElementById('st3');if(st3)st3.textContent='Enterprise growth bundle ready';bar.style.width='100%';lbl.textContent='Analysis complete ✦';}}];steps.forEach(s=>setTimeout(s.fn,s.t));}
-function animPos(){['oc0','oc1','oc2'].forEach((id,i)=>{const c=document.getElementById(id);c.classList.remove('show');setTimeout(()=>c.classList.add('show'),300+i*180);});}
-function animRef(){['rc0','rc1','rc2'].forEach((id,i)=>{const c=document.getElementById(id);c.classList.remove('show');setTimeout(()=>c.classList.add('show'),250+i*220);});}
-function animGcc(){['mc0','mc1','mc2','mc3'].forEach((id,i)=>{const c=document.getElementById(id);c.classList.remove('show');setTimeout(()=>c.classList.add('show'),200+i*120);});['gp0','gp1'].forEach((id,i)=>{const c=document.getElementById(id);c.classList.remove('show');setTimeout(()=>c.classList.add('show'),700+i*150);});}
+
+function buildDots(){
+  const el=document.getElementById('stepDots');
+  el.innerHTML='';
+  SCENES.forEach((_,i)=>{
+    const d=document.createElement('div');
+    d.className='sdot'+(i===cur?' active':'');
+    d.onclick=()=>goTo(i);
+    el.appendChild(d);
+  });
+}
+
+function updatePnav(tool){
+  document.querySelectorAll('.pnav-item').forEach(el=>{
+    el.classList.toggle('active',el.dataset.tool===tool);
+  });
+}
+
+function goTo(n){
+  n=Math.max(0,Math.min(SCENES.length-1,n));
+  document.getElementById(SCENES[cur].id).classList.remove('active');
+  cur=n;
+  const sc=SCENES[cur];
+  document.getElementById(sc.id).classList.add('active');
+  document.getElementById('capLabel').textContent=sc.label;
+  document.getElementById('capText').textContent=sc.text;
+  updatePnav(sc.tool||'vector');
+  buildDots();
+  runSceneAnim(cur);
+  if(playing)resetTimer();
+}
+
+function resetTimer(){
+  cancelAnimationFrame(rafId);
+  startT=performance.now();
+  const dur=SCENES[cur].dur;
+  function tick(){
+    if(!playing)return;
+    const pct=Math.min(100,(performance.now()-startT)/dur*100);
+    document.getElementById('progressLine').style.width=pct+'%';
+    if(pct>=100)goTo((cur+1)%SCENES.length);
+    else rafId=requestAnimationFrame(tick);
+  }
+  rafId=requestAnimationFrame(tick);
+}
+
+function togglePlay(){
+  playing=!playing;
+  document.getElementById('btnPlay').textContent=playing?'⏸':'▶';
+  if(playing)resetTimer();
+}
+
+function runSceneAnim(n){
+  const id=SCENES[n].id;
+  if(id==='s0')   animLogin();
+  else if(id==='sR')  animR();
+  else if(id==='sI')  animI();
+  else if(id==='s1')  animDiag();
+  else if(id==='s2')  animProc();
+  else if(id==='s3')  animPos();
+  else if(id==='s4')  animRef();
+  else if(id==='sC')  animCred();
+  else if(id==='s5i') animIntake();
+  else if(id==='s6')  animPlan();
+  else if(id==='s5')  animGcc();
+  else if(id==='sA')  animActivate();
+}
+
+function typeText(el,text,speed,cb){
+  el.textContent='';let i=0;
+  (function step(){
+    if(i<=text.length){el.textContent=text.slice(0,i++);setTimeout(step,speed);}
+    else if(cb)cb();
+  })();
+}
+
+/* LOGIN */
+function animLogin(){
+  const t=document.getElementById('loginTyped');
+  document.getElementById('btnMagic').classList.remove('pulse');
+  setTimeout(()=>typeText(t,'c.hall@ardentgroup.com',50,()=>{
+    setTimeout(()=>document.getElementById('btnMagic').classList.add('pulse'),400);
+  }),700);
+}
+
+/* RESOLVE */
+function animR(){
+  const ids=['rt0','rt1','rt2','rt3','rt4','rt5','rt6','rt7','rt8','rt9','rt10','rt11'];
+  ids.forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('show');});
+  ids.forEach((id,i)=>{
+    setTimeout(()=>{const el=document.getElementById(id);if(el)el.classList.add('show');},200+i*180);
+  });
+}
+
+/* INTELLIGENCE */
+function animI(){
+  ['fi0','fi1','fi2'].forEach((id,i)=>{
+    const r=document.getElementById(id);
+    if(r){r.classList.remove('show');setTimeout(()=>r.classList.add('show'),300+i*400);}
+  });
+  ['sc0','sc1'].forEach((id,i)=>{
+    const c=document.getElementById(id);
+    if(c){c.classList.remove('show');setTimeout(()=>c.classList.add('show'),1900+i*380);}
+  });
+  const bar=document.getElementById('fi2bar');
+  if(bar){bar.style.width='0%';bar.style.transition='none';
+    setTimeout(()=>{bar.style.transition='width 2.2s ease';bar.style.width='78%';},750);}
+}
+
+/* DIAGNOSTIC */
+function animDiag(){
+  const typed=document.getElementById('diagTyped');
+  document.getElementById('diagName').classList.add('typing');
+  typed.textContent='';
+  ['chip2','chip3','chip4','chip5'].forEach(id=>document.getElementById(id).classList.remove('sel'));
+  document.getElementById('chip1').classList.add('sel');
+  document.getElementById('revFill').style.width='0%';
+  document.getElementById('revThumb').style.left='0%';
+  document.getElementById('revLabel').textContent='—';
+  document.getElementById('diagNext').classList.remove('show');
+  setTimeout(()=>typeText(typed,'Ardent Group',48,()=>{
+    setTimeout(()=>{document.getElementById('chip2').classList.add('sel');
+      setTimeout(()=>{document.getElementById('chip3').classList.add('sel');
+        setTimeout(()=>{document.getElementById('chip4').classList.add('sel');
+          setTimeout(()=>{
+            document.getElementById('revFill').style.width='100%';
+            document.getElementById('revThumb').style.left='100%';
+            document.getElementById('revLabel').textContent='$22M+ / year';
+            setTimeout(()=>document.getElementById('diagNext').classList.add('show'),1000);
+          },500);
+        },400);
+      },500);
+    },500);
+  }),400);
+}
+
+/* AI PIPELINE */
+function animProc(){
+  const bar=document.getElementById('procBar');
+  const lbl=document.getElementById('procLabel');
+  [0,1,2,3].forEach(i=>{
+    const c=document.getElementById('ag'+i);
+    c.classList.remove('show');
+    ['sp'+i,'st'+i].forEach(id=>{const e=document.getElementById(id);if(e)e.style.opacity='0';});
+  });
+  bar.style.width='0%';bar.style.transition='none';
+  lbl.textContent='Initializing pipeline…';
+  const steps=[
+    {t:300,fn:()=>{
+      document.getElementById('ag0').classList.add('show');
+      ['sp0','st0'].forEach(id=>{document.getElementById(id).style.opacity='1';});
+      document.getElementById('st0').textContent='Extracting practice signals…';
+      bar.style.transition='width .8s ease';bar.style.width='15%';
+      lbl.textContent='Signal Extractor → running';
+    }},
+    {t:1300,fn:()=>{
+      const sp0=document.getElementById('sp0');
+      if(sp0)sp0.outerHTML='<span class="done-check" id="sp0">✓</span>';
+      document.getElementById('st0').textContent='Complete — 22 signals extracted';
+      bar.style.width='35%';
+    }},
+    {t:1900,fn:()=>{
+      ['ag1','ag2'].forEach(id=>document.getElementById(id).classList.add('show'));
+      ['sp1','sp2','st1','st2'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.opacity='1';});
+      bar.style.width='58%';lbl.textContent='Positioning Agent + Credibility Drafter → parallel';
+    }},
+    {t:3100,fn:()=>{
+      bar.style.width='76%';
+      ['sp1','sp2'].forEach(id=>{
+        const e=document.getElementById(id);
+        if(e&&e.className==='spinner')e.outerHTML='<span class="done-check" id="'+id+'">✓</span>';
+      });
+      const st1=document.getElementById('st1');if(st1)st1.textContent='3 offers positioned';
+      const st2=document.getElementById('st2');if(st2)st2.textContent='3 case studies drafted';
+    }},
+    {t:3700,fn:()=>{
+      document.getElementById('ag3').classList.add('show');
+      ['sp3','st3'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.opacity='1';});
+      bar.style.width='90%';lbl.textContent='Offer Architect → synthesizing';
+    }},
+    {t:4600,fn:()=>{
+      const sp3=document.getElementById('sp3');
+      if(sp3&&sp3.className==='spinner')sp3.outerHTML='<span class="done-check" id="sp3">✓</span>';
+      const st3=document.getElementById('st3');if(st3)st3.textContent='Enterprise growth bundle ready';
+      bar.style.width='100%';lbl.textContent='Analysis complete ✦';
+    }},
+  ];
+  steps.forEach(s=>setTimeout(s.fn,s.t));
+}
+
+/* POSITIONING */
+function animPos(){
+  ['oc0','oc1','oc2'].forEach((id,i)=>{
+    const c=document.getElementById(id);
+    c.classList.remove('show');
+    setTimeout(()=>c.classList.add('show'),300+i*200);
+  });
+}
+
+/* REFERRAL */
+function animRef(){
+  ['rc0','rc1','rc2'].forEach((id,i)=>{
+    const c=document.getElementById(id);
+    c.classList.remove('show');
+    setTimeout(()=>c.classList.add('show'),250+i*250);
+  });
+}
+
+/* CREDIBILITY KIT */
+function animCred(){
+  ['cc0','cc1','cc2'].forEach((id,i)=>{
+    const c=document.getElementById(id);
+    c.classList.remove('show');
+    setTimeout(()=>c.classList.add('show'),300+i*220);
+  });
+  ['pp0','pp1','pp2','pp3'].forEach((id,i)=>{
+    const c=document.getElementById(id);
+    c.classList.remove('show');
+    setTimeout(()=>c.classList.add('show'),1100+i*140);
+  });
+}
+
+/* CLIENT INTAKE */
+function animIntake(){
+  const f=document.getElementById('if0');
+  if(f){f.classList.remove('show');setTimeout(()=>f.classList.add('show'),300);}
+  const bar=document.getElementById('if0bar');
+  if(bar){bar.style.width='0%';bar.style.transition='none';
+    setTimeout(()=>{bar.style.transition='width 1.8s ease';bar.style.width='82%';},600);}
+  ['is0','is1','is2','is3'].forEach((id,i)=>{
+    const el=document.getElementById(id);
+    if(el){el.classList.remove('show');setTimeout(()=>el.classList.add('show'),900+i*380);}
+  });
+}
+
+/* 90-DAY PLAN */
+function animPlan(){
+  ['ph0','ph1','ph2'].forEach((id,i)=>{
+    const el=document.getElementById(id);
+    el.classList.remove('show');
+    setTimeout(()=>el.classList.add('show'),300+i*250);
+  });
+  ['kpi0','kpi1','kpi2','kpi3'].forEach((id,i)=>{
+    const el=document.getElementById(id);
+    el.classList.remove('show');
+    setTimeout(()=>el.classList.add('show'),1100+i*120);
+  });
+}
+
+/* GROWTH COMMAND CENTER */
+function animGcc(){
+  ['mc0','mc1','mc2','mc3'].forEach((id,i)=>{
+    const c=document.getElementById(id);
+    c.classList.remove('show');
+    setTimeout(()=>c.classList.add('show'),200+i*120);
+  });
+  ['gp0','gp1'].forEach((id,i)=>{
+    const c=document.getElementById(id);
+    c.classList.remove('show');
+    setTimeout(()=>c.classList.add('show'),700+i*180);
+  });
+  /* Animate checklist boxes checking off */
+  ['cb3','cb4','cb5'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.classList.remove('done');el.textContent=id==='cb3'?'4':id==='cb4'?'5':'6';}
+  });
+  setTimeout(()=>{
+    const cb3=document.getElementById('cb3');
+    if(cb3){cb3.classList.add('done');cb3.textContent='✓';}
+  },2800);
+}
+
+/* ACTIVATE */
+function animActivate(){
+  const taxIds=['ac0','ac1','ac2','ac3','ac4'];
+  const payIds=['ap0','ap1','ap2','ap3','ap4'];
+  const themeIds=['at0','at1','at2','at3'];
+  [...taxIds,...payIds,...themeIds].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.classList.remove('show');
+  });
+  taxIds.forEach((id,i)=>setTimeout(()=>{const el=document.getElementById(id);if(el)el.classList.add('show');},200+i*180));
+  payIds.forEach((id,i)=>setTimeout(()=>{const el=document.getElementById(id);if(el)el.classList.add('show');},400+i*200));
+  themeIds.forEach((id,i)=>setTimeout(()=>{const el=document.getElementById(id);if(el)el.classList.add('show');},350+i*170));
+}
+
 buildDots();goTo(0);
 </script>
