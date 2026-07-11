@@ -916,7 +916,7 @@
           Fill in all five questions, then click Run Diagnostic to get your track and build sequence.
         </div>
         <div style="display:flex;gap:8px;">
-          <button class="btn btn-ghost" onclick="loadDemo()">⚡ Load Demo</button>
+          <button id="loadDemoBtn" class="btn btn-ghost" onclick="loadDemo()">⚡ Load Demo</button>
           <button class="btn btn-primary" onclick="runDiagnostic()">▶ Run Diagnostic</button>
         </div>
       </div>
@@ -1239,9 +1239,9 @@
             </div>
           </div>
         </div>
-        <div>
+        <div id="integrationHubWrap">
           <div class="card">
-            <div class="card-header"><span class="card-title">Integration Hub</span></div>
+            <div class="card-header"><span class="card-title">Stack Setup Guide</span><span style="font-size:11px;color:var(--txt3);font-weight:400">Setup instructions for your tools</span></div>
             <div id="integrationHub" style="font-size:13px;color:var(--txt3);">
               Run the diagnostic to see your stack integration map.
             </div>
@@ -2137,7 +2137,14 @@ function restoreUI() {
   if (VEC.plan.generated) generatePlan();
   updateSidebar();
   updatePracticeOS();
-  if (PHASE > 0) showToast('Restored — ' + (p.name || 'practice'));
+  if (PHASE > 0) {
+    showToast('Restored — ' + (p.name || 'practice'));
+    // Re-show proceed banner for the current step so returning users don't have to scroll up
+    for (let s = 0; s < PHASE && s < 5; s++) showProceedBanner(s);
+  }
+  // Hide demo button for non-admin clients
+  const demoBtn = document.getElementById('loadDemoBtn');
+  if (demoBtn) demoBtn.style.display = isAdmin() ? '' : 'none';
 }
 
 // ─── TOAST ─────────────────────────────────────────────
@@ -2482,6 +2489,7 @@ function runDiagnostic() {
       document.getElementById('nav-0').classList.add('done');
       // Do NOT mark steps 1-6 as done — only unlock them
       updateSidebar(); saveState();
+      showProceedBanner(0);
       showToast('Diagnostic complete — Track ' + track);
       showStep(1);
     });
@@ -2523,6 +2531,7 @@ function runPositioning() {
     document.getElementById('posResult').classList.add('show');
     document.getElementById('nav-1').classList.add('done');
     updateSidebar(); updatePracticeOS(); saveState();
+    showProceedBanner(1);
     showToast('Positioning generated — 4 artifacts ready');
     logEvent('positioning_generated', { oneline: VEC.pos.oneline, offer1: VEC.pos.offer1?.name, offer2: VEC.pos.offer2?.name, offer3: VEC.pos.offer3?.name });
   });
@@ -2554,6 +2563,7 @@ function runReferralEngine() {
       document.getElementById('refResult').classList.add('show');
       document.getElementById('nav-2').classList.add('done');
       updateSidebar(); updatePracticeOS(); saveState();
+      showProceedBanner(2);
       showToast('Referral scripts generated');
       logEvent('referral_scripts_generated', { count: eligible.length, contact_types: eligible.map(c => c.type || c.rel) });
     });
@@ -2613,6 +2623,7 @@ function runCredibility() {
       document.getElementById('credResult').classList.add('show');
       document.getElementById('nav-3').classList.add('done');
       updateSidebar(); updatePracticeOS(); saveState();
+      showProceedBanner(3);
       showToast('Credibility assets generated');
       logEvent('credibility_run', { case_count: VEC.cred.cases.length, placements: VEC.cred.placements });
     });
@@ -2648,6 +2659,7 @@ function runIntake() {
       generatePlan();
       document.getElementById('nav-4').classList.add('done');
       updateSidebar(); updatePracticeOS(); saveState();
+      showProceedBanner(4);
       showToast('Intake kit generated — 5 templates ready');
     });
 }
@@ -2757,8 +2769,10 @@ function updatePracticeOS() {
   renderSessionLog();
   renderArtifactLibrary();
 
-  // Integration hub
-  if (VEC.diag.crm.length || VEC.diag.pm.length || VEC.diag.storage.length) {
+  // Stack Setup Guide — only show if client named tools
+  const hubWrap = document.getElementById('integrationHubWrap');
+  if (hubWrap) hubWrap.style.display = (VEC.diag.crm?.length || VEC.diag.pm?.length || VEC.diag.storage?.length || VEC.diag.comms?.length) ? '' : 'none';
+  if (VEC.diag.crm?.length || VEC.diag.pm?.length || VEC.diag.storage?.length) {
     const cards = [];
     const pos = VEC.pos || {};
     const o1 = pos.offer1 || {}, o2 = pos.offer2 || {}, o3 = pos.offer3 || {};
@@ -2808,6 +2822,285 @@ function updatePracticeOS() {
   }
   document.getElementById('nav-6').classList.add('done');
 }
+
+// ─── PLAN HOW-TOS ──────────────────────────────────────
+const TASK_HOWTOS = {
+  // ── TRACK A ──
+  'a-1-1': { steps: [
+    'Open your Positioning Canvas (download from Step 1 or find it in your Artifact Library).',
+    'Read the one-line aloud. If it takes more than one breath or uses jargon your client wouldn\'t say, rewrite it first.',
+    'Text or email it to 3 trusted peers with this exact question: "If someone said this to you at a networking event, would you immediately know what they do and who they help?"',
+    'If 2 out of 3 are confused by the same thing, that\'s your rewrite. One round of feedback is usually enough — don\'t over-polish it.',
+  ]},
+  'a-1-2': { steps: [
+    'Your three offer names and prices are in your Positioning Canvas (Step 1 → download). Open it now.',
+    'For each offer, write: (1) the name, (2) the exact price, (3) the timeline, and (4) a 3-5 item list of what the client actually receives — deliverables, not activities.',
+    '"You\'ll receive a 20-page assessment report" is a deliverable. "We\'ll conduct interviews" is an activity. Clients buy deliverables.',
+    'One page per offer. Your Entry offer should fit in a paragraph. Test it: could a client forward this to a decision-maker and they\'d understand it without you explaining it?',
+  ]},
+  'a-1-3': { steps: [
+    'Open a spreadsheet or Notion table with these columns: Name, Company, Role, Relationship Type (Past Client / Peer / Prospect / Advisor), and Why They\'d Refer.',
+    'Start with people who have already paid you or referred someone to you. Add them first — these are your highest-leverage contacts.',
+    'Add peers who operate in adjacent spaces and know your work quality. Then add any warm prospects you\'ve spoken to in the last 12 months.',
+    'Target minimum 6 names before stopping. Quality matters more than quantity: someone who\'d make a call on your behalf is worth 10 names who wouldn\'t.',
+  ]},
+  'a-1-4': { steps: [
+    'Your Intake Questionnaire template is in the Artifact Library (Step 6). Download it — it\'s pre-populated with questions based on your diagnostic.',
+    'Customize the 3-5 questions that matter most for your specific practice. Delete anything that doesn\'t help you scope the engagement or qualify the client.',
+    'Your Scoping Document is also in the Artifact Library. It\'s a one-pager that captures what you agreed to — scope, deliverables, timeline, what you need from them.',
+    'Save both as templates in your drive. The goal: any new client goes through the same intake process, every time, so nothing gets missed at the start.',
+  ]},
+  'a-1-5': { steps: [
+    'A Growth day is a standing block — same day, same time, every week. Non-negotiable means it doesn\'t move for a client call.',
+    'Block it in your calendar right now, recurring. Most consultants choose Monday or Friday. 4-6 hours is enough; it doesn\'t have to be a full day.',
+    'What goes on a Growth day: referral outreach, positioning work, case study writing, business development conversations — not client delivery work.',
+    'Tell your assistant or anyone who books for you: this time is blocked. You can reschedule client calls, not Growth days.',
+  ]},
+  'a-2-1': { steps: [
+    'Your Referral Ask Scripts are in the Artifact Library. Download them — they\'re written for your two priority contacts specifically.',
+    'Choose your top 2 contacts from the roster you built (highest trust, most likely to have relevant connections). These are your first asks.',
+    'The ask is a conversation, not an email. Call or meet in person. Start with a genuine check-in, then: "I wanted to ask — do you know anyone who might be dealing with [specific problem]? I\'ve been working with [type of client] and I have capacity right now."',
+    'Be specific. "Do you know any PE-backed mid-market firms going through a leadership transition?" closes 3x more often than "Do you know anyone who might need my help?"',
+  ]},
+  'a-2-2': { steps: [
+    'Your case study draft is in the Artifact Library. Open it and read it as if you\'re the client — does the result feel real and specific?',
+    'Adapt it for LinkedIn: start with the result, not the situation. "A PE-backed firm avoided a costly management mis-hire — here\'s how." gets clicks. "I worked with a client on..." does not.',
+    'Keep it under 300 words. One image (your logo or a simple graphic) helps reach. End with a direct CTA: "If you\'re evaluating a similar situation, I\'m taking one engagement this quarter."',
+    'Post between 8-10am Tuesday-Thursday. Engage with every comment in the first hour — that\'s when the algorithm decides whether to distribute it.',
+  ]},
+  'a-2-3': { steps: [
+    'Convo 1 is the first referral conversation with each priority contact — it\'s about learning, not asking. Your goal is to understand their world well enough to make a specific ask later.',
+    'Questions that work: "What kinds of clients are you working with right now?" / "What are the most common problems you\'re seeing?" / "Are you running into situations where [your problem] comes up?"',
+    'Take notes. What specific situations did they describe? Who do they work with? This becomes the context for your Convo 2 ask.',
+    'Two conversations in 30 days means roughly one per contact per week. Calendar them before you leave your Growth day.',
+  ]},
+  'a-2-4': { steps: [
+    'Your Placement Checklist (Artifact Library) lists the trade associations and publications relevant to your practice. Pick the one where your clients are most likely to read it.',
+    'The submission format varies. Most associations want a 500-800 word article or case study. Podcasts want a one-paragraph pitch. Choose the format that matches your best available content.',
+    'Your LinkedIn case study (from a-2-2) can be lightly adapted for most submissions — you already have the content, just adjust the framing for the audience.',
+    'Submit and move on. Don\'t wait for a response before doing other things. Most placements take 4-8 weeks. Log the submission date.',
+  ]},
+  'a-2-5': { steps: [
+    'A structured Growth day has a defined agenda — it\'s not "sit down and see what happens." Write your agenda the night before.',
+    'Agenda template: 30 min review (pipeline, open asks, last week\'s commitments) → 2 hrs referral outreach → 1 hr case study or content → 1 hr admin/tools.',
+    'After each Growth day: log what you did and what you committed to next week. The log is how you know if you\'re actually doing growth work or just feeling busy.',
+    'If you skipped something, note it. The goal is honest data about where your time actually goes, not a perfect log.',
+  ]},
+  'a-3-1': { steps: [
+    '"Close or formally advance" means: either a signed agreement, or a scheduled next step with a specific date. "Let\'s talk soon" is not advancing.',
+    'Review every opportunity in your pipeline. For each one: what is the actual next step? Who owns it? When is it happening?',
+    'If there\'s a referral-sourced opportunity you\'ve been avoiding advancing — that avoidance is the real constraint. Name it and deal with it this week.',
+    'Your goal is one signed agreement or one proposal with a scheduled decision date before day 90.',
+  ]},
+  'a-3-2': { steps: [
+    'Convo 2 is the ask. You\'ve already done Convo 1 with these contacts — you know their world, they know yours. Now ask specifically.',
+    '"Based on what you told me last time about [specific situation], I wanted to ask — is there anyone in that situation you\'d feel comfortable introducing me to?"',
+    'Be ready for "let me think about it." The follow-up is: "Of course — I\'ll check back in 2 weeks. Is there anyone else who comes to mind now?"',
+    'If a contact says they don\'t know anyone, ask who else they\'d recommend you talk to. Every conversation should produce a next contact.',
+  ]},
+  'a-3-3': { steps: [
+    'Your first case study proved you could write one. The second one should target a different client type, industry, or result to show breadth.',
+    'If you don\'t have a second completed engagement to write about, anonymize one that\'s in progress with client permission, or write about a situation rather than a specific client.',
+    'The case study format: Situation → Real Constraint → What You Did → Result. The Result line needs a number, a timeframe, or a specific outcome — not "the client was happy."',
+    'Save it to your Credibility folder and prepare it for LinkedIn publication next quarter.',
+  ]},
+  'a-3-4': { steps: [
+    'Pull out every proposal you\'ve sent in the past 90 days. Note where prospects pushed back on price, asked about alternatives, or went silent.',
+    'Silence after a proposal usually means the price felt disconnected from the value they expected. That\'s a positioning signal, not a pricing one.',
+    'Ask 1-2 prospects who said no: "I\'m doing a quick review of my offer structure — would you be willing to tell me what made it hard to say yes?" Most will answer.',
+    'Update your offer pricing based on actual signals, not your anxiety. If everyone\'s buying the Entry offer and skipping Core, your Core price or scope is probably off.',
+  ]},
+  'a-3-5': { steps: [
+    'Schedule a 2-hour block 90 days from now. Put it in your calendar today, before you close this.',
+    'The review agenda: (1) What did you commit to in your 90-day plan? What actually happened? (2) Which referral asks worked, which didn\'t? (3) Did your pricing hold? (4) What would you do differently?',
+    'Write your answers down — even a bullet list. The goal is a decision: do you continue the same track, or does something need to change?',
+    'Quarterly reviews are how the plan stays live. Without them, the plan becomes a document you made once and forgot.',
+  ]},
+
+  // ── TRACK B ──
+  'b-1-1': { steps: [
+    'A new-market one-line is different from your existing one. Don\'t just swap out the industry name — the buyer, problem, and proof are all different in the new market.',
+    'Start with who buys in this market. What role? What size company? What situation triggers them to hire someone like you?',
+    'Write 3 draft one-lines using this template: "[Firm name] helps [specific buyer] [do/achieve/avoid X] [when/in situations where Y]." Pick the one that\'s most specific.',
+    'Test it on one person who operates in the new market — not peers from your old market. If they immediately say "yes, I know people in that situation," it\'s working.',
+  ]},
+  'b-1-2': { steps: [
+    'An anonymized case study describes the situation and result without naming the client. "A regional staffing firm" works. "A PE-backed Midwest company" works.',
+    'If you have no completed work in this market yet, write a case study from an analogous situation in your previous market — lead with the skill, not the industry.',
+    'Structure: Situation → Problem → What you did → Result. Make the result as specific as possible. "Reduced decision cycle by 3 weeks" is real. "Improved their process" is not.',
+    'Get one person who operates in the new market to read it and tell you: does this feel credible and relevant to them? One reader is enough for the first draft.',
+  ]},
+  'b-1-3': { steps: [
+    'A credibility placement is anywhere your target buyers read, listen, or gather — trade publications, industry podcasts, associations, newsletters.',
+    'Find 3 targets by asking: where do [your specific buyer] go to learn? What newsletters do they subscribe to? What conferences do they attend?',
+    'Check LinkedIn — look at profiles of 5-10 buyers in this market and see what they share and where they engage. That tells you where they actually spend attention.',
+    'For each target: find the submission guidelines or contact. Log the format they want (pitch, article, interview), word count, and deadline cycle.',
+  ]},
+  'b-1-4': { steps: [
+    'A prospect list is not a LinkedIn search you did once. It\'s a curated list of specific people you could actually reach.',
+    'Start with LinkedIn. Search by job title + industry + company size. Look for people who match your buyer profile. Add 15 names — this will take 30-45 minutes.',
+    'For each name: find their email (company website, Hunter.io) or verify you can reach them on LinkedIn. A name without a contact path isn\'t really on your list.',
+    'Prioritize anyone you have a second-degree connection to. A warm intro from a mutual contact converts 3-5x better than cold outreach.',
+  ]},
+  'b-1-5': { steps: [
+    'New-market pricing is almost always lower than your current market pricing — you\'re buying credibility, not charging for it. That\'s intentional.',
+    'Price your Entry offer at a level a skeptical new-market buyer would say yes to without much approval. Core should be 20-30% below your existing market rate initially.',
+    'Download your offer templates from the Artifact Library. Fill in each with new-market specific language — the buyer type, the situation, and the deliverables they care about.',
+    'Get one real buyer to read each offer and tell you: "Does this feel priced right for what you\'re describing?" Their instinct is more reliable than your guess.',
+  ]},
+  'b-2-1': { steps: [
+    'Your first content piece in a new market should be a POV, not a case study — you may not have proof yet, but you have perspective.',
+    'A POV is: "Here\'s what I see happening in [industry], and here\'s why most firms handle it wrong." It establishes you as someone who understands the problem.',
+    'Length: 300-500 words on LinkedIn. Lead with a specific observation ("Three conversations I\'ve had with [buyer type] this quarter say the same thing..."), then your analysis, then a question.',
+    'Don\'t promote yourself at the end. Let the thinking speak for itself. If it resonates, people will click your profile.',
+  ]},
+  'b-2-2': { steps: [
+    'Trade associations move slower than you want. Submit now so you\'re in the pipeline before you need the credibility.',
+    'Find the submission guidelines for your top placement target (from b-1-3). Most associations want a 500-800 word article.',
+    'Adapt your POV (from b-2-1) into their format. Add one specific data point or client situation to ground it.',
+    'Submit, log the date, and set a follow-up reminder for 4 weeks. Then move on — don\'t wait for it.',
+  ]},
+  'b-2-3': { steps: [
+    '5 outreach attempts per week means 5 individual, personalized messages — not a blast. Quality beats volume here.',
+    'The best opening line references something specific to them: their company, a piece of content they wrote, or a situation they\'re publicly dealing with.',
+    'Message structure: one sentence on why you\'re reaching out to them specifically → one sentence on what you do and for whom → one low-friction ask (a 20-minute call, not "let me know if you need help").',
+    'Track responses in a simple log: Name, Date Sent, Response (Yes/No/Silence). After 3 weeks, look at your response rate. Under 10% means your message needs work.',
+  ]},
+  'b-2-4': { steps: [
+    'Show up to be known, not to sell. Your goal for the event: meet 5-8 people you\'d want to follow up with, and leave with their business cards or LinkedIn connections.',
+    'Before the event: identify 2-3 people on the attendee list you specifically want to meet. Have a reason for each ("I read your article on X" or "I heard you on the Y podcast").',
+    'Your introduction: "I work with [specific buyer type] on [specific problem]. I\'m relatively new to this industry and trying to understand how firms like yours approach it."  Curiosity opens more doors than pitching.',
+    'After the event: follow up with everyone you met within 48 hours. A short LinkedIn message ("Great meeting you — I\'d love to hear more about [thing they mentioned]") is enough.',
+  ]},
+  'b-2-5': { steps: [
+    'A cross-market peer is someone you know from your existing market who has connections in your new one — an investor, a consultant in adjacent space, a service provider.',
+    'The ask: "I\'m building into [new market]. I know you work with people in that space. Would you be willing to make 2-3 introductions to people who might know the landscape well?" (Not "people who might hire me.")',
+    'When they make an intro: lead with curiosity, not your pitch. You\'re learning the market, not selling into it yet. Ask about the problems they see, who they\'d recommend you talk to next.',
+    'Every good intro should produce 1-2 more names. If you started with 2-3 connections and followed up well, you should have 8-12 conversations in this phase.',
+  ]},
+  'b-3-1': { steps: [
+    '3 qualified conversations means 3 people who (1) match your buyer profile, (2) have the specific problem you solve, and (3) have the authority and budget to hire.',
+    '"Interested in chatting" is not qualified. "Can you tell me more about your pricing?" is closer. "We\'re dealing with exactly this — when could we get on a call?" is there.',
+    'If you\'re at 3 calls but none feel qualified, the issue is your target list or your outreach message. Review both before adding more names.',
+    'Track each conversation: what was their situation? What were they willing to spend? What made them hesitate? This data shapes your next round of outreach.',
+  ]},
+  'b-3-2': { steps: [
+    'Your second content piece should respond to something you heard in your conversations. "Three people asked me the same question this month, so I wrote about it."',
+    'This is more powerful than a standalone POV because it signals that you\'re actively working in the market, not just writing about it from the outside.',
+    'If your first piece got no engagement, change one variable: the format (article vs. short post), the opening line (lead with a question or a counterintuitive claim), or the topic.',
+    'Consistency matters more than virality. Two pieces of content in 60 days in a new market already puts you ahead of most entrants.',
+  ]},
+  'b-3-3': { steps: [
+    'Pull every outreach message you\'ve sent. What was your response rate? Sort by message type — did personalized references to their specific situation perform better?',
+    'The most common problems: (1) The message is too long — cut everything after the first ask. (2) The ask is too big — "let\'s get on a call" is easier than "let\'s schedule 30 minutes." (3) The opening line is generic.',
+    'Test one change at a time. Rewrite your opening line and send 10 messages with the new version. Measure the response rate before changing anything else.',
+    'If you have a 20%+ response rate, don\'t change anything — just send more messages.',
+  ]},
+  'b-3-4': { steps: [
+    'A podcast pitch is a one-paragraph email to the host. It should answer: (1) who you are, (2) what perspective you\'d bring that their audience hasn\'t heard, (3) why you in particular (a specific credential or point of view).',
+    'Don\'t pitch "I\'d love to talk about [broad topic]." Pitch "Here\'s a counterintuitive take I have on [specific issue your audience faces]."',
+    'Newsletter pitches work the same way — lead with what\'s interesting, not who you are. Most newsletter writers are looking for expert sources, not guest posts.',
+    'Submit to 3-5 podcasts or newsletters this week. One acceptance in 90 days is a win for a new market entrant.',
+  ]},
+  'b-3-5': { steps: [
+    'Your ICP (ideal client profile) is a hypothesis at the start. After 3 qualified conversations, you have data. Some assumptions were right; some were wrong.',
+    'Questions to answer: Were the people who responded to your outreach different from who you expected? What made the qualified ones qualified? What did the unqualified ones have in common?',
+    'You don\'t need a big sample. 3-5 conversations are enough to identify 1-2 things to adjust: the title you\'re targeting, the company size, the trigger event, or the problem framing.',
+    'Write a one-paragraph update to your ICP. Share it with one peer for a sanity check. Then update your outreach messaging to reflect it.',
+  ]},
+
+  // ── TRACK C ──
+  'c-1-1': { steps: [
+    'Kill jargon first. Go through your current one-line and underline every word your client wouldn\'t say in conversation. Replace each one.',
+    '"Operational excellence" → "making operations run without firefighting." "Strategic alignment" → "getting the team pointed at the same thing." Use the words your clients actually use.',
+    'Three people outside your industry means people who don\'t work in your space — a friend, a family member, a neighbor. If they can repeat back what you do, it\'s working.',
+    'The test: after hearing your one-line, they should be able to say "Oh, so you help [X kind of company] with [Y problem]." If they ask a clarifying question, the one-line needs work.',
+  ]},
+  'c-1-2': { steps: [
+    'A positioning gap is the disconnect between what you\'re saying and what buyers are actually hearing. The most common gaps: too broad, too jargon-heavy, or too focused on method instead of outcome.',
+    'Review the last 3 conversations where the prospect didn\'t move forward. What question did they ask that you didn\'t have a great answer to? That question is pointing at the gap.',
+    'Write one honest sentence: "When I say my one-line, buyers seem to hear [X] — but what I mean is [Y]." That gap is what you\'re fixing.',
+    'Document it. In 90 days you\'ll want to know what the starting point was so you can measure how far you\'ve come.',
+  ]},
+  'c-1-3': { steps: [
+    'Warm is a specific thing: this person would take your call today, knows what you do, and has either hired you or explicitly referred someone to you in the last 18 months.',
+    'Go through your contact list and mark each one: Warm / Tepid / Cold / Unknown. Be honest. "I met them at a conference 2 years ago" is not warm.',
+    'For Tepid contacts: what would it take to move them to Warm? Usually one genuine reconnection conversation — not a pitch, just catching up.',
+    'Your pipeline should only include Warm contacts for now. Cold outreach with a broken positioning is expensive — fix the message before you scale it.',
+  ]},
+  'c-1-4': { steps: [
+    'Pull your existing contact list. For each person, add a column: Relationship Rating (1-5). Rating 1 = would take my call today and has warm connections. Rating 5 = barely remember me.',
+    'Add a second column: Last Contact Date. Anyone you haven\'t spoken to in 18+ months needs a reconnection touchpoint before they\'re useful as a referral source.',
+    'Keep everyone in the list — you\'re rating, not deleting. The rating helps you prioritize who to call first.',
+    'Target minimum 10 contacts with ratings. If you have fewer than 10 people you\'ve actually spoken to in the last 2 years, that\'s a key finding — note it.',
+  ]},
+  'c-1-5': { steps: [
+    '4 hours per week is the minimum. It doesn\'t need to be a full day — two 2-hour blocks is fine if your schedule is fragmented.',
+    'Block it now. Don\'t wait to "find the time" — there is no time until you block it. Open your calendar and put it in for the next 12 weeks.',
+    'Growth time is non-negotiable, but the activities can shift based on the week. The block exists so you don\'t have to decide in the moment whether to do business development today.',
+    'Tell whoever books your time: "This block is for internal work and doesn\'t move for client calls." If you\'re solo, tell yourself.',
+  ]},
+  'c-2-1': { steps: [
+    '"Highest-trust contact" means the person in your network most likely to say yes, make an introduction, and follow through on it.',
+    'Your Referral Ask Script (Artifact Library) has the language. Practice it once before the call so it doesn\'t sound rehearsed when you deliver it.',
+    'The ask works best when it\'s specific: "Do you know anyone at a [type of company] who\'s dealing with [specific problem]?" Broad asks get vague responses.',
+    'If they say they\'ll think about it, set a follow-up: "No rush — I\'ll check in in 2 weeks. Is there anyone who comes to mind now?" The last question often shakes loose a name.',
+  ]},
+  'c-2-2': { steps: [
+    'TBD pricing loses deals. When a prospect asks "how much?" and you say "it depends" without a range, they fill in the blank with whatever number makes them nervous.',
+    'Your positioning canvas has the three offer structures with prices. If those prices still feel uncertain, pick a range and commit to it — you can adjust after 3 more conversations.',
+    'The package names also matter. "Consulting Package B" is harder to say yes to than something specific. Make each name self-explanatory — a client should understand what they\'re buying without you explaining it.',
+    'Write the final names and prices into a document and share it with one person. Does it feel real? If you\'d be embarrassed to send this to a real prospect, fix it before you move on.',
+  ]},
+  'c-2-3': { steps: [
+    'A proof point is not your bio. It\'s a specific client situation, outcome, or metric — something that makes the next buyer think "they\'ve done this before."',
+    'Your case study (Artifact Library) is the most useful format for LinkedIn. Lead with the result, not the backstory.',
+    'A LinkedIn post about a lesson from client work also works — "Here\'s what I learned working with [type of client] on [problem]." It signals active practice without requiring a completed case study.',
+    'One published proof point in the first 30 days is the goal. Don\'t let perfect get in the way of published.',
+  ]},
+  'c-2-4': { steps: [
+    'A structured Growth conversation has three phases: (1) understand their situation before any pitch, (2) share how you\'ve seen similar situations play out, (3) describe what working together would look like.',
+    'Use your intake questions from the Artifact Library as your discovery framework. These aren\'t just for signed clients — they\'re your qualification tool.',
+    'After each conversation, write down: what was their specific problem? What made them hesitate? What would make them move forward? This is your feedback loop.',
+    'Two conversations in 30 days is the minimum. Schedule both before the month starts.',
+  ]},
+  'c-2-5': { steps: [
+    'A stalled prospect is someone who said they were interested and then went quiet. The follow-up that works is specific and action-oriented — not "just checking in."',
+    '"Hi [Name] — wanted to follow up on our conversation about [specific thing they mentioned]. I have one idea that might be relevant to your situation. Would a 20-minute call this week make sense?"',
+    'If they don\'t respond to 2 follow-ups, move them to Cold. Don\'t spend emotional energy on them — not every stall is recoverable, and knowing that is useful.',
+    'One successful stalled-prospect reactivation in 30 days is a win. The goal of this task is to practice the follow-up skill, not to close every deal.',
+  ]},
+  'c-3-1': { steps: [
+    '"Close or formally decline" means making a decision — either a signed agreement, or an explicit "not moving forward" that you log and let go of.',
+    'Go through every open opportunity. For each one: what is the actual status? When did you last speak? Is there a next step with a date?',
+    'An opportunity with no next step and no contact in the last 30 days is not an opportunity — it\'s an illusion of pipeline. Mark it closed-lost and clear it.',
+    'A clear pipeline is a useful pipeline. If you have 12 open opportunities and 3 of them are real, knowing which 3 they are is what lets you focus.',
+  ]},
+  'c-3-2': { steps: [
+    'Your second referral ask should go to a different contact than your first — or it should be a Convo 2 with the same contact if you only did Convo 1 last month.',
+    'A Convo 2 ask with someone who already knows your work: "Last time we talked, you mentioned [specific situation]. I wanted to follow up — do you know anyone in that situation right now that I could talk to?"',
+    'If the first ask produced a referral: thank that person first. Referrals compound when the referrer feels good about the outcome.',
+    'Log every ask in your contact roster with a date. In 6 months you\'ll want to know when you last asked each person.',
+  ]},
+  'c-3-3': { steps: [
+    'A full case study is the full structure: Situation → The Real Constraint → What You Did → Result. Most LinkedIn posts are too short to qualify — this one should be 300-600 words.',
+    'The "Real Constraint" is often different from the presenting problem. "They said they needed a new system, but the real issue was the team didn\'t trust each other" — that specificity is what makes it memorable.',
+    'Your draft from the Artifact Library is the starting point. Refine it: make every sentence earn its place. A good case study is edited, not just written.',
+    'Post on LinkedIn during a week when you have time to respond to comments. Engagement in the first 2 hours matters for distribution.',
+  ]},
+  'c-3-4': { steps: [
+    'Trade associations and industry publications want timely, relevant content. Your case study or POV from the last 90 days is the most timely thing you have.',
+    'Find the submission guidelines. Most publications want: a short pitch (1-2 paragraphs) before you send the full piece. Pitch first, write to spec after they say yes.',
+    'The pitch: "I have a case study / article about [specific topic] that I think would resonate with [their audience] because [specific reason]. The piece is [length] words and ready to adapt to your format."',
+    'Submit to one target this week. Diversify later — for now, one good placement in the right publication is worth more than five mediocre ones.',
+  ]},
+  'c-3-5': { steps: [
+    'Block 90 minutes for this review. It\'s not a casual look-back — it\'s a structured assessment of what happened and what to do next.',
+    'Review checklist: (1) What did you commit to in your plan? What actually happened? (2) Which contacts moved forward, which didn\'t? (3) Did your messaging improve? (4) Did you close or advance anything?',
+    'The honest answer to "what worked" is usually one or two things, not everything. Name them specifically. The honest answer to "what didn\'t" is usually also specific.',
+    'Write a one-paragraph plan for the next 90 days. It doesn\'t have to be a formal document — just your own clarity on what you\'re doing differently. That\'s what the review is for.',
+  ]},
+};
 
 // ─── PLAN TRACKER ──────────────────────────────────────
 function navigateTo(n) { showStep(n); }
@@ -3432,22 +3725,63 @@ function renderPlanTracker() {
   trackerEl.innerHTML = plan.phases.map(phase => `
     <div style="margin-bottom:20px">
       <div style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--accent);margin-bottom:10px">${phase.title}</div>
-      ${phase.items.map(item => `
-        <label style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--surface2);cursor:pointer">
-          <input type="checkbox" ${checked[item.id] ? 'checked' : ''} onchange="toggleMilestone('${item.id}', this.checked)"
-            style="margin-top:2px;accent-color:var(--accent);flex-shrink:0;width:14px;height:14px">
-          <span style="font-size:13px;color:${checked[item.id] ? 'var(--txt3)' : 'var(--txt)'};text-decoration:${checked[item.id] ? 'line-through' : 'none'};line-height:1.5">${item.task}</span>
-        </label>
-      `).join('')}
+      ${phase.items.map(item => {
+        const howto = TASK_HOWTOS[item.id];
+        const done = !!checked[item.id];
+        return `<div style="border-bottom:1px solid var(--surface2)">
+          <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0">
+            <input type="checkbox" ${done ? 'checked' : ''} onchange="toggleMilestone('${item.id}', this.checked)"
+              style="margin-top:2px;accent-color:var(--accent);flex-shrink:0;width:14px;height:14px;cursor:pointer">
+            <div style="flex:1;min-width:0">
+              <span style="font-size:13px;color:${done ? 'var(--txt3)' : 'var(--txt)'};text-decoration:${done ? 'line-through' : 'none'};line-height:1.5">${item.task}</span>
+              ${howto ? `<button onclick="toggleHowTo('${item.id}')" style="display:block;margin-top:4px;font-size:11px;color:var(--accent);background:none;border:none;padding:0;cursor:pointer;font-family:inherit;text-align:left">How? ↓</button>` : ''}
+              ${howto ? `<div id="howto-${item.id}" style="display:none;margin-top:8px;padding:10px 12px;background:var(--surface2);border-radius:8px;border-left:2px solid var(--accent)">
+                ${howto.steps.map((s, i) => `<div style="display:flex;gap:8px;padding:4px 0;font-size:12px;color:var(--txt2);line-height:1.5"><span style="color:var(--accent);font-weight:700;flex-shrink:0;min-width:16px">${i+1}.</span><span>${s}</span></div>`).join('')}
+              </div>` : ''}
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
     </div>
   `).join('');
 }
 
-function toggleMilestone(id, checked) {
+function toggleMilestone(id, val) {
   if (!VEC.plan.checked) VEC.plan.checked = {};
-  VEC.plan.checked[id] = checked;
+  VEC.plan.checked[id] = val;
   saveState();
   renderPlanTracker();
+}
+
+const _STEP_NAMES = ['Diagnostic','Positioning','Referral Engine','Credibility','Intake & Delivery','Plan','Practice OS'];
+function showProceedBanner(fromStep) {
+  const nextStep = fromStep + 1;
+  if (nextStep > 6) return;
+  const bannerId = 'proceed-banner-' + fromStep;
+  let el = document.getElementById(bannerId);
+  if (!el) {
+    const panel = document.querySelectorAll('.step-panel')[fromStep];
+    if (!panel) return;
+    el = document.createElement('div');
+    el.id = bannerId;
+    el.style.cssText = 'position:sticky;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border2);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:24px;z-index:10';
+    el.innerHTML = `<span style="font-size:13px;color:var(--txt2)">Step complete</span>
+      <button class="btn btn-primary" onclick="showStep(${nextStep})" style="gap:8px">
+        Continue to ${_STEP_NAMES[nextStep]} →
+      </button>`;
+    panel.appendChild(el);
+  }
+  el.style.display = 'flex';
+}
+
+function toggleHowTo(id) {
+  const el = document.getElementById('howto-' + id);
+  if (!el) return;
+  const open = el.style.display !== 'none';
+  el.style.display = open ? 'none' : 'block';
+  // Update button text
+  const btn = el.previousElementSibling;
+  if (btn) btn.textContent = open ? 'How? ↓' : 'Hide ↑';
 }
 
 function renderSessionLog() {
