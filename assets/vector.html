@@ -191,6 +191,29 @@
   .btn-sm { padding: 4px 10px; font-size: 12px; }
   .btn-disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
 
+  /* ── STATUS FILTER CHIPS ── */
+  .status-filter-chip {
+    padding: 5px 12px; font-size: 12px; font-weight: 600; border-radius: 20px;
+    border: 1px solid var(--border); background: var(--surface2); color: var(--txt3);
+    cursor: pointer; transition: all .15s; font-family: inherit;
+  }
+  .status-filter-chip:hover { color: var(--txt2); border-color: var(--border2); }
+  .status-filter-chip.active-chip { background: var(--accent); color: #000; border-color: var(--accent); }
+
+  /* ── CLIENT STATUS PILL ── */
+  .client-status-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700;
+    letter-spacing: .3px; text-transform: uppercase; cursor: pointer;
+    border: 1px solid transparent; transition: opacity .15s; user-select: none;
+  }
+  .client-status-pill:hover { opacity: .75; }
+  .csp-active   { background: rgba(0,200,255,.12); color: var(--accent); border-color: rgba(0,200,255,.25); }
+  .csp-prospect { background: rgba(245,158,11,.1);  color: var(--amber); border-color: rgba(245,158,11,.25); }
+  .csp-paused   { background: rgba(148,163,184,.1); color: var(--txt2); border-color: var(--border); }
+  .csp-complete { background: rgba(0,255,136,.1);   color: var(--green); border-color: rgba(0,255,136,.25); }
+  .csp-archived { background: transparent; color: var(--txt3); border-color: var(--border); }
+
   /* ── FORM ELEMENTS ── */
   .form-group { margin-bottom: 14px; }
   .form-label {
@@ -609,12 +632,20 @@
 
     <!-- Clients tab -->
     <div id="adminPanelClients">
-      <div style="display:flex;gap:12px;margin-bottom:28px">
-        <input id="adminSearch" type="text" placeholder="Search clients…" oninput="filterAdminClients(this.value)"
+      <div style="display:flex;gap:12px;margin-bottom:14px">
+        <input id="adminSearch" type="text" placeholder="Search clients…" oninput="filterAdminClients()"
           style="flex:1;padding:9px 13px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--txt);font-size:14px;outline:none">
       </div>
+      <div id="adminStatusFilters" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px">
+        <button class="status-filter-chip active-chip" data-filter="all"    onclick="setStatusFilter('all')">All</button>
+        <button class="status-filter-chip" data-filter="active"    onclick="setStatusFilter('active')">Active</button>
+        <button class="status-filter-chip" data-filter="prospect"  onclick="setStatusFilter('prospect')">Prospect</button>
+        <button class="status-filter-chip" data-filter="paused"    onclick="setStatusFilter('paused')">Paused</button>
+        <button class="status-filter-chip" data-filter="complete"  onclick="setStatusFilter('complete')">Complete</button>
+        <button class="status-filter-chip" data-filter="archived"  onclick="setStatusFilter('archived')">Archived</button>
+      </div>
       <div id="adminClientList" style="display:grid;gap:10px"></div>
-      <p id="adminEmpty" style="color:var(--txt3);font-size:14px;text-align:center;padding:48px 0;display:none">No clients yet — click <strong>+ New Client</strong> to get started.</p>
+      <p id="adminEmpty" style="color:var(--txt3);font-size:14px;text-align:center;padding:48px 0;display:none">No clients match — try a different filter.</p>
     </div>
 
     <!-- Analytics tab -->
@@ -4701,6 +4732,14 @@ function getPlanProgress(vec) {
   return { done, total: allItems.length, pct: allItems.length ? Math.round((done / allItems.length) * 100) : 0, nextTask: nextTask?.task || null };
 }
 
+const CLIENT_STATUSES = ['active','prospect','paused','complete','archived'];
+const CLIENT_STATUS_LABELS = { active:'Active', prospect:'Prospect', paused:'Paused', complete:'Complete', archived:'Archived' };
+let _statusFilter = 'all';
+
+function getClientStatus(c) {
+  return (c.state?.clientStatus) || 'active';
+}
+
 function renderAdminClients(clients) {
   const list = document.getElementById('adminClientList');
   const empty = document.getElementById('adminEmpty');
@@ -4718,36 +4757,66 @@ function renderAdminClients(clients) {
     const { done, total, pct, nextTask } = getPlanProgress(vec);
     const hasPlan = total > 0;
     const trackColor = track === 'A' ? 'var(--accent)' : track === 'B' ? '#5AABF0' : '#F0A832';
+    const status = getClientStatus(c);
 
-    return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 20px;cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'" onclick="loadClientIntoApp('${c.email}')">
+    return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 20px;transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'" >
       <div style="display:flex;align-items:center;gap:14px">
-        <div style="width:38px;height:38px;background:var(--surface2);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <div style="width:38px;height:38px;background:var(--surface2);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer" onclick="loadClientIntoApp('${c.email}')">
           ${track !== '—' ? `<span style="font-size:10px;font-weight:800;color:${trackColor}">TRK<br style="line-height:.5">${track}</span>` : '<span style="font-size:16px">🏢</span>'}
         </div>
-        <div style="flex:1;min-width:0">
+        <div style="flex:1;min-width:0;cursor:pointer" onclick="loadClientIntoApp('${c.email}')">
           <div style="font-weight:600;font-size:14px;color:var(--txt);margin-bottom:2px">${c.practice_name || '(unnamed practice)'}</div>
           <div style="font-size:11px;color:var(--txt3)">${founder ? founder + ' · ' : ''}${c.email}</div>
         </div>
-        <div style="text-align:right;flex-shrink:0">
-          ${hasPlan ? `<div style="font-size:12px;font-weight:600;color:${pct === 100 ? 'var(--accent)' : 'var(--txt2)'};margin-bottom:2px">${pct}%</div>
-          <div style="font-size:10px;color:var(--txt3)">${done}/${total} tasks</div>` : `<div style="font-size:11px;color:var(--txt3)">Updated ${updated}</div>`}
+        <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+          <span class="client-status-pill csp-${status}" onclick="cycleClientStatus(event,'${c.email}')" title="Click to change status">${CLIENT_STATUS_LABELS[status]}</span>
+          <div style="text-align:right;cursor:pointer" onclick="loadClientIntoApp('${c.email}')">
+            ${hasPlan ? `<div style="font-size:12px;font-weight:600;color:${pct === 100 ? 'var(--accent)' : 'var(--txt2)'};margin-bottom:2px">${pct}%</div>
+            <div style="font-size:10px;color:var(--txt3)">${done}/${total} tasks</div>` : `<div style="font-size:11px;color:var(--txt3)">Updated ${updated}</div>`}
+          </div>
+          <div style="color:var(--txt3);font-size:18px;cursor:pointer" onclick="loadClientIntoApp('${c.email}')">›</div>
         </div>
-        <div style="color:var(--txt3);font-size:18px;flex-shrink:0">›</div>
       </div>
       ${hasPlan ? `<div style="margin-top:10px;height:3px;background:var(--surface2);border-radius:2px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${trackColor};border-radius:2px;transition:width .3s"></div></div>` : ''}
-      ${nextTask ? `<div style="margin-top:8px;font-size:11px;color:var(--txt3);display:flex;gap:6px;align-items:flex-start"><span style="color:var(--accent);flex-shrink:0">→</span><span>Next: ${nextTask}</span></div>` : ''}
+      ${nextTask ? `<div style="margin-top:8px;font-size:11px;color:var(--txt3);display:flex;gap:6px;align-items:flex-start;cursor:pointer" onclick="loadClientIntoApp('${c.email}')"><span style="color:var(--accent);flex-shrink:0">→</span><span>Next: ${nextTask}</span></div>` : ''}
       ${notes ? `<div style="margin-top:8px;padding:8px 10px;background:var(--surface2);border-radius:6px;font-size:11px;color:var(--txt2);line-height:1.5;border-left:2px solid var(--border)"><span style="color:var(--txt3);font-size:10px">${new Date(latestEntry.date).toLocaleDateString('en-US',{month:'short',day:'numeric'})} · </span>${notes.length > 100 ? notes.slice(0, 100) + '…' : notes}</div>` : ''}
     </div>`;
   }).join('');
 }
 
-function filterAdminClients(q) {
-  const lq = q.toLowerCase();
-  renderAdminClients(q ? _allClients.filter(c =>
-    (c.practice_name||'').toLowerCase().includes(lq) ||
-    c.email.toLowerCase().includes(lq) ||
-    (c.state?.VEC?.practice?.founder||'').toLowerCase().includes(lq)
-  ) : _allClients);
+function filterAdminClients() {
+  const q = (document.getElementById('adminSearch').value || '').toLowerCase();
+  let filtered = _allClients;
+  if (_statusFilter !== 'all') filtered = filtered.filter(c => getClientStatus(c) === _statusFilter);
+  if (q) filtered = filtered.filter(c =>
+    (c.practice_name||'').toLowerCase().includes(q) ||
+    c.email.toLowerCase().includes(q) ||
+    (c.state?.VEC?.practice?.founder||'').toLowerCase().includes(q)
+  );
+  renderAdminClients(filtered);
+}
+
+function setStatusFilter(status) {
+  _statusFilter = status;
+  document.querySelectorAll('.status-filter-chip').forEach(el => {
+    el.classList.toggle('active-chip', el.dataset.filter === status);
+  });
+  filterAdminClients();
+}
+
+async function cycleClientStatus(e, email) {
+  e.stopPropagation();
+  const client = _allClients.find(c => c.email === email);
+  if (!client) return;
+  const current = getClientStatus(client);
+  const next = CLIENT_STATUSES[(CLIENT_STATUSES.indexOf(current) + 1) % CLIENT_STATUSES.length];
+  const newState = { ...(client.state || {}), clientStatus: next };
+  client.state = newState; // optimistic update
+  filterAdminClients();
+  if (supa) {
+    const { error } = await supa.from('practices').update({ state: newState }).eq('email', email);
+    if (error) { showToast('Could not save status'); }
+  }
 }
 
 function switchAdminTab(tab) {
