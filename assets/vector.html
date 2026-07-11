@@ -730,7 +730,7 @@
   </button>
   <span class="step-arrow">›</span>
   <button class="step-btn locked" id="nav-4" onclick="showStep(4)">
-    <span class="snum"><span>5</span></span> Intake &amp; Delivery
+    <span class="snum"><span>5</span></span> Client Delivery Kit
   </button>
   <span class="step-arrow">›</span>
   <button class="step-btn locked" id="nav-5" onclick="showStep(5)">
@@ -1134,7 +1134,7 @@
     <!-- ═══ STEP 4: INTAKE & DELIVERY ═══ -->
     <div class="step-panel" id="panel-4">
       <div class="step-header">
-        <h1>Intake &amp; Delivery System</h1>
+        <h1>Client Delivery Kit</h1>
         <p>Your end-to-end operating templates — from first conversation to handoff.</p>
       </div>
 
@@ -1185,7 +1185,7 @@
       <div class="card" id="planCard">
         <div class="card-header">
           <span class="card-title">Implementation Sequence</span>
-          <button class="btn btn-ghost btn-sm" onclick="downloadArtifact('plan')">↓ Download</button>
+          <button class="btn btn-ghost btn-sm" onclick="downloadArtifact('plan')">View Tracker →</button>
         </div>
         <div id="planTableWrap" style="color:var(--txt3);font-size:13px;">
           Run the diagnostic and earlier steps to generate your plan.
@@ -1204,7 +1204,7 @@
           <strong>Plan generated from your diagnostic track.</strong>
           Tasks marked DO are your immediate actions. Tasks marked WAIT have a prerequisite.
         </div>
-        <button class="btn btn-primary" onclick="downloadArtifact('plan')">↓ Download Plan</button>
+        <button class="btn btn-primary" onclick="downloadArtifact('plan')">View Plan Tracker →</button>
       </div>
     </div>
 
@@ -1234,7 +1234,7 @@
               <div class="kv-row"><span class="kv-key">🎯 Positioning</span><span id="fs-pos" class="kv-val">—</span></div>
               <div class="kv-row"><span class="kv-key">🤝 Referral Engine</span><span id="fs-ref" class="kv-val">—</span></div>
               <div class="kv-row"><span class="kv-key">⭐ Credibility</span><span id="fs-cred" class="kv-val">—</span></div>
-              <div class="kv-row"><span class="kv-key">📄 Intake &amp; Delivery</span><span id="fs-ops" class="kv-val">—</span></div>
+              <div class="kv-row"><span class="kv-key">📄 Client Delivery Kit</span><span id="fs-ops" class="kv-val">—</span></div>
               <div class="kv-row"><span class="kv-key">📅 30-60-90 Plan</span><span id="fs-plan" class="kv-val">—</span></div>
             </div>
           </div>
@@ -1716,7 +1716,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="copyEmailTemplate()">Copy email</button>
-      <button class="btn btn-primary" onclick="closeModal('clientReadyModal')">Done</button>
+      <button id="sendInviteBtn" class="btn btn-primary" onclick="sendClientInvite()">Send invite →</button>
     </div>
   </div>
 </div>
@@ -2449,13 +2449,13 @@ function runDiagnostic() {
   let track, trackDesc, weights;
   if (market.value === 'warm' && (motion.value === 'referral' || motion.value === 'content')) {
     track = 'A'; trackDesc = 'Discipline & Systematize — Your demand is warm and referral-ready. The constraint is not pipeline; it\'s systematizing what\'s already working so it scales without the founder\'s constant attention. Positioning and Referral Engine carry the highest weight.';
-    weights = { 'Positioning & Offers': 30, 'Referral Engine': 35, 'Credibility Presence': 20, 'Intake & Delivery': 15 };
+    weights = { 'Positioning & Offers': 30, 'Referral Engine': 35, 'Credibility Presence': 20, 'Client Delivery Kit': 15 };
   } else if (market.value === 'cold' || motion.value === 'outbound') {
     track = 'B'; trackDesc = 'Build From Zero — You are entering a market without an existing reputation or network there. The Credibility Presence foundation carries maximum weight because you need proof before pipeline.';
-    weights = { 'Positioning & Offers': 25, 'Referral Engine': 15, 'Credibility Presence': 40, 'Intake & Delivery': 20 };
+    weights = { 'Positioning & Offers': 25, 'Referral Engine': 15, 'Credibility Presence': 40, 'Client Delivery Kit': 20 };
   } else {
     track = 'C'; trackDesc = 'Fix & Activate — You have some motion but something is stalling. Positioning is the starting point: until the one-line is sharp, every other system leaks. Then referral and intake complete the activation layer.';
-    weights = { 'Positioning & Offers': 35, 'Referral Engine': 25, 'Credibility Presence': 20, 'Intake & Delivery': 20 };
+    weights = { 'Positioning & Offers': 35, 'Referral Engine': 25, 'Credibility Presence': 20, 'Client Delivery Kit': 20 };
   }
   VEC.diag.track = track; VEC.diag.weights = weights;
 
@@ -3753,7 +3753,7 @@ function toggleMilestone(id, val) {
   renderPlanTracker();
 }
 
-const _STEP_NAMES = ['Diagnostic','Positioning','Referral Engine','Credibility','Intake & Delivery','Plan','Practice OS'];
+const _STEP_NAMES = ['Diagnostic','Positioning','Referral Engine','Credibility','Client Delivery Kit','Plan','Practice OS'];
 function showProceedBanner(fromStep) {
   const nextStep = fromStep + 1;
   if (nextStep > 6) return;
@@ -4906,11 +4906,11 @@ function confirmPopulate() {
       const mkt = VEC.diag.market, mot = VEC.diag.motion;
       let track, weights;
       if (mkt === 'warm' && (mot === 'referral' || mot === 'content')) {
-        track = 'A'; weights = { 'Positioning & Offers': 30, 'Referral Engine': 35, 'Credibility Presence': 20, 'Intake & Delivery': 15 };
+        track = 'A'; weights = { 'Positioning & Offers': 30, 'Referral Engine': 35, 'Credibility Presence': 20, 'Client Delivery Kit': 15 };
       } else if (mkt === 'cold' || mot === 'outbound') {
-        track = 'B'; weights = { 'Positioning & Offers': 25, 'Referral Engine': 15, 'Credibility Presence': 40, 'Intake & Delivery': 20 };
+        track = 'B'; weights = { 'Positioning & Offers': 25, 'Referral Engine': 15, 'Credibility Presence': 40, 'Client Delivery Kit': 20 };
       } else {
-        track = 'C'; weights = { 'Positioning & Offers': 35, 'Referral Engine': 25, 'Credibility Presence': 20, 'Intake & Delivery': 20 };
+        track = 'C'; weights = { 'Positioning & Offers': 35, 'Referral Engine': 25, 'Credibility Presence': 20, 'Client Delivery Kit': 20 };
       }
       VEC.diag.track = track; VEC.diag.weights = weights; VEC.diag.tier = 'tier1';
     }
@@ -5019,6 +5019,36 @@ function copyEmailTemplate() {
   const text = `Hi ${name},\n\nYour Vector practice OS is ready. Use the link below to log in — enter ${email} and you'll get a magic link in your inbox.\n\nYour link: https://vector.brittbowman.ai\n\nEverything from our intake session is already loaded. Let me know if you have any questions.\n\n— Britt`;
   navigator.clipboard.writeText(text);
   showToast('Email copied to clipboard');
+}
+
+async function sendClientInvite() {
+  const clientEmail = VEC.practice.email;
+  if (!clientEmail) { showToast('No client email on file — add it in Step 0'); return; }
+  const btn = document.getElementById('sendInviteBtn');
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+  try {
+    const res = await fetch(`${SUPA_URL}/functions/v1/send-vector-invite`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPA_KEY}`, 'apikey': SUPA_KEY },
+      body: JSON.stringify({
+        clientEmail,
+        clientName:   VEC.practice.founder,
+        practiceName: VEC.practice.name,
+        senderName:   currentUser?.email?.split('@')[0] || 'Britt',
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Send failed');
+    btn.textContent = 'Sent ✓';
+    showToast(`Invite sent to ${clientEmail}`);
+    logEvent('client_invite_sent', { to: clientEmail });
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = 'Send invite →';
+    showToast('Could not send — copy the email instead');
+    console.error(e);
+  }
 }
 
 // ─── CLIENT HOME ────────────────────────────────────────
@@ -5413,13 +5443,24 @@ async function extractDocxText(file) {
   return result.value;
 }
 
-function addWebsiteSource() {
+async function addWebsiteSource() {
   const input = document.getElementById('intakeWebsiteUrl');
   let url = input.value.trim();
   if (!url) return;
   if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
-  addIntakeSource({ type: 'website', label: 'Website', filename: url, text: '', url });
+  const src = { type: 'website', label: 'Website', filename: url, text: '', url, preview: null };
+  addIntakeSource(src);
   input.value = '';
+  // Fetch preview from Jina in background
+  try {
+    const res = await fetch(`https://r.jina.ai/${url}`, { headers: { 'Accept': 'text/plain' } });
+    if (res.ok) {
+      const text = await res.text();
+      src.preview = text.slice(0, 300).trim();
+      src.text = text.slice(0, 15000);
+      renderIntakeSources();
+    }
+  } catch (_) {}
 }
 
 function openLinkedInPaste() {
@@ -5469,7 +5510,8 @@ function renderIntakeSources() {
       <span style="font-size:16px">${meta.icon}</span>
       <div style="flex:1;min-width:0">
         <div style="font-size:12px;font-weight:600;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.filename}</div>
-        <div style="font-size:11px;color:var(--txt3);margin-top:1px">${meta.label}${size ? ' · ' + size : ''}</div>
+        <div style="font-size:11px;color:var(--txt3);margin-top:1px">${meta.label}${size ? ' · ' + size : (s.type === 'website' && !s.preview ? ' · fetching…' : '')}</div>
+        ${s.preview ? `<div style="font-size:10px;color:var(--txt3);margin-top:4px;line-height:1.4;max-height:36px;overflow:hidden">${s.preview.slice(0,120)}…</div>` : ''}
       </div>
       <span style="font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px;background:var(--surface3);color:var(--txt3);letter-spacing:.04em;text-transform:uppercase">${s.type}</span>
       <button style="background:none;border:none;cursor:pointer;color:var(--txt3);font-size:16px;padding:0 2px;line-height:1" onclick="removeIntakeSource(${i})">×</button>
