@@ -1592,10 +1592,18 @@
       <div style="font-size:11px;color:var(--txt3)">.vtt · .txt · .pdf · .docx · .pptx</div>
     </div>
 
+    <!-- Website URL row -->
+    <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">
+      <input id="intakeWebsiteUrl" type="url" placeholder="https://yoursite.com — fetched automatically"
+        style="flex:1;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--txt);font-size:12px;font-family:inherit;outline:none"
+        onkeydown="if(event.key==='Enter')addWebsiteSource()">
+      <button class="btn btn-ghost btn-sm" onclick="addWebsiteSource()">+ Add URL</button>
+    </div>
+
     <!-- LinkedIn paste shortcut -->
     <div style="margin-bottom:12px">
       <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;gap:6px" onclick="openLinkedInPaste()">+ Paste LinkedIn profile text</button>
-      <div style="font-size:11px;color:var(--txt3);margin-top:4px;text-align:center">Copy text from your LinkedIn profile and paste it here — LinkedIn URLs can't be fetched directly</div>
+      <div style="font-size:11px;color:var(--txt3);margin-top:4px;text-align:center">LinkedIn blocks automated access — copy your About &amp; experience and paste it here</div>
     </div>
 
     <!-- Paste area (collapsed by default, expands when "other" or no file available) -->
@@ -4255,12 +4263,17 @@ function inferSignalsFromText(text) {
 
 async function runTranscriptParse() {
   let text = '';
-  if (_intakeSources.length > 0) {
-    text = bundleSources();
-  } else {
+  // Separate URL sources (fetched server-side) from text sources (bundled locally)
+  const urlSources = _intakeSources.filter(s => s.type === 'website' && s.url);
+  const textSources = _intakeSources.filter(s => !(s.type === 'website' && s.url));
+  if (textSources.length > 0) {
+    text = bundleSources(textSources);
+  } else if (_intakeSources.length === 0) {
     text = document.getElementById('transcriptPaste').value.trim();
+  } else {
+    text = '(no text sources — website content will be fetched by the server)';
   }
-  if (!text) { showToast('Add at least one source before running analysis'); return; }
+  if (!text && urlSources.length === 0) { showToast('Add at least one source before running analysis'); return; }
 
   closeModal('transcriptModal');
 
@@ -4294,7 +4307,7 @@ async function runTranscriptParse() {
         'Authorization': `Bearer ${SUPABASE_ANON}`,
         'apikey': SUPABASE_ANON,
       },
-      body: JSON.stringify({ text, posExamples, offerExamples, caseExamples })
+      body: JSON.stringify({ text, urls: urlSources.map(s => ({ url: s.url, label: s.label })), posExamples, offerExamples, caseExamples })
     }).finally(() => clearTimeout(timeout));
 
     if (!res.ok) {
@@ -4898,6 +4911,7 @@ const SOURCE_META = {
   proposal:   { label: 'Proposal / SOW', icon: '📄' },
   case:       { label: 'Case studies',   icon: '⭐' },
   linkedin:   { label: 'LinkedIn',       icon: '🔗' },
+  website:    { label: 'Website',        icon: '🌐' },
   other:      { label: 'Document',       icon: '📎' },
 };
 
@@ -4996,6 +5010,15 @@ async function extractDocxText(file) {
   return result.value;
 }
 
+function addWebsiteSource() {
+  const input = document.getElementById('intakeWebsiteUrl');
+  let url = input.value.trim();
+  if (!url) return;
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  addIntakeSource({ type: 'website', label: 'Website', filename: url, text: '', url });
+  input.value = '';
+}
+
 function openLinkedInPaste() {
   const wrap = document.getElementById('intakePasteWrap');
   wrap.style.display = 'block';
@@ -5058,8 +5081,8 @@ function renderIntakeSources() {
   runBtn.textContent = `Analyze ${_intakeSources.length} source${_intakeSources.length > 1 ? 's' : ''}`;
 }
 
-function bundleSources() {
-  return _intakeSources.map(s => {
+function bundleSources(sources) {
+  return (sources || _intakeSources).map(s => {
     const header = `=== ${(SOURCE_META[s.type]?.label || 'Document').toUpperCase()}: ${s.filename} ===`;
     return `${header}\n\n${s.text}`;
   }).join('\n\n\n');
@@ -5068,6 +5091,7 @@ function bundleSources() {
 function resetIntakeModal() {
   _intakeSources = [];
   _intakePendingType = null;
+  document.getElementById('intakeWebsiteUrl').value = '';
   document.getElementById('transcriptPaste').value = '';
   document.getElementById('transcriptPaste').placeholder = 'Paste text here…';
   document.getElementById('intakePasteWrap').style.display = 'none';
