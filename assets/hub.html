@@ -392,6 +392,7 @@ function cardHTML(eng, activeId) {
       ${isActive
         ? `<a class="btn btn-ghost btn-sm" href="/discover.html">Open in Discover</a>`
         : `<button class="btn btn-primary btn-sm" onclick="setActive('${eng.id}','${esc(eng.client_name)}')">Set Active</button>`}
+      <button class="btn btn-ghost btn-sm" onclick="generateReport('${eng.id}')">↓ Report</button>
       <button class="btn btn-ghost btn-sm" onclick="editEngagement('${eng.id}')">Edit</button>
       ${eng.status === 'active'
         ? `<button class="btn btn-danger btn-sm" onclick="archiveEngagement('${eng.id}')">Archive</button>`
@@ -506,6 +507,231 @@ async function unarchiveEngagement(id) {
   await supa.from('drive_engagements').update({ status: 'active', updated_at: new Date().toISOString() }).eq('id', id);
   showToast('Restored');
   loadEngagements();
+}
+
+// --- REPORT GENERATION ---
+async function generateReport(engId) {
+  const eng = engagements.find(e => e.id === engId);
+  if (!eng) return;
+  showToast('Building report…');
+
+  const tables = ['org_discover','org_resolve','org_intelligence','org_vec_state','org_engine_assets'];
+  const [dRes, rRes, iRes, vRes, eRes] = await Promise.all(
+    tables.map(t => supa.from(t).select('data').eq('org_id', engId).maybeSingle())
+  );
+  const D = dRes.data?.data || {};
+  const R = rRes.data?.data || {};
+  const I = iRes.data?.data || {};
+  const V = vRes.data?.data || {};
+  const E = eRes.data?.data || {};
+
+  const date = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+  const tierLabel = { smb:'SMB', mid:'Mid-Market', enterprise:'Enterprise' }[eng.size_tier] || 'SMB';
+
+  // Discover scores
+  const sc = D?.state?.scores || {};
+  const scores = [
+    { label:'Taxonomy Readiness', dim:'resolve',      val: sc.resolve      || 0, color:'#4DE8FF' },
+    { label:'Signal Readiness',   dim:'intelligence', val: sc.intelligence  || 0, color:'#5B8CFF' },
+    { label:'Strategy Readiness', dim:'vector',       val: sc.vector        || 0, color:'#3BBFA3' },
+    { label:'Execution Readiness',dim:'engine',       val: sc.engine        || 0, color:'#FF8A3D' },
+  ];
+
+  // Resolve taxonomy
+  const taxFields = (R.taxonomy || []).slice(0, 20);
+  const namingConvention = R.naming?.pattern || '';
+  const govRules = (R.rules || []).slice(0, 10);
+
+  // Intelligence signals (starred first, then all)
+  const allSignals = I.signals || [];
+  const starred = allSignals.filter(s => s.starred);
+  const signalsByType = {};
+  starred.forEach(s => {
+    const t = s.type || 'Other';
+    if (!signalsByType[t]) signalsByType[t] = [];
+    signalsByType[t].push(s);
+  });
+
+  // Vector positioning
+  const pos = V.pos || V.practice || {};
+  const cdna = V.cdna || '';
+
+  // Engine themes
+  const themes = E.themes || [];
+
+  function scoreBar(val, color) {
+    const pct = Math.round(val * 100);
+    return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <div style="flex:1;height:6px;background:#1C2535;border-radius:3px;overflow:hidden">
+        <div style="width:${pct}%;height:100%;background:${color};border-radius:3px"></div>
+      </div>
+      <span style="font-size:12px;color:#8892A4;width:32px;text-align:right">${pct}%</span>
+    </div>`;
+  }
+
+  function pill(text, color) {
+    return `<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;background:${color}22;color:${color};margin:2px 3px 2px 0">${rEsc(text)}</span>`;
+  }
+
+  function rEsc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function section(title, accent, content) {
+    return `
+    <div style="margin-bottom:36px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <div style="width:3px;height:18px;background:${accent};border-radius:2px;flex-shrink:0"></div>
+        <h2 style="font-size:15px;font-weight:700;color:#E8EAF0;letter-spacing:-.01em">${title}</h2>
+      </div>
+      ${content}
+    </div>`;
+  }
+
+  function card(content) {
+    return `<div style="background:#0E1218;border:1px solid #1C2535;border-radius:10px;padding:16px 20px;margin-bottom:10px">${content}</div>`;
+  }
+
+  // Build signal sections
+  let signalHTML = '';
+  if (Object.keys(signalsByType).length === 0) {
+    signalHTML = `<p style="color:#4A5270;font-size:13px;font-style:italic">No starred signals recorded.</p>`;
+  } else {
+    Object.entries(signalsByType).forEach(([type, sigs]) => {
+      signalHTML += `<div style="margin-bottom:14px">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#5B8CFF;margin-bottom:8px">${rEsc(type)}</div>
+        ${sigs.map(s => card(`
+          <div style="font-size:13px;font-weight:600;color:#E8EAF0;margin-bottom:4px">${rEsc(s.title||'')}</div>
+          <div style="font-size:12px;color:#8892A4;line-height:1.5">${rEsc(s.text||'')}</div>
+          ${s.source ? `<div style="font-size:11px;color:#4A5270;margin-top:6px">Source: ${rEsc(s.source)}</div>` : ''}
+        `)).join('')}
+      </div>`;
+    });
+  }
+
+  // Build taxonomy table
+  let taxHTML = '';
+  if (taxFields.length === 0) {
+    taxHTML = `<p style="color:#4A5270;font-size:13px;font-style:italic">No canonical taxonomy defined yet.</p>`;
+  } else {
+    taxHTML = `<table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead><tr>
+        <th style="text-align:left;padding:8px 12px;border-bottom:1px solid #1C2535;color:#4A5270;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.06em">Field</th>
+        <th style="text-align:left;padding:8px 12px;border-bottom:1px solid #1C2535;color:#4A5270;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.06em">Type</th>
+        <th style="text-align:left;padding:8px 12px;border-bottom:1px solid #1C2535;color:#4A5270;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.06em">Values / Notes</th>
+      </tr></thead>
+      <tbody>
+        ${taxFields.map((f,i) => `<tr style="background:${i%2===0?'transparent':'rgba(255,255,255,.02)'}">
+          <td style="padding:8px 12px;color:#E8EAF0;font-weight:500">${rEsc(f.name||f.field||'')}</td>
+          <td style="padding:8px 12px;color:#8892A4">${rEsc(f.type||'')}</td>
+          <td style="padding:8px 12px;color:#8892A4">${rEsc(Array.isArray(f.values)?f.values.join(', '):(f.notes||f.description||''))}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+  }
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DRIVE Report — ${rEsc(eng.client_name)}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#050709;color:#E8EAF0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+@media print{body{background:#fff;color:#111}.no-print{display:none!important}h1,h2{color:#111!important}.cover-rule{background:#8B7FEC!important}}
+.no-print{position:fixed;bottom:24px;right:24px;background:#8B7FEC;color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;z-index:9999}
+</style>
+</head>
+<body>
+<button class="no-print" onclick="window.print()">Print / Save PDF</button>
+<div style="max-width:780px;margin:0 auto;padding:48px 32px">
+
+  <!-- COVER -->
+  <div style="margin-bottom:56px;padding-bottom:40px;border-bottom:1px solid #1C2535">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8B7FEC;margin-bottom:12px">✦ DRIVE Assessment Report</div>
+    <h1 style="font-size:32px;font-weight:800;letter-spacing:-.02em;margin-bottom:6px">${rEsc(eng.client_name)}</h1>
+    ${eng.org_name ? `<div style="font-size:16px;color:#8892A4;margin-bottom:20px">${rEsc(eng.org_name)}</div>` : '<div style="margin-bottom:20px"></div>'}
+    <div class="cover-rule" style="width:48px;height:3px;background:#8B7FEC;border-radius:2px;margin-bottom:24px"></div>
+    <div style="display:flex;gap:32px;flex-wrap:wrap">
+      ${eng.industry ? `<div><div style="font-size:11px;color:#4A5270;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Industry</div><div style="font-size:13px;color:#E8EAF0">${rEsc(eng.industry)}</div></div>` : ''}
+      <div><div style="font-size:11px;color:#4A5270;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Org Size</div><div style="font-size:13px;color:#E8EAF0">${tierLabel}</div></div>
+      ${eng.contact_name ? `<div><div style="font-size:11px;color:#4A5270;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Primary Contact</div><div style="font-size:13px;color:#E8EAF0">${rEsc(eng.contact_name)}${eng.contact_email ? ` · ${rEsc(eng.contact_email)}` : ''}</div></div>` : ''}
+      <div><div style="font-size:11px;color:#4A5270;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Report Date</div><div style="font-size:13px;color:#E8EAF0">${date}</div></div>
+    </div>
+    ${eng.notes ? `<div style="margin-top:20px;padding:14px 16px;background:#0E1218;border:1px solid #1C2535;border-radius:8px;font-size:13px;color:#8892A4;line-height:1.6">${rEsc(eng.notes)}</div>` : ''}
+  </div>
+
+  <!-- READINESS -->
+  ${section('Marketing Readiness Assessment', '#8B7FEC', `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      ${scores.map(s => card(`
+        <div style="font-size:12px;font-weight:600;color:${s.color};margin-bottom:8px">${s.label}</div>
+        ${scoreBar(s.val, s.color)}
+      `)).join('')}
+    </div>
+    ${D.org_name || D.intake?.tools?.length ? card(`
+      ${D.org_name ? `<div style="margin-bottom:8px"><span style="font-size:11px;color:#4A5270;text-transform:uppercase;letter-spacing:.06em">Org</span> <span style="font-size:13px;color:#E8EAF0;margin-left:8px">${rEsc(D.org_name)}</span></div>` : ''}
+      ${D.intake?.tools?.length ? `<div><span style="font-size:11px;color:#4A5270;text-transform:uppercase;letter-spacing:.06em">Current Stack</span><div style="margin-top:6px">${D.intake.tools.map(t=>pill(t.name||t,'#8892A4')).join('')}</div></div>` : ''}
+    `) : ''}
+  `)}
+
+  <!-- TAXONOMY -->
+  ${section('Canonical Taxonomy', '#4DE8FF', `
+    ${namingConvention ? card(`
+      <div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#4DE8FF;margin-bottom:6px">Naming Convention</div>
+      <div style="font-size:14px;font-family:monospace;color:#E8EAF0">${rEsc(namingConvention)}</div>
+    `) : ''}
+    ${card(taxHTML)}
+    ${govRules.length ? card(`
+      <div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#4DE8FF;margin-bottom:10px">Governance Rules</div>
+      ${govRules.map(r => `<div style="font-size:13px;color:#8892A4;padding:6px 0;border-bottom:1px solid #1C2535;line-height:1.5">${rEsc(typeof r==='string'?r:r.text||r.rule||JSON.stringify(r))}</div>`).join('')}
+    `) : ''}
+  `)}
+
+  <!-- SIGNALS -->
+  ${section('Market Intelligence', '#5B8CFF', signalHTML)}
+
+  <!-- POSITIONING -->
+  ${section('Go-to-Market Positioning', '#3BBFA3', `
+    ${pos.name || pos.oneline ? card(`
+      ${pos.name ? `<div style="font-size:18px;font-weight:700;color:#E8EAF0;margin-bottom:8px">${rEsc(pos.name)}</div>` : ''}
+      ${pos.oneline ? `<div style="font-size:14px;color:#3BBFA3;font-weight:500;margin-bottom:14px">${rEsc(pos.oneline)}</div>` : ''}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        ${pos.buyer ? `<div><div style="font-size:11px;color:#4A5270;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Ideal Buyer</div><div style="font-size:13px;color:#8892A4">${rEsc(pos.buyer)}</div></div>` : ''}
+        ${pos.constraint ? `<div><div style="font-size:11px;color:#4A5270;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Core Problem Solved</div><div style="font-size:13px;color:#8892A4">${rEsc(pos.constraint)}</div></div>` : ''}
+        ${pos.differentiator ? `<div><div style="font-size:11px;color:#4A5270;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Key Differentiator</div><div style="font-size:13px;color:#8892A4">${rEsc(pos.differentiator)}</div></div>` : ''}
+        ${pos.proof ? `<div><div style="font-size:11px;color:#4A5270;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Proof</div><div style="font-size:13px;color:#8892A4">${rEsc(pos.proof)}</div></div>` : ''}
+      </div>
+    `) : `<p style="color:#4A5270;font-size:13px;font-style:italic">Positioning not yet defined in Vector.</p>`}
+    ${cdna ? card(`
+      <div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#3BBFA3;margin-bottom:10px">Campaign DNA</div>
+      <div style="font-size:13px;color:#8892A4;line-height:1.7;white-space:pre-wrap">${rEsc(cdna.slice(0, 2000))}${cdna.length > 2000 ? '\n…' : ''}</div>
+    `) : ''}
+  `)}
+
+  <!-- ENGINE -->
+  ${themes.length ? section('Content Operations', '#FF8A3D', `
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      ${themes.map(t => pill(typeof t==='string'?t:t.name||t.label||JSON.stringify(t), '#FF8A3D')).join('')}
+    </div>
+  `) : ''}
+
+  <!-- FOOTER -->
+  <div style="margin-top:48px;padding-top:24px;border-top:1px solid #1C2535;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+    <div style="font-size:12px;color:#4A5270">Generated by ✦ DRIVE · ${date}</div>
+    <div style="font-size:12px;color:#4A5270">Confidential — prepared for ${rEsc(eng.client_name)}</div>
+  </div>
+
+</div>
+</body>
+</html>`;
+
+  const blob = new Blob([html], { type: 'text/html' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${eng.client_name.replace(/[^a-z0-9]/gi,'-').toLowerCase()}-drive-report.html`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast('Report downloaded');
 }
 
 // --- ARCHIVED TOGGLE ---
