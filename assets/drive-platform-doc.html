@@ -1,0 +1,1008 @@
+
+<title>DRIVE — Platform Overview · Britt Bowman LLC</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07090C;
+  --panel:#0E1218;
+  --card:#131920;
+  --card2:#171F2A;
+  --border:#1C2535;
+  --border2:#243040;
+  --text:#E8EDF3;
+  --muted:#6B7A8D;
+  --faint:#1C2535;
+
+  --d:#8B7FEC; --d-bg:#1a1535; --d-dim:#3a2a6b;
+  --r:#4DE8FF; --r-bg:#052830; --r-dim:#0d5060;
+  --i:#5B8CFF; --i-bg:#0a1535; --i-dim:#1a2d6b;
+  --v:#3BBFA3; --v-bg:#0D2E27; --v-dim:#1E6B5E;
+  --e:#E8836B; --e-bg:#2a1208; --e-dim:#6b3020;
+
+  --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-serif;
+  --mono:'SF Mono','Fira Code','Courier New',monospace;
+}
+
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.6;overflow-x:hidden}
+
+/* ── PNAV ── */
+.pnav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  height:38px;background:rgba(7,9,12,.92);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 24px;gap:4px;
+}
+.pnav-brand{font-size:13px;font-weight:700;color:var(--v);letter-spacing:-.01em;margin-right:10px}
+.pnav-sep{width:1px;height:14px;background:var(--border2);margin:0 4px}
+.pnav-tool{
+  display:flex;align-items:center;gap:5px;padding:3px 9px;border-radius:5px;
+  font-size:11px;font-weight:500;color:var(--muted);text-decoration:none;transition:all .15s;
+}
+.pnav-tool:hover{background:var(--panel);color:var(--text)}
+.pnav-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.pnav-cta{
+  margin-left:auto;height:28px;padding:0 14px;background:var(--v);
+  color:#07090C;font-size:11px;font-weight:700;border-radius:6px;
+  display:flex;align-items:center;text-decoration:none;
+}
+
+/* ── LAYOUT ── */
+.page{max-width:960px;margin:0 auto;padding:0 40px 120px}
+@media(max-width:680px){.page{padding:0 20px 80px}}
+
+/* ── SPECTRUM BAR ── */
+.spectrum{
+  height:3px;width:100%;
+  background:linear-gradient(90deg,var(--d) 0%,var(--r) 25%,var(--i) 50%,var(--v) 75%,var(--e) 100%);
+  position:fixed;top:38px;left:0;right:0;z-index:99;opacity:.7;
+}
+
+/* ── HERO ── */
+.hero{padding:110px 0 80px;border-bottom:1px solid var(--border)}
+.hero-eyebrow{
+  font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:20px;display:flex;align-items:center;gap:10px;
+}
+.hero-eyebrow::before{content:'';height:1px;width:32px;background:var(--border2)}
+.hero-wordmark{
+  font-size:clamp(56px,10vw,88px);font-weight:700;letter-spacing:-.04em;
+  line-height:1;margin-bottom:24px;
+  background:linear-gradient(135deg,var(--d) 0%,var(--r) 30%,var(--i) 55%,var(--v) 78%,var(--e) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero-tagline{
+  font-size:clamp(18px,3vw,24px);font-weight:500;letter-spacing:-.02em;
+  color:var(--text);line-height:1.4;max-width:560px;margin-bottom:16px;
+}
+.hero-sub{font-size:15px;color:var(--muted);max-width:520px;line-height:1.7;margin-bottom:40px}
+.hero-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.btn-primary{
+  height:44px;padding:0 24px;background:var(--v);color:#07090C;
+  font-size:14px;font-weight:700;border-radius:9px;text-decoration:none;
+  display:inline-flex;align-items:center;
+}
+.btn-secondary{
+  height:44px;padding:0 24px;background:transparent;color:var(--text);
+  font-size:14px;font-weight:500;border-radius:9px;text-decoration:none;
+  border:1px solid var(--border2);display:inline-flex;align-items:center;
+}
+.hero-note{font-size:12px;color:var(--muted);margin-top:14px}
+
+/* ── FLOW ── */
+.flow-section{padding:64px 0;border-bottom:1px solid var(--border)}
+.section-label{
+  font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:32px;
+}
+.flow-track{display:flex;align-items:center;gap:0;flex-wrap:nowrap;overflow-x:auto;padding-bottom:8px}
+.flow-node{display:flex;flex-direction:column;align-items:center;gap:10px;flex-shrink:0}
+.flow-icon{
+  width:52px;height:52px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;font-weight:700;letter-spacing:-.02em;
+}
+.flow-name{font-size:12px;font-weight:700;letter-spacing:.04em}
+.flow-role{font-size:11px;color:var(--muted);text-align:center}
+.flow-arrow{font-size:18px;color:var(--border2);padding:0 12px;margin-bottom:22px;flex-shrink:0}
+.flow-desc{
+  background:var(--panel);border:1px solid var(--border);border-radius:10px;
+  padding:20px 24px;margin-top:32px;font-size:13px;color:var(--muted);line-height:1.75;
+}
+.flow-desc strong{color:var(--text)}
+
+/* ── VALUE PROP ── */
+.value-section{padding:72px 0;border-bottom:1px solid var(--border)}
+.value-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-top:32px}
+@media(max-width:680px){.value-grid{grid-template-columns:1fr}}
+.value-card{background:var(--panel);padding:24px;display:flex;flex-direction:column;gap:8px}
+.value-num{font-size:11px;font-weight:700;font-family:var(--mono);color:var(--muted);letter-spacing:.06em}
+.value-heading{font-size:15px;font-weight:700;letter-spacing:-.02em;line-height:1.3}
+.value-body{font-size:13px;color:var(--muted);line-height:1.6}
+
+/* ── WHO IT'S FOR ── */
+.tiers-section{padding:72px 0;border-bottom:1px solid var(--border)}
+.tiers-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:32px}
+@media(max-width:760px){.tiers-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.tiers-grid{grid-template-columns:1fr}}
+.tier-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:20px}
+.tier-label{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}
+.tier-size{font-size:13px;font-weight:600;margin-bottom:4px}
+.tier-rev{font-size:12px;color:var(--muted);margin-bottom:14px}
+.tier-path{font-size:12px;color:var(--muted);line-height:1.5}
+.tier-path strong{color:var(--text);display:block;margin-bottom:2px}
+.tier-tools{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px}
+.tier-tool-dot{
+  font-size:10px;font-weight:600;padding:3px 8px;border-radius:4px;
+  letter-spacing:.04em;
+}
+
+/* ── TOOL SECTIONS ── */
+.tools-section{padding:72px 0}
+.tool-block{padding:56px 0;border-bottom:1px solid var(--border);position:relative}
+.tool-block:last-child{border-bottom:none}
+.tool-block::before{
+  content:'';position:absolute;left:-40px;top:0;bottom:0;width:3px;border-radius:0 2px 2px 0;
+}
+.tool-block.d-block::before{background:var(--d)}
+.tool-block.r-block::before{background:var(--r)}
+.tool-block.i-block::before{background:var(--i)}
+.tool-block.v-block::before{background:var(--v)}
+.tool-block.e-block::before{background:var(--e)}
+
+.tool-header{display:flex;align-items:flex-start;gap:16px;margin-bottom:28px}
+.tool-icon-lg{
+  width:48px;height:48px;border-radius:13px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;font-weight:700;
+}
+.tool-meta{flex:1}
+.tool-eyebrow{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.tool-name-lg{font-size:22px;font-weight:700;letter-spacing:-.03em;margin-bottom:4px}
+.tool-one-liner{font-size:14px;color:var(--muted);line-height:1.5}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start}
+@media(max-width:680px){.two-col{grid-template-columns:1fr}}
+
+/* Steps */
+.steps{display:flex;flex-direction:column;gap:0}
+.step{display:flex;gap:16px;position:relative}
+.step+.step{margin-top:0}
+.step-track{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
+.step-num{
+  width:28px;height:28px;border-radius:8px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;font-family:var(--mono);
+}
+.step-line{flex:1;width:1px;background:var(--border);margin:4px 0;min-height:20px}
+.step:last-child .step-line{display:none}
+.step-body{padding-bottom:24px;flex:1;min-width:0}
+.step-title{font-size:13px;font-weight:700;margin-bottom:3px}
+.step-desc{font-size:12px;color:var(--muted);line-height:1.6}
+
+/* Screen mock */
+.mock{
+  background:var(--card);border:1px solid var(--border2);border-radius:10px;
+  overflow:hidden;font-size:11px;
+}
+.mock-bar{
+  height:34px;background:#050709;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 12px;gap:6px;
+}
+.mock-dots{display:flex;gap:5px}
+.mock-dot{width:9px;height:9px;border-radius:50%;background:#2a3040}
+.mock-url{
+  flex:1;height:20px;background:var(--faint);border-radius:4px;
+  display:flex;align-items:center;padding:0 8px;font-family:var(--mono);
+  font-size:9px;color:var(--muted);
+}
+.mock-body{padding:16px}
+
+/* Discover mock */
+.disc-scores{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.disc-score{background:var(--card2);border:1px solid var(--border);border-radius:7px;padding:10px 12px}
+.ds-label{font-size:9px;font-weight:700;letter-spacing:.08em;margin-bottom:6px}
+.ds-bar{height:2px;background:var(--faint);border-radius:1px;margin-bottom:6px}
+.ds-fill{height:100%;border-radius:1px}
+.ds-row{display:flex;align-items:center;gap:6px}
+.ds-badge{font-size:9px;font-weight:600;padding:2px 6px;border-radius:10px}
+.ds-val{font-size:10px;color:var(--muted)}
+.disc-path{
+  margin-top:10px;padding:10px 12px;border-radius:7px;
+  background:rgba(59,191,163,.07);border:1px solid rgba(59,191,163,.2);
+  font-size:11px;color:#3BBFA3;font-weight:600;
+}
+
+/* Resolve mock */
+.res-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.res-col{background:var(--card2);border:1px solid var(--border);border-radius:7px;padding:10px}
+.res-head{font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:8px}
+.res-terms{display:flex;flex-direction:column;gap:4px}
+.res-term{
+  font-size:10px;padding:4px 8px;border-radius:5px;
+  background:var(--card);border:1px solid var(--border2);color:var(--text);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.res-term.done{background:var(--r-bg);border-color:var(--r-dim);color:var(--r)}
+.res-term.act{background:rgba(91,140,255,.07);border-color:rgba(91,140,255,.2);color:#5B8CFF}
+.res-check{font-size:8px}
+.res-progress{
+  margin-top:10px;display:flex;align-items:center;justify-content:space-between;
+  font-size:10px;color:var(--muted);
+}
+.res-pct{font-size:10px;font-weight:600;color:var(--r)}
+
+/* Intelligence mock */
+.sig-list{display:flex;flex-direction:column;gap:6px}
+.sig-card{background:var(--card2);border:1px solid var(--border);border-radius:7px;padding:9px 11px}
+.sig-tag{
+  font-size:8px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  padding:2px 6px;border-radius:3px;display:inline-block;margin-bottom:5px;
+}
+.sig-buyer{background:rgba(91,140,255,.1);color:#5B8CFF;border:1px solid rgba(91,140,255,.2)}
+.sig-market{background:rgba(139,127,236,.1);color:#9B8FE8;border:1px solid rgba(139,127,236,.2)}
+.sig-pain{background:rgba(232,83,107,.1);color:#E8536B;border:1px solid rgba(232,83,107,.2)}
+.sig-trend{background:rgba(59,191,163,.1);color:#3BBFA3;border:1px solid rgba(59,191,163,.2)}
+.sig-text{font-size:10px;color:var(--muted);line-height:1.5}
+
+/* Vector mock */
+.vec-step{
+  background:var(--card2);border:1px solid var(--border);border-radius:7px;padding:10px 12px;margin-bottom:7px;
+}
+.vec-step-num{font-size:9px;font-weight:700;font-family:var(--mono);color:var(--v);margin-bottom:3px}
+.vec-step-title{font-size:11px;font-weight:600;margin-bottom:2px}
+.vec-step-sub{font-size:10px;color:var(--muted)}
+.vec-step.active{border-color:var(--v-dim);background:var(--v-bg)}
+.vec-offer{
+  background:var(--v-bg);border:1px solid var(--v-dim);border-radius:7px;
+  padding:10px 12px;margin-top:8px;
+}
+.vec-offer-name{font-size:11px;font-weight:700;color:var(--v);margin-bottom:3px}
+.vec-offer-price{font-size:10px;color:var(--muted)}
+
+/* Engine mock */
+.eng-asset{
+  background:var(--card2);border:1px solid var(--border);border-radius:7px;padding:9px 11px;margin-bottom:6px;
+  display:flex;align-items:center;gap:10px;
+}
+.eng-asset-icon{font-size:14px;flex-shrink:0}
+.eng-asset-meta{flex:1;min-width:0}
+.eng-asset-name{font-size:11px;font-weight:600}
+.eng-asset-tag{font-size:9px;color:var(--muted);margin-top:2px}
+.eng-json-preview{
+  background:#050709;border:1px solid var(--border);border-radius:6px;
+  padding:8px 10px;margin-top:8px;font-family:var(--mono);font-size:9px;line-height:1.7;
+}
+.json-key{color:#E8836B}.json-str{color:#3BBFA3}.json-punc{color:var(--muted)}
+
+/* ── DATA FLOW ── */
+.flow-data-section{padding:72px 0;border-top:1px solid var(--border)}
+.flow-data-grid{display:flex;flex-direction:column;gap:0;margin-top:32px}
+.fd-row{display:flex;align-items:stretch;gap:0;position:relative}
+.fd-row+.fd-row{margin-top:-1px}
+.fd-from{
+  width:120px;flex-shrink:0;padding:14px 0;display:flex;align-items:center;
+  font-size:11px;font-weight:700;letter-spacing:.04em;
+}
+.fd-arrow-col{width:40px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--border2)}
+.fd-line{
+  flex:1;padding:14px 16px;background:var(--panel);border:1px solid var(--border);
+  border-radius:8px;margin:4px 0;
+}
+.fd-what{font-size:12px;font-weight:500;margin-bottom:2px}
+.fd-detail{font-size:11px;color:var(--muted)}
+
+/* ── CTA ── */
+.cta-section{padding:80px 0 0}
+.cta-box{
+  background:var(--panel);border:1px solid var(--border2);border-radius:16px;
+  padding:48px 40px;text-align:center;position:relative;overflow:hidden;
+}
+.cta-box::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--d),var(--r),var(--i),var(--v),var(--e));
+}
+.cta-heading{font-size:28px;font-weight:700;letter-spacing:-.03em;margin-bottom:12px}
+.cta-sub{font-size:15px;color:var(--muted);max-width:480px;margin:0 auto 32px;line-height:1.6}
+.cta-buttons{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap}
+
+/* ── UTILITY ── */
+.tag{
+  display:inline-block;font-size:10px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;padding:3px 9px;border-radius:4px;
+}
+</style>
+
+<!-- PLATFORM NAV -->
+<div class="pnav">
+  <span class="pnav-brand">✦</span>
+  <div class="pnav-sep"></div>
+  <a class="pnav-tool" href="#discover"><span class="pnav-dot" style="background:#8B7FEC"></span>Discover</a>
+  <a class="pnav-tool" href="#resolve"><span class="pnav-dot" style="background:#4DE8FF"></span>Resolve</a>
+  <a class="pnav-tool" href="#intelligence"><span class="pnav-dot" style="background:#5B8CFF"></span>Intelligence</a>
+  <a class="pnav-tool" href="#vector"><span class="pnav-dot" style="background:#3BBFA3"></span>Vector</a>
+  <a class="pnav-tool" href="#engine"><span class="pnav-dot" style="background:#E8836B"></span>Engine</a>
+  <a class="pnav-cta" href="https://vector.brittbowman.ai/discover.html">Get started →</a>
+</div>
+<div class="spectrum"></div>
+
+<div class="page">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-eyebrow">Britt Bowman LLC · Growth Intelligence Platform</div>
+    <div class="hero-wordmark">DRIVE</div>
+    <div class="hero-tagline">Five AI-powered tools that turn a practice into a growth system.</div>
+    <div class="hero-sub">DRIVE is a connected platform for professional services firms. It takes you from "who do we serve and why?" all the way to executing campaigns — with AI doing the heavy lifting at every step.</div>
+    <div class="hero-actions">
+      <a class="btn-primary" href="https://vector.brittbowman.ai/discover.html">Start your readiness assessment →</a>
+      <a class="btn-secondary" href="https://vector.brittbowman.ai/vector.html">Open Vector</a>
+    </div>
+    <div class="hero-note">No passwords. Magic-link login. Your data is private and org-isolated.</div>
+  </section>
+
+  <!-- PLATFORM FLOW -->
+  <section class="flow-section" id="platform">
+    <div class="section-label">The platform · Five tools, one system</div>
+    <div class="flow-track">
+      <div class="flow-node">
+        <div class="flow-icon" style="background:var(--d-bg);color:var(--d);border:1px solid var(--d-dim)">D</div>
+        <div class="flow-name" style="color:var(--d)">Discover</div>
+        <div class="flow-role">Readiness</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">
+        <div class="flow-icon" style="background:var(--r-bg);color:var(--r);border:1px solid var(--r-dim)">R</div>
+        <div class="flow-name" style="color:var(--r)">Resolve</div>
+        <div class="flow-role">Taxonomy</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">
+        <div class="flow-icon" style="background:var(--i-bg);color:var(--i);border:1px solid var(--i-dim)">I</div>
+        <div class="flow-name" style="color:var(--i)">Intelligence</div>
+        <div class="flow-role">Signals</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">
+        <div class="flow-icon" style="background:var(--v-bg);color:var(--v);border:1px solid var(--v-dim)">V</div>
+        <div class="flow-name" style="color:var(--v)">Vector</div>
+        <div class="flow-role">Strategy</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">
+        <div class="flow-icon" style="background:var(--e-bg);color:var(--e);border:1px solid var(--e-dim)">E</div>
+        <div class="flow-name" style="color:var(--e)">Engine</div>
+        <div class="flow-role">Execution</div>
+      </div>
+    </div>
+    <div class="flow-desc">
+      Each tool feeds the next. <strong>Discover</strong> assesses where you are and routes you to the right starting point. <strong>Resolve</strong> locks in your vocabulary and segmentation — the foundation everything else is built from. <strong>Intelligence</strong> extracts buyer signals from your existing documents and data. <strong>Vector</strong> takes all of it and builds your complete growth strategy: positioning, offers, referral engine, credibility assets, and a 90-day activation plan. <strong>Engine</strong> turns that strategy into content operations metadata — every asset, every channel, every DAM field, ready to execute.
+    </div>
+  </section>
+
+  <!-- VALUE PROP -->
+  <section class="value-section" id="value">
+    <div class="section-label">Why DRIVE</div>
+    <div class="value-grid">
+      <div class="value-card">
+        <div class="value-num">01</div>
+        <div class="value-heading">Strategy in a sprint, not a quarter</div>
+        <div class="value-body">Vector's AI pipeline runs 4 agents in parallel and delivers a fully-developed growth strategy — positioning, offers, referral engine, credibility kit, and activation plan — in one focused session.</div>
+      </div>
+      <div class="value-card">
+        <div class="value-num">02</div>
+        <div class="value-heading">No more context lost in translation</div>
+        <div class="value-body">Every tool shares data with every other. Your taxonomy from Resolve informs Vector's offers. Your intelligence signals sharpen your positioning. Your Vector strategy feeds directly into Engine's content plan.</div>
+      </div>
+      <div class="value-card">
+        <div class="value-num">03</div>
+        <div class="value-heading">Built for how your team actually works</div>
+        <div class="value-body">Org-level data sharing means everyone on the team sees the same taxonomy, signals, and strategy — no dueling spreadsheets, no version drift. One login, one record, always current.</div>
+      </div>
+      <div class="value-card">
+        <div class="value-num">04</div>
+        <div class="value-heading">Right-sized for where you are</div>
+        <div class="value-body">Discover reads your team size and maturity and routes you to the tools and depth that match your stage — micro practices start lean, enterprise teams get the full stack.</div>
+      </div>
+      <div class="value-card">
+        <div class="value-num">05</div>
+        <div class="value-heading">From strategy to execution, not just advice</div>
+        <div class="value-body">Engine takes your Vector strategy and generates DAM-ready metadata for every content asset across every recommended channel — so the plan doesn't just sit in a deck.</div>
+      </div>
+      <div class="value-card">
+        <div class="value-num">06</div>
+        <div class="value-heading">Evidence-based, not opinion-based</div>
+        <div class="value-body">Intelligence extracts buyer signals from real transcripts, decks, and competitive docs. Vector's positioning is built from that evidence — not assumptions about what clients want.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHO IT'S FOR -->
+  <section class="tiers-section" id="who">
+    <div class="section-label">Who it's for · Four account tiers</div>
+    <div class="tiers-grid">
+      <div class="tier-card">
+        <div class="tier-label" style="color:var(--d)">Micro</div>
+        <div class="tier-size">1–5 people</div>
+        <div class="tier-rev">Under $500K revenue</div>
+        <div class="tier-path">
+          <strong>Streamlined path</strong>
+          Vector is the core engagement. One focused sprint to lock positioning, build the offer stack, and activate your referral engine.
+        </div>
+        <div class="tier-tools">
+          <span class="tier-tool-dot" style="background:var(--v-bg);color:var(--v);border:1px solid var(--v-dim)">Vector</span>
+          <span class="tier-tool-dot" style="background:var(--e-bg);color:var(--e);border:1px solid var(--e-dim)">Engine</span>
+        </div>
+      </div>
+      <div class="tier-card">
+        <div class="tier-label" style="color:var(--r)">Small</div>
+        <div class="tier-size">6–20 people</div>
+        <div class="tier-rev">$500K – $2M revenue</div>
+        <div class="tier-path">
+          <strong>Growth-stage path</strong>
+          Start with vocabulary alignment in Resolve, then build strategy in Vector. Intelligence activates when you have enough pipeline data.
+        </div>
+        <div class="tier-tools">
+          <span class="tier-tool-dot" style="background:var(--r-bg);color:var(--r);border:1px solid var(--r-dim)">Resolve</span>
+          <span class="tier-tool-dot" style="background:var(--v-bg);color:var(--v);border:1px solid var(--v-dim)">Vector</span>
+          <span class="tier-tool-dot" style="background:var(--e-bg);color:var(--e);border:1px solid var(--e-dim)">Engine</span>
+        </div>
+      </div>
+      <div class="tier-card">
+        <div class="tier-label" style="color:var(--i)">Mid-Market</div>
+        <div class="tier-size">21–50 people</div>
+        <div class="tier-rev">$2M – $10M revenue</div>
+        <div class="tier-path">
+          <strong>Full-stack path</strong>
+          All five tools in sequence. Intelligence is worth activating — you have the data. Engine scales content operations across a team.
+        </div>
+        <div class="tier-tools">
+          <span class="tier-tool-dot" style="background:var(--d-bg);color:var(--d);border:1px solid var(--d-dim)">Discover</span>
+          <span class="tier-tool-dot" style="background:var(--r-bg);color:var(--r);border:1px solid var(--r-dim)">Resolve</span>
+          <span class="tier-tool-dot" style="background:var(--i-bg);color:var(--i);border:1px solid var(--i-dim)">Intel</span>
+          <span class="tier-tool-dot" style="background:var(--v-bg);color:var(--v);border:1px solid var(--v-dim)">Vector</span>
+          <span class="tier-tool-dot" style="background:var(--e-bg);color:var(--e);border:1px solid var(--e-dim)">Engine</span>
+        </div>
+      </div>
+      <div class="tier-card">
+        <div class="tier-label" style="color:var(--v)">Enterprise</div>
+        <div class="tier-size">51+ people</div>
+        <div class="tier-rev">$10M+ revenue</div>
+        <div class="tier-path">
+          <strong>Enterprise path</strong>
+          Full platform with implementation sequencing. Org-level data sharing across the team. Intelligence and Engine run in parallel with Vector.
+        </div>
+        <div class="tier-tools">
+          <span class="tier-tool-dot" style="background:var(--d-bg);color:var(--d);border:1px solid var(--d-dim)">Discover</span>
+          <span class="tier-tool-dot" style="background:var(--r-bg);color:var(--r);border:1px solid var(--r-dim)">Resolve</span>
+          <span class="tier-tool-dot" style="background:var(--i-bg);color:var(--i);border:1px solid var(--i-dim)">Intel</span>
+          <span class="tier-tool-dot" style="background:var(--v-bg);color:var(--v);border:1px solid var(--v-dim)">Vector</span>
+          <span class="tier-tool-dot" style="background:var(--e-bg);color:var(--e);border:1px solid var(--e-dim)">Engine</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TOOL SECTIONS -->
+  <section class="tools-section" id="tools">
+    <div class="section-label">The tools · Step-by-step</div>
+
+    <!-- DISCOVER -->
+    <div class="tool-block d-block" id="discover">
+      <div class="tool-header">
+        <div class="tool-icon-lg" style="background:var(--d-bg);color:var(--d);border:1px solid var(--d-dim)">D</div>
+        <div class="tool-meta">
+          <div class="tool-eyebrow" style="color:var(--d)">Tool 01</div>
+          <div class="tool-name-lg">Discover</div>
+          <div class="tool-one-liner">Platform Readiness Assessment — figures out which tools you need, in what order, and routes you there.</div>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="steps">
+          <div class="step">
+            <div class="step-track">
+              <div class="step-num" style="background:var(--d-bg);color:var(--d);border:1px solid var(--d-dim)">01</div>
+              <div class="step-line"></div>
+            </div>
+            <div class="step-body">
+              <div class="step-title">Enter org context</div>
+              <div class="step-desc">Name, industry, team size, revenue band, and primary growth challenge. Takes 60 seconds. This becomes the header of the readiness report.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-track">
+              <div class="step-num" style="background:var(--d-bg);color:var(--d);border:1px solid var(--d-dim)">02</div>
+              <div class="step-line"></div>
+            </div>
+            <div class="step-body">
+              <div class="step-title">Complete the readiness assessment</div>
+              <div class="step-desc">4 sections, 4 questions each — Taxonomy, Signal, Strategy, and Execution. Micro accounts skip Taxonomy and Signal (not relevant at that stage) and go straight to Strategy.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-track">
+              <div class="step-num" style="background:var(--d-bg);color:var(--d);border:1px solid var(--d-dim)">03</div>
+              <div class="step-line"></div>
+            </div>
+            <div class="step-body">
+              <div class="step-title">Review the readiness report</div>
+              <div class="step-desc">Scores across all four dimensions, readiness levels (Low / Medium / High), module recommendations, and a sequenced implementation roadmap.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-track">
+              <div class="step-num" style="background:var(--d-bg);color:var(--d);border:1px solid var(--d-dim)">04</div>
+              <div class="step-line"></div>
+            </div>
+            <div class="step-body">
+              <div class="step-title">Save to record and launch</div>
+              <div class="step-desc">"Save to record" writes the readiness scores to Supabase. The recommended module buttons link directly to each tool. Vector reads this record on login and surfaces the right track automatically.</div>
+            </div>
+          </div>
+        </div>
+        <div class="mock">
+          <div class="mock-bar">
+            <div class="mock-dots"><div class="mock-dot"></div><div class="mock-dot"></div><div class="mock-dot"></div></div>
+            <div class="mock-url"><span style="color:#8B7FEC;margin-right:5px">◉</span>vector.brittbowman.ai/discover</div>
+          </div>
+          <div class="mock-body">
+            <div style="font-size:9px;font-weight:700;letter-spacing:.1em;color:var(--muted);margin-bottom:6px;text-transform:uppercase">Readiness Report</div>
+            <div style="font-size:14px;font-weight:700;letter-spacing:-.02em;margin-bottom:4px">Clearfield Advisory — Foundation + Strategy</div>
+            <div style="font-size:10px;color:var(--muted);margin-bottom:12px">3-tool engagement recommended in the sequence below.</div>
+            <div class="disc-scores">
+              <div class="disc-score">
+                <div class="ds-label" style="color:var(--r)">TAXONOMY</div>
+                <div class="ds-bar"><div class="ds-fill" style="background:var(--r);width:87%"></div></div>
+                <div class="ds-row"><span class="ds-badge" style="background:rgba(77,232,255,.1);color:var(--r)">High</span><span class="ds-val">7/8</span></div>
+              </div>
+              <div class="disc-score">
+                <div class="ds-label" style="color:var(--i)">SIGNAL</div>
+                <div class="ds-bar"><div class="ds-fill" style="background:var(--i);width:50%"></div></div>
+                <div class="ds-row"><span class="ds-badge" style="background:rgba(91,140,255,.1);color:var(--i)">Medium</span><span class="ds-val">4/8</span></div>
+              </div>
+              <div class="disc-score">
+                <div class="ds-label" style="color:var(--v)">STRATEGY</div>
+                <div class="ds-bar"><div class="ds-fill" style="background:var(--v);width:37%"></div></div>
+                <div class="ds-row"><span class="ds-badge" style="background:rgba(59,191,163,.1);color:var(--v)">Low</span><span class="ds-val">3/8</span></div>
+              </div>
+              <div class="disc-score">
+                <div class="ds-label" style="color:var(--e)">EXECUTION</div>
+                <div class="ds-bar"><div class="ds-fill" style="background:var(--e);width:62%"></div></div>
+                <div class="ds-row"><span class="ds-badge" style="background:rgba(232,131,107,.1);color:var(--e)">Medium</span><span class="ds-val">5/8</span></div>
+              </div>
+            </div>
+            <div class="disc-path">◆ Recommended path: Resolve → Vector → Engine</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESOLVE -->
+    <div class="tool-block r-block" id="resolve">
+      <div class="tool-header">
+        <div class="tool-icon-lg" style="background:var(--r-bg);color:var(--r);border:1px solid var(--r-dim)">R</div>
+        <div class="tool-meta">
+          <div class="tool-eyebrow" style="color:var(--r)">Tool 02</div>
+          <div class="tool-name-lg">Resolve</div>
+          <div class="tool-one-liner">Taxonomy Workbench — builds the shared vocabulary that every other tool is built on top of.</div>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="steps">
+          <div class="step">
+            <div class="step-track">
+              <div class="step-num" style="background:var(--r-bg);color:var(--r);border:1px solid var(--r-dim)">01</div>
+              <div class="step-line"></div>
+            </div>
+            <div class="step-body">
+              <div class="step-title">Review default taxonomy</div>
+              <div class="step-desc">Resolve loads with a pre-seeded taxonomy based on 18 practice archetypes. Review the existing Audience, Offer, and Content categories.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-track">
+              <div class="step-num" style="background:var(--r-bg);color:var(--r);border:1px solid var(--r-dim)">02</div>
+              <div class="step-line"></div>
+            </div>
+            <div class="step-body">
+              <div class="step-title">Add, edit, and define terms</div>
+              <div class="step-desc">Click any term to edit it. Add new terms with the + button. Set each term to Defined (teal) or Pending (gray). Remove terms that don't fit your practice.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-track">
+              <div class="step-num" style="background:var(--r-bg);color:var(--r);border:1px solid var(--r-dim)">03</div>
+              <div class="step-line"></div>
+            </div>
+            <div class="step-body">
+              <div class="step-title">Add custom categories</div>
+              <div class="step-desc">Not seeing a category you need? Add Category creates a new column. Useful for industry-specific segmentation that the defaults don't cover.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-track">
+              <div class="step-num" style="background:var(--r-bg);color:var(--r);border:1px solid var(--r-dim)">04</div>
+              <div class="step-line"></div>
+            </div>
+            <div class="step-body">
+              <div class="step-title">Export to Vector</div>
+              <div class="step-desc">Export Taxonomy generates a JSON file formatted for Vector's taxonomy fields. Saves automatically to localStorage and syncs to your org's Supabase record — all team members see the same taxonomy.</div>
+            </div>
+          </div>
+        </div>
+        <div class="mock">
+          <div class="mock-bar">
+            <div class="mock-dots"><div class="mock-dot"></div><div class="mock-dot"></div><div class="mock-dot"></div></div>
+            <div class="mock-url"><span style="color:#4DE8FF;margin-right:5px">◈</span>vector.brittbowman.ai/resolve</div>
+          </div>
+          <div class="mock-body">
+            <div class="res-grid">
+              <div class="res-col">
+                <div class="res-head" style="color:var(--r)">Audience</div>
+                <div class="res-terms">
+                  <div class="res-term done">CFO office <span class="res-check">✓</span></div>
+                  <div class="res-term done">Series B+ founders <span class="res-check">✓</span></div>
+                  <div class="res-term act">PE portco CMOs <span class="res-check" style="font-size:6px;animation:none">●</span></div>
+                  <div class="res-term" style="opacity:.5">Add term…</div>
+                </div>
+              </div>
+              <div class="res-col">
+                <div class="res-head" style="color:var(--r)">Offer</div>
+                <div class="res-terms">
+                  <div class="res-term done">GTM Sprint <span class="res-check">✓</span></div>
+                  <div class="res-term done">Retainer OS <span class="res-check">✓</span></div>
+                  <div class="res-term">Advisory day</div>
+                  <div class="res-term" style="opacity:.5">Add term…</div>
+                </div>
+              </div>
+              <div class="res-col">
+                <div class="res-head" style="color:var(--r)">Content</div>
+                <div class="res-terms">
+                  <div class="res-term done">LinkedIn essay <span class="res-check">✓</span></div>
+                  <div class="res-term done">Case study <span class="res-check">✓</span></div>
+                  <div class="res-term act">Webinar <span class="res-check" style="font-size:6px">●</span></div>
+                  <div class="res-term" style="opacity:.5">Add term…</div>
+                </div>
+              </div>
+            </div>
+            <div class="res-progress">
+              <span>7 of 9 terms defined</span>
+              <span class="res-pct">78% complete</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INTELLIGENCE -->
+    <div class="tool-block i-block" id="intelligence">
+      <div class="tool-header">
+        <div class="tool-icon-lg" style="background:var(--i-bg);color:var(--i);border:1px solid var(--i-dim)">I</div>
+        <div class="tool-meta">
+          <div class="tool-eyebrow" style="color:var(--i)">Tool 03</div>
+          <div class="tool-name-lg">Intelligence</div>
+          <div class="tool-one-liner">Market Signals — extracts buyer intelligence from your existing documents so Vector's positioning is built on evidence, not assumptions.</div>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="steps">
+          <div class="step">
+            <div class="step-track">
+              <div class="step-num" style="background:var(--i-bg);color:var(--i);border:1px solid var(--i-dim)">01</div>
+              <div class="step-line"></div>
+            </div>
+            <div class="step-body">
+              <div class="step-title">Add your Anthropic API key</div>
+              <div class="step-desc">Click the API dot in the topbar to open the key banner. Paste your key — it's stored only in your browser's localStorage, never on a server.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-track">
+              <div class="step-num" style="background:var(--i-bg);color:var(--i);border:1px solid var(--i-dim)">02</div>
+              <div class="step-line"></div>
+            </div>
+            <div class="step-body">
+              <div class="step-title">Upload documents</div>
+              <div class="step-desc">Drag in discovery call transcripts (.vtt, .txt), pitch decks (.pptx), market research, competitive intel, or win/loss reports (.xlsx, .csv). All parsed in the browser.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-track">
+              <div class="step-num" style="background:var(--i-bg);color:var(--i);border:1px solid var(--i-dim)">03</div>
+              <div class="step-line"></div>
+            </div>
+            <div class="step-body">
+              <div class="step-title">Extract signals</div>
+              <div class="step-desc">Claude reads each document and extracts tagged signals: BUYER_SIGNAL, MARKET_SIGNAL, COMPETITIVE, TREND, PAIN, BUDGET. Each signal is quoted and sourced.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-track">
+              <div class="step-num" style="background:var(--i-bg);color:var(--i);border:1px solid var(--i-dim)">04</div>
+              <div class="step-line"></div>
+            </div>
+            <div class="step-body">
+              <div class="step-title">Signals flow into Vector</div>
+              <div class="step-desc">Intelligence saves a signal summary to localStorage that Vector reads during the AI pipeline step — so the positioning agents have real market evidence to work from.</div>
+            </div>
+          </div>
+        </div>
+        <div class="mock">
+          <div class="mock-bar">
+            <div class="mock-dots"><div class="mock-dot"></div><div class="mock-dot"></div><div class="mock-dot"></div></div>
+            <div class="mock-url"><span style="color:#5B8CFF;margin-right:5px">◉</span>vector.brittbowman.ai/intelligence</div>
+          </div>
+          <div class="mock-body">
+            <div style="font-size:9px;color:var(--muted);margin-bottom:8px">3 files processed · 12 signals extracted</div>
+            <div class="sig-list">
+              <div class="sig-card">
+                <span class="sig-tag sig-pain">PAIN</span>
+                <div class="sig-text">"We have a CRM but nobody actually updates it — our pipeline visibility is basically zero."</div>
+              </div>
+              <div class="sig-card">
+                <span class="sig-tag sig-buyer">BUYER SIGNAL</span>
+                <div class="sig-text">CFO flagged budget approval in Q1 — wants to see ROI model before signing.</div>
+              </div>
+              <div class="sig-card">
+                <span class="sig-tag sig-market">MARKET</span>
+                <div class="sig-text">Competitors repositioning toward "fractional RevOps" — opening on the advisory/strategy side.</div>
+              </div>
+              <div class="sig-card">
+                <span class="sig-tag sig-trend">TREND</span>
+                <div class="sig-text">Three separate prospects mentioned AI-readiness as a board-level priority for 2025.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VECTOR -->
+    <div class="tool-block v-block" id="vector">
+      <div class="tool-header">
+        <div class="tool-icon-lg" style="background:var(--v-bg);color:var(--v);border:1px solid var(--v-dim)">V</div>
+        <div class="tool-meta">
+          <div class="tool-eyebrow" style="color:var(--v)">Tool 04</div>
+          <div class="tool-name-lg">Vector</div>
+          <div class="tool-one-liner">Growth Command Center — builds your complete growth strategy across 8 steps, from diagnostic to 90-day activation plan.</div>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="steps">
+          <div class="step">
+            <div class="step-track">
+              <div class="step-num" style="background:var(--v-bg);color:var(--v);border:1px solid var(--v-dim)">01</div>
+              <div class="step-line"></div>
+            </div>
+            <div class="step-body">
+              <div class="step-title">Practice Diagnostic</div>
+              <div class="step-desc">8 questions about your firm — who you serve, what you offer, how you grow. Vector uses these to calibrate every subsequent output. Resolve taxonomy and Intelligence signals flow in automatically.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-track">
+              <div class="step-num" style="background:var(--v-bg);color:var(--v);border:1px solid var(--v-dim)">02</div>
+              <div class="step-line"></div>
+            </div>
+            <div class="step-body">
+              <div class="step-title">AI Pipeline runs 4 agents</div>
+              <div class="step-desc">Signal Extractor → Positioning Agent → Credibility Drafter → Offer Architect. Runs in under 60 seconds. All outputs are editable.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-track">
+              <div class="step-num" style="background:var(--v-bg);color:var(--v);border:1px solid var(--v-dim)">03</div>
+              <div class="step-line"></div>
+            </div>
+            <div class="step-body">
+              <div class="step-title">Positioning &amp; Offers</div>
+              <div class="step-desc">Three fully-developed service offers with names, pricing tiers, framing, and activation plans. Regenerate any offer, or try a different angle.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-track">
+              <div class="step-num" style="background:var(--v-bg);color:var(--v);border:1px solid var(--v-dim)">04</div>
+              <div class="step-line"></div>
+            </div>
+            <div class="step-body">
+              <div class="step-title">Referral Engine</div>
+              <div class="step-desc">AI-drafted warm intro language for your top referral sources — matched to the right offer, ready to send. Not a contact list, actual language.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-track">
+              <div class="step-num" style="background:var(--v-bg);color:var(--v);border:1px solid var(--v-dim)">05</div>
+              <div class="step-line"></div>
+            </div>
+            <div class="step-body">
+              <div class="step-title">Credibility Kit, Client Intake &amp; 90-Day Plan</div>
+              <div class="step-desc">AI-written case studies, a transcript-based intake tool that extracts deal signals before you write a proposal, and a phased 90-day activation roadmap with milestone targets.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-track">
+              <div class="step-num" style="background:var(--v-bg);color:var(--v);border:1px solid var(--v-dim)">06</div>
+              <div class="step-line"></div>
+            </div>
+            <div class="step-body">
+              <div class="step-title">Growth Command Center &amp; Campaign DNA</div>
+              <div class="step-desc">A live operating dashboard — pipeline tracker, 90-day checklist, revenue targets. Campaign DNA maps your positioning to your taxonomy and generates import-ready payloads for HubSpot, Salesforce, Outreach, and LinkedIn.</div>
+            </div>
+          </div>
+        </div>
+        <div class="mock">
+          <div class="mock-bar">
+            <div class="mock-dots"><div class="mock-dot"></div><div class="mock-dot"></div><div class="mock-dot"></div></div>
+            <div class="mock-url"><span style="color:#3BBFA3;margin-right:5px">◆</span>vector.brittbowman.ai/vector</div>
+          </div>
+          <div class="mock-body">
+            <div style="font-size:9px;color:var(--muted);margin-bottom:8px;font-weight:600;letter-spacing:.06em;text-transform:uppercase">Step 02 — Positioning &amp; Offers</div>
+            <div class="vec-offer">
+              <div class="vec-offer-name">GTM Clarity Sprint</div>
+              <div class="vec-offer-price">$8,500 · 3-week engagement · ideal for Series A founders</div>
+            </div>
+            <div class="vec-offer" style="margin-top:6px">
+              <div class="vec-offer-name">RevOps Foundation</div>
+              <div class="vec-offer-price">$22,000 · 6-week engagement · ideal for scale-up CMOs</div>
+            </div>
+            <div class="vec-offer" style="margin-top:6px">
+              <div class="vec-offer-name">Strategic Advisory Retainer</div>
+              <div class="vec-offer-price">$4,500/mo · ongoing · ideal for PE portco operators</div>
+            </div>
+            <div style="margin-top:10px;display:flex;gap:6px">
+              <div style="flex:1;height:28px;background:var(--v);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#07090C">Regenerate offers</div>
+              <div style="height:28px;padding:0 10px;background:var(--card2);border:1px solid var(--border2);border-radius:6px;display:flex;align-items:center;font-size:10px;color:var(--muted)">Try a different angle →</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ENGINE -->
+    <div class="tool-block e-block" id="engine">
+      <div class="tool-header">
+        <div class="tool-icon-lg" style="background:var(--e-bg);color:var(--e);border:1px solid var(--e-dim)">E</div>
+        <div class="tool-meta">
+          <div class="tool-eyebrow" style="color:var(--e)">Tool 05</div>
+          <div class="tool-name-lg">Engine</div>
+          <div class="tool-one-liner">Content Operations Metadata Engine — takes your Vector strategy and generates structured DAM metadata for every content asset across every recommended channel.</div>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="steps">
+          <div class="step">
+            <div class="step-track">
+              <div class="step-num" style="background:var(--e-bg);color:var(--e);border:1px solid var(--e-dim)">01</div>
+              <div class="step-line"></div>
+            </div>
+            <div class="step-body">
+              <div class="step-title">Content plan loads from Vector</div>
+              <div class="step-desc">Engine reads your Vector strategy (positioning, offers, channels) and your Resolve taxonomy from localStorage automatically. No re-entry needed.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-track">
+              <div class="step-num" style="background:var(--e-bg);color:var(--e);border:1px solid var(--e-dim)">02</div>
+              <div class="step-line"></div>
+            </div>
+            <div class="step-body">
+              <div class="step-title">Review recommended assets</div>
+              <div class="step-desc">Engine generates a content plan per channel from your Campaign DNA — Webinars, Slide Decks, LinkedIn Series, Email Sequences, Blog Articles, White Papers, One-Pagers, Partner Briefs.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-track">
+              <div class="step-num" style="background:var(--e-bg);color:var(--e);border:1px solid var(--e-dim)">03</div>
+              <div class="step-line"></div>
+            </div>
+            <div class="step-body">
+              <div class="step-title">Fill in asset metadata</div>
+              <div class="step-desc">Select an asset to open the metadata form. Asset-type-specific fields appear — DAM folder path, copy variants, subject lines, CTA text, audience tags, taxonomy mapping. Live JSON preview updates on the right.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-track">
+              <div class="step-num" style="background:var(--e-bg);color:var(--e);border:1px solid var(--e-dim)">04</div>
+              <div class="step-line"></div>
+            </div>
+            <div class="step-body">
+              <div class="step-title">Export all metadata</div>
+              <div class="step-desc">Export All Metadata downloads a CSV with every asset across every channel — ready to import into your DAM, CMS, or project management system.</div>
+            </div>
+          </div>
+        </div>
+        <div class="mock">
+          <div class="mock-bar">
+            <div class="mock-dots"><div class="mock-dot"></div><div class="mock-dot"></div><div class="mock-dot"></div></div>
+            <div class="mock-url"><span style="color:#E8836B;margin-right:5px">◇</span>vector.brittbowman.ai/engine</div>
+          </div>
+          <div class="mock-body">
+            <div style="font-size:9px;color:var(--muted);margin-bottom:8px;font-weight:600;letter-spacing:.06em;text-transform:uppercase">Content Plan · LinkedIn Channel</div>
+            <div class="eng-asset">
+              <div class="eng-asset-icon">📄</div>
+              <div class="eng-asset-meta">
+                <div class="eng-asset-name">LinkedIn Post Series</div>
+                <div class="eng-asset-tag">GTM Clarity Sprint · 5 posts · targeting Series A founders</div>
+              </div>
+            </div>
+            <div class="eng-asset">
+              <div class="eng-asset-icon">📝</div>
+              <div class="eng-asset-meta">
+                <div class="eng-asset-name">LinkedIn Article</div>
+                <div class="eng-asset-tag">Thought leadership · RevOps Foundation positioning</div>
+              </div>
+            </div>
+            <div class="eng-json-preview">
+              <span class="json-punc">{</span><br>
+              &nbsp;&nbsp;<span class="json-key">"asset_type"</span><span class="json-punc">: </span><span class="json-str">"LinkedIn Post Series"</span><span class="json-punc">,</span><br>
+              &nbsp;&nbsp;<span class="json-key">"dam_folder"</span><span class="json-punc">: </span><span class="json-str">"/campaigns/gtm-sprint/linkedin"</span><span class="json-punc">,</span><br>
+              &nbsp;&nbsp;<span class="json-key">"audience_tag"</span><span class="json-punc">: </span><span class="json-str">"Series A founders"</span><span class="json-punc">,</span><br>
+              &nbsp;&nbsp;<span class="json-key">"offer_link"</span><span class="json-punc">: </span><span class="json-str">"GTM Clarity Sprint"</span><br>
+              <span class="json-punc">}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DATA FLOW -->
+  <section class="flow-data-section" id="data">
+    <div class="section-label">How data moves between tools</div>
+    <div class="flow-data-grid">
+      <div class="fd-row">
+        <div class="fd-from" style="color:var(--d)">Discover</div>
+        <div class="fd-arrow-col">→</div>
+        <div class="fd-line">
+          <div class="fd-what">Readiness scores + recommended modules</div>
+          <div class="fd-detail">Saved to Supabase `practices` table · Vector reads on login and surfaces track recommendation</div>
+        </div>
+      </div>
+      <div class="fd-row">
+        <div class="fd-from" style="color:var(--r)">Resolve</div>
+        <div class="fd-arrow-col">→</div>
+        <div class="fd-line">
+          <div class="fd-what">Taxonomy JSON (audience segments, offer names, content categories)</div>
+          <div class="fd-detail">Saved to `resolve_taxonomy` + org Supabase table · Vector reads for offer naming · Engine reads for asset tagging</div>
+        </div>
+      </div>
+      <div class="fd-row">
+        <div class="fd-from" style="color:var(--i)">Intelligence</div>
+        <div class="fd-arrow-col">→</div>
+        <div class="fd-line">
+          <div class="fd-what">Signal summary (buyer signals, pain points, market trends)</div>
+          <div class="fd-detail">Saved to `intel_signals` + `intel_summary` · Vector's AI pipeline reads the summary when building positioning</div>
+        </div>
+      </div>
+      <div class="fd-row">
+        <div class="fd-from" style="color:var(--v)">Vector</div>
+        <div class="fd-arrow-col">→</div>
+        <div class="fd-line">
+          <div class="fd-what">VEC state (positioning, offers, channel motion, 90-day plan)</div>
+          <div class="fd-detail">Saved to `vec_state` + org Supabase table · Engine reads channel_motion to generate content plan</div>
+        </div>
+      </div>
+      <div class="fd-row">
+        <div class="fd-from" style="color:var(--e)">Engine</div>
+        <div class="fd-arrow-col">→</div>
+        <div class="fd-line">
+          <div class="fd-what">Asset metadata records (DAM fields per content asset)</div>
+          <div class="fd-detail">Saved to `engine_assets` + org Supabase table · Exportable as CSV for import into any DAM or CMS</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="cta-box">
+      <div class="cta-heading">Start with Discover</div>
+      <div class="cta-sub">Complete the readiness assessment and get a personalized implementation roadmap in under 10 minutes.</div>
+      <div class="cta-buttons">
+        <a class="btn-primary" href="https://vector.brittbowman.ai/discover.html">Take the assessment →</a>
+        <a class="btn-secondary" href="https://vector.brittbowman.ai/vector.html">Go straight to Vector</a>
+      </div>
+    </div>
+  </section>
+
+</div>

@@ -85,6 +85,7 @@ body {
 .btn-signout:hover { border-color: var(--muted); color: var(--text); }
 
 /* ── PLATFORM NAV ── */
+.pnav-brand { font-size: 12px; font-weight: 600; color: var(--muted); margin-right: 10px; letter-spacing: 0.04em; }
 .platform-nav {
   display: flex; align-items: center; gap: 2px;
   padding: 0 20px; height: 44px;
@@ -420,6 +421,7 @@ body {
 
   <!-- PLATFORM NAV -->
   <nav class="platform-nav">
+    <span class="pnav-brand">✦ DRIVE</span>
     <a class="pnav-item" href="discover.html">
       <span class="pnav-dot" style="background:#8B7FEC"></span>Discover
     </a>
@@ -508,7 +510,7 @@ body {
 
   <!-- BOTTOM BAR -->
   <div class="bottom-bar">
-    <div class="bottom-stat"><strong id="totalCount">0</strong> signals extracted across all documents</div>
+    <div class="bottom-stat"><strong id="totalCount">0</strong> signals extracted across all documents<span id="sync-indicator" style="font-size:10px;color:var(--accent);opacity:0;transition:opacity .3s;margin-left:10px">● Synced</span></div>
     <a class="btn-continue" href="vector.html">Continue to Vector →</a>
   </div>
 
@@ -522,6 +524,45 @@ body {
 const SUPA_URL = 'https://ilhljjkiijmjpwinovzj.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsaGxqamtpaWptanB3aW5vdnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MTk4MjIsImV4cCI6MjA5OTE5NTgyMn0.w8asDSA-rXuaDfujC2dr4J-EKCzlCVABOuq3VQeeFsE';
 const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+// ── ORG STORE ─────────────────────────────────────────────
+const OrgStore = {
+  orgId: null,
+  userEmail: null,
+
+  init(session) {
+    this.userEmail = session?.user?.email || '';
+    this.orgId = this.userEmail.includes('@')
+      ? this.userEmail.split('@')[1]
+      : 'default';
+  },
+
+  async save(table, data) {
+    if (!this.orgId) return;
+    try {
+      await supa.from(table).upsert({
+        org_id: this.orgId,
+        data: data,
+        updated_at: new Date().toISOString(),
+        updated_by: this.userEmail
+      }, { onConflict: 'org_id' });
+    } catch (_) {}
+  },
+
+  async load(table) {
+    if (!this.orgId) return null;
+    try {
+      const { data, error } = await supa
+        .from(table)
+        .select('data')
+        .eq('org_id', this.orgId)
+        .single();
+      if (error || !data) return null;
+      return data.data;
+    } catch (_) { return null; }
+  }
+};
+// ──────────────────────────────────────────────────────────
 
 /* ── API KEY ── */
 function getApiKey() { return localStorage.getItem('vec_anthropic_key'); }
@@ -593,12 +634,13 @@ async function signOut() {
 async function initAuth() {
   const { data: { session } } = await supa.auth.getSession();
   if (session) {
+    OrgStore.init(session);
     showApp(session.user);
   } else {
     document.getElementById('loginScreen').style.display = 'flex';
   }
   supa.auth.onAuthStateChange((event, session) => {
-    if (session) showApp(session.user);
+    if (session) { OrgStore.init(session); showApp(session.user); }
     else {
       document.getElementById('app').style.display = 'none';
       document.getElementById('loginScreen').style.display = 'flex';
@@ -606,12 +648,12 @@ async function initAuth() {
   });
 }
 
-function showApp(user) {
+async function showApp(user) {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
   if (user?.email) document.getElementById('userEmail').textContent = user.email;
   updateApiStatus();
-  loadSignals();
+  await loadSignals();
   renderFileList();
 }
 
@@ -1050,9 +1092,24 @@ function persistSignals() {
       signals.map(s => ({ ...s, updated_at: new Date().toISOString() }))
     ).then(() => {}).catch(() => {});
   } catch (_) {}
+
+  // Org-shared save
+  OrgStore.save('org_intelligence', signals).then(() => {
+    const si = document.getElementById('sync-indicator');
+    if (si) { si.style.opacity='1'; clearTimeout(si._t); si._t = setTimeout(()=>si.style.opacity='0', 2000); }
+  });
 }
 
-function loadSignals() {
+async function loadSignals() {
+  // 1. Try Supabase (org-shared)
+  const orgData = await OrgStore.load('org_intelligence');
+  if (orgData && Array.isArray(orgData)) {
+    signals = orgData;
+    localStorage.setItem('intel_signals', JSON.stringify(signals));
+    renderSignals();
+    return;
+  }
+  // 2. Fall back to localStorage
   try {
     const stored = localStorage.getItem('intel_signals');
     if (stored) signals = JSON.parse(stored);

@@ -22,11 +22,16 @@
 }
 html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--text);overflow:hidden}
 
-/* ── LOGIN ── */
+/* ── LOGIN / RESULT GATE ── */
 #loginScreen{
   position:fixed;inset:0;top:36px;background:var(--bg);
   display:flex;align-items:center;justify-content:center;
   z-index:999;
+}
+#resultGate{
+  position:fixed;inset:0;top:36px;background:rgba(7,9,12,0.96);
+  display:none;align-items:center;justify-content:center;
+  z-index:998;backdrop-filter:blur(4px);
 }
 .login-box{
   width:100%;max-width:380px;padding:0 24px;
@@ -280,6 +285,39 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 .f30-item{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--text)}
 .f30-item::before{content:'→';color:var(--teal);flex-shrink:0;margin-top:1px}
 
+/* ── SIZE BANNER ── */
+.size-banner{
+  background:var(--purple-bg);border:1px solid var(--purple-border);border-radius:10px;
+  padding:14px 18px;margin-bottom:24px;display:none;align-items:center;gap:12px;
+}
+.size-banner.visible{display:flex}
+.sb-badge{
+  font-size:10px;font-weight:700;letter-spacing:.1em;padding:4px 9px;
+  border-radius:5px;white-space:nowrap;flex-shrink:0;
+}
+.sb-text{font-size:13px;color:var(--text);line-height:1.4}
+.sb-text strong{color:var(--purple)}
+
+/* ── RESULTS SIZE BADGE ── */
+.size-tier-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:6px 14px;border-radius:8px;font-size:11px;font-weight:700;letter-spacing:.08em;
+  margin-bottom:16px;
+}
+
+/* ── RESULTS LAUNCH CTA ── */
+.launch-cta{
+  background:var(--card);border:1px solid var(--border2);border-radius:12px;
+  padding:24px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;gap:20px;
+}
+.launch-cta-text h3{font-size:15px;font-weight:700;margin-bottom:4px}
+.launch-cta-text p{font-size:13px;color:var(--muted);line-height:1.5}
+.launch-cta-btn{
+  height:42px;padding:0 22px;border:none;border-radius:9px;
+  font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;
+  text-decoration:none;display:inline-flex;align-items:center;
+}
+
 /* ── PLATFORM NAV ── */
 .pnav{
   height:36px;background:#050709;border-bottom:1px solid #0E1218;
@@ -302,7 +340,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 
 <!-- PLATFORM NAV -->
 <div class="pnav">
-  <span class="pnav-brand">✦</span>
+  <span class="pnav-brand">✦ DRIVE</span>
   <div class="pnav-sep"></div>
   <a class="pnav-tool pnav-active" href="/discover.html">
     <span class="pnav-dot" style="background:#8B7FEC"></span>Discover
@@ -313,7 +351,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
   <a class="pnav-tool pnav-locked" href="#">
     <span class="pnav-dot" style="background:#5B8CFF"></span>Intelligence
   </a>
-  <a class="pnav-tool" href="/vector.html">
+  <a class="pnav-tool" href="/vector.html?client=1">
     <span class="pnav-dot" style="background:#3BBFA3"></span>Vector
   </a>
   <a class="pnav-tool pnav-locked" href="#">
@@ -347,6 +385,32 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
   </div>
 </div>
 
+<!-- RESULT GATE -->
+<div id="resultGate">
+  <div class="login-box">
+    <div class="login-logo" style="font-size:26px">✦</div>
+    <div class="login-head">
+      <h1>Your report is ready</h1>
+      <p>Enter your email to unlock your full readiness score and stack recommendation.</p>
+    </div>
+    <div class="login-form">
+      <div id="gateForm" style="display:flex;flex-direction:column;gap:10px">
+        <div>
+          <div class="login-label">Work email</div>
+          <input class="login-input" id="gateEmail" type="email" placeholder="you@yourfirm.com" onkeydown="if(event.key==='Enter')sendGateLink()">
+        </div>
+        <div id="gateError" class="login-error"></div>
+        <button class="login-btn" onclick="sendGateLink()">Unlock my report →</button>
+      </div>
+      <div id="gateSent" class="login-sent">
+        <strong>Check your inbox.</strong><br>
+        We sent a magic link — click it to open your report.
+      </div>
+    </div>
+    <div class="login-secure">✦ No passwords — secure magic link only</div>
+  </div>
+</div>
+
 <!-- APP -->
 <div id="app" style="display:none;height:100vh;display:none;grid-template-columns:var(--sidebar) 1fr;grid-template-rows:54px 1fr">
 
@@ -360,8 +424,9 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
     <div class="tb-practice">Assessment for <span id="tbPracticeName">—</span></div>
     <div class="tb-right">
       <div class="tb-phase phase-assess" id="tbPhase">Assessment</div>
-      <button class="tb-save" id="tbSaveBtn" onclick="saveToSupabase()">Save to record</button>
-      <button class="tb-user" onclick="signOut()" id="tbUser">Sign out</button>
+      <button class="tb-save" id="tbSaveBtn" onclick="saveToSupabase()" style="display:none">Save to record</button>
+      <span id="sync-indicator" style="font-size:10px;color:#4BA8C8;opacity:0;transition:opacity .3s;margin-left:10px">● Synced</span>
+      <button class="tb-user" onclick="signOut()" id="tbUser" style="display:none">Sign out</button>
     </div>
   </nav>
 
@@ -373,14 +438,14 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
     </div>
     <div class="sidebar-sections" id="sidebarSections">
       <div class="sec-item active" onclick="goToSection(0)" id="secnav-0">
-        <div class="sec-dot" style="background:#1A1A2E;color:var(--purple)">◎</div>
+        <div class="sec-dot" style="background:var(--faint2);color:var(--muted)" data-active-bg="#1A1A2E" data-active-color="var(--purple)">◎</div>
         <div class="sec-info">
           <div class="sec-label">Org Context</div>
           <div class="sec-sublabel">Practice basics</div>
         </div>
       </div>
       <div class="sec-item" onclick="goToSection(1)" id="secnav-1">
-        <div class="sec-dot" style="background:var(--cyan-bg);color:var(--cyan)">T</div>
+        <div class="sec-dot" style="background:var(--faint2);color:var(--muted)" data-active-bg="var(--cyan-bg)" data-active-color="var(--cyan)">T</div>
         <div class="sec-info">
           <div class="sec-label">Taxonomy</div>
           <div class="sec-sublabel">Language + segments</div>
@@ -388,7 +453,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
         <div class="sec-score" id="score-label-0" style="color:var(--cyan)">—</div>
       </div>
       <div class="sec-item" onclick="goToSection(2)" id="secnav-2">
-        <div class="sec-dot" style="background:var(--blue-bg);color:var(--blue)">S</div>
+        <div class="sec-dot" style="background:var(--faint2);color:var(--muted)" data-active-bg="var(--blue-bg)" data-active-color="var(--blue)">S</div>
         <div class="sec-info">
           <div class="sec-label">Signal</div>
           <div class="sec-sublabel">Data + intelligence</div>
@@ -396,7 +461,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
         <div class="sec-score" id="score-label-1" style="color:var(--blue)">—</div>
       </div>
       <div class="sec-item" onclick="goToSection(3)" id="secnav-3">
-        <div class="sec-dot" style="background:var(--teal-bg);color:var(--teal)">V</div>
+        <div class="sec-dot" style="background:var(--faint2);color:var(--muted)" data-active-bg="var(--teal-bg)" data-active-color="var(--teal)">V</div>
         <div class="sec-info">
           <div class="sec-label">Strategy</div>
           <div class="sec-sublabel">Positioning + offers</div>
@@ -404,7 +469,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
         <div class="sec-score" id="score-label-2" style="color:var(--teal)">—</div>
       </div>
       <div class="sec-item" onclick="goToSection(4)" id="secnav-4">
-        <div class="sec-dot" style="background:var(--orange-bg);color:var(--orange)">H</div>
+        <div class="sec-dot" style="background:var(--faint2);color:var(--muted)" data-active-bg="var(--orange-bg)" data-active-color="var(--orange)">E</div>
         <div class="sec-info">
           <div class="sec-label">Execution</div>
           <div class="sec-sublabel">Content + delivery</div>
@@ -504,6 +569,12 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
         </div>
       </div>
 
+      <!-- SIZE BANNER (shown after step 0 for micro accounts) -->
+      <div class="size-banner" id="sizeBanner">
+        <div class="sb-badge" id="sizeBadge"></div>
+        <div class="sb-text" id="sizeBannerText"></div>
+      </div>
+
       <!-- STEP 1: TAXONOMY -->
       <div class="section-panel" id="panel-1">
         <div class="step-header">
@@ -588,6 +659,46 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 const SUPA_URL = 'https://ilhljjkiijmjpwinovzj.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsaGxqamtpaWptanB3aW5vdnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MTk4MjIsImV4cCI6MjA5OTE5NTgyMn0.w8asDSA-rXuaDfujC2dr4J-EKCzlCVABOuq3VQeeFsE';
 const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+// ── ORG STORE ─────────────────────────────────────────────
+const OrgStore = {
+  orgId: null,
+  userEmail: null,
+
+  init(session) {
+    this.userEmail = session?.user?.email || '';
+    this.orgId = this.userEmail.includes('@')
+      ? this.userEmail.split('@')[1]
+      : 'default';
+  },
+
+  async save(table, data) {
+    if (!this.orgId) return;
+    try {
+      await supa.from(table).upsert({
+        org_id: this.orgId,
+        data: data,
+        updated_at: new Date().toISOString(),
+        updated_by: this.userEmail
+      }, { onConflict: 'org_id' });
+    } catch (_) {}
+  },
+
+  async load(table) {
+    if (!this.orgId) return null;
+    try {
+      const { data, error } = await supa
+        .from(table)
+        .select('data')
+        .eq('org_id', this.orgId)
+        .single();
+      if (error || !data) return null;
+      return data.data;
+    } catch (_) { return null; }
+  }
+};
+// ──────────────────────────────────────────────────────────
+
 let currentUser = null;
 let currentPracticeId = null;
 
@@ -614,30 +725,102 @@ async function sendMagicLink() {
   document.getElementById('loginSent').style.display = 'block';
 }
 
+function restoreDiscoverState(data) {
+  if (!data) return;
+  try {
+    if (data.org_name) { state.orgName = data.org_name; document.getElementById('orgName').value = data.org_name; }
+    if (data.org_industry) { document.getElementById('orgIndustry').value = data.org_industry; }
+    if (data.org_challenge) { document.getElementById('orgChallenge').value = data.org_challenge; }
+    if (data.org_team) { state.orgTeam = data.org_team; document.querySelectorAll('#teamChips .chip').forEach(c => { if (c.textContent.trim() === data.org_team) c.classList.add('sel'); }); }
+    if (data.org_rev) { state.orgRev = data.org_rev; document.querySelectorAll('#revChips .chip').forEach(c => { if (c.textContent.trim() === data.org_rev) c.classList.add('sel'); }); }
+    updateOrgDisplay();
+    updateFooter();
+  } catch (_) {}
+}
+
+function restoreAnonState() {
+  try {
+    const raw = localStorage.getItem('disc_anon');
+    if (!raw) return;
+    const anon = JSON.parse(raw);
+    if (anon.answers) state.answers = anon.answers;
+    if (anon.scores)  state.scores  = anon.scores;
+    if (anon.accountSize) accountSize = anon.accountSize;
+    if (anon.orgName)     { state.orgName = anon.orgName; const el = document.getElementById('orgName'); if (el) el.value = anon.orgName; }
+    if (anon.orgIndustry) { const el = document.getElementById('orgIndustry'); if (el) el.value = anon.orgIndustry; }
+    if (anon.orgChallenge){ const el = document.getElementById('orgChallenge'); if (el) el.value = anon.orgChallenge; }
+    if (anon.orgTeam)     { state.orgTeam = anon.orgTeam; document.querySelectorAll('#teamChips .chip').forEach(c => { if (c.textContent.trim() === anon.orgTeam) c.classList.add('sel'); }); }
+    if (anon.orgRev)      { state.orgRev  = anon.orgRev;  document.querySelectorAll('#revChips .chip').forEach(c => { if (c.textContent.trim() === anon.orgRev) c.classList.add('sel'); }); }
+    if (accountSize) applySizePath();
+    localStorage.removeItem('disc_anon');
+  } catch (_) {}
+}
+
+async function sendGateLink() {
+  const email = document.getElementById('gateEmail').value.trim();
+  const errEl = document.getElementById('gateError');
+  if (!email) { errEl.textContent = 'Please enter your email address'; errEl.style.display = 'block'; return; }
+  errEl.style.display = 'none';
+  const { error } = await supa.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.href } });
+  if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
+  localStorage.setItem('disc_last_email', email);
+  document.getElementById('gateForm').style.display = 'none';
+  document.getElementById('gateSent').style.display = 'block';
+}
+
 async function initAuth() {
   const { data: { session } } = await supa.auth.getSession();
   if (session) {
     currentUser = session.user;
-    showApp();
+    OrgStore.init(session);
+    // Returning from magic link after result gate — restore anon state and show results
+    if (localStorage.getItem('disc_goto_results') === '1') {
+      localStorage.removeItem('disc_goto_results');
+      restoreAnonState();
+      showApp();
+      showResults();
+      return;
+    }
+    const cloudState = await OrgStore.load('org_discover');
+    if (cloudState) {
+      restoreDiscoverState(cloudState);
+    } else {
+      const localState = localStorage.getItem('discover_state');
+      if (localState) { try { restoreDiscoverState(JSON.parse(localState)); } catch (_) {} }
+    }
   } else {
+    // Anonymous: pre-fill login email if known, but show app immediately
     const saved = localStorage.getItem('disc_last_email');
-    if (saved) document.getElementById('loginEmail').value = saved;
-    document.getElementById('loginScreen').style.display = 'flex';
+    if (saved) { document.getElementById('loginEmail').value = saved; document.getElementById('gateEmail').value = saved; }
   }
+  showApp();
   supa.auth.onAuthStateChange((event, session) => {
     if (session && !currentUser) {
       currentUser = session.user;
-      showApp();
+      OrgStore.init(session);
+      document.getElementById('resultGate').style.display = 'none';
+      activateLoggedInUI();
+      if (localStorage.getItem('disc_goto_results') === '1') {
+        localStorage.removeItem('disc_goto_results');
+        restoreAnonState();
+        showResults();
+      }
     }
   });
 }
 
+function activateLoggedInUI() {
+  const userEl = document.getElementById('tbUser');
+  userEl.textContent = currentUser.email.split('@')[0];
+  userEl.style.display = '';
+  document.getElementById('tbSaveBtn').style.display = '';
+}
+
 function showApp() {
-  if (!currentUser) return;
   document.getElementById('loginScreen').style.display = 'none';
   const app = document.getElementById('app');
   app.style.display = 'grid';
-  document.getElementById('tbUser').textContent = currentUser.email.split('@')[0];
+  if (currentUser) activateLoggedInUI();
 }
 
 async function signOut() {
@@ -674,6 +857,68 @@ function updateOrgDisplay() {
   const meta = [team ? `${team} people` : null, rev || null].filter(Boolean).join(' · ');
   document.getElementById('sideOrgMeta').textContent = meta || 'Complete context to begin';
   updateFooter();
+}
+
+// ── ACCOUNT SIZE ──────────────────────────────────────
+function getAccountSize() {
+  const team = state.orgTeam;
+  const rev  = state.orgRev;
+  // Enterprise: 51+ OR $10M+
+  if (team === '51-200' || team === '200+' || rev === '$10M–$50M' || rev === '$50M+') return 'enterprise';
+  // Mid: 21-50 OR $2M-$10M
+  if (team === '21-50' || rev === '$2M–$10M') return 'mid';
+  // Micro: 1-5 OR <$500K
+  if (team === '1-5' || rev === '<$500K') return 'micro';
+  // Small: 6-20 OR $500K-$2M
+  return 'small';
+}
+
+const SIZE_CONFIG = {
+  micro:      { label: 'MICRO',      color: 'var(--purple)', bg: 'var(--purple-bg)', border: 'var(--purple-border)',
+                sections: [2, 3], // Strategy + Execution only (0-indexed: skip Taxonomy=0, Signal=1)
+                bannerText: '<strong>Streamlined path.</strong> At your stage, we focus on Strategy and Execution. Taxonomy and Intelligence come later as you scale.' },
+  small:      { label: 'SMALL',      color: 'var(--cyan)',   bg: 'var(--cyan-bg)',   border: 'var(--cyan-border)',
+                sections: [0, 1, 2, 3],
+                bannerText: '<strong>Growth-stage assessment.</strong> All four dimensions are relevant — we\'ll flag where to start first.' },
+  mid:        { label: 'MID-MARKET', color: 'var(--blue)',   bg: 'var(--blue-bg)',   border: 'var(--blue-border)',
+                sections: [0, 1, 2, 3],
+                bannerText: '<strong>Full-stack assessment.</strong> You have the infrastructure for the complete platform — we\'ll sequence it for maximum impact.' },
+  enterprise: { label: 'ENTERPRISE', color: 'var(--teal)',   bg: 'var(--teal-bg)',   border: 'var(--teal-dim)',
+                sections: [0, 1, 2, 3],
+                bannerText: '<strong>Enterprise engagement.</strong> Full platform assessment across all four dimensions. Implementation sequencing included in the recommendation.' },
+};
+
+let accountSize = null;  // set after step 0
+
+function applySizePath() {
+  accountSize = getAccountSize();
+  const cfg = SIZE_CONFIG[accountSize];
+
+  // Show banner
+  const banner = document.getElementById('sizeBanner');
+  const badge  = document.getElementById('sizeBadge');
+  const bannerText = document.getElementById('sizeBannerText');
+  badge.textContent = cfg.label;
+  badge.style.cssText = `background:${cfg.bg};color:${cfg.color};border:1px solid ${cfg.border}`;
+  bannerText.innerHTML = cfg.bannerText;
+  banner.classList.add('visible');
+
+  // For micro: dim Taxonomy + Signal in sidebar but keep them clickable
+  if (accountSize === 'micro') {
+    ['secnav-1','secnav-2'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.style.opacity = '0.4'; }
+    });
+    ['bar-0','bar-1','barval-0','barval-1','score-label-0','score-label-1'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.opacity = '0.4';
+    });
+    // Pre-fill taxonomy + signal as "N/A" (score 4 = medium, won't block)
+    [0,1].forEach(si => {
+      state.answers[si] = [1,1,1,1];
+      recalcScore(si);
+    });
+  }
 }
 
 // ── QUESTIONS ──────────────────────────────────────────
@@ -798,34 +1043,59 @@ function navNext() {
     }
   }
   document.getElementById('footerHint').classList.remove('footer-error');
-  if (currentStep < 4) {
+
+  // Apply size path after step 0
+  if (currentStep === 0) applySizePath();
+
+  const lastSection = (accountSize === 'micro') ? 3 : 4;
+  if (currentStep < lastSection) {
     document.getElementById(`panel-${currentStep}`).classList.remove('active');
-    currentStep++;
+    let nextStep = currentStep + 1;
+    // Micro: skip Taxonomy (step 1) and Signal (step 2), go straight to Strategy (step 3)
+    if (accountSize === 'micro' && currentStep === 0) nextStep = 3;
+    currentStep = nextStep;
     document.getElementById(`panel-${currentStep}`).classList.add('active');
     updateSidebar();
     updateFooter();
     document.getElementById('contentArea').scrollTop = 0;
     window.scrollTo(0, 0);
   } else {
-    showResults();
+    if (!currentUser) {
+      // Save everything so it survives the magic-link redirect
+      try {
+        localStorage.setItem('disc_anon', JSON.stringify({
+          answers: state.answers,
+          scores:  state.scores,
+          accountSize,
+          orgName:      state.orgName,
+          orgIndustry:  document.getElementById('orgIndustry').value,
+          orgChallenge: document.getElementById('orgChallenge').value,
+          orgTeam:      state.orgTeam,
+          orgRev:       state.orgRev,
+        }));
+      } catch (_) {}
+      localStorage.setItem('disc_goto_results', '1');
+      const lastEmail = localStorage.getItem('disc_last_email');
+      if (lastEmail) document.getElementById('gateEmail').value = lastEmail;
+      document.getElementById('resultGate').style.display = 'flex';
+    } else {
+      showResults();
+    }
   }
 }
 
 function navBack() {
   if (currentStep <= 0) return;
-  if (currentStep > 0) {
-    document.getElementById(`panel-${currentStep}`).classList.remove('active');
-    currentStep--;
-    if (currentStep === 0) {
-      document.getElementById('panel-0').classList.add('active');
-    } else {
-      document.getElementById(`panel-${currentStep}`).classList.add('active');
-    }
-    updateSidebar();
-    updateFooter();
-    document.getElementById('contentArea').scrollTop = 0;
-    window.scrollTo(0, 0);
-  }
+  document.getElementById(`panel-${Math.min(currentStep,4)}`).classList.remove('active');
+  let prevStep = currentStep - 1;
+  // Micro: skip back over Signal (step 2) and Taxonomy (step 1), return to step 0
+  if (accountSize === 'micro' && currentStep === 3) prevStep = 0;
+  currentStep = prevStep;
+  document.getElementById(`panel-${currentStep}`).classList.add('active');
+  updateSidebar();
+  updateFooter();
+  document.getElementById('contentArea').scrollTop = 0;
+  window.scrollTo(0, 0);
 }
 
 function goToSection(n) {
@@ -843,7 +1113,18 @@ function goToSection(n) {
 function updateSidebar() {
   for (let i = 0; i <= 4; i++) {
     const el = document.getElementById(`secnav-${i}`);
-    el.classList.toggle('active', i === currentStep);
+    const isActive = i === currentStep;
+    el.classList.toggle('active', isActive);
+    const dot = el.querySelector('.sec-dot');
+    if (dot) {
+      if (isActive) {
+        dot.style.background = dot.dataset.activeBg || 'var(--faint2)';
+        dot.style.color = dot.dataset.activeColor || 'var(--text)';
+      } else {
+        dot.style.background = 'var(--faint2)';
+        dot.style.color = 'var(--muted)';
+      }
+    }
   }
 }
 
@@ -856,7 +1137,8 @@ function updateFooter() {
     btnNext.disabled = !state.orgName || !state.orgTeam;
   } else if (currentStep <= 4) {
     const sectionAnswered = state.answers[currentStep-1].every(v => v !== null);
-    btnNext.textContent = currentStep === 4 ? 'See recommendation →' : 'Next section →';
+    const isLastSection = (currentStep === 4) || (accountSize === 'micro' && currentStep === 3);
+    btnNext.textContent = isLastSection ? 'See recommendation →' : 'Next section →';
     btnNext.disabled = !sectionAnswered;
     btnNext.style.display = 'block';
   } else {
@@ -867,10 +1149,10 @@ function updateFooter() {
 
 // ── RESULTS ──────────────────────────────────────────────
 const SECTION_META = [
-  { name: 'Taxonomy', tool: 'FUSE', color: 'var(--cyan)', bg: 'var(--cyan-bg)', border: 'var(--cyan-border)' },
-  { name: 'Intelligence', tool: 'SIGNAL', color: 'var(--blue)', bg: 'var(--blue-bg)', border: 'var(--blue-border)' },
+  { name: 'Taxonomy', tool: 'RESOLVE', color: 'var(--cyan)', bg: 'var(--cyan-bg)', border: 'var(--cyan-border)' },
+  { name: 'Intelligence', tool: 'INTEL', color: 'var(--blue)', bg: 'var(--blue-bg)', border: 'var(--blue-border)' },
   { name: 'Strategy', tool: 'VECTOR', color: 'var(--teal)', bg: 'var(--teal-bg)', border: 'var(--teal-dim)' },
-  { name: 'Execution', tool: 'HELIX', color: 'var(--orange)', bg: 'var(--orange-bg)', border: 'var(--orange-border)' },
+  { name: 'Execution', tool: 'ENGINE', color: 'var(--orange)', bg: 'var(--orange-bg)', border: 'var(--orange-border)' },
 ];
 
 function levelFor(score) {
@@ -908,10 +1190,10 @@ const RECS = [
 
 function moduleConfig(tool, included) {
   const configs = {
-    FUSE:   { icon:'◈', label:'Resolve',      color:'var(--cyan)',   bg:'var(--cyan-bg)',   border:'var(--cyan-border)' },
-    SIGNAL: { icon:'◉', label:'Intelligence', color:'var(--blue)',   bg:'var(--blue-bg)',   border:'var(--blue-border)' },
+    RESOLVE: { icon:'◈', label:'Resolve',      color:'var(--cyan)',   bg:'var(--cyan-bg)',   border:'var(--cyan-border)' },
+    INTEL:   { icon:'◉', label:'Intelligence', color:'var(--blue)',   bg:'var(--blue-bg)',   border:'var(--blue-border)' },
     VECTOR: { icon:'◆', label:'Vector',       color:'var(--teal)',   bg:'var(--teal-bg)',   border:'var(--teal-dim)' },
-    HELIX:  { icon:'◇', label:'Engine',       color:'var(--orange)', bg:'var(--orange-bg)', border:'var(--orange-border)' },
+    ENGINE: { icon:'◇', label:'Engine',       color:'var(--orange)', bg:'var(--orange-bg)', border:'var(--orange-border)' },
   };
   const c = configs[tool];
   return { ...c, included };
@@ -925,7 +1207,7 @@ function buildRoadmap(scores) {
   if (tx < 6) {
     modules.unshift('fuse');
     steps.push({
-      tool: 'FUSE', color: 'var(--cyan)', bg: 'var(--cyan-bg)', border: 'var(--cyan-border)',
+      tool: 'RESOLVE', color: 'var(--cyan)', bg: 'var(--cyan-bg)', border: 'var(--cyan-border)',
       action: 'Build taxonomy foundation',
       detail: 'Define audience segments, standardize vocabulary, and map content categories. This feeds positioning language directly into Vector.',
       weeks: tx <= 3 ? '3–4 wks' : '1–2 wks',
@@ -935,7 +1217,7 @@ function buildRoadmap(scores) {
   if (sig >= 4) {
     modules.push('signal');
     steps.push({
-      tool: 'SIGNAL', color: 'var(--blue)', bg: 'var(--blue-bg)', border: 'var(--blue-border)',
+      tool: 'INTEL', color: 'var(--blue)', bg: 'var(--blue-bg)', border: 'var(--blue-border)',
       action: 'Activate intelligence layer',
       detail: 'Connect CRM and engagement data. Intelligence surfaces which channels, content, and client archetypes are already working — so Vector positioning is grounded in evidence.',
       weeks: '2–3 wks',
@@ -952,7 +1234,7 @@ function buildRoadmap(scores) {
   if (ex >= 4) {
     modules.push('helix');
     steps.push({
-      tool: 'HELIX', color: 'var(--orange)', bg: 'var(--orange-bg)', border: 'var(--orange-border)',
+      tool: 'ENGINE', color: 'var(--orange)', bg: 'var(--orange-bg)', border: 'var(--orange-border)',
       action: 'Launch content engine',
       detail: 'Take Vector\'s positioning and offer framework into Engine — generate campaign plans, content assets, and wire into the delivery stack (HubSpot, CRM, etc.).',
       weeks: ex >= 6 ? '2–4 wks' : '4–6 wks',
@@ -1003,8 +1285,9 @@ function showResults() {
   document.getElementById('btnBack').style.display = 'block';
   document.getElementById('btnBack').onclick = () => {
     document.getElementById('resultsPanel').style.display = 'none';
-    currentStep = 4;
-    document.getElementById('panel-4').classList.add('active');
+    const backStep = (accountSize === 'micro') ? 3 : 4;
+    currentStep = backStep;
+    document.getElementById(`panel-${backStep}`).classList.add('active');
     document.getElementById('tbPhase').textContent = 'Assessment';
     document.getElementById('tbPhase').className = 'tb-phase phase-assess';
     document.getElementById('tbSaveBtn').style.display = 'none';
@@ -1017,19 +1300,59 @@ function showResults() {
 
   const scores = state.scores;
   const { steps, modules } = buildRoadmap(scores);
+  const size = accountSize || getAccountSize();
+  const sizeCfg = SIZE_CONFIG[size] || SIZE_CONFIG.mid;
+
+  // Account size tier badge
+  const existingBadge = document.getElementById('resSizeBadge');
+  if (existingBadge) existingBadge.remove();
+  const tierBadge = document.createElement('div');
+  tierBadge.id = 'resSizeBadge';
+  tierBadge.className = 'size-tier-badge';
+  tierBadge.style.cssText = `background:${sizeCfg.bg};color:${sizeCfg.color};border:1px solid ${sizeCfg.border}`;
+  tierBadge.textContent = sizeCfg.label;
+  document.querySelector('#resultsPanel .step-header').prepend(tierBadge);
 
   // Title
   const path = pathLabel(modules);
   const displayName = (state.orgName || 'This org').substring(0, 40);
   document.getElementById('resTitle').textContent = `${displayName} — ${path}`;
-  document.getElementById('resDesc').textContent =
-    `Based on the readiness assessment, we recommend a ${modules.length}-tool engagement in the sequence below. This becomes the scope for your proposal.`;
+
+  const sizeDescs = {
+    micro:      `At your stage, Vector is the core engagement. One focused sprint to lock positioning, build the offer stack, and activate your referral engine. Everything else unlocks as you scale.`,
+    small:      `Based on the readiness assessment, we recommend a ${modules.length}-tool engagement in the sequence below. This becomes the scope for your proposal.`,
+    mid:        `Based on the readiness assessment, we recommend a ${modules.length}-tool engagement in the sequence below. This becomes the scope for your proposal.`,
+    enterprise: `Full-platform engagement recommended. The sequence below is optimized for your team size and existing infrastructure. Implementation support is advised.`,
+  };
+  document.getElementById('resDesc').textContent = sizeDescs[size] || sizeDescs.mid;
+
+  // Launch CTA (size-specific)
+  const existingCta = document.getElementById('launchCta');
+  if (existingCta) existingCta.remove();
+  const ctaDiv = document.createElement('div');
+  ctaDiv.id = 'launchCta';
+  ctaDiv.className = 'launch-cta';
+  const ctaConfigs = {
+    micro:      { heading: 'Start with Vector', sub: 'Your fastest path to growth — one focused sprint to lock positioning, offers, and referral engine.', btn: 'Open Vector →', href: '/vector.html?client=1', color: '#3BBFA3', bg: '#3BBFA3', text: '#07090C' },
+    small:      { heading: modules.includes('fuse') ? 'Start with Resolve' : 'Start with Vector', sub: 'Build the vocabulary and segmentation foundation, then move straight into Vector.', btn: modules.includes('fuse') ? 'Open Resolve →' : 'Open Vector →', href: modules.includes('fuse') ? '/resolve.html' : '/vector.html', color: '#4DE8FF', bg: '#3BBFA3', text: '#07090C' },
+    mid:        { heading: 'Begin implementation', sub: `${modules.length}-tool engagement across ${modules.join(', ')}. Kick off with the first tool in sequence.`, btn: 'Open Vector →', href: '/vector.html?client=1', color: '#3BBFA3', bg: '#3BBFA3', text: '#07090C' },
+    enterprise: { heading: 'Full-stack engagement', sub: `Recommended for your team size: all ${modules.length} tools in sequence. Vector anchors the strategy; Resolve, Intelligence, and Engine activate around it.`, btn: 'Open Vector →', href: '/vector.html?client=1', color: '#3BBFA3', bg: '#3BBFA3', text: '#07090C' },
+  };
+  const cta = ctaConfigs[size] || ctaConfigs.mid;
+  ctaDiv.innerHTML = `
+    <div class="launch-cta-text">
+      <h3>${cta.heading}</h3>
+      <p>${cta.sub}</p>
+    </div>
+    <a class="launch-cta-btn" href="${cta.href}" style="background:${cta.bg};color:${cta.text}">${cta.btn}</a>`;
+  document.getElementById('resultsPanel').insertBefore(ctaDiv,
+    document.getElementById('resultsPanel').querySelector('.results-grid'));
 
   // Module pills
   const pillsEl = document.getElementById('modulePills');
   pillsEl.innerHTML = '';
-  const PILL_HREFS = { FUSE: '/resolve.html', SIGNAL: '/intelligence.html', VECTOR: '/vector.html', HELIX: '#' };
-  ['FUSE','SIGNAL','VECTOR','HELIX'].forEach(tool => {
+  const PILL_HREFS = { RESOLVE: '/resolve.html', INTEL: '/intelligence.html', VECTOR: '/vector.html', ENGINE: '/engine.html' };
+  ['RESOLVE','INTEL','VECTOR','ENGINE'].forEach(tool => {
     const included = modules.includes(tool.toLowerCase());
     const c = moduleConfig(tool, included);
     const pill = document.createElement('a');
@@ -1131,6 +1454,11 @@ async function saveToSupabase() {
 
     if (error) throw error;
     currentPracticeId = data?.id;
+    // Persist locally and to org layer
+    localStorage.setItem('discover_state', JSON.stringify(readiness));
+    try { OrgStore.save('org_discover', readiness); } catch (_) {}
+    const syncEl = document.getElementById('sync-indicator');
+    if (syncEl) { syncEl.style.opacity = '1'; setTimeout(() => { syncEl.style.opacity = '0'; }, 2000); }
     btn.textContent = '✓ Saved';
     setTimeout(() => { btn.textContent = 'Save to record'; btn.disabled = false; }, 2000);
   } catch (e) {

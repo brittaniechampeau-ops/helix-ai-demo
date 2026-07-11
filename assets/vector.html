@@ -526,7 +526,7 @@
 
 <!-- ── PLATFORM NAV ── -->
 <div class="pnav">
-  <span class="pnav-brand">✦</span>
+  <span class="pnav-brand">✦ DRIVE</span>
   <div class="pnav-sep"></div>
   <a class="pnav-tool" href="/discover.html">
     <span class="pnav-dot" style="background:#8B7FEC"></span>Discover
@@ -596,6 +596,7 @@
       </div>
       <div style="display:flex;gap:8px;align-items:center">
         <button class="btn btn-primary" style="gap:6px" onclick="adminNewClient()">+ New Client</button>
+        <button class="btn btn-ghost" style="font-size:12px;color:var(--accent);border:1px solid var(--accent)" onclick="openMyWorkspace()">My Workspace →</button>
         <button class="btn btn-ghost" style="font-size:12px;color:var(--txt3)" onclick="signOut()">Sign out</button>
       </div>
     </div>
@@ -653,6 +654,7 @@
     <input type="file" id="importInput" accept=".json" style="display:none" onchange="handleImport(event)" />
     <div class="topbar-divider"></div>
     <span id="userEmail" style="font-size:12px;color:var(--txt3);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+    <span id="sync-indicator" style="font-size:10px;color:#3BBFA3;opacity:0;transition:opacity .3s;margin-left:10px">● Synced</span>
     <button class="btn btn-ghost" style="padding:4px 11px;font-size:12px;color:var(--txt3)" onclick="signOut()">Sign out</button>
   </div>
 </div>
@@ -1713,6 +1715,46 @@ function setActiveStep(n) {
 const SUPA_URL = 'https://ilhljjkiijmjpwinovzj.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsaGxqamtpaWptanB3aW5vdnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MTk4MjIsImV4cCI6MjA5OTE5NTgyMn0.w8asDSA-rXuaDfujC2dr4J-EKCzlCVABOuq3VQeeFsE';
 const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+// ── ORG STORE ─────────────────────────────────────────────
+const OrgStore = {
+  orgId: null,
+  userEmail: null,
+
+  init(session) {
+    this.userEmail = session?.user?.email || '';
+    this.orgId = this.userEmail.includes('@')
+      ? this.userEmail.split('@')[1]
+      : 'default';
+  },
+
+  async save(table, data) {
+    if (!this.orgId) return;
+    try {
+      await supa.from(table).upsert({
+        org_id: this.orgId,
+        data: data,
+        updated_at: new Date().toISOString(),
+        updated_by: this.userEmail
+      }, { onConflict: 'org_id' });
+    } catch (_) {}
+  },
+
+  async load(table) {
+    if (!this.orgId) return null;
+    try {
+      const { data, error } = await supa
+        .from(table)
+        .select('data')
+        .eq('org_id', this.orgId)
+        .single();
+      if (error || !data) return null;
+      return data.data;
+    } catch (_) { return null; }
+  }
+};
+// ──────────────────────────────────────────────────────────
+
 let currentUser = null;
 
 async function sendMagicLink() {
@@ -1793,6 +1835,10 @@ function applyDiscoverReadiness() {
 // ─── PERSISTENCE ───────────────────────────────────────
 function saveState() {
   try { localStorage.setItem('vec_v1', JSON.stringify({ VEC, PHASE })); } catch(e) {}
+  OrgStore.save('org_vec_state', VEC).then(() => {
+    const si = document.getElementById('sync-indicator');
+    if (si) { si.style.opacity='1'; clearTimeout(si._t); si._t = setTimeout(()=>si.style.opacity='0', 2000); }
+  });
   cloudSave(); // async fire-and-forget
 }
 function clearState() {
@@ -4719,6 +4765,15 @@ function showAdminHome() {
   loadAdminHome();
 }
 
+async function openMyWorkspace() {
+  document.getElementById('adminHome').style.display = 'none';
+  const fromCloud = await cloudLoad();
+  applyDiscoverReadiness();
+  if (fromCloud) { restoreUI(); showClientHome(); }
+  else if (restoreFromSave()) { restoreUI(); cloudSave(); showClientHome(); }
+  else { updateSidebar(); }
+}
+
 async function loadClientIntoApp(email) {
   const { data } = await supa.from('practices').select('state').eq('email', email).single();
   if (data?.state?.VEC) {
@@ -4746,16 +4801,24 @@ const loginScreen = document.getElementById('loginScreen');
 supa.auth.onAuthStateChange(async (event, session) => {
   if (session) {
     currentUser = session.user;
+    OrgStore.init(session);
     document.getElementById('userEmail').textContent = currentUser.email;
     loginScreen.style.display = 'none';
-    if (isAdmin()) {
+    if (isAdmin() && !new URLSearchParams(location.search).has('client')) {
       showAdminHome();
     } else {
       const fromCloud = await cloudLoad();
       applyDiscoverReadiness();
       if (fromCloud) { restoreUI(); showClientHome(); }
-      else if (restoreFromSave()) { restoreUI(); cloudSave(); showClientHome(); }
-      else { updateSidebar(); }
+      else {
+        const orgData = await OrgStore.load('org_vec_state');
+        if (orgData) {
+          Object.assign(VEC, orgData);
+          try { localStorage.setItem('vec_v1', JSON.stringify({ VEC, PHASE })); } catch(e) {}
+          restoreUI(); cloudSave(); showClientHome();
+        } else if (restoreFromSave()) { restoreUI(); cloudSave(); showClientHome(); }
+        else { updateSidebar(); }
+      }
     }
   } else {
     currentUser = null;

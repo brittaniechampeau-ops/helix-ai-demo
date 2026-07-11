@@ -178,6 +178,48 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 .sdot{width:6px;height:6px;border-radius:50%;background:var(--faint);cursor:pointer;transition:all .2s;}
 .sdot.active{background:var(--teal);width:18px;border-radius:3px}
 .progress-line{position:fixed;bottom:70px;left:0;height:2px;background:var(--teal);transition:width .1s linear;opacity:.7;}
+.wrap{padding:22px 28px;display:flex;flex-direction:column;gap:14px;height:100%}
+.cred-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;flex:1}
+.cred-card{background:var(--card);border:1px solid var(--border2);border-radius:9px;padding:14px 15px;display:flex;flex-direction:column;gap:8px;opacity:0;transform:translateY(10px);transition:opacity .4s ease,transform .4s ease;}
+.cred-card.show{opacity:1;transform:none}
+.cred-tag{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#4BA8C8;background:#0D2535;border:1px solid #1a4a6b;border-radius:4px;padding:2px 7px;align-self:flex-start;}
+.cred-co{font-size:12px;font-weight:600;line-height:1.3}
+.cred-result{font-size:19px;font-weight:700;color:var(--teal);margin:2px 0}
+.cred-result span{font-size:10px;color:var(--muted);font-weight:400}
+.cred-desc{font-size:10px;color:var(--muted);line-height:1.5;flex:1}
+.proof-row{display:flex;gap:8px}
+.proof-pill{flex:1;background:var(--card);border:1px solid var(--border2);border-radius:7px;padding:8px 12px;display:flex;flex-direction:column;gap:3px;opacity:0;transition:opacity .4s ease;}
+.proof-pill.show{opacity:1}
+.proof-num{font-size:18px;font-weight:700;color:var(--teal);font-family:var(--mono)}
+.proof-lbl{font-size:10px;color:var(--muted)}
+.intake-files{display:flex;flex-direction:column;gap:6px;flex:1}
+.intake-file{display:flex;align-items:flex-start;gap:10px;padding:9px 11px;border-radius:7px;background:var(--card2);border:1px solid var(--border);opacity:0;transform:translateX(-6px);transition:opacity .3s ease,transform .3s ease;}
+.intake-file.show{opacity:1;transform:none}
+.intake-signals{display:flex;flex-direction:column;gap:6px}
+.isig{display:flex;gap:10px;padding:9px 12px;background:var(--card);border:1px solid var(--border2);border-radius:7px;opacity:0;transform:translateX(6px);transition:opacity .3s ease,transform .3s ease;}
+.isig.show{opacity:1;transform:none}
+.isig-tag{font-size:9px;font-weight:700;letter-spacing:.08em;white-space:nowrap;padding:2px 6px;border-radius:4px;align-self:flex-start;margin-top:1px}
+.isig-tag.pain{color:#E8836B;background:#2e1a14;border:1px solid #5a3020}
+.isig-tag.need{color:#4BA8C8;background:#0D2535;border:1px solid #1a4a6b}
+.isig-tag.budget{color:#7EC87E;background:#12261a;border:1px solid #2a4a2a}
+.isig-tag.timing{color:#9B8FE8;background:#1a1535;border:1px solid #3a2a6b}
+.isig-text{font-size:11px;color:var(--muted);line-height:1.4}
+.plan-phases{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;flex:1}
+.plan-phase{background:var(--card);border:1px solid var(--border2);border-radius:9px;padding:14px 15px;display:flex;flex-direction:column;gap:8px;opacity:0;transform:translateY(8px);transition:opacity .4s ease,transform .4s ease;}
+.plan-phase.show{opacity:1;transform:none}
+.phase-label{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);background:var(--teal-bg);border:1px solid var(--teal-dim);border-radius:4px;padding:2px 7px;align-self:flex-start;}
+.phase-period{font-size:13px;font-weight:600;margin-top:2px}
+.phase-focus{font-size:10px;color:var(--muted);margin-bottom:4px}
+.phase-items{display:flex;flex-direction:column;gap:5px}
+.pitem{display:flex;gap:7px;font-size:10px;color:var(--muted);align-items:flex-start}
+.pitem-dot{width:5px;height:5px;border-radius:50%;background:var(--teal-dim);flex-shrink:0;margin-top:4px}
+.pitem-dot.done{background:var(--teal)}
+.pitem.done{color:var(--text)}
+.plan-kpi{display:flex;gap:8px}
+.kpi-card{flex:1;background:var(--card);border:1px solid var(--border2);border-radius:7px;padding:10px 12px;opacity:0;transition:opacity .4s ease;}
+.kpi-card.show{opacity:1}
+.kpi-val{font-size:20px;font-weight:700;color:var(--teal);font-family:var(--mono)}
+.kpi-lbl{font-size:10px;color:var(--muted);margin-top:2px}
 </style>
 
 <h2 class="sr-only">Vector — Animated Demo · Mid-sized firm · Summit Partners</h2>
@@ -449,6 +491,134 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
         </div>
       </div>
 
+      <!-- SCENE: CREDIBILITY KIT -->
+      <div class="scene" id="sC">
+        <div class="wrap">
+          <div>
+            <div class="step-eyebrow"><div class="step-num">STEP 04</div></div>
+            <div class="step-title">Credibility Kit</div>
+            <div class="step-sub">AI-written case studies and proof points — calibrated for mid-market buyers and ready to deploy in proposals, decks, and outreach</div>
+          </div>
+          <div class="cred-grid">
+            <div class="cred-card" id="cc0">
+              <div class="cred-tag">Case Study</div>
+              <div class="cred-co">Northgate Industrial Ops Overhaul</div>
+              <div class="cred-result">38%<span> cost reduction</span></div>
+              <div class="cred-desc">$35M manufacturer hitting a growth ceiling. Summit redesigned cross-functional operations and stood up a 90-day accountability system — results visible within the first quarter.</div>
+            </div>
+            <div class="cred-card" id="cc1">
+              <div class="cred-tag">Case Study</div>
+              <div class="cred-co">Blackridge PortCo #4 Fractional COO</div>
+              <div class="cred-result">$8.5M<span> EBITDA gain</span></div>
+              <div class="cred-desc">PE-backed company at $22M ARR with no operational leadership below the founder. Summit's fractional COO engagement installed process infrastructure and a leadership team in 60 days.</div>
+            </div>
+            <div class="cred-card" id="cc2">
+              <div class="cred-tag">Case Study</div>
+              <div class="cred-co">Redwood Partners Change Sprint</div>
+              <div class="cred-result">2×<span> team retention</span></div>
+              <div class="cred-desc">Pre-M&A change readiness engagement for a 45-person firm facing cultural integration risk. Summit's stakeholder alignment playbook cut attrition risk in half before close.</div>
+            </div>
+          </div>
+          <div class="proof-row">
+            <div class="proof-pill" id="pp0"><div class="proof-num">28</div><div class="proof-lbl">Engagements completed</div></div>
+            <div class="proof-pill" id="pp1"><div class="proof-num">$140M</div><div class="proof-lbl">Client revenue influenced</div></div>
+            <div class="proof-pill" id="pp2"><div class="proof-num">91%</div><div class="proof-lbl">Client retention rate</div></div>
+            <div class="proof-pill" id="pp3"><div class="proof-num">4.7★</div><div class="proof-lbl">Avg. client satisfaction</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCENE: CLIENT INTAKE -->
+      <div class="scene" id="s5i">
+        <div class="wrap">
+          <div>
+            <div class="step-eyebrow"><div class="step-num">STEP 05</div></div>
+            <div class="step-title">Client Intake</div>
+            <div class="step-sub">Upload a discovery call transcript — Vector extracts pain points, needs, budget signals, and timeline before you write a single proposal line</div>
+          </div>
+          <div class="intake-files">
+            <div class="intake-file" id="if0">
+              <div class="file-ico">🎙️</div>
+              <div class="file-info">
+                <div class="file-nm">Discovery Call — Northgate Industrial · Lauren Kim.vtt</div>
+                <div class="file-st proc" id="if0st">✓ Transcript parsed · Extracting signals…</div>
+                <div class="proc-bar"><div class="proc-bar-fill" id="if0bar" style="width:0%"></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="intake-signals">
+            <div class="isig" id="is0">
+              <div class="isig-tag pain">PAIN</div>
+              <div class="isig-text">Operations team stretched thin — three open manager roles, no succession plan, and VP of Ops leaving in 60 days. Leadership gap is stalling a planned expansion</div>
+            </div>
+            <div class="isig" id="is1">
+              <div class="isig-tag need">NEED</div>
+              <div class="isig-text">Someone who can step in fast, hold cross-functional accountability, and have the leadership team running independently within 90 days — "we don't need a consultant, we need someone to own it"</div>
+            </div>
+            <div class="isig" id="is2">
+              <div class="isig-tag budget">BUDGET</div>
+              <div class="isig-text">Board allocated $120K for ops leadership gap; open to a fractional engagement at $14–18K/month if it accelerates the transition timeline</div>
+            </div>
+            <div class="isig" id="is3">
+              <div class="isig-tag timing">TIMING</div>
+              <div class="isig-text">Wants someone in place before VP departure — decision expected within 2 weeks, not a long procurement cycle</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCENE: 90-DAY ACTIVATION PLAN -->
+      <div class="scene" id="s6">
+        <div class="wrap">
+          <div>
+            <div class="step-eyebrow"><div class="step-num">STEP 06</div></div>
+            <div class="step-title">90-Day Activation Plan</div>
+            <div class="step-sub">A phased growth roadmap with owner assignments, milestone targets, and a Day 45 first-close goal — built to scale a team, not just a founder</div>
+          </div>
+          <div class="plan-phases">
+            <div class="plan-phase" id="ph0">
+              <div class="phase-label">PHASE 1</div>
+              <div class="phase-period">Days 1–30 · Foundation</div>
+              <div class="phase-focus">Align the team and activate infrastructure</div>
+              <div class="phase-items">
+                <div class="pitem done"><div class="pitem-dot done"></div>Offer architecture signed off by partners</div>
+                <div class="pitem done"><div class="pitem-dot done"></div>Credibility kit sent to BD team</div>
+                <div class="pitem done"><div class="pitem-dot done"></div>Referral campaign launched — 12 warm targets</div>
+                <div class="pitem"><div class="pitem-dot"></div>CRM sequences activated (HubSpot)</div>
+              </div>
+            </div>
+            <div class="plan-phase" id="ph1">
+              <div class="phase-label">PHASE 2</div>
+              <div class="phase-period">Days 31–60 · Activation</div>
+              <div class="phase-focus">Drive qualified conversations</div>
+              <div class="phase-items">
+                <div class="pitem"><div class="pitem-dot"></div>5 discovery meetings booked across team</div>
+                <div class="pitem"><div class="pitem-dot"></div>Northgate Industrial proposal submitted</div>
+                <div class="pitem"><div class="pitem-dot"></div>Fractional COO thought leadership published</div>
+                <div class="pitem"><div class="pitem-dot"></div>Blackridge portfolio intro call completed</div>
+              </div>
+            </div>
+            <div class="plan-phase" id="ph2">
+              <div class="phase-label">PHASE 3</div>
+              <div class="phase-period">Days 61–90 · Pipeline</div>
+              <div class="phase-focus">Close and expand</div>
+              <div class="phase-items">
+                <div class="pitem"><div class="pitem-dot"></div>2 engagements closed — $150K committed</div>
+                <div class="pitem"><div class="pitem-dot"></div>3rd engagement in final proposal stage</div>
+                <div class="pitem"><div class="pitem-dot"></div>PE network introductions — 2 new opportunities</div>
+                <div class="pitem"><div class="pitem-dot"></div>Q4 advisory retainer renewals initiated</div>
+              </div>
+            </div>
+          </div>
+          <div class="plan-kpi">
+            <div class="kpi-card" id="kpi0"><div class="kpi-val">$300K</div><div class="kpi-lbl">90-day pipeline target</div></div>
+            <div class="kpi-card" id="kpi1"><div class="kpi-val">12</div><div class="kpi-lbl">Referral targets queued</div></div>
+            <div class="kpi-card" id="kpi2"><div class="kpi-val">5</div><div class="kpi-lbl">Discovery meetings goal</div></div>
+            <div class="kpi-card" id="kpi3"><div class="kpi-val">Day 45</div><div class="kpi-lbl">First close target</div></div>
+          </div>
+        </div>
+      </div>
+
       <div class="scene" id="s5">
         <div class="gcc-wrap">
           <div class="gcc-header">
@@ -555,8 +725,11 @@ const SCENES=[
   {id:'s2',label:'AI Pipeline',text:'Four specialized agents run in sequence and parallel — extracting signals, drafting positioning, architecting offers.',dur:5000,tool:'vector'},
   {id:'s3',label:'Step 02 — Positioning & Offers',text:'Three fully-developed offers with pricing, framing, and activation plans — plus Regenerate and "Try a different angle" controls.',dur:5200,tool:'vector'},
   {id:'s4',label:'Step 03 — Referral Engine',text:'AI-drafted warm intro language for your top referral sources — ready to send, not just a list.',dur:4800,tool:'vector'},
-  {id:'s5',label:'Growth Command Center',text:'Your complete growth system: metrics, 90-day activation checklist, and a live pipeline tracker — all assembled from your diagnostic.',dur:5500,tool:'vector'},
-  {id:'sA',label:'Activate — Campaign DNA',text:'Vector maps your positioning to campaign taxonomy and generates ready-to-import payloads for HubSpot, Salesforce, Marketo, Outreach, and more.',dur:5000,tool:'vector'},
+  {id:'sC',  label:'Step 04 — Credibility Kit',        text:'AI-written case studies and proof points calibrated for mid-market buyers — proof at the right level of specificity to move a $75K+ decision.',              dur:5500, tool:'vector'},
+  {id:'s5i', label:'Step 05 — Client Intake',          text:'Upload a discovery call transcript. Vector extracts pain points, needs, budget signals, and timeline — before you write a single proposal line.',            dur:5500, tool:'vector'},
+  {id:'s6',  label:'Step 06 — 90-Day Activation Plan', text:'A phased growth roadmap with owner assignments, milestone targets, and a Day 45 first-close goal — built to scale a team, not just a founder.',              dur:5500, tool:'vector'},
+  {id:'s5',label:'Step 07 — Growth Command Center',text:'Your complete growth system: metrics, 90-day activation checklist, and a live pipeline tracker — all assembled from your diagnostic.',dur:5500,tool:'vector'},
+  {id:'sA',label:'Step 08 — Activate / Campaign DNA',text:'Vector maps your positioning to campaign taxonomy and generates ready-to-import payloads for HubSpot, Salesforce, Marketo, Outreach, and more.',dur:5000,tool:'vector'},
 ];
 let cur=0,playing=true,rafId=null,startT=0;
 function buildDots(){const el=document.getElementById('stepDots');el.innerHTML='';SCENES.forEach((_,i)=>{const d=document.createElement('div');d.className='sdot'+(i===cur?' active':'');d.onclick=()=>goTo(i);el.appendChild(d);});}
@@ -564,7 +737,38 @@ function updatePnav(tool){document.querySelectorAll('.pnav-item').forEach(el=>{e
 function goTo(n){n=Math.max(0,Math.min(SCENES.length-1,n));document.getElementById(SCENES[cur].id).classList.remove('active');cur=n;const sc=SCENES[cur];document.getElementById(sc.id).classList.add('active');document.getElementById('capLabel').textContent=sc.label;document.getElementById('capText').textContent=sc.text;updatePnav(sc.tool||'vector');buildDots();runSceneAnim(cur);if(playing)resetTimer();}
 function resetTimer(){cancelAnimationFrame(rafId);startT=performance.now();const dur=SCENES[cur].dur;function tick(){if(!playing)return;const pct=Math.min(100,(performance.now()-startT)/dur*100);document.getElementById('progressLine').style.width=pct+'%';if(pct>=100)goTo((cur+1)%SCENES.length);else rafId=requestAnimationFrame(tick);}rafId=requestAnimationFrame(tick);}
 function togglePlay(){playing=!playing;document.getElementById('btnPlay').textContent=playing?'⏸':'▶';if(playing)resetTimer();}
-function runSceneAnim(n){const id=SCENES[n].id;if(id==='s0')animLogin();else if(id==='sR')animR();else if(id==='sI')animI();else if(id==='s1')animDiag();else if(id==='s2')animProc();else if(id==='s3')animPos();else if(id==='s4')animRef();else if(id==='s5')animGcc();else if(id==='sA')animA();}
+function runSceneAnim(n){const id=SCENES[n].id;if(id==='s0')animLogin();else if(id==='sR')animR();else if(id==='sI')animI();else if(id==='s1')animDiag();else if(id==='s2')animProc();else if(id==='s3')animPos();else if(id==='s4')animRef();else if(id==='sC')animCred();else if(id==='s5i')animIntake();else if(id==='s6')animPlan();else if(id==='s5')animGcc();else if(id==='sA')animA();}
+function animCred(){
+  ['cc0','cc1','cc2'].forEach((id,i)=>{
+    const c=document.getElementById(id);
+    if(c){c.classList.remove('show');setTimeout(()=>c.classList.add('show'),300+i*220);}
+  });
+  ['pp0','pp1','pp2','pp3'].forEach((id,i)=>{
+    const c=document.getElementById(id);
+    if(c){c.classList.remove('show');setTimeout(()=>c.classList.add('show'),1100+i*140);}
+  });
+}
+function animIntake(){
+  const f=document.getElementById('if0');
+  if(f){f.classList.remove('show');setTimeout(()=>f.classList.add('show'),300);}
+  const bar=document.getElementById('if0bar');
+  if(bar){bar.style.width='0%';bar.style.transition='none';
+    setTimeout(()=>{bar.style.transition='width 1.8s ease';bar.style.width='82%';},600);}
+  ['is0','is1','is2','is3'].forEach((id,i)=>{
+    const el=document.getElementById(id);
+    if(el){el.classList.remove('show');setTimeout(()=>el.classList.add('show'),900+i*380);}
+  });
+}
+function animPlan(){
+  ['ph0','ph1','ph2'].forEach((id,i)=>{
+    const el=document.getElementById(id);
+    if(el){el.classList.remove('show');setTimeout(()=>el.classList.add('show'),300+i*250);}
+  });
+  ['kpi0','kpi1','kpi2','kpi3'].forEach((id,i)=>{
+    const el=document.getElementById(id);
+    if(el){el.classList.remove('show');setTimeout(()=>el.classList.add('show'),1100+i*120);}
+  });
+}
 function animA(){}
 function animR(){}
 function animI(){['fi0','fi1','fi2'].forEach((id,i)=>{const r=document.getElementById(id);if(r){r.classList.remove('show');setTimeout(()=>r.classList.add('show'),300+i*400);}});['sc0','sc1'].forEach((id,i)=>{const c=document.getElementById(id);if(c){c.classList.remove('show');setTimeout(()=>c.classList.add('show'),1800+i*350);}});const bar=document.getElementById('fi2bar');if(bar){bar.style.width='0%';bar.style.transition='none';setTimeout(()=>{bar.style.transition='width 2s ease';bar.style.width='74%';},700);}}

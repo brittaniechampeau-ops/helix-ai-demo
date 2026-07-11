@@ -290,7 +290,7 @@ body {
 
 <!-- ── PLATFORM NAV ── -->
 <div class="pnav">
-  <span class="pnav-brand">✦</span>
+  <span class="pnav-brand">✦ DRIVE</span>
   <div class="pnav-sep"></div>
   <a class="pnav-tool" href="/discover.html">
     <span class="pnav-dot" style="background:#9B8FE8"></span>Discover
@@ -345,6 +345,7 @@ body {
   </div>
   <div class="topbar-right">
     <span class="user-email" id="userEmailDisplay"></span>
+    <span id="sync-indicator" style="font-size:10px;color:#E8836B;opacity:0;transition:opacity .3s;margin-left:10px">● Synced</span>
     <button class="btn-signout" onclick="signOut()">Sign out</button>
   </div>
 </div>
@@ -412,6 +413,45 @@ body {
 const SUPA_URL = 'https://ilhljjkiijmjpwinovzj.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsaGxqamtpaWptanB3aW5vdnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MTk4MjIsImV4cCI6MjA5OTE5NTgyMn0.w8asDSA-rXuaDfujC2dr4J-EKCzlCVABOuq3VQeeFsE';
 const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+// ── ORG STORE ─────────────────────────────────────────────
+const OrgStore = {
+  orgId: null,
+  userEmail: null,
+
+  init(session) {
+    this.userEmail = session?.user?.email || '';
+    this.orgId = this.userEmail.includes('@')
+      ? this.userEmail.split('@')[1]
+      : 'default';
+  },
+
+  async save(table, data) {
+    if (!this.orgId) return;
+    try {
+      await supa.from(table).upsert({
+        org_id: this.orgId,
+        data: data,
+        updated_at: new Date().toISOString(),
+        updated_by: this.userEmail
+      }, { onConflict: 'org_id' });
+    } catch (_) {}
+  },
+
+  async load(table) {
+    if (!this.orgId) return null;
+    try {
+      const { data, error } = await supa
+        .from(table)
+        .select('data')
+        .eq('org_id', this.orgId)
+        .single();
+      if (error || !data) return null;
+      return data.data;
+    } catch (_) { return null; }
+  }
+};
+// ──────────────────────────────────────────────────────────
 
 const DEFAULT_PRACTICE = 'Your Practice';
 const DEFAULT_OFFERS   = ['Advisory Retainer', 'Project Sprint', 'Diagnostic'];
@@ -685,6 +725,9 @@ function saveCurrentAsset() {
 
   savedAssets[activeId] = vals;
   localStorage.setItem('engine_assets', JSON.stringify(savedAssets));
+  OrgStore.save('org_engine_assets', savedAssets);
+  const si = document.getElementById('sync-indicator');
+  if (si) { si.style.opacity='1'; clearTimeout(si._t); si._t = setTimeout(()=>si.style.opacity='0', 2000); }
   updateBottomCount();
 }
 
@@ -1086,7 +1129,16 @@ async function signOut() {
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
-function initApp(session) {
+async function initApp(session) {
+  OrgStore.init(session);
+
+  // Load engine assets from Supabase org store, fall back to localStorage
+  const orgData = await OrgStore.load('org_engine_assets');
+  if (orgData !== null) {
+    savedAssets = orgData;
+    try { localStorage.setItem('engine_assets', JSON.stringify(savedAssets)); } catch(_) {}
+  }
+
   loadLocalData();
 
   const practiceName = getPracticeName();

@@ -135,6 +135,7 @@ body {
   background: var(--bg); border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
+.pnav-brand { font-size: 12px; font-weight: 600; color: var(--muted); margin-right: 10px; letter-spacing: 0.04em; }
 .pnav-item {
   display: flex; align-items: center; gap: 5px;
   padding: 4px 12px; border-radius: 5px; font-size: 12px; font-weight: 500;
@@ -424,6 +425,7 @@ body {
 
   <!-- PLATFORM NAV -->
   <nav class="platform-nav">
+    <span class="pnav-brand">✦ DRIVE</span>
     <a href="/discover.html"      class="pnav-item" data-tool="discover">● Discover</a>
     <a href="/resolve.html"       class="pnav-item active" data-tool="resolve">● Resolve</a>
     <a href="/intelligence.html"  class="pnav-item" data-tool="intelligence">● Intelligence</a>
@@ -438,6 +440,7 @@ body {
     </div>
     <span class="progress-label" id="progress-label">Loading…</span>
     <span class="completion-badge" id="completion-badge">—</span>
+    <span id="sync-indicator" style="font-size:10px;color:var(--accent);opacity:0;transition:opacity .3s;margin-left:10px">● Synced</span>
   </div>
 
   <!-- WORKBENCH -->
@@ -480,6 +483,45 @@ body {
 const SUPA_URL = 'https://ilhljjkiijmjpwinovzj.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsaGxqamtpaWptanB3aW5vdnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MTk4MjIsImV4cCI6MjA5OTE5NTgyMn0.w8asDSA-rXuaDfujC2dr4J-EKCzlCVABOuq3VQeeFsE';
 const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+// ── ORG STORE ─────────────────────────────────────────────
+const OrgStore = {
+  orgId: null,
+  userEmail: null,
+
+  init(session) {
+    this.userEmail = session?.user?.email || '';
+    this.orgId = this.userEmail.includes('@')
+      ? this.userEmail.split('@')[1]
+      : 'default';
+  },
+
+  async save(table, data) {
+    if (!this.orgId) return;
+    try {
+      await supa.from(table).upsert({
+        org_id: this.orgId,
+        data: data,
+        updated_at: new Date().toISOString(),
+        updated_by: this.userEmail
+      }, { onConflict: 'org_id' });
+    } catch (_) {}
+  },
+
+  async load(table) {
+    if (!this.orgId) return null;
+    try {
+      const { data, error } = await supa
+        .from(table)
+        .select('data')
+        .eq('org_id', this.orgId)
+        .single();
+      if (error || !data) return null;
+      return data.data;
+    } catch (_) { return null; }
+  }
+};
+// ──────────────────────────────────────────────────────────
 
 // ── DEFAULTS ──────────────────────────────────────────────
 const DEFAULT_TAXONOMY = {
@@ -543,23 +585,6 @@ function uid() {
 function deepClone(obj) { return JSON.parse(JSON.stringify(obj)); }
 
 // ── AUTH ──────────────────────────────────────────────────
-async function initAuth() {
-  const { data: { session } } = await supa.auth.getSession();
-  if (session) {
-    await enterApp(session.user);
-  } else {
-    showLogin();
-  }
-
-  supa.auth.onAuthStateChange(async (event, session) => {
-    if (event === 'SIGNED_IN' && session) {
-      await enterApp(session.user);
-    } else if (event === 'SIGNED_OUT') {
-      showLogin();
-    }
-  });
-}
-
 function showLogin() {
   document.getElementById('login-screen').classList.add('visible');
   document.getElementById('app').style.display = 'none';
@@ -572,6 +597,25 @@ async function enterApp(user) {
   document.getElementById('user-email-display').textContent = user.email;
   await loadTaxonomy();
   render();
+}
+
+async function initAuth() {
+  const { data: { session } } = await supa.auth.getSession();
+  if (session) {
+    OrgStore.init(session);
+    await enterApp(session.user);
+  } else {
+    showLogin();
+  }
+
+  supa.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_IN' && session) {
+      OrgStore.init(session);
+      await enterApp(session.user);
+    } else if (event === 'SIGNED_OUT') {
+      showLogin();
+    }
+  });
 }
 
 document.getElementById('login-btn').addEventListener('click', async () => {
@@ -607,7 +651,15 @@ document.getElementById('signout-btn').addEventListener('click', async () => {
 
 // ── DATA PERSISTENCE ──────────────────────────────────────
 async function loadTaxonomy() {
-  // 1. Try localStorage
+  // 1. Try Supabase (org-shared)
+  const orgData = await OrgStore.load('org_taxonomy');
+  if (orgData) {
+    taxonomy = orgData;
+    localStorage.setItem('resolve_taxonomy', JSON.stringify(taxonomy));
+    return;
+  }
+
+  // 2. Try localStorage
   try {
     const raw = localStorage.getItem('resolve_taxonomy');
     if (raw) {
@@ -615,22 +667,6 @@ async function loadTaxonomy() {
       return;
     }
   } catch (_) {}
-
-  // 2. Try Supabase
-  if (currentUser) {
-    try {
-      const { data, error } = await supa
-        .from('resolve_taxonomy')
-        .select('taxonomy')
-        .eq('user_id', currentUser.id)
-        .maybeSingle();
-      if (!error && data?.taxonomy) {
-        taxonomy = data.taxonomy;
-        localStorage.setItem('resolve_taxonomy', JSON.stringify(taxonomy));
-        return;
-      }
-    } catch (_) {}
-  }
 
   // 3. Defaults
   taxonomy = deepClone(DEFAULT_TAXONOMY);
@@ -657,6 +693,9 @@ function scheduleSave() {
   saveTimer = setTimeout(async () => {
     persistLocal();
     await persistSupabase();
+    await OrgStore.save('org_taxonomy', taxonomy);
+    const si = document.getElementById('sync-indicator');
+    if (si) { si.style.opacity='1'; clearTimeout(si._t); si._t = setTimeout(()=>si.style.opacity='0', 2000); }
     showToast();
   }, 800);
 }
