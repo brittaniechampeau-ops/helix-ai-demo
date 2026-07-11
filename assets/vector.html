@@ -1812,7 +1812,7 @@ async function cloudLoad() {
   let { data } = await supa.from('practices').select('state, readiness').eq('email', currentUser.email).maybeSingle();
   if (!data) {
     const { data: teamRow } = await supa.from('practices').select('state, readiness')
-      .contains('team_emails', JSON.stringify([currentUser.email])).maybeSingle();
+      .contains('team_emails', [currentUser.email]).maybeSingle();
     data = teamRow;
   }
   if (!data) return false;
@@ -1862,10 +1862,13 @@ function closeTeamModal() {
 
 async function refreshTeamList() {
   if (!currentUser) return;
-  const { data } = await supa.from('practices')
-    .select('email, team_emails')
-    .or(`email.eq.${currentUser.email},team_emails.cs.["${currentUser.email}"]`)
-    .maybeSingle();
+  // Try own row first, then check if user is a teammate on someone else's row
+  let { data } = await supa.from('practices').select('email, team_emails').eq('email', currentUser.email).maybeSingle();
+  if (!data) {
+    const { data: teamRow } = await supa.from('practices').select('email, team_emails')
+      .contains('team_emails', [currentUser.email]).maybeSingle();
+    data = teamRow;
+  }
   _teamEmails = data?.team_emails || [];
   _practiceOwnerEmail = data?.email || null;
   renderTeamList();
@@ -1934,6 +1937,11 @@ async function editTeammate(oldEmail) {
 
 async function saveTeamEmails(newList) {
   if (!_practiceOwnerEmail) return false;
+  if (currentUser.email !== _practiceOwnerEmail) {
+    document.getElementById('teamAddError').textContent = 'Only the workspace owner can manage team members';
+    document.getElementById('teamAddError').style.display = 'block';
+    return false;
+  }
   const { error } = await supa.from('practices')
     .update({ team_emails: newList, updated_at: new Date().toISOString() })
     .eq('email', _practiceOwnerEmail);

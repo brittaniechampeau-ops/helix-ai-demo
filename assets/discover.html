@@ -751,8 +751,8 @@ function restoreAnonState() {
     if (anon.scores)  state.scores  = anon.scores;
     if (anon.accountSize) accountSize = anon.accountSize;
     if (anon.orgName)     { state.orgName = anon.orgName; const el = document.getElementById('orgName'); if (el) el.value = anon.orgName; }
-    if (anon.orgIndustry) { const el = document.getElementById('orgIndustry'); if (el) el.value = anon.orgIndustry; }
-    if (anon.orgChallenge){ const el = document.getElementById('orgChallenge'); if (el) el.value = anon.orgChallenge; }
+    if (anon.orgIndustry) { state.orgIndustry = anon.orgIndustry; const el = document.getElementById('orgIndustry'); if (el) el.value = anon.orgIndustry; }
+    if (anon.orgChallenge){ state.orgChallenge = anon.orgChallenge; const el = document.getElementById('orgChallenge'); if (el) el.value = anon.orgChallenge; }
     if (anon.orgTeam)     { state.orgTeam = anon.orgTeam; document.querySelectorAll('#teamChips .chip').forEach(c => { if (c.textContent.trim() === anon.orgTeam) c.classList.add('sel'); }); }
     if (anon.orgRev)      { state.orgRev  = anon.orgRev;  document.querySelectorAll('#revChips .chip').forEach(c => { if (c.textContent.trim() === anon.orgRev) c.classList.add('sel'); }); }
     if (accountSize) applySizePath();
@@ -931,11 +931,10 @@ function applySizePath() {
       const el = document.getElementById(id);
       if (el) el.style.opacity = '0.4';
     });
-    // Pre-fill taxonomy + signal as "N/A" (score 4 = medium, won't block)
-    [0,1].forEach(si => {
-      state.answers[si] = [1,1,1,1];
-      recalcScore(si);
-    });
+    // Pre-fill taxonomy + signal as adequate-but-not-blocking scores
+    // tx=6 (won't trigger Resolve), sig=3 (won't trigger Intel) — micro is Vector-only
+    state.answers[0] = [2,2,1,1]; recalcScore(0); // taxonomy = 6
+    state.answers[1] = [1,1,1,0]; recalcScore(1); // signal = 3
   }
 }
 
@@ -1065,7 +1064,7 @@ function navNext() {
   // Apply size path after step 0
   if (currentStep === 0) applySizePath();
 
-  const lastSection = (accountSize === 'micro') ? 3 : 4;
+  const lastSection = 4;
   if (currentStep < lastSection) {
     document.getElementById(`panel-${currentStep}`).classList.remove('active');
     let nextStep = currentStep + 1;
@@ -1108,6 +1107,7 @@ function navBack() {
   let prevStep = currentStep - 1;
   // Micro: skip back over Signal (step 2) and Taxonomy (step 1), return to step 0
   if (accountSize === 'micro' && currentStep === 3) prevStep = 0;
+  if (accountSize === 'micro' && currentStep === 4) prevStep = 3;
   currentStep = prevStep;
   document.getElementById(`panel-${currentStep}`).classList.add('active');
   updateSidebar();
@@ -1155,7 +1155,7 @@ function updateFooter() {
     btnNext.disabled = !state.orgName || !state.orgTeam;
   } else if (currentStep <= 4) {
     const sectionAnswered = state.answers[currentStep-1].every(v => v !== null);
-    const isLastSection = (currentStep === 4) || (accountSize === 'micro' && currentStep === 3);
+    const isLastSection = (currentStep === 4);
     btnNext.textContent = isLastSection ? 'See recommendation →' : 'Next section →';
     btnNext.disabled = !sectionAnswered;
     btnNext.style.display = 'block';
@@ -1303,7 +1303,7 @@ function showResults() {
   document.getElementById('btnBack').style.display = 'block';
   document.getElementById('btnBack').onclick = () => {
     document.getElementById('resultsPanel').style.display = 'none';
-    const backStep = (accountSize === 'micro') ? 3 : 4;
+    const backStep = 4;
     currentStep = backStep;
     document.getElementById(`panel-${backStep}`).classList.add('active');
     document.getElementById('tbPhase').textContent = 'Assessment';
@@ -1370,8 +1370,9 @@ function showResults() {
   const pillsEl = document.getElementById('modulePills');
   pillsEl.innerHTML = '';
   const PILL_HREFS = { RESOLVE: '/resolve.html', INTEL: '/intelligence.html', VECTOR: '/vector.html', ENGINE: '/engine.html' };
+  const PILL_MODULE_KEYS = { RESOLVE: 'fuse', INTEL: 'signal', VECTOR: 'vector', ENGINE: 'helix' };
   ['RESOLVE','INTEL','VECTOR','ENGINE'].forEach(tool => {
-    const included = modules.includes(tool.toLowerCase());
+    const included = modules.includes(PILL_MODULE_KEYS[tool]);
     const c = moduleConfig(tool, included);
     const pill = document.createElement('a');
     pill.href = PILL_HREFS[tool];
