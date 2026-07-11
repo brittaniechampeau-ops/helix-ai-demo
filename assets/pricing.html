@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DRIVE — Pricing</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07090C;--surface:#0E1218;--surface2:#131920;
+  --border:#1C2535;--border2:#243040;
+  --text:#E8EDF3;--muted:#6B7A8D;--faint:#1C2535;
+  --teal:#3BBFA3;--teal-dim:#1E6B5E;--teal-bg:#0D2E27;
+  --cyan:#4DE8FF;--blue:#5B8CFF;--purple:#8B7FEC;--orange:#FF8A3D;
+  --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-serif;
+}
+html,body{min-height:100%;background:var(--bg);font-family:var(--font);color:var(--text)}
+
+/* NAV */
+.pnav{
+  display:flex;align-items:center;height:36px;padding:0 20px;gap:2px;
+  background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;
+}
+.pnav-brand{font-size:12px;font-weight:700;color:var(--teal);margin-right:12px;letter-spacing:.04em}
+.pnav-sep{width:1px;height:16px;background:var(--border);margin:0 6px}
+.pnav-tool{
+  display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:5px;
+  font-size:12px;font-weight:500;color:var(--muted);text-decoration:none;transition:all .12s;
+}
+.pnav-tool:hover{color:var(--text);background:var(--surface2)}
+.pnav-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+/* PAGE */
+.page{max-width:960px;margin:0 auto;padding:80px 24px}
+
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);margin-bottom:16px}
+.headline{font-size:42px;font-weight:800;letter-spacing:-.04em;line-height:1.1;margin-bottom:16px}
+.subhead{font-size:17px;color:var(--muted);line-height:1.6;max-width:540px;margin-bottom:64px}
+
+/* PLANS */
+.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin-bottom:80px}
+.plan{
+  background:var(--surface);border:1px solid var(--border2);border-radius:14px;
+  padding:32px;display:flex;flex-direction:column;gap:20px;position:relative;
+}
+.plan.featured{border-color:var(--teal-dim);background:linear-gradient(135deg,var(--teal-bg) 0%,var(--surface) 60%)}
+.plan-badge{
+  position:absolute;top:-12px;left:32px;
+  background:var(--teal);color:#07090C;font-size:11px;font-weight:700;
+  padding:3px 10px;border-radius:20px;letter-spacing:.04em;
+}
+.plan-name{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.plan-price{display:flex;align-items:baseline;gap:4px}
+.plan-amount{font-size:40px;font-weight:800;letter-spacing:-.04em}
+.plan-period{font-size:14px;color:var(--muted)}
+.plan-desc{font-size:14px;color:var(--muted);line-height:1.5}
+.plan-features{display:flex;flex-direction:column;gap:10px;flex:1}
+.feature{display:flex;align-items:flex-start;gap:10px;font-size:14px}
+.feature-check{color:var(--teal);flex-shrink:0;margin-top:1px}
+.feature-muted{color:var(--muted)}
+.plan-cta{
+  display:block;text-align:center;padding:13px;border-radius:9px;
+  font-size:14px;font-weight:600;text-decoration:none;cursor:pointer;
+  border:none;font-family:var(--font);transition:all .15s;
+}
+.cta-primary{background:var(--teal);color:#07090C}
+.cta-primary:hover{background:#2ea68f}
+.cta-outline{background:transparent;color:var(--text);border:1px solid var(--border2)}
+.cta-outline:hover{border-color:var(--muted);background:var(--surface2)}
+
+/* TOOLS GRID */
+.tools-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:20px}
+.tools-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:80px}
+.tool-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:18px 20px;
+}
+.tool-card-name{font-size:13px;font-weight:700;margin-bottom:4px}
+.tool-card-desc{font-size:12px;color:var(--muted);line-height:1.5}
+
+/* FAQ */
+.faq{max-width:640px}
+.faq-title{font-size:22px;font-weight:700;letter-spacing:-.02em;margin-bottom:28px}
+.faq-item{border-top:1px solid var(--border);padding:20px 0}
+.faq-q{font-size:14px;font-weight:600;margin-bottom:8px}
+.faq-a{font-size:14px;color:var(--muted);line-height:1.6}
+</style>
+</head>
+<body>
+
+<nav class="pnav">
+  <span class="pnav-brand">✦ DRIVE</span>
+  <div class="pnav-sep"></div>
+  <a class="pnav-tool" href="/discover.html"><span class="pnav-dot" style="background:#8B7FEC"></span>Discover</a>
+  <a class="pnav-tool" href="/resolve.html"><span class="pnav-dot" style="background:#4BA8C8"></span>Resolve</a>
+  <a class="pnav-tool" href="/intelligence.html"><span class="pnav-dot" style="background:#9B8FE8"></span>Intelligence</a>
+  <a class="pnav-tool" href="/vector.html?client=1"><span class="pnav-dot" style="background:#3BBFA3"></span>Vector</a>
+  <a class="pnav-tool" href="/engine.html"><span class="pnav-dot" style="background:#E8836B"></span>Engine</a>
+</nav>
+
+<div class="page">
+  <div class="eyebrow">Pricing</div>
+  <h1 class="headline">One platform.<br>One price.</h1>
+  <p class="subhead">Everything you need to run a modern advisory practice — from first conversation to executed content.</p>
+
+  <div class="plans">
+    <div class="plan">
+      <div class="plan-name">Solo</div>
+      <div class="plan-price">
+        <span class="plan-amount">$197</span>
+        <span class="plan-period">/month</span>
+      </div>
+      <div class="plan-desc">For solo advisors and independent consultants building their first scalable practice.</div>
+      <div class="plan-features">
+        <div class="feature"><span class="feature-check">✓</span> Full Discover assessment</div>
+        <div class="feature"><span class="feature-check">✓</span> Resolve — Taxonomy Workbench</div>
+        <div class="feature"><span class="feature-check">✓</span> Intelligence — Signal Extraction</div>
+        <div class="feature"><span class="feature-check">✓</span> Vector — Growth Command Center</div>
+        <div class="feature"><span class="feature-check">✓</span> Engine — Content Ops Engine</div>
+        <div class="feature"><span class="feature-check">✓</span> Up to 5 active client workspaces</div>
+        <div class="feature"><span class="feature-muted">✗</span> <span style="color:var(--muted)">Team sharing</span></div>
+      </div>
+      <a id="cta-solo" class="plan-cta cta-outline" href="#" onclick="startCheckout('solo')">Get started</a>
+    </div>
+
+    <div class="plan featured">
+      <div class="plan-badge">MOST POPULAR</div>
+      <div class="plan-name">Practice</div>
+      <div class="plan-price">
+        <span class="plan-amount">$497</span>
+        <span class="plan-period">/month</span>
+      </div>
+      <div class="plan-desc">For small advisory firms ready to systematize how they win, serve, and grow clients.</div>
+      <div class="plan-features">
+        <div class="feature"><span class="feature-check">✓</span> Everything in Solo</div>
+        <div class="feature"><span class="feature-check">✓</span> Unlimited client workspaces</div>
+        <div class="feature"><span class="feature-check">✓</span> Team sharing — org-level data sync</div>
+        <div class="feature"><span class="feature-check">✓</span> Up to 5 team seats</div>
+        <div class="feature"><span class="feature-check">✓</span> Priority support</div>
+      </div>
+      <a id="cta-practice" class="plan-cta cta-primary" href="#" onclick="startCheckout('practice')">Get started</a>
+    </div>
+
+    <div class="plan">
+      <div class="plan-name">Firm</div>
+      <div class="plan-price">
+        <span class="plan-amount">$997</span>
+        <span class="plan-period">/month</span>
+      </div>
+      <div class="plan-desc">For growing firms with multiple advisors and a need for standardized GTM infrastructure.</div>
+      <div class="plan-features">
+        <div class="feature"><span class="feature-check">✓</span> Everything in Practice</div>
+        <div class="feature"><span class="feature-check">✓</span> Unlimited team seats</div>
+        <div class="feature"><span class="feature-check">✓</span> White-label client reports</div>
+        <div class="feature"><span class="feature-check">✓</span> Custom onboarding</div>
+        <div class="feature"><span class="feature-check">✓</span> Dedicated Slack channel</div>
+      </div>
+      <a id="cta-firm" class="plan-cta cta-outline" href="#" onclick="startCheckout('firm')">Get started</a>
+    </div>
+  </div>
+
+  <div class="tools-label">What's included in every plan</div>
+  <div class="tools-grid">
+    <div class="tool-card">
+      <div class="tool-card-name" style="color:var(--purple)">◉ Discover</div>
+      <div class="tool-card-desc">Platform readiness assessment. Understand where you are before investing in tools.</div>
+    </div>
+    <div class="tool-card">
+      <div class="tool-card-name" style="color:var(--cyan)">◉ Resolve</div>
+      <div class="tool-card-desc">Taxonomy Workbench. Lock in your language, segments, and ICP before anything else.</div>
+    </div>
+    <div class="tool-card">
+      <div class="tool-card-name" style="color:var(--blue)">◉ Intelligence</div>
+      <div class="tool-card-desc">Market Signal Extraction. Turn client interviews and market data into structured insights.</div>
+    </div>
+    <div class="tool-card">
+      <div class="tool-card-name" style="color:var(--teal)">◉ Vector</div>
+      <div class="tool-card-desc">Growth Command Center. Build, track, and activate your full client growth strategy.</div>
+    </div>
+    <div class="tool-card">
+      <div class="tool-card-name" style="color:var(--orange)">◉ Engine</div>
+      <div class="tool-card-desc">Content Ops Metadata Engine. Translate GTM strategy into execution-ready structured output.</div>
+    </div>
+  </div>
+
+  <div class="faq">
+    <div class="faq-title">Common questions</div>
+    <div class="faq-item">
+      <div class="faq-q">Can I try it before paying?</div>
+      <div class="faq-a">Yes. Discover is completely free — complete the full assessment and see your readiness report with no credit card. Paid tools unlock after you subscribe.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Is there a contract?</div>
+      <div class="faq-a">No. Month-to-month, cancel anytime. Annual plans available at 2 months free — contact us.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">What does "team sharing" mean?</div>
+      <div class="faq-a">On Practice and Firm plans, all team members at the same email domain share the same taxonomy, signals, and strategy data. One source of truth for the whole firm.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Do you offer implementation support?</div>
+      <div class="faq-a">Yes. Britt Bowman LLC offers done-with-you onboarding for advisory firms. <a href="mailto:britt@brittbowman.ai" style="color:var(--teal)">Email us</a> to discuss.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Replace these with your actual Stripe Payment Links once created
+const STRIPE_LINKS = {
+  solo:     'https://buy.stripe.com/REPLACE_SOLO_LINK',
+  practice: 'https://buy.stripe.com/REPLACE_PRACTICE_LINK',
+  firm:     'https://buy.stripe.com/REPLACE_FIRM_LINK',
+}
+
+function startCheckout(plan) {
+  const link = STRIPE_LINKS[plan]
+  if (!link || link.includes('REPLACE')) {
+    alert('Payment links coming soon — contact britt@brittbowman.ai to get started.')
+    return
+  }
+  window.location.href = link
+}
+</script>
+</body>
+</html>

@@ -590,8 +590,20 @@ function showLogin() {
   document.getElementById('app').style.display = 'none';
 }
 
+async function checkSubscription(email) {
+  try {
+    const { data } = await supa.from('subscriptions').select('status').eq('email', email).single();
+    return data?.status === 'active';
+  } catch (_) { return false; }
+}
+
 async function enterApp(user) {
   currentUser = user;
+  const hasSubscription = await checkSubscription(user.email);
+  if (!hasSubscription) {
+    window.location.href = '/pricing.html?from=resolve';
+    return;
+  }
   document.getElementById('login-screen').classList.remove('visible');
   document.getElementById('app').style.display = 'flex';
   document.getElementById('user-email-display').textContent = user.email;

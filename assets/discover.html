@@ -766,6 +766,16 @@ async function sendGateLink() {
   localStorage.setItem('disc_last_email', email);
   document.getElementById('gateForm').style.display = 'none';
   document.getElementById('gateSent').style.display = 'block';
+  // Notify admin of new lead (fire-and-forget)
+  try {
+    const anon = JSON.parse(localStorage.getItem('disc_anon') || '{}');
+    supa.functions.invoke('notify-lead', { body: {
+      type: 'gate', email,
+      org_name: anon.orgName, org_industry: anon.orgIndustry,
+      org_team: anon.orgTeam, org_rev: anon.orgRev,
+      anon_scores: anon.scores, path: anon.accountSize,
+    }});
+  } catch (_) {}
 }
 
 async function initAuth() {
@@ -1461,6 +1471,16 @@ async function saveToSupabase() {
     if (syncEl) { syncEl.style.opacity = '1'; setTimeout(() => { syncEl.style.opacity = '0'; }, 2000); }
     btn.textContent = '✓ Saved';
     setTimeout(() => { btn.textContent = 'Save to record'; btn.disabled = false; }, 2000);
+    // Notify admin with full assessment data (fire-and-forget)
+    try {
+      supa.functions.invoke('notify-lead', { body: {
+        type: 'saved', email: currentUser.email,
+        org_name: readiness.org_name, org_industry: readiness.org_industry,
+        org_team: readiness.org_team, org_rev: readiness.org_rev,
+        scores: { taxonomy: readiness.taxonomy, signal: readiness.signal, strategy: readiness.strategy, execution: readiness.execution },
+        path: readiness.path,
+      }});
+    } catch (_) {}
   } catch (e) {
     console.error(e);
     btn.textContent = 'Save failed — retry';

@@ -648,7 +648,16 @@ async function initAuth() {
   });
 }
 
+async function checkSubscription(email) {
+  try {
+    const { data } = await supa.from('subscriptions').select('status').eq('email', email).single();
+    return data?.status === 'active';
+  } catch (_) { return false; }
+}
+
 async function showApp(user) {
+  const hasSubscription = await checkSubscription(user?.email);
+  if (!hasSubscription) { window.location.href = '/pricing.html?from=intelligence'; return; }
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
   if (user?.email) document.getElementById('userEmail').textContent = user.email;

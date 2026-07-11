@@ -1129,7 +1129,16 @@ async function signOut() {
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
+async function checkSubscription(email) {
+  try {
+    const { data } = await supa.from('subscriptions').select('status').eq('email', email).single();
+    return data?.status === 'active';
+  } catch (_) { return false; }
+}
+
 async function initApp(session) {
+  const hasSubscription = await checkSubscription(session?.user?.email);
+  if (!hasSubscription) { window.location.href = '/pricing.html?from=engine'; return; }
   OrgStore.init(session);
 
   // Load engine assets from Supabase org store, fall back to localStorage

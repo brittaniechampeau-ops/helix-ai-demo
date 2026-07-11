@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lead Dashboard — DRIVE Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07090C;--surface:#0E1218;--card:#131920;--card2:#171F2A;
+  --border:#1C2535;--border2:#243040;
+  --text:#E8EDF3;--muted:#6B7A8D;--faint:#1C2535;--faint2:#243040;
+  --teal:#3BBFA3;--teal-dim:#1E6B5E;--teal-bg:#0D2E27;
+  --cyan:#4DE8FF;--cyan-bg:rgba(77,232,255,.07);--cyan-border:rgba(77,232,255,.2);
+  --blue:#5B8CFF;--blue-bg:rgba(91,140,255,.07);--blue-border:rgba(91,140,255,.2);
+  --purple:#8B7FEC;--purple-bg:rgba(139,127,236,.07);--purple-border:rgba(139,127,236,.2);
+  --orange:#FF8A3D;--orange-bg:rgba(255,138,61,.07);--orange-border:rgba(255,138,61,.2);
+  --red:#E05252;
+  --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-serif;
+  --mono:'SF Mono','Fira Code',monospace;
+}
+html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--text);overflow-x:hidden}
+
+/* ── PLATFORM NAV ── */
+.pnav{
+  height:36px;flex-shrink:0;
+  background:#050709;border-bottom:1px solid #0E1218;
+  display:flex;align-items:center;padding:0 16px;gap:4px;
+  position:fixed;top:0;left:0;right:0;z-index:10000;
+}
+.pnav-brand{font-size:13px;font-weight:700;color:var(--teal);letter-spacing:-.01em;margin-right:10px;flex-shrink:0}
+.pnav-sep{width:1px;height:14px;background:#1C2535;margin:0 6px;flex-shrink:0}
+.pnav-tool{
+  display:flex;align-items:center;gap:6px;
+  padding:4px 10px;border-radius:6px;
+  font-size:12px;font-weight:500;color:#4A5270;
+  text-decoration:none;transition:all .15s;white-space:nowrap;
+}
+.pnav-tool:hover{background:#0E1218;color:var(--text)}
+.pnav-tool.pnav-active{background:#0E1218;color:var(--text)}
+.pnav-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.pnav-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.pnav-admin-badge{
+  font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  padding:3px 8px;border-radius:4px;
+  background:var(--orange-bg);color:var(--orange);border:1px solid var(--orange-border);
+}
+
+/* ── LOGIN SCREEN ── */
+#loginScreen{
+  position:fixed;inset:0;top:36px;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;z-index:999;
+}
+.login-box{
+  width:100%;max-width:380px;padding:0 24px;
+  display:flex;flex-direction:column;align-items:center;gap:24px;
+}
+.login-logo{
+  width:56px;height:56px;border-radius:14px;
+  background:var(--orange-bg);border:1.5px solid var(--orange-border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;font-weight:700;color:var(--orange);letter-spacing:-.5px;
+}
+.login-head{text-align:center}
+.login-head h1{font-size:21px;font-weight:700;letter-spacing:-.03em;margin-bottom:6px}
+.login-head p{font-size:13px;color:var(--muted)}
+.login-form{width:100%;display:flex;flex-direction:column;gap:10px}
+.login-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px}
+.login-input{
+  height:44px;background:var(--card);border:1px solid var(--border2);
+  border-radius:8px;padding:0 14px;color:var(--text);font-size:14px;
+  outline:none;width:100%;font-family:var(--font);
+}
+.login-input:focus{border-color:var(--orange-border)}
+.login-btn{
+  height:44px;background:var(--orange);border:none;border-radius:8px;
+  color:#07090C;font-size:14px;font-weight:600;cursor:pointer;width:100%;
+  font-family:var(--font);transition:opacity .15s;
+}
+.login-btn:hover{opacity:.85}
+.login-btn:disabled{opacity:.5;cursor:default}
+.login-sent{display:none;text-align:center;font-size:13px;color:var(--muted);line-height:1.7}
+.login-sent strong{color:var(--orange)}
+.login-error{
+  display:none;font-size:12px;color:var(--red);
+  padding:8px 12px;background:rgba(224,82,82,.1);border-radius:6px;
+  border:1px solid rgba(224,82,82,.2);
+}
+.login-secure{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px;justify-content:center}
+
+/* ── ACCESS DENIED ── */
+#accessDenied{
+  position:fixed;inset:0;top:36px;background:var(--bg);
+  display:none;align-items:center;justify-content:center;z-index:998;
+}
+.denied-box{text-align:center;max-width:340px;padding:0 24px}
+.denied-icon{font-size:40px;margin-bottom:16px}
+.denied-box h2{font-size:20px;font-weight:700;margin-bottom:8px}
+.denied-box p{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:20px}
+.denied-btn{
+  height:38px;padding:0 20px;background:var(--card);border:1px solid var(--border2);
+  border-radius:8px;color:var(--muted);font-size:13px;cursor:pointer;font-family:var(--font);
+}
+.denied-btn:hover{border-color:var(--border2);color:var(--text)}
+
+/* ── MAIN APP ── */
+#app{display:none;margin-top:36px;min-height:calc(100vh - 36px);padding:32px}
+
+/* ── PAGE HEADER ── */
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;gap:16px;flex-wrap:wrap}
+.page-title-row{display:flex;align-items:center;gap:12px}
+.page-title{font-size:24px;font-weight:700;letter-spacing:-.03em}
+.count-badge{
+  font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;
+  background:var(--orange-bg);color:var(--orange);border:1px solid var(--orange-border);
+}
+.page-sub{font-size:13px;color:var(--muted);margin-top:4px}
+.header-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.btn-refresh{
+  height:36px;padding:0 16px;
+  background:var(--card);border:1px solid var(--border2);
+  border-radius:8px;color:var(--text);font-size:13px;cursor:pointer;
+  font-family:var(--font);display:flex;align-items:center;gap:6px;
+  transition:border-color .15s;
+}
+.btn-refresh:hover{border-color:var(--teal)}
+.btn-refresh svg{opacity:.5}
+.btn-signout{
+  height:36px;padding:0 14px;background:transparent;border:1px solid var(--border);
+  border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer;font-family:var(--font);
+}
+.btn-signout:hover{border-color:var(--border2);color:var(--text)}
+
+/* ── STATS ROW ── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
+.stat-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:18px 20px;
+}
+.stat-label{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.stat-value{font-size:28px;font-weight:700;letter-spacing:-.04em;line-height:1}
+.stat-sub{font-size:12px;color:var(--muted);margin-top:5px}
+.stat-teal .stat-value{color:var(--teal)}
+.stat-cyan .stat-value{color:var(--cyan)}
+.stat-blue .stat-value{color:var(--blue)}
+.stat-orange .stat-value{color:var(--orange)}
+
+/* ── TABLE ── */
+.table-wrap{
+  background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  overflow:hidden;
+}
+.table-topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px;border-bottom:1px solid var(--border);
+}
+.table-title{font-size:13px;font-weight:600}
+.table-meta{font-size:12px;color:var(--muted)}
+.table-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead th{
+  padding:10px 14px;text-align:left;
+  font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap;
+  background:var(--surface);
+}
+thead th.sortable{cursor:pointer;user-select:none}
+thead th.sortable:hover{color:var(--text)}
+thead th.sorted{color:var(--teal)}
+tbody tr{border-bottom:1px solid rgba(28,37,53,.6);transition:background .1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:rgba(255,255,255,.02)}
+td{padding:11px 14px;vertical-align:middle;white-space:nowrap}
+.td-email{font-size:12px;color:var(--text);font-weight:500;max-width:180px;overflow:hidden;text-overflow:ellipsis}
+.td-org{font-size:12px;color:var(--text);font-weight:500;max-width:140px;overflow:hidden;text-overflow:ellipsis}
+.td-industry{font-size:11px;color:var(--muted);max-width:120px;overflow:hidden;text-overflow:ellipsis}
+.td-team{font-size:11px;color:var(--muted)}
+
+/* Score chip */
+.score-wrap{display:flex;align-items:center;gap:6px}
+.score-chip{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:28px;height:22px;border-radius:5px;
+  font-size:11px;font-weight:700;font-family:var(--mono);
+  border:1px solid;
+}
+.score-green{background:rgba(59,191,163,.12);color:var(--teal);border-color:rgba(59,191,163,.25)}
+.score-amber{background:rgba(255,138,61,.1);color:var(--orange);border-color:rgba(255,138,61,.2)}
+.score-red{background:rgba(224,82,82,.1);color:var(--red);border-color:rgba(224,82,82,.2)}
+.score-na{background:rgba(107,122,141,.08);color:var(--muted);border-color:rgba(107,122,141,.15)}
+.score-label{font-size:9px;font-weight:700;letter-spacing:.05em;color:var(--muted);text-transform:uppercase}
+
+/* Path badge */
+.path-badge{
+  display:inline-block;padding:3px 9px;border-radius:12px;
+  font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+}
+.path-micro{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border)}
+.path-small{background:var(--cyan-bg);color:var(--cyan);border:1px solid var(--cyan-border)}
+.path-mid{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+.path-enterprise{background:var(--teal-bg);color:var(--teal);border:1px solid rgba(59,191,163,.2)}
+.path-unknown{background:rgba(107,122,141,.08);color:var(--muted);border:1px solid rgba(107,122,141,.15)}
+
+.td-date{font-size:11px;color:var(--muted);font-family:var(--mono)}
+.btn-open{
+  height:28px;padding:0 12px;background:transparent;
+  border:1px solid var(--border2);border-radius:6px;
+  color:var(--teal);font-size:11px;font-weight:500;cursor:pointer;
+  font-family:var(--font);text-decoration:none;display:inline-flex;
+  align-items:center;gap:4px;white-space:nowrap;transition:all .15s;
+}
+.btn-open:hover{background:var(--teal-bg);border-color:rgba(59,191,163,.3)}
+
+/* Empty state */
+.empty-state{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:64px 24px;text-align:center;gap:12px;
+}
+.empty-icon{font-size:36px;opacity:.3}
+.empty-title{font-size:15px;font-weight:600;color:var(--muted)}
+.empty-sub{font-size:13px;color:var(--muted);opacity:.6;max-width:320px;line-height:1.6}
+
+/* Loading spinner */
+.loading-state{
+  display:flex;align-items:center;justify-content:center;padding:48px;gap:12px;color:var(--muted);font-size:13px;
+}
+.spinner{
+  width:18px;height:18px;border:2px solid var(--border2);border-top-color:var(--teal);
+  border-radius:50%;animation:spin .7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Error banner */
+.error-banner{
+  background:rgba(224,82,82,.07);border:1px solid rgba(224,82,82,.15);
+  border-radius:8px;padding:12px 16px;margin-bottom:20px;
+  font-size:13px;color:var(--red);display:none;
+}
+
+/* Responsive */
+@media(max-width:900px){
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  #app{padding:20px 16px}
+}
+@media(max-width:600px){
+  .stats-row{grid-template-columns:1fr 1fr}
+  .page-title{font-size:20px}
+}
+</style>
+</head>
+<body>
+
+<!-- ── PLATFORM NAV ── -->
+<div class="pnav">
+  <span class="pnav-brand">✦ DRIVE</span>
+  <div class="pnav-sep"></div>
+  <a class="pnav-tool" href="discover.html">
+    <span class="pnav-dot" style="background:#8B7FEC"></span>Discover
+  </a>
+  <a class="pnav-tool" href="resolve.html">
+    <span class="pnav-dot" style="background:#4DE8FF"></span>Resolve
+  </a>
+  <a class="pnav-tool" href="intelligence.html">
+    <span class="pnav-dot" style="background:#5B8CFF"></span>Intelligence
+  </a>
+  <a class="pnav-tool" href="vector.html">
+    <span class="pnav-dot" style="background:#3BBFA3"></span>Vector
+  </a>
+  <a class="pnav-tool" href="engine.html">
+    <span class="pnav-dot" style="background:#FF8A3D"></span>Engine
+  </a>
+  <div class="pnav-right">
+    <span class="pnav-admin-badge">Admin</span>
+  </div>
+</div>
+
+<!-- ── LOGIN SCREEN ── -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">✦</div>
+    <div class="login-head">
+      <h1>Admin Access</h1>
+      <p>Sign in with your admin email to view the lead dashboard.</p>
+    </div>
+    <div class="login-form">
+      <div>
+        <div class="login-label">Email address</div>
+        <input class="login-input" id="loginEmail" type="email" placeholder="you@company.com" autocomplete="email">
+      </div>
+      <div id="loginError" class="login-error"></div>
+      <button class="login-btn" id="loginBtn" onclick="sendMagicLink()">Send Magic Link</button>
+      <div id="loginSent" class="login-sent">
+        Magic link sent to <strong id="sentEmail"></strong>.<br>
+        Check your inbox and click the link to sign in.
+      </div>
+    </div>
+    <div class="login-secure">
+      <svg width="11" height="13" viewBox="0 0 11 13" fill="none"><rect x=".5" y="5" width="10" height="7.5" rx="1.5" stroke="#6B7A8D"/><path d="M2.5 5V3.5a3 3 0 016 0V5" stroke="#6B7A8D" stroke-linecap="round"/></svg>
+      Passwordless · Secure · Admin only
+    </div>
+  </div>
+</div>
+
+<!-- ── ACCESS DENIED ── -->
+<div id="accessDenied">
+  <div class="denied-box">
+    <div class="denied-icon">🔒</div>
+    <h2>Access Denied</h2>
+    <p>This dashboard is restricted to authorized admins only.<br>Sign in with an admin email to continue.</p>
+    <button class="denied-btn" onclick="signOut()">Sign out and try again</button>
+  </div>
+</div>
+
+<!-- ── MAIN APP ── -->
+<div id="app">
+  <div class="page-header">
+    <div>
+      <div class="page-title-row">
+        <h1 class="page-title">Lead Dashboard</h1>
+        <span class="count-badge" id="countBadge">0 submissions</span>
+      </div>
+      <p class="page-sub">Discover assessment submissions · Sorted by most recent</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-refresh" onclick="loadData()">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+          <path d="M11 6.5A4.5 4.5 0 112 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          <path d="M11 3.5v3h-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Refresh
+      </button>
+      <button class="btn-signout" onclick="signOut()">Sign out</button>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card stat-orange">
+      <div class="stat-label">Total Submissions</div>
+      <div class="stat-value" id="statTotal">—</div>
+      <div class="stat-sub">Discover assessments</div>
+    </div>
+    <div class="stat-card stat-teal">
+      <div class="stat-label">Avg Readiness Score</div>
+      <div class="stat-value" id="statAvg">—</div>
+      <div class="stat-sub">Out of 8 per dimension</div>
+    </div>
+    <div class="stat-card stat-blue">
+      <div class="stat-label">This Week</div>
+      <div class="stat-value" id="statWeek">—</div>
+      <div class="stat-sub">New leads (7 days)</div>
+    </div>
+    <div class="stat-card stat-cyan">
+      <div class="stat-label">This Month</div>
+      <div class="stat-value" id="statMonth">—</div>
+      <div class="stat-sub">New leads (30 days)</div>
+    </div>
+  </div>
+
+  <div id="errorBanner" class="error-banner"></div>
+
+  <!-- TABLE -->
+  <div class="table-wrap">
+    <div class="table-topbar">
+      <span class="table-title">All Submissions</span>
+      <span class="table-meta" id="tableMeta">—</span>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Email</th>
+            <th>Org</th>
+            <th>Industry</th>
+            <th>Team · Rev</th>
+            <th title="Resolve / Intelligence / Vector / Engine — scored 0–8">R &nbsp; I &nbsp; V &nbsp; E</th>
+            <th class="sortable sorted" onclick="sortBy('date')">Date ↓</th>
+            <th>Path</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <tr>
+            <td colspan="8">
+              <div class="loading-state"><div class="spinner"></div> Loading submissions…</div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://ilhljjkiijmjpwinovzj.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsaGxqamtpaWptanB3aW5vdnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0MjkyNjYsImV4cCI6MjA2MzAwNTI2Nn0.mNVKKBMGwJVHFfyFBBrIZE9R1UNzAqN33wuKVF8LaZA';
+const ADMIN_EMAILS = ['britt@brittbowman.ai', 'brittanie.champeau@gmail.com'];
+
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let allRows = [];
+let currentSort = { key: 'date', dir: -1 };
+let currentUser = null;
+
+// ── AUTH ────────────────────────────────────────────────────────────────────
+
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session?.user) {
+    handleSession(session.user);
+  } else {
+    showLogin();
+  }
+
+  sb.auth.onAuthStateChange((_event, session) => {
+    if (session?.user) handleSession(session.user);
+    else showLogin();
+  });
+}
+
+function handleSession(user) {
+  currentUser = user;
+  if (!ADMIN_EMAILS.includes(user.email)) {
+    showAccessDenied();
+    return;
+  }
+  showApp();
+  loadData();
+}
+
+async function sendMagicLink() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const btn = document.getElementById('loginBtn');
+  const errorEl = document.getElementById('loginError');
+  const sentEl = document.getElementById('loginSent');
+
+  if (!email) { showLoginError('Please enter your email address.'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+  errorEl.style.display = 'none';
+
+  try {
+    const { error } = await sb.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: window.location.href }
+    });
+    if (error) throw error;
+    document.getElementById('sentEmail').textContent = email;
+    btn.style.display = 'none';
+    sentEl.style.display = 'block';
+  } catch (err) {
+    showLoginError(err.message || 'Failed to send magic link. Please try again.');
+    btn.disabled = false;
+    btn.textContent = 'Send Magic Link';
+  }
+}
+
+function showLoginError(msg) {
+  const el = document.getElementById('loginError');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+async function signOut() {
+  await sb.auth.signOut();
+  showLogin();
+}
+
+function showLogin() {
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('accessDenied').style.display = 'none';
+  document.getElementById('app').style.display = 'none';
+}
+
+function showAccessDenied() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('accessDenied').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+}
+
+function showApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('accessDenied').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+}
+
+// Enter key on login
+document.getElementById('loginEmail').addEventListener('keydown', e => {
+  if (e.key === 'Enter') sendMagicLink();
+});
+
+// ── DATA ─────────────────────────────────────────────────────────────────────
+
+async function loadData() {
+  showLoading();
+  hideError();
+
+  try {
+    // Query practices table
+    const { data: practices, error } = await sb
+      .from('practices')
+      .select('email, org_name, readiness, modules_unlocked, updated_at')
+      .order('updated_at', { ascending: false });
+
+    if (error) throw error;
+
+    // Try leads table (may not exist)
+    let leads = [];
+    try {
+      const { data: leadsData } = await sb
+        .from('leads')
+        .select('email, org_name, gate_hit_at')
+        .order('gate_hit_at', { ascending: false });
+      if (leadsData) leads = leadsData;
+    } catch (_) { /* table doesn't exist yet */ }
+
+    // Merge: start with practices, enrich with leads data if available
+    const leadsMap = {};
+    for (const l of leads) leadsMap[l.email] = l;
+
+    allRows = (practices || []).map(p => {
+      const lead = leadsMap[p.email] || {};
+      const r = p.readiness || {};
+      return {
+        email: p.email || '—',
+        org_name: p.org_name || lead.org_name || '—',
+        industry: r.org_industry || '—',
+        team: r.org_team || '—',
+        rev: r.org_rev || '—',
+        taxonomy: typeof r.taxonomy === 'number' ? r.taxonomy : null,
+        signal: typeof r.signal === 'number' ? r.signal : null,
+        strategy: typeof r.strategy === 'number' ? r.strategy : null,
+        execution: typeof r.execution === 'number' ? r.execution : null,
+        path: r.path || '—',
+        challenge: r.org_challenge || '—',
+        updated_at: p.updated_at || lead.gate_hit_at || null,
+      };
+    });
+
+    renderStats(allRows);
+    renderTable(allRows);
+
+  } catch (err) {
+    showError('Error loading data: ' + (err.message || String(err)));
+    renderTable([]);
+  }
+}
+
+// ── STATS ────────────────────────────────────────────────────────────────────
+
+function renderStats(rows) {
+  const total = rows.length;
+  document.getElementById('statTotal').textContent = total;
+
+  // Count badge
+  const badge = document.getElementById('countBadge');
+  badge.textContent = total === 1 ? '1 submission' : `${total} submissions`;
+
+  // Average readiness (mean of all 4 dimensions, averaged across rows that have at least one score)
+  let scoreSum = 0, scoreCount = 0;
+  for (const r of rows) {
+    const scores = [r.taxonomy, r.signal, r.strategy, r.execution].filter(s => s !== null);
+    if (scores.length) {
+      scoreSum += scores.reduce((a, b) => a + b, 0) / scores.length;
+      scoreCount++;
+    }
+  }
+  document.getElementById('statAvg').textContent = scoreCount
+    ? (scoreSum / scoreCount).toFixed(1)
+    : '—';
+
+  // This week / month
+  const now = Date.now();
+  const week = 7 * 24 * 3600 * 1000;
+  const month = 30 * 24 * 3600 * 1000;
+  const thisWeek = rows.filter(r => r.updated_at && (now - new Date(r.updated_at).getTime()) < week).length;
+  const thisMonth = rows.filter(r => r.updated_at && (now - new Date(r.updated_at).getTime()) < month).length;
+
+  document.getElementById('statWeek').textContent = thisWeek;
+  document.getElementById('statMonth').textContent = thisMonth;
+
+  document.getElementById('tableMeta').textContent =
+    `${total} record${total !== 1 ? 's' : ''} · Last refresh ${new Date().toLocaleTimeString()}`;
+}
+
+// ── TABLE ────────────────────────────────────────────────────────────────────
+
+function scoreChip(val, colorKey) {
+  // colorKey: cyan (Resolve/taxonomy), blue (Intelligence/signal), teal (Vector/strategy), orange (Engine/execution)
+  if (val === null) return `<span class="score-chip score-na">—</span>`;
+  const cls = val >= 6 ? 'score-green' : val >= 4 ? 'score-amber' : 'score-red';
+  return `<span class="score-chip ${cls}">${val}</span>`;
+}
+
+function pathBadge(path) {
+  if (!path || path === '—') return `<span class="path-badge path-unknown">—</span>`;
+  const p = String(path).toLowerCase();
+  const cls = p === 'micro' ? 'path-micro'
+    : p === 'small' ? 'path-small'
+    : p === 'mid' ? 'path-mid'
+    : p === 'enterprise' ? 'path-enterprise'
+    : 'path-unknown';
+  return `<span class="path-badge ${cls}">${path}</span>`;
+}
+
+function formatDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function renderTable(rows) {
+  const tbody = document.getElementById('tableBody');
+
+  if (!rows.length) {
+    tbody.innerHTML = `
+      <tr><td colspan="8">
+        <div class="empty-state">
+          <div class="empty-icon">📋</div>
+          <div class="empty-title">No submissions yet</div>
+          <div class="empty-sub">Once visitors complete Discover, they'll appear here. Share your Discover link to start collecting leads.</div>
+        </div>
+      </td></tr>`;
+    return;
+  }
+
+  // Sort
+  const sorted = [...rows].sort((a, b) => {
+    if (currentSort.key === 'date') {
+      const av = a.updated_at ? new Date(a.updated_at).getTime() : 0;
+      const bv = b.updated_at ? new Date(b.updated_at).getTime() : 0;
+      return currentSort.dir * (bv - av);
+    }
+    return 0;
+  });
+
+  tbody.innerHTML = sorted.map(r => `
+    <tr>
+      <td><div class="td-email" title="${escHtml(r.email)}">${escHtml(r.email)}</div></td>
+      <td><div class="td-org" title="${escHtml(r.org_name)}">${escHtml(r.org_name)}</div></td>
+      <td><div class="td-industry" title="${escHtml(r.industry)}">${escHtml(r.industry)}</div></td>
+      <td><div class="td-team">${escHtml(r.team)}<br><span style="opacity:.5">${escHtml(r.rev)}</span></div></td>
+      <td>
+        <div class="score-wrap">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            <span class="score-label" style="color:var(--cyan)">R</span>
+            ${scoreChip(r.taxonomy,'cyan')}
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            <span class="score-label" style="color:var(--blue)">I</span>
+            ${scoreChip(r.signal,'blue')}
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            <span class="score-label" style="color:var(--teal)">V</span>
+            ${scoreChip(r.strategy,'teal')}
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            <span class="score-label" style="color:var(--orange)">E</span>
+            ${scoreChip(r.execution,'orange')}
+          </div>
+        </div>
+      </td>
+      <td><div class="td-date">${formatDate(r.updated_at)}</div></td>
+      <td>${pathBadge(r.path)}</td>
+      <td><a class="btn-open" href="vector.html?client=1">Open in Vector →</a></td>
+    </tr>
+  `).join('');
+}
+
+function sortBy(key) {
+  if (currentSort.key === key) currentSort.dir *= -1;
+  else { currentSort.key = key; currentSort.dir = -1; }
+  renderTable(allRows);
+}
+
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+
+function escHtml(str) {
+  if (!str || str === '—') return str || '—';
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+function showLoading() {
+  document.getElementById('tableBody').innerHTML = `
+    <tr><td colspan="8"><div class="loading-state"><div class="spinner"></div> Loading submissions…</div></td></tr>`;
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorBanner');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function hideError() {
+  document.getElementById('errorBanner').style.display = 'none';
+}
+
+// ── BOOT ─────────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
