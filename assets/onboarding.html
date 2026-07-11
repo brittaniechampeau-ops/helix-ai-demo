@@ -141,12 +141,27 @@ body{
 /* DIVIDER */
 .guide-divider{border:none;border-top:1px solid var(--border);margin:48px 0}
 
-/* PRINT */
+/* PRINT — remap every token to a clean light palette */
 @media print{
-  .topbar,.no-print{display:none!important}
-  .page{padding:32px 24px}
-  .phase-nav{display:none}
-  body{font-size:13px;background:#fff;color:#111}
+  :root{
+    --bg:#ffffff;--panel:#f5f5f7;--card:#f0f0f4;--card2:#e8e8ee;
+    --text:#0d0d12;--muted:#4a4a5a;--faint:#d8d8e0;--faint2:#c0c0cc;
+    --border:#d0d0dc;--border2:#c4c4d0;
+    --purple:#4c3fcf;--purple-bg:#eeecfc;--purple-border:#c4bef5;
+    --teal:#006e8a;--teal-bg:#e0f5fa;--teal-border:#a0dce8;
+    --blue:#1a4db5;--blue-bg:#e8f0fb;--blue-border:#a8c0f0;
+    --cyan:#006e8a;--cyan-bg:#e0f5fa;--cyan-border:#a0dce8;
+    --orange:#b84800;--orange-bg:#fff0e6;--orange-border:#f5c090;
+    --green:#1a7a60;--green-bg:#e4f5ef;--green-border:#90d8c0;
+    --warn:#8a5a00;--warn-bg:#fff8e0;--warn-border:#f0d870;
+  }
+  .topbar,.no-print,.phase-nav{display:none!important}
+  .page{padding:28px 20px;max-width:100%}
+  body{font-size:12px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .guide-section{margin-bottom:36px}
+  .guide-divider{margin:28px 0}
+  .card{break-inside:avoid}
+  .step{break-inside:avoid}
 }
 
 /* MOBILE */
