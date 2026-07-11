@@ -555,12 +555,22 @@ async function enterApp() {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('app').style.display = 'grid';
   document.getElementById('tbUser').textContent = currentUser.email.split('@')[0];
-  // Load from Discover intake if available
-  const discoverData = await OrgStore.load('org_discover');
-  if (discoverData?.org_name) document.getElementById('tbOrg').textContent = discoverData.org_name;
-  // Load saved resolve state
+  // Load saved resolve state first
   const saved = await OrgStore.load('org_resolve');
   if (saved) { Object.assign(RS, saved); }
+  // Pull taxonomy files from Discover — add any not already in RS.sources
+  const discoverData = await OrgStore.load('org_discover');
+  if (discoverData?.org_name) document.getElementById('tbOrg').textContent = discoverData.org_name;
+  if (discoverData?.intake?.taxFiles?.length) {
+    let added = 0;
+    discoverData.intake.taxFiles.forEach(f => {
+      if (!RS.sources.find(s => s.name === f.name)) {
+        RS.sources.push({ id: uid(), name: f.name, systemLabel: f.label || 'GTM system', fields: [], size: f.size || 0, text: f.text || '' });
+        added++;
+      }
+    });
+    if (added > 0) showToast(`${added} taxonomy source${added > 1 ? 's' : ''} imported from Discover`);
+  }
   render();
 }
 
@@ -676,10 +686,53 @@ async function runAnalysis() {
 }
 
 function generateConflicts(sources) {
-  // Generate realistic cross-system conflicts based on the source system labels
   const systems = sources.map(s => s.systemLabel);
+  // Deduplicate system labels so conflicts are always between distinct systems
+  const distinctSystems = [...new Set(systems)];
   const conflicts = [];
 
+  // Extract real field headers from any CSV sources we have text for
+  const realFields = [];
+  sources.forEach(s => {
+    if (s.text) {
+      const firstLine = s.text.split('\n')[0] || '';
+      const headers = firstLine.split(',').map(h => h.replace(/['"]/g, '').trim()).filter(Boolean);
+      headers.forEach(h => realFields.push({ field: h, system: s.systemLabel }));
+    }
+  });
+
+  // Find fields that appear under different names across systems — these are real conflicts
+  const fieldConflicts = [];
+  if (realFields.length > 1) {
+    const bySystem = {};
+    realFields.forEach(({ field, system }) => {
+      if (!bySystem[system]) bySystem[system] = [];
+      bySystem[system].push(field);
+    });
+    const sysKeys = Object.keys(bySystem);
+    if (sysKeys.length >= 2) {
+      const setA = bySystem[sysKeys[0]];
+      const setB = bySystem[sysKeys[1]];
+      // Fields in A that have a fuzzy match in B with a different label = conflict
+      setA.forEach(fa => {
+        const match = setB.find(fb => {
+          const na = fa.toLowerCase().replace(/[_\s-]/g, '');
+          const nb = fb.toLowerCase().replace(/[_\s-]/g, '');
+          return na !== nb && (na.includes(nb.slice(0,4)) || nb.includes(na.slice(0,4)));
+        });
+        if (match) {
+          fieldConflicts.push({
+            id: uid(), label: `Field naming: "${fa}" vs "${match}"`,
+            sysA: `${sysKeys[0]}: "${fa}"`, sysB: `${sysKeys[1]}: "${match}"`,
+            rec: `Use "${fa.length <= match.length ? fa : match}" — shorter canonical form is less likely to break downstream integrations`,
+            status: 'pending', custom: '',
+          });
+        }
+      });
+    }
+  }
+
+  // Supplement (or replace if no CSV text) with labelled template conflicts
   const CONFLICT_TEMPLATES = [
     { label: 'Persona label mismatch', getA: (s) => `${s}: "VP of Marketing"`, getB: (s) => `${s}: "Marketing Leader"`, rec: '"VP of Marketing" — matches field-level specificity used in CRM assignments' },
     { label: 'Audience tier naming', getA: (s) => `${s}: "Tier 1 / Tier 2"`, getB: (s) => `${s}: "Enterprise / Mid-Market"`, rec: 'Use "Enterprise / Mid-Market" — human-readable and consistent with ICP document language' },
@@ -690,25 +743,14 @@ function generateConflicts(sources) {
     { label: 'Funnel stage labels', getA: (s) => `${s}: "Awareness / Consideration / Decision"`, getB: (s) => `${s}: "Top / Mid / Bottom"`, rec: 'Use "Awareness / Consideration / Decision" — more descriptive and maps cleanly to buyer journey' },
   ];
 
-  // Pick conflicts based on number of sources (more sources = more conflicts plausible)
-  const count = Math.min(CONFLICT_TEMPLATES.length, 2 + (sources.length - 1) * 2);
-  const picked = CONFLICT_TEMPLATES.slice(0, count);
-
-  picked.forEach((t, i) => {
-    const sA = systems[i % systems.length];
-    const sB = systems[(i + 1) % systems.length] || systems[0];
-    conflicts.push({
-      id: uid(),
-      label: t.label,
-      sysA: t.getA(sA),
-      sysB: t.getB(sB !== sA ? sB : (systems[2] || sB + ' (v2)')),
-      rec: t.rec,
-      status: 'pending',
-      custom: '',
-    });
+  const templateCount = Math.max(0, Math.min(CONFLICT_TEMPLATES.length, 2 + (distinctSystems.length - 1) * 2) - fieldConflicts.length);
+  CONFLICT_TEMPLATES.slice(0, templateCount).forEach((t, i) => {
+    const sA = distinctSystems[i % distinctSystems.length] || systems[0];
+    const sB = distinctSystems[(i + 1) % distinctSystems.length] || (systems[1] || systems[0] + ' (v2)');
+    conflicts.push({ id: uid(), label: t.label, sysA: t.getA(sA), sysB: t.getB(sB), rec: t.rec, status: 'pending', custom: '' });
   });
 
-  return conflicts;
+  return [...fieldConflicts, ...conflicts];
 }
 
 function buildInitialTaxonomy(sources) {

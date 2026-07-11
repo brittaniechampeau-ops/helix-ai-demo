@@ -1908,6 +1908,23 @@ async function loadDRIVEContext() {
       VEC._intelligenceSignals = starred;
     }
   } catch (_) {}
+
+  if (!DISCOVER_READINESS) {
+    try {
+      const discoverData = await OrgStore.load('org_discover');
+      if (discoverData?.state?.scores) {
+        const sc = discoverData.state.scores;
+        DISCOVER_READINESS = {
+          taxonomy:  sc.resolve   || 0,
+          signal:    sc.intelligence || 0,
+          strategy:  sc.vector    || 0,
+          execution: sc.engine    || 0,
+          org_name:  discoverData.org_name || '',
+        };
+        applyDiscoverReadiness();
+      }
+    } catch (_) {}
+  }
 }
 
 async function cloudLoad() {

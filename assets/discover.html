@@ -905,7 +905,16 @@ function selectTaxGate(val, el) {
 function handleTaxFiles(e) {
   const files = Array.from(e.target.files);
   files.forEach(f => {
-    state.intake.taxFiles.push({ name: f.name, size: f.size, label: guessTaxLabel(f.name) });
+    const entry = { name: f.name, size: f.size, label: guessTaxLabel(f.name), text: '' };
+    state.intake.taxFiles.push(entry);
+    // Read CSV text so Resolve can use real field names for conflict detection
+    const ext = f.name.split('.').pop().toLowerCase();
+    if (ext === 'csv') {
+      const reader = new FileReader();
+      reader.onload = ev => { entry.text = (ev.target.result || '').slice(0, 50000); };
+      reader.readAsText(f);
+    }
+    // XLSX: store a marker — Resolve will see the system label and use it
   });
   renderTaxFiles();
   updateMaterialsBadge();
@@ -949,7 +958,19 @@ function handleDocFiles(e) {
   const files = Array.from(e.target.files);
   files.forEach(f => {
     const ext = f.name.split('.').pop().toLowerCase();
-    state.intake.docs.push({ name: f.name, type: ext, size: f.size, label: DOC_LABELS[ext] || 'Document' });
+    const entry = { name: f.name, type: ext, size: f.size, label: DOC_LABELS[ext] || 'Document', text: '' };
+    state.intake.docs.push(entry);
+    // Read plain-text files immediately so downstream tools have real content
+    if (['txt', 'vtt', 'md'].includes(ext)) {
+      const reader = new FileReader();
+      reader.onload = ev => { entry.text = (ev.target.result || '').slice(0, 60000); };
+      reader.readAsText(f);
+    }
+    // PDF/DOCX/PPTX require extraction libraries — Intelligence handles those
+    // when the user uploads the file directly there, so we mark for re-upload
+    if (['pdf', 'docx', 'doc', 'pptx', 'ppt'].includes(ext)) {
+      entry.needsExtraction = true;
+    }
   });
   renderDocFiles();
   updateMaterialsBadge();

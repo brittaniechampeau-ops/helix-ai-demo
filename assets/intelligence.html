@@ -540,8 +540,25 @@ function setFilter(type, el) {
 }
 
 // ── DISCOVERY MATERIALS ────────────────────────────────────
+let practiceContext = ''; // positioning context from Vector, injected into extraction prompts
+
 async function loadDiscoveryMaterials() {
-  const discoverData = await OrgStore.load('org_discover');
+  const [discoverData, vecData] = await Promise.all([
+    OrgStore.load('org_discover'),
+    OrgStore.load('org_vec_state'),
+  ]);
+
+  // Build practice context string from Vector positioning for richer signal extraction
+  if (vecData) {
+    const pos = vecData.pos || vecData.practice || {};
+    const parts = [];
+    if (vecData.practice?.name) parts.push(`Practice: ${vecData.practice.name}`);
+    if (pos.buyer || pos.oneline) parts.push(`Positioning: ${pos.oneline || ''}`);
+    if (pos.buyer) parts.push(`Buyer: ${pos.buyer}`);
+    if (pos.constraint) parts.push(`Core problem solved: ${pos.constraint}`);
+    if (parts.length) practiceContext = parts.join('\n');
+  }
+
   if (!discoverData) return;
   if (discoverData.org_name) document.getElementById('tbOrg').textContent = discoverData.org_name;
   const intake = discoverData.intake || {};
@@ -549,26 +566,37 @@ async function loadDiscoveryMaterials() {
   const urls = intake.urls || [];
   const linkedin = intake.linkedin || '';
   let added = 0;
+
   docs.forEach(doc => {
-    if (!IS.files.find(f=>f.name===doc.name && f.fromDiscover)) {
-      IS.files.push({ id:uid(), name:doc.name, size:doc.size||0, status:'queued', signalCount:0, fromDiscover:true, text:'' });
+    if (!IS.files.find(f => f.name === doc.name && f.fromDiscover)) {
+      IS.files.push({
+        id: uid(), name: doc.name, size: doc.size || 0,
+        status: doc.text ? 'queued' : (doc.needsExtraction ? 'needs-upload' : 'queued'),
+        signalCount: 0, fromDiscover: true,
+        text: doc.text || '',
+        needsExtraction: doc.needsExtraction || false,
+      });
       added++;
     }
   });
+
   urls.forEach(u => {
     const name = u.label || u.url;
-    if (!IS.files.find(f=>f.name===name && f.fromDiscover)) {
-      IS.files.push({ id:uid(), name, size:0, status:'queued', signalCount:0, fromDiscover:true, text:u.preview||'' });
+    if (!IS.files.find(f => f.name === name && f.fromDiscover)) {
+      // URLs have preview text (300 chars) — fetch full content via Jina at extraction time
+      IS.files.push({ id: uid(), name, size: 0, status: 'queued', signalCount: 0, fromDiscover: true, text: u.preview || '', url: u.url });
       added++;
     }
   });
-  if (linkedin && !IS.files.find(f=>f.name==='LinkedIn profile' && f.fromDiscover)) {
-    IS.files.push({ id:uid(), name:'LinkedIn profile', size:linkedin.length, status:'queued', signalCount:0, fromDiscover:true, text:linkedin });
+
+  if (linkedin && !IS.files.find(f => f.name === 'LinkedIn profile' && f.fromDiscover)) {
+    IS.files.push({ id: uid(), name: 'LinkedIn profile', size: linkedin.length, status: 'queued', signalCount: 0, fromDiscover: true, text: linkedin });
     added++;
   }
+
   if (added > 0) {
     const banner = document.getElementById('discoverBanner');
-    banner.style.display='block';
+    banner.style.display = 'block';
     document.getElementById('discoverCount').textContent = added;
   }
 }
@@ -601,21 +629,29 @@ function renderFiles() {
   el.innerHTML = IS.files.map(f => {
     const ext = f.name.split('.').pop().toLowerCase();
     const icon = {pdf:'📄',docx:'📝',doc:'📝',txt:'📋',vtt:'🎙️',pptx:'📊',ppt:'📊',md:'📋'}[ext] || '📄';
-    const fclass = {queued:'fs-queued',processing:'fs-processing',done:'fs-done',error:'fs-error'}[f.status] || 'fs-queued';
-    const flabel = {queued:'Queued',processing:'Processing…',done:`${f.signalCount} signals`,error:'Error'}[f.status] || 'Queued';
+    const needsUpload = f.needsExtraction && !f.text;
+    const fclass = needsUpload ? 'fs-error'
+      : {queued:'fs-queued',processing:'fs-processing',done:'fs-done',error:'fs-error'}[f.status] || 'fs-queued';
+    const flabel = needsUpload ? 'Upload locally'
+      : {queued:'Queued',processing:'Processing…',done:`${f.signalCount} signals`,error:'Error'}[f.status] || 'Queued';
+    const discoverMeta = f.fromDiscover
+      ? (needsUpload
+          ? '<span class="from-discover" style="background:rgba(239,68,68,.1);color:#EF4444;border-color:rgba(239,68,68,.3)">Re-upload to extract</span>'
+          : '<span class="from-discover">From Discover</span>')
+      : ((f.size/1024).toFixed(0)+' KB');
     return `<div class="file-card">
       <div class="file-card-top">
         <div class="file-icon">${icon}</div>
         <div class="file-meta">
           <div class="file-name">${f.name}</div>
-          <div class="file-size">${f.fromDiscover ? '<span class="from-discover">From Discover</span>' : ((f.size/1024).toFixed(0)+' KB')}</div>
+          <div class="file-size">${discoverMeta}</div>
         </div>
         <button class="file-del" onclick="removeFile('${f.id}')">✕</button>
       </div>
       ${f.status==='processing' ? '<div class="file-pbar"><div class="file-pfill" style="width:60%"></div></div>' : ''}
       <div style="display:flex;align-items:center;justify-content:space-between">
         <span class="file-status ${fclass}">${flabel}</span>
-        ${f.status==='queued' ? `<button class="btn-extract" onclick="extractOne('${f.id}')">Extract →</button>` : ''}
+        ${!needsUpload && f.status==='queued' ? `<button class="btn-extract" onclick="extractOne('${f.id}')">Extract →</button>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -651,7 +687,7 @@ async function runExtraction() {
     detailEl.textContent = 'Identifying buyer pain, market trends, competitive signals, and intent indicators';
     const text = file.text || `[Document: ${file.name}]`;
     try {
-      const extracted = await callClaude(file.name, text);
+      const extracted = await callClaude(file.name, text, file);
       IS.signals.push(...extracted);
       file.signalCount = extracted.length;
       file.status = 'done';
@@ -676,7 +712,7 @@ async function extractOne(id) {
   file.status='processing'; renderFiles();
   const text = file.text || `[Document: ${file.name}]`;
   try {
-    const extracted = await callClaude(file.name, text);
+    const extracted = await callClaude(file.name, text, file);
     IS.signals.push(...extracted);
     file.signalCount = extracted.length;
     file.status='done';
@@ -689,7 +725,28 @@ async function extractOne(id) {
   render();
 }
 
-async function callClaude(filename, text) {
+async function fetchFullUrl(url) {
+  try {
+    const res = await fetch(`https://r.jina.ai/${url}`, {
+      headers: { 'Accept': 'text/plain', 'X-Return-Format': 'text' },
+      signal: AbortSignal.timeout(12000),
+    });
+    if (!res.ok) return '';
+    return (await res.text()).slice(0, 15000);
+  } catch (_) { return ''; }
+}
+
+async function callClaude(filename, text, fileRef) {
+  // For URL sources with only a preview, fetch the full content now
+  if (fileRef?.url && text.length < 500) {
+    const full = await fetchFullUrl(fileRef.url);
+    if (full) text = full;
+  }
+
+  const contextBlock = practiceContext
+    ? `\n\nPRACTICE CONTEXT (use to focus signal relevance):\n${practiceContext}\n`
+    : '';
+
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method:'POST',
     headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
@@ -698,6 +755,7 @@ async function callClaude(filename, text) {
       max_tokens:2000,
       system:`You are a market intelligence analyst extracting buyer signals from consulting practice documents.
 Extract every meaningful signal — buyer pain, market trends, competitive insight, budget indicators, purchase intent, and objections.
+Prioritize signals most relevant to the practice context if provided.
 Return ONLY a valid JSON array. No markdown fences. No comments.
 
 [{
@@ -705,7 +763,7 @@ Return ONLY a valid JSON array. No markdown fences. No comments.
   "title": "string — 4-8 word headline",
   "text": "string — 1-2 sentence description of the signal with specific evidence",
   "confidence": "high|medium|low"
-}]`,
+}]${contextBlock}`,
       messages:[{role:'user',content:`Source: ${filename}\n\n${text.slice(0,8000)}`}]
     })
   });
