@@ -223,6 +223,15 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 .pill-link{cursor:pointer;text-decoration:none;transition:opacity .15s,transform .1s}
 .pill-link:hover{opacity:.8;transform:translateY(-1px)}
 .size-tier-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:8px;font-size:11px;font-weight:700;letter-spacing:.08em;margin-bottom:16px}
+.track-card{border-radius:12px;padding:22px 24px;margin-bottom:24px;border:1px solid}
+.track-name{font-size:20px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
+.track-tagline{font-size:13px;font-weight:500;margin-bottom:18px;opacity:.8}
+.track-meta{display:flex;gap:24px;flex-wrap:wrap;margin-bottom:16px}
+.track-meta-item{font-size:11px}
+.track-meta-label{font-weight:700;letter-spacing:.06em;text-transform:uppercase;opacity:.5;margin-bottom:2px}
+.track-deliverables{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.track-del{font-size:11px;font-weight:600;padding:3px 9px;border-radius:5px;background:rgba(255,255,255,.06)}
+.track-focus{font-size:13px;line-height:1.6;opacity:.75}
 .launch-cta{background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:24px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;gap:20px}
 .launch-cta-text h3{font-size:15px;font-weight:700;margin-bottom:4px}
 .launch-cta-text p{font-size:13px;color:var(--muted);line-height:1.5}
@@ -1504,12 +1513,91 @@ function first30Items(scores, modules) {
 }
 
 function pathLabel(modules) {
-  if (modules.length === 4) return 'Full stack';
-  if (modules.includes('fuse') && modules.includes('helix')) return 'Growth stack';
-  if (!modules.includes('fuse') && !modules.includes('helix')) return 'Vector core';
-  if (modules.includes('fuse') && !modules.includes('helix')) return 'Foundation + Strategy';
-  if (!modules.includes('fuse') && modules.includes('helix')) return 'Strategy + Execution';
-  return 'Custom stack';
+  const t = getTrack(accountSize || getAccountSize(), modules);
+  return t.name;
+}
+
+function getTrack(size, modules) {
+  const hasFuse  = modules.includes('fuse');
+  const hasHelix = modules.includes('helix');
+  const hasAll   = modules.length === 4;
+
+  if (size === 'enterprise') {
+    return {
+      name:         'Enterprise Governance',
+      tagline:      'Taxonomy, governance, and cross-system alignment — before anything else',
+      color:        'var(--teal)',  bg: 'var(--teal-bg)',  border: 'var(--teal-dim)',
+      duration:     '12–20 weeks',
+      stakeholders: 'Marketing ops, RevOps, data stakeholders, brand',
+      deliverables: ['Cross-system taxonomy', 'Naming convention', 'Governance framework', 'Stakeholder sign-off', 'Positioned strategy'],
+      focus:        'Resolve is the primary engagement. Cross-system conflict detection, canonical field definitions, and governance rules are built and approved before any positioning work begins. Vector and Engine follow with full taxonomy context.',
+      firstStep:    'resolve',
+    };
+  }
+
+  if (hasFuse && hasAll) {
+    return {
+      name:         'Full DRIVE Engagement',
+      tagline:      'End-to-end from taxonomy to content operations',
+      color:        'var(--blue)',  bg: 'var(--blue-bg)',  border: 'var(--blue-border)',
+      duration:     '10–16 weeks',
+      stakeholders: 'Marketing lead, founder/owner, data owner',
+      deliverables: ['Canonical taxonomy', 'Market signals report', 'Campaign DNA', 'Offer architecture', 'Content operations plan'],
+      focus:        'All five DRIVE tools in sequence. Taxonomy foundation sets shared vocabulary. Intelligence surfaces what\'s working in market. Vector builds the growth strategy. Engine operationalizes it.',
+      firstStep:    'resolve',
+    };
+  }
+
+  if (hasFuse && !hasHelix) {
+    return {
+      name:         'Foundation + Strategy',
+      tagline:      'Build vocabulary first — then build positioning on top of it',
+      color:        'var(--cyan)',  bg: 'var(--cyan-bg)',  border: 'var(--cyan-border)',
+      duration:     '6–10 weeks',
+      stakeholders: 'Marketing lead, founder or GM',
+      deliverables: ['Canonical taxonomy', 'Naming convention', 'Campaign DNA', 'Positioning framework', '90-day activation plan'],
+      focus:        'Resolve first to establish shared vocabulary and field definitions. Intelligence layers in market signals if data exists. Vector builds strategy on the clean foundation — so messaging is specific, not generic.',
+      firstStep:    'resolve',
+    };
+  }
+
+  if (!hasFuse && hasHelix) {
+    return {
+      name:         'Strategy + Execution',
+      tagline:      'Positioning locked — move straight to campaign architecture',
+      color:        'var(--purple)', bg: 'var(--purple-bg)', border: 'var(--purple-border)',
+      duration:     '6–10 weeks',
+      stakeholders: 'Founder or owner, marketing lead',
+      deliverables: ['Campaign DNA', 'Offer architecture', 'Referral engine', 'Content operations plan', 'First campaign batch'],
+      focus:        'Taxonomy is already clean enough to build on. Vector runs the full diagnostic to sharpen and systematize what\'s working. Engine activates immediately — translating positioning into content, campaigns, and distribution.',
+      firstStep:    'vector',
+    };
+  }
+
+  if (size === 'micro') {
+    return {
+      name:         'Vector Sprint',
+      tagline:      'One focused sprint to lock positioning and activate growth',
+      color:        'var(--purple)', bg: 'var(--purple-bg)', border: 'var(--purple-border)',
+      duration:     '3–5 weeks',
+      stakeholders: 'Founder or owner (this is a 1:1 engagement)',
+      deliverables: ['Campaign DNA', 'Positioning one-liner', 'Offer stack', 'Referral engine', '30-60-90 plan'],
+      focus:        'At your stage, positioning and offers are the whole game. Vector runs fast — one sprint to define who you serve, what you offer, and how to systematize referrals. Taxonomy and Intelligence come later as infrastructure matures.',
+      firstStep:    'vector',
+    };
+  }
+
+  // small / mid, Vector core
+  return {
+    name:         'Growth Sprint',
+    tagline:      'Strategy and activation — sequenced for your stage',
+    color:        'var(--teal)', bg: 'var(--teal-bg)', border: 'var(--teal-dim)',
+    duration:     '4–8 weeks',
+    stakeholders: 'Founder or owner, marketing lead',
+    deliverables: ['Campaign DNA', 'Offer architecture', 'Referral engine', '90-day plan'],
+    focus:        'Vector is the core engagement. Strategy is the starting point — positioning, offers, and referral activation. Resolve and Intelligence layer in as the team scales and infrastructure matures.',
+    firstStep:    'vector',
+  };
 }
 
 function showResults() {
@@ -1551,29 +1639,36 @@ function showResults() {
   tierBadge.textContent = sizeCfg.label;
   document.querySelector('#resultsPanel .step-header').prepend(tierBadge);
 
-  const path = pathLabel(modules);
+  const track = getTrack(size, modules);
   const displayName = (state.orgName || 'This org').substring(0, 40);
-  document.getElementById('resTitle').textContent = `${displayName} — ${path}`;
+  document.getElementById('resTitle').textContent = `${displayName} — ${track.name}`;
+  document.getElementById('resDesc').textContent = '';
 
-  const sizeDescs = {
-    micro: 'At your stage, Vector is the core engagement. One focused sprint to lock positioning, build the offer stack, and activate your referral engine. Everything else unlocks as you scale.',
-    small: `Based on Discovery, we recommend a ${modules.length}-tool engagement in the sequence below. This becomes the scope for your proposal.`,
-    mid: `Based on Discovery, we recommend a ${modules.length}-tool engagement in the sequence below. This becomes the scope for your proposal.`,
-    enterprise: 'Full-platform engagement recommended. The sequence below is optimized for your team size and existing infrastructure. Implementation support is advised.',
-  };
-  document.getElementById('resDesc').textContent = sizeDescs[size] || sizeDescs.mid;
-
-  // Launch CTA
-  const existingCta = document.getElementById('launchCta');
-  if (existingCta) existingCta.remove();
-  const ctaDiv = document.createElement('div');
-  ctaDiv.id = 'launchCta';
-  ctaDiv.className = 'launch-cta';
-  const ctaHref = modules.includes('fuse') ? '/resolve.html' : '/vector.html';
-  const ctaLabel = modules.includes('fuse') ? 'Open Resolve →' : 'Open Vector →';
-  const ctaHeading = modules.includes('fuse') ? 'Start with Resolve' : 'Start with Vector';
-  ctaDiv.innerHTML = `<div class="launch-cta-text"><h3>${ctaHeading}</h3><p>${modules.includes('fuse') ? 'Build the vocabulary and segmentation foundation first, then move into Vector.' : 'Strategy is ready — launch the Vector diagnostic now.'}</p></div><a class="launch-cta-btn" href="${ctaHref}" style="background:var(--purple);color:#fff">${ctaLabel}</a>`;
-  document.getElementById('resultsPanel').insertBefore(ctaDiv, document.getElementById('resultsPanel').querySelector('.results-grid') || document.getElementById('materialsSummary'));
+  // Named track card
+  const existingCard = document.getElementById('trackCard');
+  if (existingCard) existingCard.remove();
+  const tc = document.createElement('div');
+  tc.id = 'trackCard';
+  tc.className = 'track-card';
+  tc.style.cssText = `background:${track.bg};border-color:${track.border}`;
+  tc.innerHTML = `
+    <div class="track-name" style="color:${track.color}">${track.name}</div>
+    <div class="track-tagline">${track.tagline}</div>
+    <div class="track-meta">
+      <div class="track-meta-item"><div class="track-meta-label">Duration</div>${track.duration}</div>
+      <div class="track-meta-item"><div class="track-meta-label">Stakeholders</div>${track.stakeholders}</div>
+    </div>
+    <div class="track-deliverables">${track.deliverables.map(d => `<span class="track-del">${d}</span>`).join('')}</div>
+    <div class="track-focus">${track.focus}</div>
+    <div style="margin-top:18px">
+      <a class="launch-cta-btn" href="/${track.firstStep === 'resolve' ? 'resolve' : 'vector'}.html" style="background:${track.color};color:#060E1C;font-size:13px;padding:10px 20px;border-radius:7px;text-decoration:none;font-weight:700;display:inline-block">
+        Open ${track.firstStep === 'resolve' ? 'Resolve' : 'Vector'} →
+      </a>
+    </div>
+  `;
+  // Insert after the step-header
+  const stepHeader = document.querySelector('#resultsPanel .step-header');
+  stepHeader.insertAdjacentElement('afterend', tc);
 
   // Module pills
   const pillsEl = document.getElementById('modulePills');
@@ -1726,6 +1821,7 @@ async function saveToSupabase() {
     org_team: state.orgTeam, org_rev: state.orgRev,
     org_challenge: document.getElementById('orgChallenge').value,
     path: pathLabel(modules),
+    track_name: getTrack(accountSize || getAccountSize(), modules).name,
     roadmap: steps.map(s => ({ tool: s.tool, action: s.action, detail: s.detail, weeks: s.weeks })),
     first30: first30Items(state.scores, modules),
     baseline: state.baseline,

@@ -385,10 +385,17 @@ async function checkDataPresence(engList, activeId) {
   });
 }
 
+const HUB_TRACK_NAMES = {
+  smb:        'Growth Sprint',
+  mid:        'Full DRIVE Engagement',
+  enterprise: 'Enterprise Governance',
+};
+
 function cardHTML(eng, activeId) {
   const isActive = eng.id === activeId;
   const tierClass = { smb: 'tier-smb', mid: 'tier-mid', enterprise: 'tier-enterprise' }[eng.size_tier] || 'tier-smb';
   const tierLabel = { smb: 'SMB', mid: 'Mid-Market', enterprise: 'Enterprise' }[eng.size_tier] || 'SMB';
+  const trackName = eng.track_name || HUB_TRACK_NAMES[eng.size_tier] || '';
   const updated = eng.updated_at ? new Date(eng.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
   const created = eng.created_at ? new Date(eng.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
 
@@ -400,7 +407,10 @@ function cardHTML(eng, activeId) {
         <div class="eng-client">${esc(eng.client_name)}</div>
         ${eng.org_name ? `<div class="eng-org">${esc(eng.org_name)}</div>` : ''}
       </div>
-      <span class="eng-tier ${tierClass}">${tierLabel}</span>
+      <div style="text-align:right">
+        <span class="eng-tier ${tierClass}">${tierLabel}</span>
+        ${trackName ? `<div style="font-size:10px;font-weight:600;opacity:.55;margin-top:4px;letter-spacing:.03em">${esc(trackName)}</div>` : ''}
+      </div>
     </div>
     <div class="eng-meta">
       ${eng.industry ? `<div class="eng-meta-item">Industry <span>${esc(eng.industry)}</span></div>` : ''}
@@ -420,7 +430,8 @@ function cardHTML(eng, activeId) {
       ${isActive
         ? `<a class="btn btn-ghost btn-sm" href="/discover.html">Open in Discover</a>`
         : `<button class="btn btn-primary btn-sm" onclick="setActive('${eng.id}','${esc(eng.client_name)}')">Set Active</button>`}
-      <button class="btn btn-ghost btn-sm" onclick="generateReport('${eng.id}')">↓ Report</button>
+      <button class="btn btn-ghost btn-sm" onclick="generateReport('${eng.id}')">↓ Internal Report</button>
+      <button class="btn btn-ghost btn-sm" onclick="generateClientExport('${eng.id}')">↓ Client Export</button>
       <button class="btn btn-ghost btn-sm" onclick="editEngagement('${eng.id}')">Edit</button>
       ${eng.status === 'active'
         ? `<button class="btn btn-danger btn-sm" onclick="archiveEngagement('${eng.id}')">Archive</button>`
@@ -823,6 +834,295 @@ body{background:#050709;color:#E8EAF0;font-family:-apple-system,BlinkMacSystemFo
   a.click();
   URL.revokeObjectURL(a.href);
   showToast('Report downloaded');
+}
+
+// --- CLIENT HANDOFF EXPORT ---
+async function generateClientExport(engId) {
+  const eng = engagements.find(e => e.id === engId);
+  if (!eng) return;
+  showToast('Building client export…');
+
+  const tables = ['org_discover','org_resolve','org_intelligence','org_vec_state','org_engine_assets'];
+  const [dRes, rRes, iRes, vRes, eRes] = await Promise.all(
+    tables.map(t => supa.from(t).select('data').eq('org_id', engId).maybeSingle())
+  );
+  const D = dRes.data?.data || {};
+  const R = rRes.data?.data || {};
+  const I = iRes.data?.data || {};
+  const V = vRes.data?.data || {};
+  const E = eRes.data?.data || {};
+
+  const date = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+  const trackName = D.track_name || HUB_TRACK_NAMES[eng.size_tier] || 'DRIVE Engagement';
+
+  function rEsc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  // Baseline
+  const baseline = D.baseline || {};
+  const blChannels = baseline.channels || [];
+  const blNums = baseline.numbers || {};
+
+  // Roadmap
+  const roadmapSteps = D.roadmap || [];
+  const first30 = D.first30 || [];
+
+  // Taxonomy
+  const taxFields = (R.taxonomy || []).slice(0, 20);
+  const namingConvention = R.naming?.pattern || '';
+  const govRules = (R.rules || []).slice(0, 8);
+  const hasTaxonomy = taxFields.length > 0 || namingConvention || govRules.length;
+
+  // Intelligence — only starred signals
+  const starred = (I.signals || []).filter(s => s.starred);
+  const signalsByType = {};
+  starred.forEach(s => {
+    const t = s.type || 'Other';
+    if (!signalsByType[t]) signalsByType[t] = [];
+    signalsByType[t].push(s);
+  });
+
+  // Positioning
+  const pos = V.pos || V.practice || {};
+  const cdna = V.cdna || '';
+  const hasPositioning = pos.name || pos.oneline || cdna;
+
+  // Content themes
+  const themes = E.themes || [];
+
+  // What's included — drive the "What's in this document" section
+  const included = [];
+  if (roadmapSteps.length) included.push({ label: 'Engagement Roadmap', desc: 'Recommended sequence of work and first-30-day actions' });
+  if (hasTaxonomy) included.push({ label: 'Canonical Taxonomy', desc: 'Agreed field definitions, naming convention, and governance rules' });
+  if (starred.length) included.push({ label: 'Market Intelligence', desc: 'Key signals from competitive and category research' });
+  if (hasPositioning) included.push({ label: 'Positioning Framework', desc: 'Ideal buyer, core problem, differentiator, and Campaign DNA' });
+  if (themes.length) included.push({ label: 'Content Architecture', desc: 'Content themes and production plan' });
+
+  const TOOL_COLORS = { RESOLVE:'#4DE8FF', INTEL:'#5B8CFF', VECTOR:'#3BBFA3', ENGINE:'#FF8A3D' };
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${rEsc(eng.client_name)} — Marketing Engagement Plan</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#FAFBFC;color:#111827;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact;font-size:15px;line-height:1.6}
+.no-print{position:fixed;bottom:24px;right:24px;display:flex;gap:10px;z-index:9999}
+.no-print button{background:#111827;color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer}
+.no-print .btn-dl{background:#4F46E5}
+@media print{.no-print{display:none!important}body{background:#fff}}
+.page{max-width:760px;margin:0 auto;padding:56px 40px}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#6366F1;margin-bottom:10px}
+h1{font-size:36px;font-weight:800;letter-spacing:-.025em;color:#111827;margin-bottom:6px;line-height:1.15}
+h2{font-size:18px;font-weight:700;letter-spacing:-.01em;color:#111827;margin-bottom:16px}
+.rule{width:48px;height:3px;background:#6366F1;border-radius:2px;margin:20px 0 28px}
+.meta-row{display:flex;gap:36px;flex-wrap:wrap;margin-bottom:28px}
+.meta-item .label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9CA3AF;margin-bottom:3px}
+.meta-item .value{font-size:13px;color:#374151;font-weight:500}
+.section{margin-bottom:48px;padding-top:40px;border-top:1px solid #E5E7EB}
+.toc{background:#F3F4F6;border-radius:12px;padding:24px 28px;margin-bottom:48px}
+.toc-title{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9CA3AF;margin-bottom:14px}
+.toc-item{display:flex;gap:14px;padding:8px 0;border-bottom:1px solid #E5E7EB}
+.toc-item:last-child{border-bottom:none}
+.toc-bullet{width:6px;height:6px;border-radius:50%;background:#6366F1;margin-top:7px;flex-shrink:0}
+.toc-label{font-size:14px;font-weight:600;color:#111827;margin-bottom:2px}
+.toc-desc{font-size:12px;color:#6B7280}
+.card{background:#fff;border:1px solid #E5E7EB;border-radius:10px;padding:16px 20px;margin-bottom:10px}
+.step-num{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;margin-top:2px}
+.step-row{display:flex;gap:14px;align-items:flex-start}
+.step-tool{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;margin-bottom:3px}
+.step-action{font-size:14px;font-weight:600;color:#111827;margin-bottom:4px}
+.step-detail{font-size:13px;color:#6B7280;line-height:1.5}
+.days30{background:#F0F9FF;border:1px solid #BAE6FD;border-radius:8px;padding:16px 20px;margin-top:16px}
+.days30-title{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#0284C7;margin-bottom:12px}
+.days30-item{font-size:13px;color:#374151;padding:5px 0;border-bottom:1px solid #E0F2FE;line-height:1.5;display:flex;gap:10px}
+.days30-item:last-child{border-bottom:none}
+.days30-n{color:#6366F1;font-weight:700;width:18px;flex-shrink:0}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:8px 12px;border-bottom:1px solid #E5E7EB;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#9CA3AF}
+td{padding:9px 12px;border-bottom:1px solid #F3F4F6;font-size:13px;color:#374151;vertical-align:top}
+tr:last-child td{border-bottom:none}
+.mono{font-family:ui-monospace,monospace;font-size:13px;color:#4F46E5;background:#EEF2FF;padding:8px 12px;border-radius:6px;margin-bottom:12px}
+.signal-type{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#4F46E5;margin-bottom:10px;margin-top:4px}
+.pos-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px}
+.pos-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#9CA3AF;margin-bottom:4px}
+.pos-value{font-size:13px;color:#374151;line-height:1.5}
+.pos-headline{font-size:20px;font-weight:700;color:#111827;margin-bottom:6px}
+.pos-oneline{font-size:14px;color:#4F46E5;font-weight:500;margin-bottom:16px}
+.theme-chip{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;background:#FFF7ED;color:#C2410C;border:1px solid #FED7AA;margin:3px}
+.channel-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #F3F4F6;font-size:13px}
+.channel-row:last-child{border-bottom:none}
+.num-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px}
+.num-label{font-size:11px;color:#9CA3AF;margin-bottom:2px}
+.num-value{font-size:15px;font-weight:700;color:#111827}
+.footer{margin-top:56px;padding-top:24px;border-top:1px solid #E5E7EB;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.footer-text{font-size:12px;color:#9CA3AF}
+</style>
+</head>
+<body>
+<div class="no-print">
+  <button onclick="window.print()">Print / Save PDF</button>
+</div>
+<div class="page">
+
+  <!-- COVER -->
+  <div class="eyebrow">Marketing Engagement Plan</div>
+  <h1>${rEsc(eng.client_name)}</h1>
+  ${eng.org_name ? `<div style="font-size:16px;color:#6B7280;margin-top:4px">${rEsc(eng.org_name)}</div>` : ''}
+  <div class="rule"></div>
+  <div class="meta-row">
+    <div class="meta-item"><div class="label">Track</div><div class="value">${rEsc(trackName)}</div></div>
+    ${eng.industry ? `<div class="meta-item"><div class="label">Industry</div><div class="value">${rEsc(eng.industry)}</div></div>` : ''}
+    ${eng.contact_name ? `<div class="meta-item"><div class="label">Primary Contact</div><div class="value">${rEsc(eng.contact_name)}</div></div>` : ''}
+    <div class="meta-item"><div class="label">Prepared</div><div class="value">${date}</div></div>
+  </div>
+  ${eng.notes ? `<div style="background:#F3F4F6;border-radius:8px;padding:14px 18px;font-size:13px;color:#6B7280;line-height:1.7;margin-bottom:8px">${rEsc(eng.notes)}</div>` : ''}
+
+  <!-- TOC / WHAT'S IN THIS DOC -->
+  ${included.length ? `<div class="toc">
+    <div class="toc-title">What's in this document</div>
+    ${included.map(item => `
+      <div class="toc-item">
+        <div class="toc-bullet" style="margin-top:8px"></div>
+        <div><div class="toc-label">${rEsc(item.label)}</div><div class="toc-desc">${rEsc(item.desc)}</div></div>
+      </div>
+    `).join('')}
+  </div>` : ''}
+
+  <!-- CURRENT STATE (client-facing framing) -->
+  ${(baseline.budget || blChannels.length || Object.values(blNums).some(v=>v) || baseline.notes) ? `<div class="section">
+    <h2>Where You Are Now</h2>
+    ${baseline.budget ? `<div class="card"><div style="font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">Annual Marketing Investment</div><div style="font-size:18px;font-weight:700;color:#111827">${rEsc(baseline.budget)}</div></div>` : ''}
+    ${blChannels.length ? `<div class="card">
+      <div style="font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px">Current Channels</div>
+      ${blChannels.map(ch => {
+        const statusColor = {working:'#059669',mixed:'#D97706',not:'#DC2626'}[ch.status] || '#6B7280';
+        const statusLabel = {working:'Working',mixed:'Mixed results',not:'Not working'}[ch.status] || '—';
+        return `<div class="channel-row"><span style="color:#111827;font-weight:500">${rEsc(ch.name)}</span><span style="font-size:11px;font-weight:600;color:${statusColor}">${statusLabel}</span></div>`;
+      }).join('')}
+    </div>` : ''}
+    ${Object.values(blNums).some(v=>v) ? `<div class="card"><div style="font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">Key Metrics</div><div class="num-grid">
+      ${blNums.cac ? `<div><div class="num-label">Customer Acquisition Cost</div><div class="num-value">${rEsc(blNums.cac)}</div></div>` : ''}
+      ${blNums.closeRate ? `<div><div class="num-label">Close Rate</div><div class="num-value">${rEsc(blNums.closeRate)}</div></div>` : ''}
+      ${blNums.pipeline ? `<div><div class="num-label">Active Pipeline</div><div class="num-value">${rEsc(blNums.pipeline)}</div></div>` : ''}
+      ${blNums.mrr ? `<div><div class="num-label">MRR / ARR</div><div class="num-value">${rEsc(blNums.mrr)}</div></div>` : ''}
+    </div></div>` : ''}
+    ${baseline.notes ? `<div class="card"><div style="font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">In Their Words</div><div style="font-size:14px;color:#374151;line-height:1.7;font-style:italic">"${rEsc(baseline.notes)}"</div></div>` : ''}
+  </div>` : ''}
+
+  <!-- ROADMAP -->
+  ${roadmapSteps.length ? `<div class="section">
+    <h2>Engagement Roadmap</h2>
+    <p style="font-size:14px;color:#6B7280;margin-bottom:20px;line-height:1.6">The following sequence is recommended based on your current readiness. Each phase builds on the last — we won't move to the next tool until the prior phase is stable.</p>
+    ${roadmapSteps.map((s, i) => {
+      const color = TOOL_COLORS[s.tool] || '#6366F1';
+      const lightBg = {RESOLVE:'#EFF6FF',INTEL:'#EEF2FF',VECTOR:'#F0FDF4',ENGINE:'#FFF7ED'}[s.tool] || '#F3F4F6';
+      const darkColor = {RESOLVE:'#1D4ED8',INTEL:'#4338CA',VECTOR:'#15803D',ENGINE:'#C2410C'}[s.tool] || '#374151';
+      return `<div class="card">
+        <div class="step-row">
+          <div class="step-num" style="background:${lightBg};color:${darkColor}">${i+1}</div>
+          <div style="flex:1">
+            <div class="step-tool" style="color:${darkColor}">${rEsc(s.tool)}${s.weeks ? ` · ${rEsc(s.weeks)}` : ''}</div>
+            <div class="step-action">${rEsc(s.action)}</div>
+            <div class="step-detail">${rEsc(s.detail)}</div>
+          </div>
+        </div>
+      </div>`;
+    }).join('')}
+    ${first30.length ? `<div class="days30">
+      <div class="days30-title">First 30 Days — Where We Start</div>
+      ${first30.map((item, i) => `<div class="days30-item"><span class="days30-n">${i+1}</span><span>${rEsc(item)}</span></div>`).join('')}
+    </div>` : ''}
+  </div>` : ''}
+
+  <!-- TAXONOMY -->
+  ${hasTaxonomy ? `<div class="section">
+    <h2>Canonical Taxonomy</h2>
+    <p style="font-size:14px;color:#6B7280;margin-bottom:20px;line-height:1.6">The definitions below represent the agreed canonical vocabulary for your marketing and sales systems. These become the source of truth for how campaigns, contacts, and data are named and categorized.</p>
+    ${namingConvention ? `<div class="card"><div style="font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Naming Convention</div><div class="mono">${rEsc(namingConvention)}</div></div>` : ''}
+    ${taxFields.length ? `<div class="card" style="padding:0;overflow:hidden">
+      <table>
+        <thead><tr>
+          <th>Field</th><th>Type</th><th>Values / Notes</th>
+        </tr></thead>
+        <tbody>${taxFields.map((f,i) => `<tr style="${i%2===0?'':'background:#F9FAFB'}">
+          <td style="font-weight:600;color:#111827">${rEsc(f.name||f.field||'')}</td>
+          <td style="color:#6B7280">${rEsc(f.type||'')}</td>
+          <td style="color:#6B7280">${rEsc(Array.isArray(f.values)?f.values.join(', '):(f.notes||f.description||''))}</td>
+        </tr>`).join('')}</tbody>
+      </table>
+    </div>` : ''}
+    ${govRules.length ? `<div class="card"><div style="font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px">Governance Rules</div>${govRules.map(r => `<div style="font-size:13px;color:#374151;padding:7px 0;border-bottom:1px solid #F3F4F6;line-height:1.5">${rEsc(typeof r==='string'?r:r.text||r.rule||'')}</div>`).join('')}</div>` : ''}
+  </div>` : ''}
+
+  <!-- SIGNALS -->
+  ${starred.length ? `<div class="section">
+    <h2>Market Intelligence Highlights</h2>
+    <p style="font-size:14px;color:#6B7280;margin-bottom:20px;line-height:1.6">Key signals identified from competitive and category research. These inform the positioning and messaging decisions below.</p>
+    ${Object.entries(signalsByType).map(([type, sigs]) => `
+      <div class="signal-type">${rEsc(type)}</div>
+      ${sigs.map(s => `<div class="card">
+        <div style="font-size:14px;font-weight:600;color:#111827;margin-bottom:5px">${rEsc(s.title||'')}</div>
+        <div style="font-size:13px;color:#6B7280;line-height:1.5">${rEsc(s.text||'')}</div>
+        ${s.source ? `<div style="font-size:11px;color:#9CA3AF;margin-top:8px">Source: ${rEsc(s.source)}</div>` : ''}
+      </div>`).join('')}
+    `).join('')}
+  </div>` : ''}
+
+  <!-- POSITIONING -->
+  ${hasPositioning ? `<div class="section">
+    <h2>Go-to-Market Positioning</h2>
+    ${(pos.name || pos.oneline) ? `<div class="card">
+      ${pos.name ? `<div class="pos-headline">${rEsc(pos.name)}</div>` : ''}
+      ${pos.oneline ? `<div class="pos-oneline">${rEsc(pos.oneline)}</div>` : ''}
+      <div class="pos-grid">
+        ${pos.buyer ? `<div><div class="pos-label">Ideal Buyer</div><div class="pos-value">${rEsc(pos.buyer)}</div></div>` : ''}
+        ${pos.constraint ? `<div><div class="pos-label">Core Problem Solved</div><div class="pos-value">${rEsc(pos.constraint)}</div></div>` : ''}
+        ${pos.differentiator ? `<div><div class="pos-label">Key Differentiator</div><div class="pos-value">${rEsc(pos.differentiator)}</div></div>` : ''}
+        ${pos.proof ? `<div><div class="pos-label">Proof</div><div class="pos-value">${rEsc(pos.proof)}</div></div>` : ''}
+      </div>
+    </div>` : ''}
+    ${cdna ? `<div class="card"><div style="font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Campaign DNA</div><div style="font-size:13px;color:#374151;line-height:1.7;white-space:pre-wrap">${rEsc(cdna.slice(0,2000))}${cdna.length>2000?'\n…':''}</div></div>` : ''}
+  </div>` : ''}
+
+  <!-- CONTENT THEMES -->
+  ${themes.length ? `<div class="section">
+    <h2>Content Architecture</h2>
+    <div class="card"><div style="font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px">Content Themes</div><div>${themes.map(t => `<span class="theme-chip">${rEsc(typeof t==='string'?t:t.name||t.label||'')}</span>`).join('')}</div></div>
+  </div>` : ''}
+
+  <!-- NEXT STEPS -->
+  <div class="section">
+    <h2>Next Steps</h2>
+    <div class="card">
+      <div style="font-size:14px;color:#374151;line-height:1.7">
+        ${roadmapSteps.length
+          ? `We'll kick off with <strong>${rEsc(roadmapSteps[0]?.tool || 'the first phase')}</strong>${roadmapSteps[0]?.action ? ` — ${rEsc(roadmapSteps[0].action.toLowerCase())}` : ''}.
+             From there, each phase is gated on completion of the prior one, so the work compounds rather than runs in parallel.`
+          : 'We'll align on a start date and walk through the onboarding steps together before kicking off the first phase.'}
+      </div>
+      ${eng.contact_email ? `<div style="margin-top:14px;padding-top:14px;border-top:1px solid #F3F4F6;font-size:13px;color:#6B7280">Questions? Reply directly to ${rEsc(eng.contact_email)}.</div>` : ''}
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-text">Prepared by ${rEsc(eng.client_name)} engagement team · ${date}</div>
+    <div class="footer-text">Confidential — for ${rEsc(eng.contact_name || eng.client_name)} only</div>
+  </div>
+
+</div>
+</body>
+</html>`;
+
+  const blob = new Blob([html], { type: 'text/html' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${eng.client_name.replace(/[^a-z0-9]/gi,'-').toLowerCase()}-engagement-plan.html`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast('Client export downloaded');
 }
 
 // --- ARCHIVED TOGGLE ---
