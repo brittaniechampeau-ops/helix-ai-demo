@@ -502,7 +502,7 @@ async function loadData() {
     // Query practices table
     const { data: practices, error } = await sb
       .from('practices')
-      .select('email, org_name, readiness, modules_unlocked, updated_at')
+      .select('email, readiness, modules_unlocked, updated_at')
       .order('updated_at', { ascending: false });
 
     if (error) throw error;
@@ -512,7 +512,7 @@ async function loadData() {
     try {
       const { data: leadsData } = await sb
         .from('leads')
-        .select('email, org_name, gate_hit_at')
+        .select('email, anon_scores, gate_hit_at')
         .order('gate_hit_at', { ascending: false });
       if (leadsData) leads = leadsData;
     } catch (_) { /* table doesn't exist yet */ }
@@ -526,7 +526,7 @@ async function loadData() {
       const r = p.readiness || {};
       return {
         email: p.email || '—',
-        org_name: p.org_name || lead.org_name || '—',
+        org_name: r.org_name || (lead.anon_scores && lead.anon_scores.orgName) || '—',
         industry: r.org_industry || '—',
         team: r.org_team || '—',
         rev: r.org_rev || '—',
