@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DRIVE Engagement — Client Onboarding Guide</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#111827;--ink2:#374151;--ink3:#6B7280;--ink4:#9CA3AF;
+  --bg:#FAFBFC;--bg2:#F3F4F6;--bg3:#E5E7EB;
+  --accent:#4F46E5;--accent-bg:#EEF2FF;--accent-mid:#6366F1;
+  --green:#059669;--green-bg:#F0FDF4;--green-border:#A7F3D0;
+  --teal:#0891B2;--teal-bg:#ECFEFF;--teal-border:#A5F3FC;
+  --blue:#2563EB;--blue-bg:#EFF6FF;--blue-border:#BFDBFE;
+  --orange:#C2410C;--orange-bg:#FFF7ED;--orange-border:#FED7AA;
+  --red:#DC2626;--red-bg:#FEF2F2;--red-border:#FECACA;
+  --warn:#D97706;--warn-bg:#FFFBEB;--warn-border:#FDE68A;
+}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  font-size:15px;line-height:1.65;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;
+}
+
+/* NAV */
+.topbar{
+  position:sticky;top:0;z-index:100;
+  background:rgba(250,251,252,.92);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--bg3);
+  padding:0 24px;height:52px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.topbar-brand{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+.topbar-nav{display:flex;gap:4px}
+.topbar-nav a{font-size:12px;font-weight:500;color:var(--ink3);padding:5px 10px;border-radius:6px;text-decoration:none}
+.topbar-nav a:hover{background:var(--bg2);color:var(--ink)}
+.no-print{display:flex;gap:8px}
+.no-print button{font-size:12px;font-weight:600;padding:6px 14px;border-radius:7px;border:none;cursor:pointer}
+.btn-print{background:var(--bg2);color:var(--ink2)}
+.btn-print:hover{background:var(--bg3)}
+
+/* LAYOUT */
+.page{max-width:820px;margin:0 auto;padding:56px 32px 80px}
+
+/* HERO */
+.hero{margin-bottom:56px;padding-bottom:40px;border-bottom:1px solid var(--bg3)}
+.hero-eyebrow{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+.hero-title{font-size:38px;font-weight:800;letter-spacing:-.03em;line-height:1.15;color:var(--ink);margin-bottom:12px}
+.hero-sub{font-size:17px;color:var(--ink3);line-height:1.6;max-width:600px;margin-bottom:28px}
+.hero-meta{display:flex;flex-wrap:wrap;gap:10px}
+.hero-chip{display:inline-flex;align-items:center;gap:7px;background:var(--bg2);border:1px solid var(--bg3);border-radius:20px;padding:6px 14px;font-size:13px;font-weight:500;color:var(--ink2)}
+.hero-chip .dot{width:7px;height:7px;border-radius:50%}
+
+/* PHASE NAV */
+.phase-nav{display:flex;gap:0;margin-bottom:48px;border:1px solid var(--bg3);border-radius:10px;overflow:hidden}
+.phase-nav-item{flex:1;padding:14px 12px;text-align:center;text-decoration:none;color:var(--ink3);font-size:12px;font-weight:600;border-right:1px solid var(--bg3);transition:.15s}
+.phase-nav-item:last-child{border-right:none}
+.phase-nav-item:hover{background:var(--bg2);color:var(--ink)}
+.phase-nav-item .pn-num{font-size:16px;font-weight:800;margin-bottom:3px;color:var(--ink)}
+
+/* SECTIONS */
+.guide-section{margin-bottom:64px}
+.section-anchor{position:relative;top:-72px;visibility:hidden}
+
+/* SECTION HEADER */
+.section-header{display:flex;gap:16px;align-items:flex-start;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--bg3)}
+.section-num{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;flex-shrink:0;margin-top:2px}
+.section-title{font-size:22px;font-weight:700;letter-spacing:-.015em;color:var(--ink);margin-bottom:4px}
+.section-sub{font-size:14px;color:var(--ink3);line-height:1.5}
+.section-meta{display:flex;gap:16px;margin-top:10px;flex-wrap:wrap}
+.section-meta-item{font-size:12px;color:var(--ink4);display:flex;align-items:center;gap:5px}
+.section-meta-item strong{color:var(--ink3)}
+
+/* CARDS */
+.card{background:#fff;border:1px solid var(--bg3);border-radius:10px;padding:18px 22px;margin-bottom:12px}
+.card-title{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:8px}
+.card-body{font-size:13px;color:var(--ink2);line-height:1.65}
+
+/* CHECKLIST */
+.checklist{list-style:none;margin:0;padding:0}
+.checklist li{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--bg3);font-size:13px;color:var(--ink2);line-height:1.5}
+.checklist li:last-child{border-bottom:none}
+.check-box{width:18px;height:18px;border-radius:4px;border:1.5px solid var(--bg3);flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.15s}
+.check-box.checked{background:var(--green);border-color:var(--green)}
+.check-box.checked::after{content:'✓';font-size:11px;font-weight:700;color:#fff}
+.check-label{flex:1}
+.check-label strong{color:var(--ink)}
+.check-label .note{font-size:12px;color:var(--ink4);display:block;margin-top:2px}
+
+/* STEPS */
+.steps{margin-top:0}
+.step{display:flex;gap:16px;margin-bottom:4px}
+.step-line{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
+.step-dot{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0}
+.step-connector{flex:1;width:1px;background:var(--bg3);margin:4px 0}
+.step-body{flex:1;padding-bottom:20px}
+.step-title{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:6px}
+.step-desc{font-size:13px;color:var(--ink2);line-height:1.6}
+.step:last-child .step-connector{display:none}
+.step:last-child .step-body{padding-bottom:0}
+
+/* CLICK INSTRUCTION */
+.click{display:inline-flex;align-items:center;gap:5px;background:var(--accent-bg);color:var(--accent);font-size:12px;font-weight:700;padding:2px 8px;border-radius:5px;white-space:nowrap}
+.field{display:inline-flex;align-items:center;gap:4px;background:var(--bg2);color:var(--ink2);font-size:12px;font-weight:600;padding:2px 8px;border-radius:5px;border:1px solid var(--bg3);font-family:ui-monospace,monospace}
+.upload-type{display:inline-block;background:var(--orange-bg);color:var(--orange);border:1px solid var(--orange-border);border-radius:4px;font-size:11px;font-weight:700;padding:2px 7px;letter-spacing:.03em;text-transform:uppercase}
+
+/* CALLOUTS */
+.callout{border-radius:8px;padding:14px 18px;margin:16px 0;font-size:13px;line-height:1.6}
+.callout.info{background:var(--blue-bg);border:1px solid var(--blue-border);color:#1E40AF}
+.callout.warn{background:var(--warn-bg);border:1px solid var(--warn-border);color:#92400E}
+.callout.good{background:var(--green-bg);border:1px solid var(--green-border);color:#065F46}
+.callout.tip{background:var(--accent-bg);border:1px solid #C7D2FE;color:#3730A3}
+.callout strong{font-weight:700}
+
+/* FILE TYPE TABLE */
+.file-table{width:100%;border-collapse:collapse;font-size:13px}
+.file-table th{text-align:left;padding:8px 12px;border-bottom:1px solid var(--bg3);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink4)}
+.file-table td{padding:9px 12px;border-bottom:1px solid var(--bg3);vertical-align:top;color:var(--ink2)}
+.file-table tr:last-child td{border-bottom:none}
+.file-table .fname{font-weight:600;color:var(--ink)}
+
+/* WHAT YOU'LL SEE */
+.output-card{background:#fff;border:1px solid var(--bg3);border-radius:10px;overflow:hidden;margin-bottom:12px}
+.output-card-header{background:var(--bg2);padding:10px 18px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink4);border-bottom:1px solid var(--bg3)}
+.output-card-body{padding:14px 18px;font-size:13px;color:var(--ink2);line-height:1.6}
+
+/* TOOL BADGES */
+.tool-badge{display:inline-flex;align-items:center;gap:6px;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:700;margin-right:4px}
+.tb-d{background:#EEF2FF;color:#4338CA}
+.tb-r{background:#ECFEFF;color:#0E7490}
+.tb-i{background:#EFF6FF;color:#1D4ED8}
+.tb-v{background:#F0FDF4;color:#15803D}
+.tb-e{background:#FFF7ED;color:#C2410C}
+
+/* DIVIDER */
+.guide-divider{border:none;border-top:1px solid var(--bg3);margin:48px 0}
+
+/* PRINT */
+@media print{
+  .topbar,.no-print{display:none!important}
+  .page{padding:32px 24px}
+  .phase-nav{display:none}
+  body{font-size:13px}
+}
+
+/* MOBILE */
+@media(max-width:640px){
+  .page{padding:32px 16px}
+  .phase-nav{flex-wrap:wrap}
+  .phase-nav-item{min-width:33%}
+  .hero-title{font-size:28px}
+  .section-title{font-size:18px}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">✦ DRIVE</div>
+  <nav class="topbar-nav">
+    <a href="#before">Before you start</a>
+    <a href="#discover">Discover</a>
+    <a href="#resolve">Resolve</a>
+    <a href="#intelligence">Intelligence</a>
+    <a href="#vector">Vector</a>
+    <a href="#engine">Engine</a>
+    <a href="#what-you-get">What you'll receive</a>
+  </nav>
+  <div class="no-print">
+    <button class="btn-print" onclick="window.print()">Print / Save PDF</button>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-eyebrow">Client Onboarding Guide</div>
+    <h1 class="hero-title">How a DRIVE engagement works</h1>
+    <p class="hero-sub">This guide walks you through every phase of the engagement — what to bring, what you'll be asked, exactly what to click, and what the system will produce. Read it before your first session.</p>
+    <div class="hero-meta">
+      <div class="hero-chip"><span class="dot" style="background:#4F46E5"></span>5 tools, used in sequence</div>
+      <div class="hero-chip"><span class="dot" style="background:#059669"></span>AI does the heavy lifting between sessions</div>
+      <div class="hero-chip"><span class="dot" style="background:#2563EB"></span>You review, refine, approve — not write from scratch</div>
+    </div>
+  </div>
+
+  <!-- PHASE NAV -->
+  <div class="phase-nav">
+    <a href="#before" class="phase-nav-item"><div class="pn-num">0</div>Before you start</a>
+    <a href="#discover" class="phase-nav-item"><div class="pn-num" style="color:#4338CA">D</div>Discover</a>
+    <a href="#resolve" class="phase-nav-item"><div class="pn-num" style="color:#0E7490">R</div>Resolve</a>
+    <a href="#intelligence" class="phase-nav-item"><div class="pn-num" style="color:#1D4ED8">I</div>Intelligence</a>
+    <a href="#vector" class="phase-nav-item"><div class="pn-num" style="color:#15803D">V</div>Vector</a>
+    <a href="#engine" class="phase-nav-item"><div class="pn-num" style="color:#C2410C">E</div>Engine</a>
+    <a href="#what-you-get" class="phase-nav-item"><div class="pn-num">→</div>Deliverables</a>
+  </div>
+
+  <!-- ─── PHASE 0: BEFORE ─────────────────────────────────────────── -->
+  <div id="before" class="guide-section">
+    <div class="section-anchor"></div>
+    <div class="section-header">
+      <div class="section-num" style="background:#F3F4F6;color:#374151">0</div>
+      <div>
+        <div class="section-title">Before your first session</div>
+        <div class="section-sub">Gather these materials before we meet. The more complete this list, the faster and sharper every downstream output will be. Nothing here requires you to have done marketing "right" — we want to see what you actually have, not what you wish you had.</div>
+        <div class="section-meta">
+          <div class="section-meta-item">⏱ <strong>Time to gather: 1–2 hours</strong></div>
+          <div class="section-meta-item">📁 <strong>Upload format: PDF, DOCX, XLSX, CSV, TXT</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout info"><strong>Why this matters:</strong> DRIVE is only as good as the inputs you give it. Vague or missing materials produce generic outputs. Specific, honest materials — even if they're messy — produce outputs that are actually usable.</div>
+
+    <div class="card">
+      <div class="card-title">Org basics — know these before the session</div>
+      <ul class="checklist" id="cl-basics">
+        <li><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-label"><strong>Legal entity name and DBA (if different)</strong><span class="note">The name you operate under publicly — what goes on your website header.</span></div></li>
+        <li><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-label"><strong>Primary industry / vertical</strong><span class="note">e.g. "B2B SaaS — HR Tech", "Professional services — financial advisory", "E-commerce — outdoor goods"</span></div></li>
+        <li><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-label"><strong>Team size (approx.)</strong><span class="note">Total headcount, not just marketing. The system uses this to calibrate recommendations.</span></div></li>
+        <li><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-label"><strong>Annual revenue range</strong><span class="note">Best estimate is fine: &lt;$500K / $500K–$2M / $2M–$10M / $10M–$50M / $50M+</span></div></li>
+        <li><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-label"><strong>Your website URL</strong><span class="note">The system will fetch and analyze it automatically — just have it ready.</span></div></li>
+        <li><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-label"><strong>Your primary growth challenge right now</strong><span class="note">Pick one: Lead generation / Brand &amp; positioning / Retention / Team &amp; process / Category creation / Other</span></div></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Marketing state — be honest, not aspirational</div>
+      <ul class="checklist" id="cl-mktg">
+        <li><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-label"><strong>Annual marketing spend (approximate)</strong><span class="note">All-in: paid ads, agency fees, tools, events, contractor costs. "Unknown" is a valid answer.</span></div></li>
+        <li><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-label"><strong>Every active marketing channel, and your honest read on each</strong><span class="note">List them: Google Ads, LinkedIn, email newsletter, SEO, cold outbound, events, referrals, podcast, etc. For each one: Working / Mixed results / Not working.</span></div></li>
+        <li><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-label"><strong>Which metrics you actually track today</strong><span class="note">Check all that apply: CAC, close rate, lead volume, SQLs, NPS, website traffic, email open rate. If you track nothing formally, say so — that's useful data.</span></div></li>
+        <li><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-label"><strong>Your current CAC (customer acquisition cost)</strong><span class="note">e.g. "$4,200 blended" or "we don't track it" — both are fine.</span></div></li>
+        <li><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-label"><strong>Close rate on qualified leads</strong><span class="note">e.g. "22%" or "roughly 1 in 5"</span></div></li>
+        <li><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-label"><strong>Active pipeline value (approx.)</strong><span class="note">Total value of deals currently in your pipeline.</span></div></li>
+        <li><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-label"><strong>MRR or ARR if subscription-based</strong><span class="note">Monthly or annual recurring revenue.</span></div></li>
+        <li><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-label"><strong>What's not working — in your own words</strong><span class="note">Write 2–3 sentences. This becomes the "in their words" section of your baseline report and directly shapes what we prioritize.</span></div></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Files to gather and bring to session 1</div>
+      <div class="callout tip" style="margin-top:0;margin-bottom:14px"><strong>Format note:</strong> PDF is preferred. DOCX and TXT also work. Spreadsheets: export as CSV. Slides: export as PDF. VTT/SRT files work for call transcripts.</div>
+      <table class="file-table">
+        <thead><tr><th>File type</th><th>What to bring</th><th>Goes to</th></tr></thead>
+        <tbody>
+          <tr><td class="fname">Taxonomy / CRM export</td><td>A CSV or PDF of your CRM field list, contact properties, deal stages, or HubSpot/Salesforce schema. Even a screenshot is useful. This is the most important file if you have it.</td><td><span class="tool-badge tb-r">Resolve</span></td></tr>
+          <tr><td class="fname">Brand / style guide</td><td>Any document that defines how your brand communicates — voice, tone, visual rules, naming conventions. PDF preferred.</td><td><span class="tool-badge tb-r">Resolve</span> <span class="tool-badge tb-v">Vector</span></td></tr>
+          <tr><td class="fname">One-pager / pitch deck</td><td>The thing you send to prospects. What you currently use to explain what you do.</td><td><span class="tool-badge tb-r">Resolve</span> <span class="tool-badge tb-v">Vector</span></td></tr>
+          <tr><td class="fname">Case studies or win stories</td><td>Any written customer stories, testimonials, or detailed deal narratives. Even rough internal write-ups.</td><td><span class="tool-badge tb-i">Intelligence</span> <span class="tool-badge tb-v">Vector</span></td></tr>
+          <tr><td class="fname">Sales call transcripts</td><td>Recorded call transcripts (VTT or TXT). Gong exports, Otter.ai exports, or pasted text. 2–5 calls is ideal.</td><td><span class="tool-badge tb-i">Intelligence</span></td></tr>
+          <tr><td class="fname">Win/loss notes</td><td>Any internal notes from deals you've won or lost — what the buyer said, what pushed them over the line, why you lost.</td><td><span class="tool-badge tb-i">Intelligence</span></td></tr>
+          <tr><td class="fname">Competitor examples</td><td>URLs or PDF exports of 2–3 competitor websites, pricing pages, or positioning pages you're watching.</td><td><span class="tool-badge tb-i">Intelligence</span></td></tr>
+          <tr><td class="fname">Industry research</td><td>Any market reports, analyst briefs, or category research you've saved. G2, Gartner, industry association PDFs.</td><td><span class="tool-badge tb-i">Intelligence</span></td></tr>
+          <tr><td class="fname">Past campaign samples</td><td>Email campaigns, LinkedIn ads, paid search copy, or any marketing you've actually sent. Screenshots or PDFs.</td><td><span class="tool-badge tb-v">Vector</span> <span class="tool-badge tb-e">Engine</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout warn"><strong>Don't over-curate.</strong> Bring what you actually have, not what you think you should have. A messy CRM export is more useful than nothing. A rough transcript is better than no transcript. The AI will extract signal from imperfect material.</div>
+  </div>
+
+  <hr class="guide-divider">
+
+  <!-- ─── DISCOVER ─────────────────────────────────────────────────── -->
+  <div id="discover" class="guide-section">
+    <div class="section-anchor"></div>
+    <div class="section-header">
+      <div class="section-num" style="background:#EEF2FF;color:#4338CA">D</div>
+      <div>
+        <div class="section-title">Discover <span style="font-size:14px;font-weight:500;color:var(--ink3)">— Scoping &amp; readiness</span></div>
+        <div class="section-sub">Discover is where the engagement scope is set. You'll walk through six sections together. By the end, the system has enough to recommend which DRIVE tools you need, in what order, and why. This is typically done in a 60–90 min session.</div>
+        <div class="section-meta">
+          <div class="section-meta-item">⏱ <strong>60–90 min</strong></div>
+          <div class="section-meta-item">👤 <strong>Founder/owner + marketing lead (if separate)</strong></div>
+          <div class="section-meta-item">📍 <strong>Tool: Discover</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Section 1 — Org Profile</div>
+      <div class="card-body">
+        <p style="margin-bottom:12px">The first screen asks for basic org info. Fill it in completely — it populates the header of every downstream report and sets the context for all AI analysis.</p>
+        <div class="steps">
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#EEF2FF;color:#4338CA">1</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Enter the organization name</div>
+              <div class="step-desc">Click the <span class="field">Organization name</span> field. Type the name as it appears publicly — this becomes the header of the scoping report. Keep it short: "Clearfield Advisory", not "Clearfield Advisory Group LLC".</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#EEF2FF;color:#4338CA">2</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Select the primary industry</div>
+              <div class="step-desc">Click the <span class="field">Primary industry</span> dropdown. Choose the closest match. If you're between categories, pick the one that describes your buyers, not your internal function.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#EEF2FF;color:#4338CA">3</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Click your team size</div>
+              <div class="step-desc">Click one chip: <span class="click">1–5</span> <span class="click">6–20</span> <span class="click">21–50</span> <span class="click">51–200</span> <span class="click">200+</span>. This determines whether micro-track adjustments apply (the 1–5 track skips some steps).</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#EEF2FF;color:#4338CA">4</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Click your revenue range</div>
+              <div class="step-desc">Click one chip: <span class="click">&lt;$500K</span> <span class="click">$500K–$2M</span> <span class="click">$2M–$10M</span> <span class="click">$10M–$50M</span> <span class="click">$50M+</span>. Best estimate — it's used for calibration only, not shared externally.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#EEF2FF;color:#4338CA">5</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Select your primary growth challenge</div>
+              <div class="step-desc">Click the <span class="field">Primary growth challenge</span> dropdown. Options: Lead generation / Brand &amp; positioning / Retention &amp; expansion / Team &amp; process / Category creation / Other. Pick the one that's most urgent right now — not the one that feels most strategic.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#EEF2FF;color:#4338CA">6</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Click "Capture baseline →" to continue</div>
+              <div class="step-desc">The footer button becomes active once org name and team size are filled in. Click it to move to the baseline section.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Section 1.5 — Baseline Snapshot</div>
+      <div class="card-body">
+        <p style="margin-bottom:12px">This section captures where you are <em>right now</em> — before any engagement work begins. It becomes the "before" state in your final report and shapes what we prioritize.</p>
+        <div class="steps">
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#EEF2FF;color:#4338CA">1</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Click your annual marketing spend</div>
+              <div class="step-desc">Choose one: <span class="click">$0–$25K</span> <span class="click">$25K–$100K</span> <span class="click">$100K–$500K</span> <span class="click">$500K–$2M</span> <span class="click">$2M+</span> <span class="click">Unknown</span>. Include everything: paid media, agency retainers, tools, events, freelancers. If you genuinely don't know, click Unknown.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#EEF2FF;color:#4338CA">2</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Add each active marketing channel</div>
+              <div class="step-desc">Click <span class="click">+ Add channel</span>. Type the channel name (e.g. "Google Ads", "LinkedIn organic", "Email newsletter", "Outbound SDR", "Partner referrals"). After adding, click the status buttons to rate each one: <span class="click">Working</span> <span class="click">Mixed</span> <span class="click">Not working</span>. Add one channel at a time and rate each before adding the next.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#EEF2FF;color:#4338CA">3</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Click every metric you actively track</div>
+              <div class="step-desc">Multi-select: <span class="click">CAC</span> <span class="click">Close rate</span> <span class="click">Lead volume</span> <span class="click">SQLs</span> <span class="click">NPS</span> <span class="click">Website traffic</span> <span class="click">Email open rate</span> <span class="click">Nothing formal</span>. "Nothing formal" is a valid, useful answer.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#EEF2FF;color:#4338CA">4</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Fill in key numbers (whatever you know)</div>
+              <div class="step-desc">Four fields: <span class="field">CAC</span> e.g. "$4,200" · <span class="field">Close rate</span> e.g. "22%" · <span class="field">Pipeline</span> e.g. "$380K" · <span class="field">MRR/ARR</span> e.g. "$85K MRR". Leave blank what you don't track — don't guess.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#EEF2FF;color:#4338CA">5</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Write 2–3 sentences: what's not working?</div>
+              <div class="step-desc">Click the <span class="field">In their words</span> textarea. Write honestly — this becomes a verbatim quote in the final engagement plan. "We're generating leads but close rate is terrible and we don't know why" is far more useful than "we need better marketing."</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#EEF2FF;color:#4338CA">6</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Click "Begin scoping →" to continue</div>
+              <div class="step-desc">Moves you into the four readiness questions that determine your engagement track.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Section 2 — Materials Intake</div>
+      <div class="card-body">
+        <p style="margin-bottom:12px">This is where you upload everything you gathered in Phase 0. The system reads it all — taxonomy files go to Resolve, documents and transcripts go to Intelligence, web URLs are fetched automatically.</p>
+        <div class="steps">
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#EEF2FF;color:#4338CA">1</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Answer the taxonomy question</div>
+              <div class="step-desc">The first thing on this screen: <em>"Do you have an existing CRM taxonomy or field export to upload?"</em> Click one: <span class="click">Yes — upload it</span> <span class="click">No — Resolve will propose one</span> <span class="click">Not sure yet</span>. If you have any CRM export at all — even a screenshot or rough list — choose "Yes."</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#EEF2FF;color:#4338CA">2</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Upload taxonomy files (if you have them)</div>
+              <div class="step-desc">Drag files into the <strong>Taxonomy files</strong> drop zone, or click it to browse. Accepted: <span class="upload-type">PDF</span> <span class="upload-type">CSV</span> <span class="upload-type">XLSX</span> <span class="upload-type">DOCX</span> <span class="upload-type">TXT</span>. What to upload: CRM field export, contact property list, deal stage documentation, naming convention doc, any spreadsheet with field definitions.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#EEF2FF;color:#4338CA">3</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Upload all other documents</div>
+              <div class="step-desc">Drag into the <strong>Documents</strong> drop zone, or click to browse. Accepted: <span class="upload-type">PDF</span> <span class="upload-type">DOCX</span> <span class="upload-type">TXT</span> <span class="upload-type">VTT</span> <span class="upload-type">PPTX</span>. Upload everything: pitch deck, one-pager, case studies, sales transcripts, win/loss notes, brand guide, old campaign samples, industry research. More is better. There's no upload limit — the AI reads all of it.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#EEF2FF;color:#4338CA">4</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Add web URLs</div>
+              <div class="step-desc">Click the <span class="field">https://…</span> field. Paste a URL and press Enter. The system fetches the page automatically — you'll see a preview appear within a few seconds. Add: your website homepage, a competitor's homepage, a competitor's pricing page, an industry publication you follow. Add one URL at a time and wait for the preview before adding the next.</div>
+            </div>
+          </div>
+        </div>
+        <div class="callout good" style="margin-top:16px"><strong>What happens after you upload:</strong> Files are stored and passed to downstream tools automatically. You don't need to re-upload in Resolve or Intelligence — they pull directly from what you added here.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Sections 3–6 — Readiness Questions</div>
+      <div class="card-body">
+        <p style="margin-bottom:14px">Four short questionnaires — one for each DRIVE tool. Each has 4–6 questions. Answer based on where you are <em>right now</em>, not where you want to be. The system uses these scores to build your engagement roadmap.</p>
+
+        <div style="margin-bottom:16px">
+          <div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#4338CA;margin-bottom:8px">Section 3 — Taxonomy Readiness (feeds Resolve)</div>
+          <div style="font-size:13px;color:var(--ink2);line-height:1.6">Questions about how clearly defined your language is: Do your teams use consistent terms for segments, products, and deal types? Does your CRM field naming match how you actually talk about deals? Is there a single source of truth for contact and campaign taxonomy? <strong>Low score = Resolve is urgent foundational work. High score = Resolve is a refinement pass.</strong></div>
+        </div>
+
+        <div style="margin-bottom:16px">
+          <div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#1D4ED8;margin-bottom:8px">Section 4 — Intelligence Readiness (feeds Intelligence)</div>
+          <div style="font-size:13px;color:var(--ink2);line-height:1.6">Questions about data availability: How much engagement data do you have? Are you tracking what happens after a lead comes in? Do you have call recordings or transcripts you can pull from? <strong>Low score = Intelligence works from competitive and market analysis. High score = Intelligence can mine your own pipeline and engagement data.</strong></div>
+        </div>
+
+        <div style="margin-bottom:16px">
+          <div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#15803D;margin-bottom:8px">Section 5 — Strategy Readiness (feeds Vector)</div>
+          <div style="font-size:13px;color:var(--ink2);line-height:1.6">Questions about positioning clarity: Can you name your ideal buyer in one sentence? Do you have a one-liner that consistently resonates? Do you have a defined offer stack? <strong>Low score = Vector is urgent core work. High score = Vector is activation and systematization of what already works.</strong></div>
+        </div>
+
+        <div>
+          <div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#C2410C;margin-bottom:8px">Section 6 — Execution Readiness (feeds Engine)</div>
+          <div style="font-size:13px;color:var(--ink2);line-height:1.6">Questions about infrastructure: Do you have a content production process? Do you have someone who creates content regularly? Do you have a publishing calendar? <strong>Low score = Engine will be used later, after strategy is stable. High score = Engine can begin running immediately after Vector.</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="output-card">
+      <div class="output-card-header">What you'll see at the end of Discover</div>
+      <div class="output-card-body">
+        <p style="margin-bottom:10px">After the last readiness section, the results screen appears automatically. It shows:</p>
+        <ul style="padding-left:18px;font-size:13px;color:var(--ink2);line-height:2">
+          <li><strong>Your named engagement track</strong> — e.g. "Foundation + Strategy" or "Full DRIVE Engagement", with duration, stakeholders, and deliverables</li>
+          <li><strong>Which tools are included</strong> and which are not yet (with explanation)</li>
+          <li><strong>The recommended sequence</strong> — which tool to open first</li>
+          <li><strong>First 30 days action items</strong> — specific tasks to start immediately</li>
+          <li><strong>A CTA button</strong> — "Open Resolve →" or "Open Vector →" depending on your track</li>
+        </ul>
+        <div class="callout good" style="margin-bottom:0">Click <span class="click">Save to record</span> in the top bar before leaving Discover. This saves your scoping results so all other tools can read them automatically.</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="guide-divider">
+
+  <!-- ─── RESOLVE ──────────────────────────────────────────────────── -->
+  <div id="resolve" class="guide-section">
+    <div class="section-anchor"></div>
+    <div class="section-header">
+      <div class="section-num" style="background:#ECFEFF;color:#0E7490">R</div>
+      <div>
+        <div class="section-title">Resolve <span style="font-size:14px;font-weight:500;color:var(--ink3)">— Taxonomy Workbench</span></div>
+        <div class="section-sub">Resolve builds the canonical vocabulary that all other tools depend on. It reads your existing CRM exports and brand materials, detects conflicts and inconsistencies, and proposes a clean taxonomy — field definitions, picklist values, and naming conventions — that you review and approve before anything else is built on top of it.</div>
+        <div class="section-meta">
+          <div class="section-meta-item">⏱ <strong>45–90 min (AI run: ~3 min)</strong></div>
+          <div class="section-meta-item">👤 <strong>Marketing ops, CRM admin, or whoever owns your data</strong></div>
+          <div class="section-meta-item">🔀 <strong>Included in: Foundation + Strategy, Full DRIVE, Enterprise Governance</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout info"><strong>Who should be in this session:</strong> The person who actually manages your CRM or marketing ops. Not just a marketer — someone who knows what the fields actually contain and how they're used. In smaller teams, this is often the founder or ops lead.</div>
+
+    <div class="card">
+      <div class="card-title">Step 1 — Source files</div>
+      <div class="card-body">
+        <div class="steps">
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#ECFEFF;color:#0E7490">1</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Check what was pulled from Discover</div>
+              <div class="step-desc">When Resolve loads, it automatically pulls in any taxonomy files and documents you uploaded in Discover. You'll see them listed as source cards in the left panel. Review the list — these are the files the AI will read.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#ECFEFF;color:#0E7490">2</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Upload any additional taxonomy files here</div>
+              <div class="step-desc">If you have more CRM exports or field documentation that wasn't in Discover, upload it now. Click the <span class="click">+ Add source</span> button or drag files into the upload zone. Accepted: <span class="upload-type">PDF</span> <span class="upload-type">CSV</span> <span class="upload-type">XLSX</span> <span class="upload-type">DOCX</span> <span class="upload-type">TXT</span>. There's no limit — upload every system you use: HubSpot, Salesforce, Marketo, Outreach, whatever has field definitions.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#ECFEFF;color:#0E7490">3</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Click "Analyze taxonomy →" to start the AI run</div>
+              <div class="step-desc">The system reads every source file, extracts all field names, picklist values, and naming patterns, detects conflicts across systems, and produces a draft canonical taxonomy. This takes 2–4 minutes. A progress indicator shows what stage it's on — you'll see messages like "Reading source files…", "Detecting conflicts…", "Building canonical model…". Do not close the tab.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Step 2 — Review the AI output</div>
+      <div class="card-body">
+        <p style="margin-bottom:12px">After the AI run completes, the taxonomy editor loads. This is the core of Resolve — you're reviewing and refining a proposed canonical structure, not building it from scratch.</p>
+        <div class="steps">
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#ECFEFF;color:#0E7490">1</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Review each taxonomy category</div>
+              <div class="step-desc">The taxonomy is organized into categories (e.g. "Segment", "Product", "Campaign Type", "Deal Stage"). Click any category to expand it. Each entry shows the canonical field name, its type (enum, boolean, freetext), and the proposed picklist values.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#ECFEFF;color:#0E7490">2</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Edit any field name or value that's wrong</div>
+              <div class="step-desc">Click any field name or picklist value to edit it inline. If the AI proposed "Enterprise" but you call it "Mid-Market", change it. If a value is missing, click <span class="click">+ Add term</span> inside that category and type the missing value, then press Enter.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#ECFEFF;color:#0E7490">3</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Delete anything that doesn't belong</div>
+              <div class="step-desc">Click the <span class="click">✕</span> next to any field or value to remove it. The AI will sometimes propose things from your source files that are internal legacy values or duplicates — clean those out now.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#ECFEFF;color:#0E7490">4</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Review and edit the naming convention</div>
+              <div class="step-desc">Below the taxonomy is the <strong>Naming Convention</strong> section. The AI proposes a pattern — e.g. <code style="font-size:12px;background:var(--bg2);padding:1px 5px;border-radius:3px">[segment]_[product]_[region]_[date]</code>. Edit this directly in the text field until it matches how you actually want things named across all systems.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#ECFEFF;color:#0E7490">5</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Add governance rules</div>
+              <div class="step-desc">Click the <span class="field">Add a governance rule…</span> input and press Enter after each one. These become the operating rules for how the taxonomy is maintained. Examples: "All contact records must have a Segment value before moving to Opportunity stage" / "Campaign names must follow the naming convention exactly — no abbreviations" / "The 'Other' segment value is not permitted in reporting". Add as many as are relevant.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Step 3 — Send for stakeholder approval (optional but recommended)</div>
+      <div class="card-body">
+        <div class="steps">
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#ECFEFF;color:#0E7490">1</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Click "Send for approval" in the toolbar</div>
+              <div class="step-desc">Once the taxonomy is in good shape, click the <span class="click">Send for approval</span> button in the top toolbar. A modal appears asking for the stakeholder's name and email.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#ECFEFF;color:#0E7490">2</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Enter the stakeholder's contact info</div>
+              <div class="step-desc">Type their name and work email. This is whoever needs to sign off on the taxonomy — typically the RevOps lead, marketing director, or whoever owns the CRM. Click <span class="click">Send</span>.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#ECFEFF;color:#0E7490">3</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">What the stakeholder receives</div>
+              <div class="step-desc">They get an email with the full taxonomy table, naming convention, and governance rules. Two buttons: <strong>✓ Approve</strong> and <strong>→ Request Changes</strong>. Clicking either button records their response — no login required. If they request changes, their notes come back to you in the Hub.</div>
+            </div>
+          </div>
+        </div>
+        <div class="callout warn" style="margin-top:16px"><strong>Don't skip this.</strong> Taxonomy decisions affect every downstream system. Getting explicit sign-off before implementation prevents the most common source of rework in marketing ops engagements.</div>
+      </div>
+    </div>
+
+    <div class="output-card">
+      <div class="output-card-header">What Resolve produces</div>
+      <div class="output-card-body">
+        <ul style="padding-left:18px;font-size:13px;color:var(--ink2);line-height:2.1">
+          <li>Canonical taxonomy — all field names, types, and picklist values, approved and ready for CRM implementation</li>
+          <li>Naming convention — a documented pattern for campaigns, contacts, and assets</li>
+          <li>Governance rules — operating rules for how the taxonomy is maintained going forward</li>
+          <li>Conflict report — what the AI found that was inconsistent across your source systems</li>
+          <li>Stakeholder approval record — timestamped, stored in your engagement history</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr class="guide-divider">
+
+  <!-- ─── INTELLIGENCE ──────────────────────────────────────────────── -->
+  <div id="intelligence" class="guide-section">
+    <div class="section-anchor"></div>
+    <div class="section-header">
+      <div class="section-num" style="background:#EFF6FF;color:#1D4ED8">I</div>
+      <div>
+        <div class="section-title">Intelligence <span style="font-size:14px;font-weight:500;color:var(--ink3)">— Market Signals</span></div>
+        <div class="section-sub">Intelligence reads your transcripts, case studies, competitive research, and market documents, then extracts buyer signals, market trends, and competitive intelligence — categorized and starred so the most important ones rise to the top. These signals directly inform the positioning work in Vector.</div>
+        <div class="section-meta">
+          <div class="section-meta-item">⏱ <strong>30–60 min (AI run: 1–2 min per file)</strong></div>
+          <div class="section-meta-item">👤 <strong>Async-friendly — can run between sessions</strong></div>
+          <div class="section-meta-item">🔀 <strong>Included in: Intelligence-track and above</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Step 1 — Upload documents</div>
+      <div class="card-body">
+        <p style="margin-bottom:12px">Intelligence works from the documents you upload. The more complete and specific your materials, the higher-quality the extracted signals.</p>
+        <div class="steps">
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#EFF6FF;color:#1D4ED8">1</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Check what was pulled from Discover</div>
+              <div class="step-desc">Intelligence automatically loads all documents and web sources from your Discover materials intake. You'll see a file list in the left panel. Files are marked "From Discover" so you can tell them apart from new uploads.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#EFF6FF;color:#1D4ED8">2</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Upload additional files</div>
+              <div class="step-desc">Drag files into the upload zone on the left, or click it to browse. Accepted: <span class="upload-type">PDF</span> <span class="upload-type">DOCX</span> <span class="upload-type">TXT</span> <span class="upload-type">VTT</span> <span class="upload-type">PPTX</span>. Best files to add: call transcripts (.vtt from Gong/Otter or .txt), win/loss write-ups, customer interview notes, competitor teardowns, analyst reports, industry surveys. Each file is processed independently — you'll see a signal count appear per file once it's analyzed.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#EFF6FF;color:#1D4ED8">3</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Click "Extract signals" to run the AI</div>
+              <div class="step-desc">Click <span class="click">Extract signals</span> (or the equivalent run button). The system processes each file in sequence — reading, extracting, and categorizing signals. You'll see a status update per file: "Reading…" → "Extracting signals…" → done with a signal count. Each file takes 30–90 seconds depending on length.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Step 2 — Review and curate signals</div>
+      <div class="card-body">
+        <p style="margin-bottom:12px">After extraction, signals appear in the right panel organized by type (e.g. "Buyer Pain", "Competitive", "Market Trend", "Proof Point"). Your job is to star the signals that matter most — these drive Vector.</p>
+        <div class="steps">
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#EFF6FF;color:#1D4ED8">1</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Read each signal</div>
+              <div class="step-desc">Each signal card shows a title, extracted text, and source file. Read them. The AI pulls things verbatim and categorizes them — it doesn't editorialize. Some will be obvious keepers; others won't be relevant.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#EFF6FF;color:#1D4ED8">2</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Star the signals that matter</div>
+              <div class="step-desc">Click the <strong>★</strong> (star icon) on any signal that represents a genuine insight — something specific enough to influence messaging. Starred signals are the ones that appear in the Client Export and get passed to Vector. You're curating, not approving everything. Aim for 10–20 starred signals total, not 100.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#EFF6FF;color:#1D4ED8">3</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Delete signals that are noise</div>
+              <div class="step-desc">Click the <strong>✕</strong> on any signal that's a false positive — boilerplate, generic, or wrong. You want the signal list to be high-signal by the time you go to Vector.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#EFF6FF;color:#1D4ED8">4</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Add signals manually if needed</div>
+              <div class="step-desc">If you know something that didn't make it into any document — something a customer said in a call, or a competitor move you're watching — click <span class="click">+ Add signal</span> and type it in. Give it a type and title.</div>
+            </div>
+          </div>
+        </div>
+        <div class="callout tip" style="margin-top:16px"><strong>What makes a good starred signal:</strong> Specific buyer language ("they kept saying they didn't want another tool to manage"), a concrete competitive move, a market number with context, or a proof point that's differentiated. Generic observations ("customers want ROI") don't qualify.</div>
+      </div>
+    </div>
+
+    <div class="output-card">
+      <div class="output-card-header">What Intelligence produces</div>
+      <div class="output-card-body">
+        <ul style="padding-left:18px;font-size:13px;color:var(--ink2);line-height:2.1">
+          <li>A categorized signal library — all extracted insights organized by type (Buyer Pain, Competitive, Market Trend, Proof Point, etc.)</li>
+          <li>Starred signals — the curated subset that appears in the Client Export and feeds Vector's positioning work</li>
+          <li>Per-file signal counts — so you can see which source materials were richest</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr class="guide-divider">
+
+  <!-- ─── VECTOR ────────────────────────────────────────────────────── -->
+  <div id="vector" class="guide-section">
+    <div class="section-anchor"></div>
+    <div class="section-header">
+      <div class="section-num" style="background:#F0FDF4;color:#15803D">V</div>
+      <div>
+        <div class="section-title">Vector <span style="font-size:14px;font-weight:500;color:var(--ink3)">— Growth Strategy</span></div>
+        <div class="section-sub">Vector is where strategy gets built. Starting from your discovery scores and Intelligence signals, Vector runs a positioning diagnostic across six areas — ideal buyer, offer stack, referral engine, credibility, planning, and systems — and outputs the Campaign DNA, positioning framework, and 90-day activation plan. This is the longest and most interactive session.</div>
+        <div class="section-meta">
+          <div class="section-meta-item">⏱ <strong>90–120 min</strong></div>
+          <div class="section-meta-item">👤 <strong>Founder/owner + whoever makes positioning decisions</strong></div>
+          <div class="section-meta-item">🔀 <strong>Included in all tracks</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout info"><strong>Before you open Vector:</strong> Make sure Discover is saved and Intelligence signals are starred. Vector reads from both automatically. If you open Vector before completing those steps, you'll be working without context and the outputs will be generic.</div>
+
+    <div class="card">
+      <div class="card-title">Step 0 — Diagnostic overview</div>
+      <div class="card-body">
+        <div class="steps">
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#F0FDF4;color:#15803D">1</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Review what was loaded from Discover</div>
+              <div class="step-desc">The first screen shows a summary of your Discover readiness scores (taxonomy, signal, strategy, execution). These scores determine which Vector sections are active vs. flagged. Read it — it tells you what the system already knows about you.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#F0FDF4;color:#15803D">2</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Note any flagged areas</div>
+              <div class="step-desc">If a readiness score is low, that section will be flagged as "priority" in the diagnostic. That doesn't mean you skip it — it means you go deeper there. Low strategy score = Positioning step needs the most time. Low execution score = Plan step is where you'll build the most infrastructure.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#F0FDF4;color:#15803D">3</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Click "Begin diagnostic →" to start</div>
+              <div class="step-desc">This moves you into the six-step Vector diagnostic.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Step 1 — Positioning</div>
+      <div class="card-body">
+        <p style="margin-bottom:12px">The most important step. You're defining who you serve, what you solve, and why you're the right answer. Be specific — generic answers produce generic outputs.</p>
+        <div class="steps">
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#F0FDF4;color:#15803D">1</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Define the ideal buyer</div>
+              <div class="step-desc">Fill in the <span class="field">Ideal buyer</span> field. Be specific: not "marketing leaders" but "VP of Marketing at Series B SaaS companies with a 3-person team and a $400K budget." One persona only — the one that represents your best customers.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#F0FDF4;color:#15803D">2</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Name the core constraint you solve</div>
+              <div class="step-desc">The <span class="field">Core problem solved</span> field. What is the constraint this buyer has that you eliminate? Not a feature list — one underlying problem. "They can't figure out why their MQL-to-SQL rate is 4% when it should be 20%" is better than "they need better marketing."</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#F0FDF4;color:#15803D">3</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">State the key differentiator</div>
+              <div class="step-desc">The <span class="field">Key differentiator</span> field. What do you do that others don't, won't, or can't? Not "we really care" or "we're boutique." Something structural: a method, a constraint you operate under, a result you've earned the right to promise.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#F0FDF4;color:#15803D">4</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Add your strongest proof point</div>
+              <div class="step-desc">The <span class="field">Proof</span> field. One concrete result: a client outcome with a number, a case study headline, or a track record claim. "12 of our last 14 clients exceeded pipeline goals in their first quarter" is proof. "We've helped hundreds of companies grow" is not.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#F0FDF4;color:#15803D">5</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Click "Generate positioning one-liner →"</div>
+              <div class="step-desc">The AI synthesizes your inputs into a positioning one-liner — a single sentence that captures who you serve, what you solve, and why you. It will make multiple passes and show you the strongest version. You can edit it directly in the output field.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Steps 2–6 — Referral Engine, Credibility, Intake, Plan, Practice OS</div>
+      <div class="card-body">
+        <p style="margin-bottom:10px">Each subsequent step builds on the positioning you just defined. Here's what each covers:</p>
+        <div style="display:grid;gap:10px">
+          <div style="padding:12px 16px;background:var(--bg2);border-radius:8px;font-size:13px">
+            <strong style="color:var(--ink)">Step 2 — Referral Engine:</strong> <span style="color:var(--ink2)">How do you systematize word-of-mouth? You'll define who your referral partners are, what the trigger for a referral is, and what you give them to make referring easy. The AI proposes a referral sequence.</span>
+          </div>
+          <div style="padding:12px 16px;background:var(--bg2);border-radius:8px;font-size:13px">
+            <strong style="color:var(--ink)">Step 3 — Credibility:</strong> <span style="color:var(--ink2)">What proof do you have, and is it being used? You'll catalog your proof points — case studies, testimonials, awards, publications, partnerships — and the AI identifies gaps and suggests what to build next.</span>
+          </div>
+          <div style="padding:12px 16px;background:var(--bg2);border-radius:8px;font-size:13px">
+            <strong style="color:var(--ink)">Step 4 — Intake &amp; Stack Setup:</strong> <span style="color:var(--ink2)">What tools are you actually using, and are they configured correctly? You'll walk through your current stack — CRM, email, ads, analytics — and the AI flags misconfigurations and missing connections.</span>
+          </div>
+          <div style="padding:12px 16px;background:var(--bg2);border-radius:8px;font-size:13px">
+            <strong style="color:var(--ink)">Step 5 — Plan:</strong> <span style="color:var(--ink2)">The 90-day activation plan. Based on everything so far, the AI sequences the specific campaigns and initiatives for the first quarter. You'll define goals, owners, and launch dates. This becomes the roadmap you work from.</span>
+          </div>
+          <div style="padding:12px 16px;background:var(--bg2);border-radius:8px;font-size:13px">
+            <strong style="color:var(--ink)">Step 6 — Practice OS:</strong> <span style="color:var(--ink2)">If applicable — how does the marketing function run operationally? Meeting cadence, reporting, content approval flow. This step applies primarily to mid-market and enterprise tracks.</span>
+          </div>
+        </div>
+        <div class="callout good" style="margin-top:16px"><strong>After each step:</strong> The AI generates Campaign DNA — a structured document capturing your brand voice, target segments, proof points, and message frameworks. It's updated automatically as you complete more steps. You don't need to trigger it manually.</div>
+      </div>
+    </div>
+
+    <div class="output-card">
+      <div class="output-card-header">What Vector produces</div>
+      <div class="output-card-body">
+        <ul style="padding-left:18px;font-size:13px;color:var(--ink2);line-height:2.1">
+          <li><strong>Positioning framework</strong> — ideal buyer, core problem, differentiator, proof, positioning one-liner</li>
+          <li><strong>Campaign DNA</strong> — brand voice, segment definitions, message frameworks, proof bank</li>
+          <li><strong>Offer stack</strong> — your product/service tiers and how they ladder</li>
+          <li><strong>Referral engine</strong> — documented partner criteria, trigger, and handoff sequence</li>
+          <li><strong>90-day plan</strong> — sequenced campaigns with owners and launch dates</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr class="guide-divider">
+
+  <!-- ─── ENGINE ───────────────────────────────────────────────────── -->
+  <div id="engine" class="guide-section">
+    <div class="section-anchor"></div>
+    <div class="section-header">
+      <div class="section-num" style="background:#FFF7ED;color:#C2410C">E</div>
+      <div>
+        <div class="section-title">Engine <span style="font-size:14px;font-weight:500;color:var(--ink3)">— Content Operations</span></div>
+        <div class="section-sub">Engine is the production layer. It takes the Campaign DNA from Vector and the taxonomy from Resolve, and uses them to produce on-brand content — emails, LinkedIn posts, ad copy, long-form — at scale. Engine is most powerful when Vector is complete and the positioning is stable.</div>
+        <div class="section-meta">
+          <div class="section-meta-item">⏱ <strong>Ongoing — 30–60 min to set up, then runs continuously</strong></div>
+          <div class="section-meta-item">👤 <strong>Content lead or marketing manager</strong></div>
+          <div class="section-meta-item">🔀 <strong>Included in: Full DRIVE, Strategy + Execution, Enterprise tracks</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout warn"><strong>Prerequisites:</strong> Engine should not be opened until Vector is complete and Campaign DNA is saved. Content produced without a positioning foundation will be on-brand in format but off-target in message.</div>
+
+    <div class="card">
+      <div class="card-title">How Engine works</div>
+      <div class="card-body">
+        <div class="steps">
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#FFF7ED;color:#C2410C">1</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Review loaded context</div>
+              <div class="step-desc">Engine opens with the Campaign DNA from Vector and the canonical taxonomy from Resolve already loaded. You'll see a summary of what's been pulled in. Verify the positioning one-liner and segment definitions look right — these are the guardrails for everything Engine produces.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#FFF7ED;color:#C2410C">2</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Define content themes</div>
+              <div class="step-desc">Engine asks you to define 3–5 content themes — the recurring topics your content will be organized around. These should map to your buyer's journey: awareness themes, consideration themes, and decision themes. The AI suggests themes based on your Campaign DNA; click to accept or edit each one.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#FFF7ED;color:#C2410C">3</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Set the content types you need</div>
+              <div class="step-desc">Select which content formats you're producing: LinkedIn posts, email sequences, ad copy, blog posts, case study outlines, sales enablement one-pagers. Engine will produce templates and first drafts for each selected type.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#FFF7ED;color:#C2410C">4</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Review, edit, and approve each asset</div>
+              <div class="step-desc">The AI generates first drafts in your brand voice (derived from Campaign DNA). Review each one. Edit directly in the text editor. When you're satisfied with an asset, click <span class="click">Approve</span> — it moves to the production-ready queue. Rejected assets go back for regeneration with your notes.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#FFF7ED;color:#C2410C">5</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-title">Export approved assets</div>
+              <div class="step-desc">Click <span class="click">↓ Export assets</span> to download all approved content as a structured ZIP file — organized by type and theme, ready to hand to your team or load into your scheduling tools.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="output-card">
+      <div class="output-card-header">What Engine produces</div>
+      <div class="output-card-body">
+        <ul style="padding-left:18px;font-size:13px;color:var(--ink2);line-height:2.1">
+          <li>Content theme map — 3–5 themes with rationale, tied to buyer journey stages</li>
+          <li>Production-ready content assets — LinkedIn posts, email copy, ad creative, blog outlines, case study templates</li>
+          <li>Brand-voice-consistent drafts — written from Campaign DNA, not generic templates</li>
+          <li>Organized export — assets sorted by type and theme for direct handoff to your team</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr class="guide-divider">
+
+  <!-- ─── WHAT YOU'LL RECEIVE ──────────────────────────────────────── -->
+  <div id="what-you-get" class="guide-section">
+    <div class="section-anchor"></div>
+    <div class="section-header">
+      <div class="section-num" style="background:#F3F4F6;color:#374151">→</div>
+      <div>
+        <div class="section-title">What you'll receive</div>
+        <div class="section-sub">At the end of the engagement, you'll have a set of tangible deliverables — documents, frameworks, and approved assets — that you own and can use immediately. Here's what each one is.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Client Engagement Plan</div>
+      <div class="card-body">A light-theme, print-ready document covering: baseline snapshot (where you were when we started), your engagement roadmap, the canonical taxonomy, top market intelligence signals, your full positioning framework, and content architecture. Download it from Hub → <span class="click">↓ Client Export</span>. This is the deliverable you share with stakeholders.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Canonical Taxonomy</div>
+      <div class="card-body">A structured reference document — all field names, picklist values, naming convention, and governance rules — ready to hand to your CRM admin for implementation. Comes with a stakeholder approval record showing who signed off and when.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Campaign DNA</div>
+      <div class="card-body">A brand and message reference document — ideal buyer profile, core positioning, proof bank, voice guidelines, and segment definitions. This is the document your team (or agency) uses as the source of truth for all marketing created going forward.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">90-Day Activation Plan</div>
+      <div class="card-body">A sequenced campaign plan — specific initiatives with owners, timelines, and success metrics — downloadable as a standalone one-pager from Discover results → <span class="click">↓ Download Roadmap</span>.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Content Asset Library (Engine track only)</div>
+      <div class="card-body">A structured set of production-ready content assets — LinkedIn posts, email sequences, ad copy, blog outlines — organized by theme and content type, ready to hand off to your team or load into your publishing tools.</div>
+    </div>
+
+    <div class="callout tip"><strong>One thing to remember:</strong> These deliverables are only as good as the inputs you gave the system. If you were specific and honest in Discover and Intelligence, what you get back will be specific and usable. If you were vague or incomplete, budget time for a second pass through the relevant tools.</div>
+  </div>
+
+  <!-- FOOTER -->
+  <div style="margin-top:56px;padding-top:24px;border-top:1px solid var(--bg3);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+    <div style="font-size:12px;color:var(--ink4)">✦ DRIVE · Client Onboarding Guide</div>
+    <div style="font-size:12px;color:var(--ink4)">Questions? Ask your consultant before the first session.</div>
+  </div>
+
+</div>
+
+<script>
+function toggleCheck(el) {
+  el.classList.toggle('checked');
+}
+// Smooth scroll offset for sticky nav
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) {
+      e.preventDefault();
+      const top = target.getBoundingClientRect().top + window.scrollY - 64;
+      window.scrollTo({ top, behavior: 'smooth' });
+    }
+  });
+});
+</script>
+</body>
+</html>
