@@ -141,6 +141,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
     <span class="pnav-dot" style="background:#FF8A3D"></span>Engine
   </a>
   <div class="pnav-right">
+    <a class="pnav-tool" href="/onboarding.html" target="_blank" style="font-size:11px;opacity:.7">Client Guide ↗</a>
     <span class="pnav-user" id="navUser"></span>
     <button class="pnav-signout" onclick="signOut()">Sign out</button>
   </div>
@@ -432,6 +433,7 @@ function cardHTML(eng, activeId) {
         : `<button class="btn btn-primary btn-sm" onclick="setActive('${eng.id}','${esc(eng.client_name)}')">Set Active</button>`}
       <button class="btn btn-ghost btn-sm" onclick="generateReport('${eng.id}')">↓ Internal Report</button>
       <button class="btn btn-ghost btn-sm" onclick="generateClientExport('${eng.id}')">↓ Client Export</button>
+      <button class="btn btn-ghost btn-sm" onclick="shareGuide()" title="Copy onboarding guide link">↗ Share Guide</button>
       <button class="btn btn-ghost btn-sm" onclick="editEngagement('${eng.id}')">Edit</button>
       ${eng.status === 'active'
         ? `<button class="btn btn-danger btn-sm" onclick="archiveEngagement('${eng.id}')">Archive</button>`
@@ -1134,6 +1136,13 @@ function toggleArchived() {
 }
 
 // --- UTILS ---
+function shareGuide() {
+  const url = window.location.origin + '/onboarding.html';
+  navigator.clipboard.writeText(url).then(() => showToast('Guide link copied')).catch(() => {
+    prompt('Copy this link to send to your client:', url);
+  });
+}
+
 function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 function showToast(msg) {
