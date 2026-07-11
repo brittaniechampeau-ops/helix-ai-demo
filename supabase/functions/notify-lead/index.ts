@@ -12,7 +12,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json()
-    const { email, org_name, org_industry, org_team, org_rev, scores, path, type } = body
+    const { email, org_name, org_industry, org_team, org_rev, scores, path, type, team_emails } = body
 
     const isGate = type === 'gate'
     const isSaved = type === 'saved'
@@ -51,8 +51,15 @@ serve(async (req) => {
 
     await sendEmail(NOTIFY_EMAIL, adminSubject, adminHtml)
 
-    // ── 2. Welcome email to client (only on full save, not gate) ─────────────
-    if (isSaved && email && email !== NOTIFY_EMAIL) {
+    // ── 2. Welcome email to client + teammates (only on full save, not gate) ──
+    const welcomeRecipients: string[] = [];
+    if (isSaved && email && email !== NOTIFY_EMAIL) welcomeRecipients.push(email);
+    if (isSaved && Array.isArray(team_emails)) {
+      for (const te of team_emails) {
+        if (te && te !== NOTIFY_EMAIL && !welcomeRecipients.includes(te)) welcomeRecipients.push(te);
+      }
+    }
+    for (const recipient of welcomeRecipients) {
       const clientHtml = `
 <!DOCTYPE html><html><head><meta charset="UTF-8"></head>
 <body style="font-family:-apple-system,sans-serif;background:#07090C;color:#E8EDF3;margin:0;padding:32px">
@@ -82,7 +89,7 @@ serve(async (req) => {
   </div>
 </body></html>`
 
-      await sendEmail(email, `Your AI readiness workspace is ready — ${org_name || 'DRIVE'}`, clientHtml)
+      await sendEmail(recipient, `Your AI readiness workspace is ready — ${org_name || 'DRIVE'}`, clientHtml)
     }
 
     return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders() })

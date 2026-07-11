@@ -399,6 +399,10 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
           <div class="login-label">Work email</div>
           <input class="login-input" id="gateEmail" type="email" placeholder="you@yourfirm.com" onkeydown="if(event.key==='Enter')sendGateLink()">
         </div>
+        <div>
+          <div class="login-label" style="display:flex;align-items:center;gap:6px">Additional teammates <span style="font-weight:400;opacity:.5">— optional</span></div>
+          <input class="login-input" id="gateTeamEmails" type="text" placeholder="colleague@yourfirm.com, another@yourfirm.com" style="font-size:13px">
+        </div>
         <div id="gateError" class="login-error"></div>
         <button class="login-btn" onclick="sendGateLink()">Unlock my report →</button>
       </div>
@@ -761,6 +765,10 @@ async function sendGateLink() {
   const errEl = document.getElementById('gateError');
   if (!email) { errEl.textContent = 'Please enter your email address'; errEl.style.display = 'block'; return; }
   errEl.style.display = 'none';
+  // Parse optional teammate emails and store for use after auth
+  const teamRaw = document.getElementById('gateTeamEmails').value;
+  const teamEmails = teamRaw.split(',').map(e => e.trim()).filter(e => e && e.includes('@'));
+  if (teamEmails.length) localStorage.setItem('disc_team_emails', JSON.stringify(teamEmails));
   const { error } = await supa.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.href } });
   if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
   localStorage.setItem('disc_last_email', email);
@@ -1449,6 +1457,11 @@ async function saveToSupabase() {
   btn.textContent = 'Saving…';
   btn.disabled = true;
 
+  // Collect teammate emails stored at gate
+  const teamEmails = (() => {
+    try { return JSON.parse(localStorage.getItem('disc_team_emails') || '[]'); } catch { return []; }
+  })();
+
   try {
     // Upsert practice record (match by email)
     const { data, error } = await supa
@@ -1457,6 +1470,7 @@ async function saveToSupabase() {
         email: currentUser.email,
         readiness,
         modules_unlocked: modules,
+        team_emails: teamEmails,
         updated_at: new Date().toISOString(),
       }, { onConflict: 'email' })
       .select('id')
@@ -1464,6 +1478,7 @@ async function saveToSupabase() {
 
     if (error) throw error;
     currentPracticeId = data?.id;
+    localStorage.removeItem('disc_team_emails');
     // Persist locally and to org layer
     localStorage.setItem('discover_state', JSON.stringify(readiness));
     try { OrgStore.save('org_discover', readiness); } catch (_) {}
@@ -1471,10 +1486,11 @@ async function saveToSupabase() {
     if (syncEl) { syncEl.style.opacity = '1'; setTimeout(() => { syncEl.style.opacity = '0'; }, 2000); }
     btn.textContent = '✓ Saved';
     setTimeout(() => { btn.textContent = 'Save to record'; btn.disabled = false; }, 2000);
-    // Notify admin with full assessment data (fire-and-forget)
+    // Notify admin + all team members with full assessment data (fire-and-forget)
     try {
       supa.functions.invoke('notify-lead', { body: {
         type: 'saved', email: currentUser.email,
+        team_emails: teamEmails,
         org_name: readiness.org_name, org_industry: readiness.org_industry,
         org_team: readiness.org_team, org_rev: readiness.org_rev,
         scores: { taxonomy: readiness.taxonomy, signal: readiness.signal, strategy: readiness.strategy, execution: readiness.execution },

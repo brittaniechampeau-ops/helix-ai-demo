@@ -132,3 +132,19 @@ ALTER TABLE public.subscriptions ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "own_sub_only" ON public.subscriptions
   FOR SELECT USING (email = auth.jwt() ->> 'email');
 -- Only service role can write (Stripe webhook uses service key)
+
+-- ============================================================
+-- practices — add team_emails column + updated RLS
+-- Run this as a NEW query in Supabase SQL Editor
+-- ============================================================
+ALTER TABLE public.practices
+  ADD COLUMN IF NOT EXISTS team_emails jsonb NOT NULL DEFAULT '[]';
+
+-- Drop old single-owner policy and replace with owner-or-teammate
+DROP POLICY IF EXISTS "own_row_only" ON public.practices;
+
+CREATE POLICY "own_row_or_team" ON public.practices
+  FOR ALL USING (
+    email = auth.jwt() ->> 'email'
+    OR team_emails @> to_jsonb(auth.jwt() ->> 'email')
+  );
