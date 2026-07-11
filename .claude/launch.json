@@ -4,7 +4,7 @@
     {
       "name": "helix-demo",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["serve", "-s", "assets", "-l", "3131"],
+      "runtimeArgs": ["serve", "assets", "-l", "3131"],
       "port": 3131
     },
     {
@@ -18,6 +18,12 @@
       "runtimeExecutable": "python3",
       "runtimeArgs": ["-m", "http.server", "3132", "--directory", "/Users/brittbowman/signal"],
       "port": 3132
+    },
+    {
+      "name": "fuse",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "3134", "--directory", "/Users/brittbowman/fuse"],
+      "port": 3134
     }
   ]
 }

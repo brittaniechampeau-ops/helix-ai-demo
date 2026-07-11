@@ -404,9 +404,52 @@
   /* ── FADE IN ── */
   @keyframes fade-in-up { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
   .fade-in { animation:fade-in-up 0.32s ease forwards; }
+
+  /* ── PLATFORM NAV ── */
+  .pnav {
+    height: 36px; flex-shrink: 0;
+    background: #050709;
+    border-bottom: 1px solid #0E1218;
+    display: flex; align-items: center;
+    padding: 0 16px; gap: 4px;
+    z-index: 10000;
+  }
+  .pnav-brand { font-size: 13px; font-weight: 700; color: #818cf8; letter-spacing: -.01em; margin-right: 10px; flex-shrink: 0; }
+  .pnav-sep { width: 1px; height: 14px; background: #1C2535; margin: 0 6px; flex-shrink: 0; }
+  .pnav-tool {
+    display: flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 6px;
+    font-size: 12px; font-weight: 500; color: #4A5270;
+    text-decoration: none; transition: all .15s; white-space: nowrap;
+  }
+  .pnav-tool:hover { background: #0E1218; color: var(--txt); }
+  .pnav-tool.pnav-active { background: #0E1218; color: var(--txt); }
+  .pnav-tool.pnav-locked { opacity: .3; pointer-events: none; cursor: default; }
+  .pnav-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 </style>
 </head>
 <body>
+
+<!-- ── PLATFORM NAV ── -->
+<div class="pnav">
+  <span class="pnav-brand">✦</span>
+  <div class="pnav-sep"></div>
+  <a class="pnav-tool" href="/discover.html">
+    <span class="pnav-dot" style="background:#8B7FEC"></span>Discover
+  </a>
+  <a class="pnav-tool pnav-locked" href="#">
+    <span class="pnav-dot" style="background:#4DE8FF"></span>Fuse
+  </a>
+  <a class="pnav-tool pnav-locked" href="#">
+    <span class="pnav-dot" style="background:#5B8CFF"></span>Signal
+  </a>
+  <a class="pnav-tool pnav-locked" href="#">
+    <span class="pnav-dot" style="background:#3BBFA3"></span>Vector
+  </a>
+  <a class="pnav-tool pnav-active" href="#">
+    <span class="pnav-dot" style="background:#FF8A3D"></span>Helix
+  </a>
+</div>
 
 <!-- TOP BAR -->
 <div class="topbar">
@@ -3675,7 +3718,55 @@ function _stratDownload(slotKey) {
   const c = CAMPAIGNS[ACTIVE_CAMPAIGN];
   const f = c.docs[slotKey];
   if (!f) return;
-  dlFile(f.name.replace(/\.[^.]+$/, '') + '_helix.csv', 'file,slot\n' + f.name + ',' + slotKey, 'text/csv');
+
+  const STRAT_CONTENT = {
+    deck: {
+      ext: '.md', mime: 'text/markdown',
+      body: `# Northstar AgentOps — GTM Launch Deck\n**Q1 2026 | Financial Services Vertical**\n\n## Slide 1 — The Problem\nEnterprise AI deployments lack governance, auditability, and compliance evidence.\n90% of regulated financial institutions have no real-time visibility into what AI agents are doing.\n\n## Slide 2 — The Market Opportunity\n$12B TAM in AI Governance & Observability by 2027.\nEU AI Act enforcement begins Q1 2026 — fines up to 6% of global revenue.\n\n## Slide 3 — Northstar AgentOps\nThe production-grade observability and governance platform for enterprise AI agents.\nReal-time monitoring · Compliance audit trails · Incident response · ROI attribution.\n\n## Slide 4 — Target Personas\n- CRO / CCO — Regulatory compliance & audit evidence\n- CIO / CTO — Shadow AI visibility & tool governance\n- VP AI — Board-level ROI reporting\n\n## Slide 5 — ICP\nFinancial Services: Banking, Insurance, Wealth Management, Fintech\nEmployee count: 200–5,000 | Revenue: $50M–$5B ARR\nRegions: NA · EMEA · APAC\n\n## Slide 6 — Campaign Motion\nReadiness Assessment → 30-Day Pilot → Enterprise License\nPrice: $0 → $0 → $180K–$450K ARR\n\n## Slide 7 — Q1 Goals\n200 SQLs | 40 Readiness Assessments booked | 12 Pilots initiated\nPipeline target: $8.5M\n`
+    },
+    icp: {
+      ext: '.csv', mime: 'text/csv',
+      body: `Dimension,Value,Definition\nIndustry,Banking,Commercial and retail banks subject to OCC / Basel III / EU AI Act\nIndustry,Insurance,P&C and life insurers subject to NAIC model law and EU Solvency II\nIndustry,Wealth Management,RIAs and broker-dealers subject to SEC AI guidance\nIndustry,Fintech,Regulated payment processors and neobanks\nEmployee Range,200–5000,Mid-market to upper mid-market — procurement authority without Fortune 50 complexity\nRevenue Range,$50M–$5B ARR,Sufficient AI investment to generate governance risk\nRegion,NA,Primary: US / Canada\nRegion,EMEA,Primary: UK / Germany / France — EU AI Act urgency\nRegion,APAC,Primary: Singapore (MAS TRM) / Australia (APRA CPG 234)\nTier,Tier 1,"AUM > $100B, active AI deployment, legal/compliance team > 5"\nTier,Tier 2,"AUM $10B–$100B, AI in production or pilot"\nTier,Exclude,Pre-revenue or no production AI deployment\n`
+    },
+    messaging: {
+      ext: '.md', mime: 'text/markdown',
+      body: `# Messaging Framework — Northstar AgentOps Q1\n\n## Core Message\n"AgentOps gives regulated enterprises real-time visibility, auditability, and governance over every AI agent in production — so you can move fast without losing control."\n\n## By Persona\n\n### CRO — Chief Risk Officer\n**Pain:** Regulatory audit trail gaps — no evidence AI decisions were governed\n**Value:** Automated compliance evidence. Every agent action logged, timestamped, attributable.\n**CTA:** Book your AI Governance Readiness Assessment → northstar.ai/assess\n\n### CCO — Chief Compliance Officer\n**Pain:** Manual evidence collection for AI model audits takes weeks\n**Value:** Real-time agent monitoring with audit-ready exports in one click\n**CTA:** Book your AI Governance Readiness Assessment → northstar.ai/assess\n\n### CIO — Chief Information Officer\n**Pain:** Shadow AI proliferation — unknown agents running on unapproved data\n**Value:** Unified agent visibility layer across all business units and vendors\n**CTA:** Start a 30-Day Pilot — $0 for qualified accounts\n\n### CTO — Chief Technology Officer\n**Pain:** No real-time observability for production AI agents\n**Value:** Production-grade observability: latency, error rates, token consumption, drift detection\n**CTA:** Start a 30-Day Pilot — $0 for qualified accounts\n\n## Regulatory Hooks by Region\n- NA: OCC Circular 2023-17 · SR 11-7 model risk guidance\n- EU: EU AI Act (enforcement Q1 2026) · DORA Article 28\n- APAC: MAS TRM 2024 · APRA CPG 234\n`
+    },
+    brief: {
+      ext: '.md', mime: 'text/markdown',
+      body: `# Product Brief — Northstar AgentOps v2.1\n\n## What It Is\nNorthstar AgentOps is the production observability and governance platform for enterprise AI agents.\nIt instruments every agent interaction — inputs, outputs, tool calls, latency, errors — and makes that data audit-ready, searchable, and reportable.\n\n## Core Capabilities\n- **Real-Time Monitoring** — Live dashboard of all active agents across environments\n- **Audit Trail** — Immutable log of every agent action with actor, timestamp, data accessed\n- **Compliance Reports** — One-click export in formats required by OCC, EU AI Act, MAS TRM\n- **Incident Response** — Automated alerts when agents breach policy thresholds\n- **ROI Attribution** — Connect agent activity to pipeline, revenue, and cost savings\n\n## Technical\n- Deployment: SaaS · Private Cloud · On-Prem\n- Integration: REST API · OpenTelemetry · Native connectors for LangChain, LlamaIndex, OpenAI, Anthropic\n- Data residency: US · EU · APAC regions\n- SOC 2 Type II certified\n\n## Pricing\n- Readiness Assessment: Free (2 hours, qualified accounts)\n- 30-Day Pilot: $0 for Tier 1 / Tier 2 ICP accounts\n- Enterprise License: $180K–$450K ARR based on agent count and data volume\n`
+    },
+    competitive: {
+      ext: '.md', mime: 'text/markdown',
+      body: `# Competitive Brief — Northstar AgentOps\n\n## Competitive Landscape\n\n### LangSmith (LangChain)\n**Strength:** Developer-native, strong LLM tracing\n**Weakness:** No compliance exports, no regulatory framework alignment, no audit trail standards\n**Our Position:** AgentOps is built for regulated enterprises — LangSmith is built for developers\n\n### Datadog AI Monitoring\n**Strength:** Existing enterprise relationships, broad observability platform\n**Weakness:** AI monitoring is a bolt-on, no governance layer, no regulatory reporting\n**Our Position:** Purpose-built for AI governance vs. general observability adapted for AI\n\n### Weights & Biases\n**Strength:** Strong ML experiment tracking\n**Weakness:** Model development focus, not production agent governance\n**Our Position:** Production runtime governance vs. training-time experiment tracking\n\n## Win Themes\n1. Only platform with out-of-the-box regulatory compliance exports (OCC / EU AI Act / MAS)\n2. Only platform that connects AI agent activity to pipeline and revenue\n3. Fastest time to audit-readiness — 48 hours from install to first compliance report\n`
+    },
+    sales_plays: {
+      ext: '.md', mime: 'text/markdown',
+      body: `# Sales Plays — Northstar AgentOps Q1\n\n## Play 1 — Regulatory Urgency (CRO / CCO)\n**Trigger:** EU AI Act enforcement Q1 2026 / OCC examination scheduled\n**Motion:** Cold outbound → Readiness Assessment → Pilot\n**Talk Track:** "Your AI agents are making decisions that affect customers. Do you have an audit trail? Regulators are asking."\n**Sequence:** 5-touch, 14 days — Email, Call, Email, LinkedIn, Email\n**Offer:** Free AI Governance Readiness Assessment\n\n## Play 2 — Shadow AI (CIO)\n**Trigger:** AI tool proliferation signal (LinkedIn job posts for AI roles, news of AI initiatives)\n**Motion:** Content → Webinar → Assessment\n**Talk Track:** "How many AI agents are running in your organization right now? Most CIOs don't know."\n**Sequence:** 4-touch, 21 days\n**Offer:** Free Shadow AI Audit (part of Readiness Assessment)\n\n## Play 3 — Open Pipeline Acceleration (CRO / CCO in Discovery+)\n**Trigger:** Opportunity in Salesforce stage Discovery, Demo, or Proposal\n**Motion:** AE-led + Marketing air cover\n**Talk Track:** "While you're evaluating, let us show you what 30 days of real data looks like."\n**Offer:** 30-Day Pilot at $0\n`
+    },
+    regulatory: {
+      ext: '.csv', mime: 'text/csv',
+      body: `Regulation,Region,Effective Date,Key Requirement,AgentOps Response\nEU AI Act — High-Risk AI,EU,Q1 2026,Audit logs for high-risk AI systems,Immutable audit trail with GDPR-compliant data residency\nOCC Circular 2023-17,NA,Active,Model risk governance for AI/ML,SR 11-7-aligned model documentation and monitoring exports\nMAS TRM 2024,APAC,Active,Technology risk management for AI systems,MAS-formatted audit reports and incident notification workflows\nAPRA CPG 234,APAC,Active,Information security management including AI,Policy breach alerting and audit evidence packages\nDORA Article 28,EU,Jan 2025,ICT third-party risk for AI vendors,Vendor risk documentation and SLA monitoring\nSEC AI Guidance 2024,NA,Active,Disclosure of AI use in investment decisions,Decision audit trail with explainability exports\n`
+    },
+    persona: {
+      ext: '.csv', mime: 'text/csv',
+      body: `Persona,Full Title,Pain Point,Value Prop,Buying Committee Role,Offer Affinity,Confidence\nCRO,Chief Risk Officer,Regulatory audit trail gaps — no evidence AI decisions were governed,Automated compliance evidence — every agent action logged and attributable,Economic Buyer,Readiness Assessment,95%\nCCO,Chief Compliance Officer,Manual evidence collection for AI model audits takes weeks,Real-time agent monitoring with audit-ready exports in one click,Economic Buyer,Readiness Assessment,92%\nCIO,Chief Information Officer,Shadow AI proliferation — unknown agents on unapproved data,Unified agent visibility layer across all business units,Technical Buyer,30-Day Pilot,88%\nCTO,Chief Technology Officer,No real-time observability for production AI agents,Production-grade observability: latency / error rates / drift detection,Technical Buyer,30-Day Pilot,85%\nHead of CX,Head of Customer Experience,Hallucination risk in customer-facing AI interactions,Customer interaction audit trail with incident replay,Risk Stakeholder,Readiness Assessment,80%\nVP AI,VP Artificial Intelligence,Cannot prove board ROI on AI investment,Governance data enables ROI reporting and budget justification,Champion,Readiness Assessment,78%\n`
+    },
+    analyst: {
+      ext: '.md', mime: 'text/markdown',
+      body: `# Analyst Research Summary — AI Governance Market\n\n## Gartner: AI Trust, Risk and Security Management (AI TRiSM)\n"By 2026, organizations that operationalize AI transparency, trust and security will see a 50% improvement in AI adoption, business goals and user acceptance."\nHelix tag: Positions AgentOps squarely in the AI TRiSM category Gartner is actively tracking.\n\n## Forrester: The AI Governance Platforms Wave (2025)\nTop criteria: audit trail completeness, regulatory framework coverage, integration breadth, time-to-value.\nHelix tag: AgentOps scores in top quadrant on audit trail and regulatory coverage.\n\n## IDC: AI Governance Spending Forecast\n$12B TAM by 2027, 38% CAGR. Regulated industries (FS, Healthcare, Government) driving 61% of spend.\nHelix tag: Confirms financial services as highest-priority vertical.\n\n## EU AI Act Market Impact (McKinsey, 2025)\n"Regulated enterprises face compliance costs of $50M–$300M if they cannot demonstrate AI governance by Q2 2026."\nHelix tag: Creates acute urgency for our primary ICP.\n`
+    },
+  };
+
+  const docContent = STRAT_CONTENT[slotKey];
+  if (docContent) {
+    const baseName = f.name.replace(/\.[^.]+$/, '');
+    dlFile(baseName + '_helix_export' + docContent.ext, docContent.body, docContent.mime);
+  } else {
+    // Fallback for any unrecognized slot: generate a plain text summary
+    const content = '# ' + (f.name) + '\nLoaded: ' + f.uploadedAt + '\nSize: ' + f.size + (f.pages ? '\nPages: ' + f.pages : '') + '\n\n[Demo document — content generated by Helix AI]\n';
+    dlFile(f.name.replace(/\.[^.]+$/, '') + '_helix_export.md', content, 'text/markdown');
+  }
   showToast('Downloading ' + f.name);
 }
 

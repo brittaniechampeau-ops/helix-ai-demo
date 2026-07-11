@@ -438,6 +438,24 @@
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
 
+  /* ── DISCOVER BANNER ── */
+  .discover-banner {
+    display: none;
+    background: rgba(59,191,163,0.07);
+    border: 1px solid rgba(59,191,163,0.25);
+    border-radius: 8px;
+    padding: 10px 16px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    color: var(--txt2);
+    align-items: center;
+    gap: 10px;
+  }
+  .discover-banner .db-icon { color: var(--accent); font-size: 14px; flex-shrink: 0; }
+  .discover-banner strong { color: var(--txt); }
+  .discover-banner a { color: var(--accent); text-decoration: none; margin-left: auto; white-space: nowrap; flex-shrink: 0; }
+  .discover-banner a:hover { text-decoration: underline; }
+
   /* ── PLATFORM NAV ── */
   .pnav {
     height: 36px; flex-shrink: 0;
@@ -591,7 +609,7 @@
     <button class="btn btn-primary" style="padding:4px 13px;font-size:12px;gap:5px" onclick="openTranscriptImport()">📋 Transcript</button>
     <button class="btn btn-ghost" style="padding:4px 11px;font-size:12px" onclick="exportInstance()" title="Download this practice as a JSON file to share with your client">↓ Export</button>
     <button class="btn btn-ghost" style="padding:4px 11px;font-size:12px" onclick="importInstance()" title="Load a previously exported practice instance">↑ Import</button>
-    <button class="btn btn-ghost" style="padding:4px 11px;font-size:12px;color:var(--txt3)" onclick="if(confirm('Clear all data and start a new practice?')) clearState()">New</button>
+    <button class="btn btn-ghost" style="padding:4px 11px;font-size:12px;color:var(--txt3)" onclick="confirmNew()">New</button>
     <input type="file" id="importInput" accept=".json" style="display:none" onchange="handleImport(event)" />
     <div class="topbar-divider"></div>
     <span id="userEmail" style="font-size:12px;color:var(--txt3);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
@@ -669,6 +687,15 @@
 
     <!-- ═══ STEP 0: DIAGNOSTIC ═══ -->
     <div class="step-panel active" id="panel-0">
+      <!-- Discover readiness banner (shown only when Discover data is on file) -->
+      <div class="discover-banner" id="discoverBanner">
+        <span class="db-icon">✦</span>
+        <div>
+          <strong>Discover assessment on file</strong> &nbsp;·&nbsp; <span class="db-track"></span>
+        </div>
+        <a href="/discover.html">Re-run assessment →</a>
+      </div>
+
       <div class="step-header">
         <h1>Practice Diagnostic</h1>
         <p>Answer five questions to get your track, foundation weights, and a prioritized 90-day build sequence.</p>
@@ -680,11 +707,11 @@
         <div class="two-col">
           <div class="form-group">
             <label class="form-label">Practice / Firm Name</label>
-            <input class="form-input" id="practiceName" placeholder="e.g. Clearfield Advisory" />
+            <input class="form-input" id="practiceName" placeholder="e.g. Clearfield Advisory" maxlength="60" />
           </div>
           <div class="form-group">
             <label class="form-label">Founder Name</label>
-            <input class="form-input" id="founderName" placeholder="e.g. Sarah Chen" />
+            <input class="form-input" id="founderName" placeholder="e.g. Sarah Chen" maxlength="60" />
           </div>
         </div>
         <div class="two-col">
@@ -1467,6 +1494,8 @@
 
 <script>
 // ─── STATE ─────────────────────────────────────────────
+let DISCOVER_READINESS = null; // populated from Supabase readiness column if Discover was run first
+
 const VEC = {
   practice: { name: '', founder: '', email: '', website: '' },
   diag: { size: '', who: '', market: '', motion: '', crm: [], pm: [], storage: [], comms: [], track: '', tier: '', weights: {} },
@@ -1497,7 +1526,7 @@ function showStep(n) {
 function unlockStep(n) {
   if (PHASE < n) PHASE = n;
   const btn = document.getElementById('nav-' + n);
-  if (btn) { btn.classList.remove('locked'); btn.classList.add('done'); }
+  if (btn) { btn.classList.remove('locked'); }
 }
 function setActiveStep(n) {
   const btn = document.getElementById('nav-' + n);
@@ -1539,11 +1568,50 @@ async function cloudSave() {
 
 async function cloudLoad() {
   if (!currentUser) return false;
-  const { data } = await supa.from('practices').select('state').eq('email', currentUser.email).single();
-  if (!data || !data.state || !data.state.VEC) return false;
+  const { data } = await supa.from('practices').select('state, readiness').eq('email', currentUser.email).single();
+  if (!data) return false;
+  if (data.readiness && Object.keys(data.readiness).length > 0) {
+    DISCOVER_READINESS = data.readiness;
+  }
+  if (!data.state || !data.state.VEC) return false;
   Object.assign(VEC, data.state.VEC);
   PHASE = data.state.PHASE || 0;
   return true;
+}
+
+function confirmNew() {
+  if (document.querySelector('#confirmNewModal')) {
+    openModal('confirmNewModal'); return;
+  }
+  const m = document.createElement('div');
+  m.id = 'confirmNewModal';
+  m.className = 'modal-overlay';
+  m.innerHTML = `<div class="modal" style="max-width:380px;text-align:center;padding:32px 28px">
+    <div style="font-size:18px;font-weight:700;margin-bottom:10px;">Start a new practice?</div>
+    <div style="color:var(--txt2);font-size:14px;margin-bottom:24px;">This will clear all current data. This cannot be undone.</div>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button class="btn btn-ghost" onclick="closeModal('confirmNewModal')" style="flex:1">Cancel</button>
+      <button class="btn btn-primary" onclick="closeModal('confirmNewModal');clearState()" style="flex:1;background:var(--red);border-color:var(--red)">Clear &amp; restart</button>
+    </div>
+  </div>`;
+  document.body.appendChild(m);
+  openModal('confirmNewModal');
+}
+
+function applyDiscoverReadiness() {
+  if (!DISCOVER_READINESS) return;
+  const banner = document.getElementById('discoverBanner');
+  if (!banner) return;
+
+  // Suggest track based on readiness scores
+  const { taxonomy = 0, signal = 0, strategy = 0, execution = 0 } = DISCOVER_READINESS;
+  let trackHint = '';
+  if (taxonomy < 4) trackHint = 'Track B recommended — build foundation first';
+  else if (signal >= 4 && strategy >= 4) trackHint = 'Track A recommended — systematize existing motion';
+  else trackHint = 'Track C recommended — fix and activate';
+
+  banner.querySelector('.db-track').textContent = trackHint;
+  banner.style.display = 'flex';
 }
 
 // ─── PERSISTENCE ───────────────────────────────────────
@@ -1692,7 +1760,10 @@ function dlFile(name, content, mime) {
 }
 
 // ─── PROCESSING OVERLAY ────────────────────────────────
+let _isGenerating = false;
 function runProcessing(phaseLabel, title, messages, callback) {
+  if (_isGenerating) return;
+  _isGenerating = true;
   const overlay = document.getElementById('procOverlay');
   const bar     = document.getElementById('procBar');
   const msgEl   = document.getElementById('procMsg');
@@ -1704,7 +1775,7 @@ function runProcessing(phaseLabel, title, messages, callback) {
   function tick() {
     if (i >= messages.length) {
       bar.style.width = '100%';
-      setTimeout(() => { overlay.classList.remove('active'); callback(); }, 500);
+      setTimeout(() => { overlay.classList.remove('active'); _isGenerating = false; callback(); }, 500);
       return;
     }
     msgEl.textContent = messages[i];
@@ -2000,8 +2071,10 @@ function runDiagnostic() {
       document.getElementById('phaseBadge').textContent = 'Track ' + track;
       unlockStep(1); unlockStep(2); unlockStep(3); unlockStep(4); unlockStep(5); unlockStep(6);
       document.getElementById('nav-0').classList.add('done');
+      // Do NOT mark steps 1-6 as done — only unlock them
       updateSidebar(); saveState();
       showToast('Diagnostic complete — Track ' + track);
+      showStep(1);
     });
 }
 
@@ -2011,6 +2084,7 @@ function runPositioning() {
   const constr = document.getElementById('pos-constraint').value.trim();
   const oneline = document.getElementById('pos-oneline').value.trim();
   if (!buyer || !constr || !oneline) { showToast('Fill in buyer, constraint, and one-line before generating'); return; }
+  if (!getApiKey()) { openModal('apiKeyModal'); return; }
 
   VEC.pos.buyer      = buyer;
   VEC.pos.constraint = constr;
@@ -2048,6 +2122,7 @@ function runPositioning() {
 // ─── STEP 2: REFERRAL ENGINE ───────────────────────────
 function runReferralEngine() {
   if (!VEC.ref.contacts.length) { showToast('Add at least one contact before generating scripts'); return; }
+  if (!getApiKey()) { openModal('apiKeyModal'); return; }
 
   runProcessing('Foundation 2', 'Building Referral Scripts',
     ['Analyzing relationship types...', 'Mapping value delivered to ask strength...', 'Identifying two-conversation targets...', 'Drafting introduction requests...', 'Personalizing by relationship type...'],
@@ -2078,6 +2153,7 @@ function runReferralEngine() {
 // ─── STEP 3: CREDIBILITY ───────────────────────────────
 function runCredibility() {
   if (!VEC.cred.cases.length) { showToast('Add at least one case study before generating'); return; }
+  if (!getApiKey()) { openModal('apiKeyModal'); return; }
   VEC.cred.placements = [
     'place-linkedin','place-instagram','place-x','place-facebook','place-youtube','place-tiktok',
     'place-blog','place-substack','place-webinar','place-email',
@@ -2135,6 +2211,7 @@ function runCredibility() {
 
 // ─── STEP 4: INTAKE ────────────────────────────────────
 function runIntake() {
+  if (!getApiKey()) { openModal('apiKeyModal'); return; }
   VEC.ops.duration  = document.getElementById('ops-duration').value.trim() || '12 weeks';
   VEC.ops.refAsk    = document.getElementById('ops-ref-ask').checked;
   VEC.ops.caseDraft = document.getElementById('ops-case-draft').checked;
@@ -3890,6 +3967,7 @@ supa.auth.onAuthStateChange(async (event, session) => {
       showAdminHome();
     } else {
       const fromCloud = await cloudLoad();
+      applyDiscoverReadiness();
       if (fromCloud) { restoreUI(); showClientHome(); }
       else if (restoreFromSave()) { restoreUI(); cloudSave(); showClientHome(); }
       else { updateSidebar(); }

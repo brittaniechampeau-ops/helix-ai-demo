@@ -445,11 +445,11 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
         </div>
         <div class="field-group">
           <div class="field-label">Organization name</div>
-          <input class="field-input" id="orgName" placeholder="Clearfield Advisory" oninput="updateOrgDisplay()">
+          <input class="field-input" id="orgName" placeholder="Clearfield Advisory" maxlength="60" oninput="updateOrgDisplay()">
         </div>
         <div class="field-group">
           <div class="field-label">Primary industry</div>
-          <select class="field-select" id="orgIndustry">
+          <select class="field-select" id="orgIndustry" onchange="updateFooter()">
             <option value="">Select industry…</option>
             <option>Financial services / advisory</option>
             <option>Management consulting</option>
@@ -485,7 +485,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
         </div>
         <div class="field-group">
           <div class="field-label">Primary growth challenge</div>
-          <select class="field-select" id="orgChallenge">
+          <select class="field-select" id="orgChallenge" onchange="updateFooter()">
             <option value="">Select…</option>
             <option>Not enough inbound leads</option>
             <option>Referral network is inconsistent</option>
@@ -588,7 +588,11 @@ let currentPracticeId = null;
 // ── AUTH ──────────────────────────────────────────────
 async function sendMagicLink() {
   const email = document.getElementById('loginEmail').value.trim();
-  if (!email) return;
+  if (!email) {
+    const errEl = document.getElementById('loginError');
+    if (errEl) { errEl.textContent = 'Please enter your email address'; errEl.style.display = 'block'; }
+    return;
+  }
   document.getElementById('loginError').style.display = 'none';
   const { error } = await supa.auth.signInWithOtp({
     email,
@@ -623,6 +627,7 @@ async function initAuth() {
 }
 
 function showApp() {
+  if (!currentUser) return;
   document.getElementById('loginScreen').style.display = 'none';
   const app = document.getElementById('app');
   app.style.display = 'grid';
@@ -662,7 +667,7 @@ function updateOrgDisplay() {
   const team = state.orgTeam;
   const meta = [team ? `${team} people` : null, rev || null].filter(Boolean).join(' · ');
   document.getElementById('sideOrgMeta').textContent = meta || 'Complete context to begin';
-  updateFooterHint();
+  updateFooter();
 }
 
 // ── QUESTIONS ──────────────────────────────────────────
@@ -739,6 +744,7 @@ function recalcScore(si) {
 
 // ── NAVIGATION ──────────────────────────────────────────
 function updateFooterHint() {
+  if (document.getElementById('resultsPanel').style.display === 'block') return;
   const hints = [
     state.orgName ? `Assessing ${state.orgName}` : 'Enter practice name to continue',
     'Answer all 4 questions to continue',
@@ -750,6 +756,12 @@ function updateFooterHint() {
 }
 
 function navNext() {
+  // Hard guard — not just button disabled, checked in JS too
+  if (currentStep === 0 && !state.orgName) return;
+  if (currentStep >= 1 && currentStep <= 4) {
+    const sectionAnswered = state.answers[currentStep - 1].every(v => v !== null);
+    if (!sectionAnswered) return;
+  }
   if (currentStep < 4) {
     document.getElementById(`panel-${currentStep}`).classList.remove('active');
     currentStep++;
@@ -801,7 +813,7 @@ function updateFooter() {
   btnBack.style.display = currentStep > 0 ? 'block' : 'none';
   if (currentStep === 0) {
     btnNext.textContent = 'Start assessment →';
-    btnNext.disabled = !state.orgName;
+    btnNext.disabled = !state.orgName || !state.orgTeam;
   } else if (currentStep <= 4) {
     const sectionAnswered = state.answers[currentStep-1].every(v => v !== null);
     btnNext.textContent = currentStep === 4 ? 'See recommendation →' : 'Next section →';
@@ -965,7 +977,8 @@ function showResults() {
 
   // Title
   const path = pathLabel(modules);
-  document.getElementById('resTitle').textContent = `${state.orgName || 'This org'} — ${path}`;
+  const displayName = (state.orgName || 'This org').substring(0, 40);
+  document.getElementById('resTitle').textContent = `${displayName} — ${path}`;
   document.getElementById('resDesc').textContent =
     `Based on the readiness assessment, we recommend a ${modules.length}-tool engagement in the sequence below. This becomes the scope for your proposal.`;
 
@@ -1059,16 +1072,15 @@ async function saveToSupabase() {
   btn.disabled = true;
 
   try {
-    // Upsert practice record (match by org name + user)
+    // Upsert practice record (match by email)
     const { data, error } = await supa
       .from('practices')
       .upsert({
-        user_id: currentUser.id,
-        name: state.orgName || 'Unnamed',
+        email: currentUser.email,
         readiness,
         modules_unlocked: modules,
         updated_at: new Date().toISOString(),
-      }, { onConflict: 'user_id,name' })
+      }, { onConflict: 'email' })
       .select('id')
       .single();
 
