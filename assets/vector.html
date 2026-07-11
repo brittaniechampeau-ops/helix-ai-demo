@@ -655,7 +655,29 @@
     <div class="topbar-divider"></div>
     <span id="userEmail" style="font-size:12px;color:var(--txt3);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
     <span id="sync-indicator" style="font-size:10px;color:#3BBFA3;opacity:0;transition:opacity .3s;margin-left:10px">● Synced</span>
+    <button class="btn btn-ghost" style="padding:4px 11px;font-size:12px" onclick="openTeamModal()" title="Manage workspace team members" id="btnTeam">👥 Team</button>
     <button class="btn btn-ghost" style="padding:4px 11px;font-size:12px;color:var(--txt3)" onclick="signOut()">Sign out</button>
+  </div>
+</div>
+
+<!-- ── TEAM MODAL ── -->
+<div id="teamModal" style="display:none;position:fixed;inset:0;background:rgba(7,9,12,.85);backdrop-filter:blur(4px);z-index:1100;align-items:center;justify-content:center">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;width:480px;max-width:calc(100vw - 32px);padding:28px;position:relative">
+    <button onclick="closeTeamModal()" style="position:absolute;top:14px;right:16px;background:none;border:none;color:var(--txt3);font-size:20px;cursor:pointer;line-height:1">×</button>
+    <div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--accent);margin-bottom:6px">WORKSPACE</div>
+    <h2 style="font-size:18px;font-weight:700;margin:0 0 4px;letter-spacing:-.02em">Team Members</h2>
+    <p style="font-size:13px;color:var(--txt3);margin:0 0 20px">Everyone listed can access this workspace. They'll receive a welcome email when added.</p>
+    <div id="teamList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;min-height:32px"></div>
+    <div style="border-top:1px solid var(--border);padding-top:16px">
+      <div style="font-size:12px;font-weight:600;color:var(--txt2);margin-bottom:8px">Add teammate</div>
+      <div style="display:flex;gap:8px">
+        <input id="teamAddInput" type="email" placeholder="colleague@theirfirm.com"
+          style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:8px 12px;font-size:13px;color:var(--txt);outline:none"
+          onkeydown="if(event.key==='Enter')addTeammate()">
+        <button class="btn btn-primary" style="padding:8px 16px;font-size:13px" onclick="addTeammate()">Add →</button>
+      </div>
+      <div id="teamAddError" style="font-size:12px;color:#E87070;margin-top:6px;display:none"></div>
+    </div>
   </div>
 </div>
 
@@ -1820,6 +1842,105 @@ function confirmNew() {
   </div>`;
   document.body.appendChild(m);
   openModal('confirmNewModal');
+}
+
+// ── TEAM MANAGEMENT ──────────────────────────────────────────────────────────
+
+let _teamEmails = [];
+let _practiceOwnerEmail = null;
+
+async function openTeamModal() {
+  document.getElementById('teamModal').style.display = 'flex';
+  document.getElementById('teamAddInput').value = '';
+  document.getElementById('teamAddError').style.display = 'none';
+  await refreshTeamList();
+}
+
+function closeTeamModal() {
+  document.getElementById('teamModal').style.display = 'none';
+}
+
+async function refreshTeamList() {
+  if (!currentUser) return;
+  const { data } = await supa.from('practices')
+    .select('email, team_emails')
+    .or(`email.eq.${currentUser.email},team_emails.cs.["${currentUser.email}"]`)
+    .maybeSingle();
+  _teamEmails = data?.team_emails || [];
+  _practiceOwnerEmail = data?.email || null;
+  renderTeamList();
+}
+
+function renderTeamList() {
+  const el = document.getElementById('teamList');
+  const all = _practiceOwnerEmail
+    ? [{ email: _practiceOwnerEmail, isOwner: true }, ..._teamEmails.map(e => ({ email: e, isOwner: false }))]
+    : _teamEmails.map(e => ({ email: e, isOwner: false }));
+  if (!all.length) {
+    el.innerHTML = '<div style="font-size:13px;color:var(--txt3)">No teammates yet.</div>';
+    return;
+  }
+  el.innerHTML = all.map(({ email, isOwner }) => `
+    <div style="display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px">
+      <span style="flex:1;font-size:13px;color:var(--txt)">${escHtml(email)}</span>
+      ${isOwner
+        ? '<span style="font-size:11px;font-weight:600;letter-spacing:.05em;color:var(--accent)">OWNER</span>'
+        : `<button onclick="editTeammate('${escHtml(email)}')" style="background:none;border:none;color:var(--txt3);font-size:12px;cursor:pointer;padding:2px 6px;border-radius:4px" title="Edit email">Edit</button>
+           <button onclick="removeTeammate('${escHtml(email)}')" style="background:none;border:none;color:#E87070;font-size:12px;cursor:pointer;padding:2px 6px;border-radius:4px" title="Remove access">Remove</button>`
+      }
+    </div>`).join('');
+}
+
+async function addTeammate() {
+  const input = document.getElementById('teamAddInput');
+  const errEl = document.getElementById('teamAddError');
+  const email = input.value.trim().toLowerCase();
+  errEl.style.display = 'none';
+  if (!email || !email.includes('@')) { errEl.textContent = 'Enter a valid email address'; errEl.style.display = 'block'; return; }
+  if (_teamEmails.includes(email) || email === _practiceOwnerEmail) { errEl.textContent = 'That email is already on this workspace'; errEl.style.display = 'block'; return; }
+  const newList = [..._teamEmails, email];
+  const ok = await saveTeamEmails(newList);
+  if (!ok) { errEl.textContent = 'Failed to save — try again'; errEl.style.display = 'block'; return; }
+  input.value = '';
+  // Send welcome email to new teammate
+  try {
+    await supa.functions.invoke('notify-lead', { body: {
+      type: 'saved', email,
+      team_emails: [],
+      org_name: DISCOVER_READINESS?.org_name || VEC.practice?.name || '',
+      org_industry: DISCOVER_READINESS?.org_industry || '',
+      org_team: DISCOVER_READINESS?.org_team || '',
+      org_rev: DISCOVER_READINESS?.org_rev || '',
+      scores: DISCOVER_READINESS ? {
+        taxonomy: DISCOVER_READINESS.taxonomy, signal: DISCOVER_READINESS.signal,
+        strategy: DISCOVER_READINESS.strategy, execution: DISCOVER_READINESS.execution
+      } : null,
+      path: DISCOVER_READINESS?.path || '',
+    }});
+  } catch (_) {}
+}
+
+async function removeTeammate(email) {
+  const newList = _teamEmails.filter(e => e !== email);
+  await saveTeamEmails(newList);
+}
+
+async function editTeammate(oldEmail) {
+  const newEmail = prompt('Edit email address:', oldEmail);
+  if (!newEmail || newEmail === oldEmail) return;
+  const newList = _teamEmails.map(e => e === oldEmail ? newEmail.trim().toLowerCase() : e);
+  await saveTeamEmails(newList);
+}
+
+async function saveTeamEmails(newList) {
+  if (!_practiceOwnerEmail) return false;
+  const { error } = await supa.from('practices')
+    .update({ team_emails: newList, updated_at: new Date().toISOString() })
+    .eq('email', _practiceOwnerEmail);
+  if (error) { console.error(error); return false; }
+  _teamEmails = newList;
+  renderTeamList();
+  return true;
 }
 
 function applyDiscoverReadiness() {
