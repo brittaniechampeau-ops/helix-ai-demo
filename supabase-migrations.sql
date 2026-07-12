@@ -173,18 +173,176 @@ CREATE TABLE IF NOT EXISTS public.drive_engagements (
 CREATE INDEX IF NOT EXISTS drive_engagements_owner_idx
   ON public.drive_engagements (owner_email);
 
-ALTER TABLE public.drive_engagements ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "owner_manages_own_engagements"
-  ON public.drive_engagements
-  FOR ALL
-  USING  (owner_email = auth.jwt() ->> 'email')
-  WITH CHECK (owner_email = auth.jwt() ->> 'email');
-
 -- NOTE: The org_id column in org_discover, org_resolve, org_intelligence,
 -- org_vec_state, and org_engine_assets now accepts engagement UUIDs
 -- (from drive_engagement_id in localStorage) in addition to email domains.
 -- No schema change needed — the column is already text PRIMARY KEY.
+
+-- ============================================================
+-- Multi-tenant access control
+-- Replaces all previous RLS policies with a proper admin/member model.
+--
+-- Roles:
+--   Admin   — consultant (you + future hires). Sees and writes everything.
+--   Member  — client user invited to one engagement. Reads only their org.
+--
+-- Run this entire block in Supabase SQL Editor.
+-- After it runs, add yourself as admin with the INSERT at the bottom.
+-- ============================================================
+
+-- ── drive_admins ────────────────────────────────────────────
+-- Global admin list. Add rows here to grant full access.
+-- Only writable via SQL Editor / service role — never from the client.
+CREATE TABLE IF NOT EXISTS public.drive_admins (
+  user_id    uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email      text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.drive_admins ENABLE ROW LEVEL SECURITY;
+-- Admins can confirm their own status; no client writes.
+CREATE POLICY "admin_read_own"
+  ON public.drive_admins FOR SELECT
+  USING (user_id = auth.uid());
+
+-- ── is_admin() helper ───────────────────────────────────────
+-- SECURITY DEFINER so it can read drive_admins without RLS recursion.
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER
+SET search_path = public
+AS $$ SELECT EXISTS (SELECT 1 FROM public.drive_admins WHERE user_id = auth.uid()) $$;
+
+-- ── drive_engagement_members ────────────────────────────────
+-- Maps client users to the one engagement they belong to.
+-- Admins add rows here when onboarding a client's team.
+CREATE TABLE IF NOT EXISTS public.drive_engagement_members (
+  id            uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  engagement_id uuid        NOT NULL REFERENCES public.drive_engagements(id) ON DELETE CASCADE,
+  user_id       uuid        REFERENCES auth.users(id) ON DELETE SET NULL,
+  email         text        NOT NULL,
+  invited_at    timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (engagement_id, email)
+);
+ALTER TABLE public.drive_engagement_members ENABLE ROW LEVEL SECURITY;
+-- Members can see their own membership record.
+CREATE POLICY "members_select"
+  ON public.drive_engagement_members FOR SELECT
+  USING (public.is_admin() OR user_id = auth.uid());
+-- Only admins can add / remove members.
+CREATE POLICY "members_insert"
+  ON public.drive_engagement_members FOR INSERT
+  WITH CHECK (public.is_admin());
+CREATE POLICY "members_update"
+  ON public.drive_engagement_members FOR UPDATE
+  USING (public.is_admin()) WITH CHECK (public.is_admin());
+CREATE POLICY "members_delete"
+  ON public.drive_engagement_members FOR DELETE
+  USING (public.is_admin());
+
+-- ── drive_engagements RLS ───────────────────────────────────
+ALTER TABLE public.drive_engagements ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "authenticated_users_manage_engagements" ON public.drive_engagements;
+DROP POLICY IF EXISTS "owner_manages_own_engagements"          ON public.drive_engagements;
+DROP POLICY IF EXISTS "owner_can_manage_own_engagements"       ON public.drive_engagements;
+-- Admins see/write all. Members read only their engagement.
+CREATE POLICY "engagement_access"
+  ON public.drive_engagements FOR ALL
+  USING (
+    public.is_admin()
+    OR EXISTS (
+      SELECT 1 FROM public.drive_engagement_members
+      WHERE engagement_id = drive_engagements.id AND user_id = auth.uid()
+    )
+  )
+  WITH CHECK (public.is_admin());
+
+-- ── org_* data tables RLS ───────────────────────────────────
+-- org_id stores the engagement UUID. Admins see all rows; members
+-- see only rows whose org_id matches their engagement.
+DROP POLICY IF EXISTS "org_members_only" ON public.org_taxonomy;
+DROP POLICY IF EXISTS "org_members_only" ON public.org_vec_state;
+DROP POLICY IF EXISTS "org_members_only" ON public.org_intelligence;
+DROP POLICY IF EXISTS "org_members_only" ON public.org_engine_assets;
+DROP POLICY IF EXISTS "org_members_only" ON public.org_discover;
+
+CREATE POLICY "org_data_access" ON public.org_taxonomy FOR ALL
+  USING (
+    public.is_admin()
+    OR EXISTS (
+      SELECT 1 FROM public.drive_engagement_members
+      WHERE engagement_id::text = org_id AND user_id = auth.uid()
+    )
+  )
+  WITH CHECK (
+    public.is_admin()
+    OR EXISTS (
+      SELECT 1 FROM public.drive_engagement_members
+      WHERE engagement_id::text = org_id AND user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "org_data_access" ON public.org_vec_state FOR ALL
+  USING (
+    public.is_admin()
+    OR EXISTS (
+      SELECT 1 FROM public.drive_engagement_members
+      WHERE engagement_id::text = org_id AND user_id = auth.uid()
+    )
+  )
+  WITH CHECK (
+    public.is_admin()
+    OR EXISTS (
+      SELECT 1 FROM public.drive_engagement_members
+      WHERE engagement_id::text = org_id AND user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "org_data_access" ON public.org_intelligence FOR ALL
+  USING (
+    public.is_admin()
+    OR EXISTS (
+      SELECT 1 FROM public.drive_engagement_members
+      WHERE engagement_id::text = org_id AND user_id = auth.uid()
+    )
+  )
+  WITH CHECK (
+    public.is_admin()
+    OR EXISTS (
+      SELECT 1 FROM public.drive_engagement_members
+      WHERE engagement_id::text = org_id AND user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "org_data_access" ON public.org_engine_assets FOR ALL
+  USING (
+    public.is_admin()
+    OR EXISTS (
+      SELECT 1 FROM public.drive_engagement_members
+      WHERE engagement_id::text = org_id AND user_id = auth.uid()
+    )
+  )
+  WITH CHECK (
+    public.is_admin()
+    OR EXISTS (
+      SELECT 1 FROM public.drive_engagement_members
+      WHERE engagement_id::text = org_id AND user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "org_data_access" ON public.org_discover FOR ALL
+  USING (
+    public.is_admin()
+    OR EXISTS (
+      SELECT 1 FROM public.drive_engagement_members
+      WHERE engagement_id::text = org_id AND user_id = auth.uid()
+    )
+  )
+  WITH CHECK (
+    public.is_admin()
+    OR EXISTS (
+      SELECT 1 FROM public.drive_engagement_members
+      WHERE engagement_id::text = org_id AND user_id = auth.uid()
+    )
+  );
 
 -- ============================================================
 -- drive_approvals — stakeholder approval loop
@@ -215,11 +373,29 @@ CREATE INDEX IF NOT EXISTS drive_approvals_owner_idx
 
 ALTER TABLE public.drive_approvals ENABLE ROW LEVEL SECURITY;
 
--- Owners can read their own approval records
-CREATE POLICY "owner_reads_own_approvals"
-  ON public.drive_approvals
-  FOR SELECT
-  USING (owner_email = auth.jwt() ->> 'email');
+DROP POLICY IF EXISTS "owner_reads_own_approvals" ON public.drive_approvals;
+
+-- Admins see/write all approvals. Members read their engagement's approvals.
+CREATE POLICY "approval_access"
+  ON public.drive_approvals FOR ALL
+  USING (
+    public.is_admin()
+    OR EXISTS (
+      SELECT 1 FROM public.drive_engagement_members
+      WHERE engagement_id::text = drive_approvals.engagement_id
+      AND user_id = auth.uid()
+    )
+  )
+  WITH CHECK (public.is_admin());
 
 -- handle-approval edge function uses service role key to update status
 -- No additional policy needed for UPDATE — service role bypasses RLS
+
+-- ============================================================
+-- Bootstrap: add yourself as admin
+-- Run this AFTER the migration above. Replace the email if needed.
+-- ============================================================
+-- INSERT INTO public.drive_admins (user_id, email)
+-- SELECT id, email FROM auth.users
+-- WHERE email IN ('britt@brittbowman.ai', 'brittanie.champeau@gmail.com')
+-- ON CONFLICT DO NOTHING;
