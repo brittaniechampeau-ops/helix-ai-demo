@@ -1,0 +1,10 @@
+Account ID,Account Name,Account Type,Industry,Sub-Industry,Employee Count,Estimated Annual Revenue,Region,Tier Classification,Account Owner,Primary Contact Name,Primary Contact Title,Primary Contact Role,Last Activity Date,Open Opportunities,Total Closed Won,Health Score
+SF-0001,Apex Retail Solutions,Customer,Retail,Specialty Retail,250,$15,000,000,Northeast,Enterprise,Tom W.,Jennifer Cole,SVP Operations,Economic Buyer,2024-01-22,0,$48000,82
+SF-0002,BlueMart Inc,Prospect,Retail Technology,SaaS for Retail,45,$3,200,000,Midwest,Mid-Market,Amy L.,Steve Park,CTO,Technical Decision Maker,2024-01-19,1,,
+SF-0003,Cornerstone Brands,Customer,Consumer Goods,Apparel & Fashion,1200,$85,000,000,Southeast,Enterprise,Tom W.,Rachel Kim,Chief Digital Officer,Executive Sponsor,2024-01-21,1,$124000,91
+SF-0004,Delta Merchants,Lead,E-commerce,DTC E-commerce,12,$800,000,West,SMB,Amy L.,Carlos Rivera,Founder/CEO,Economic Buyer,2024-01-15,0,,
+SF-0005,Echo Commerce,Prospect,Retail,Omnichannel Retail,320,$22,000,000,Northeast,Enterprise,Tom W.,Michelle Tan,VP of Technology,Technical Decision Maker,2024-01-20,1,,
+SF-0006,Frontier Goods Co,Customer,Wholesale,Wholesale Distribution,89,$9,100,000,Midwest,Mid-Market,Sarah B.,James Liu,Director of IT,Technical Buyer,2024-01-18,0,$31000,74
+SF-0007,GardenWorks Inc.,Lead,Retail,Garden & Home,22,$1,400,000,South,SMB,Amy L.,Patricia Lam,COO,Executive Buyer,2024-01-12,0,,
+SF-0008,Harbor Brands International,Prospect,Consumer Goods,Luxury Goods,450,$38,000,000,West,Enterprise,Tom W.,Derek Olsson,CIO,Technical Decision Maker,2024-01-21,2,,
+SF-0009,NEXUS Commerce Platform,Customer,Technology,Commerce Platform,78,$7,500,000,Midwest,Mid-Market,Sarah B.,Yuki Tanaka,VP Product,Economic Buyer,2024-01-17,0,$19000,66

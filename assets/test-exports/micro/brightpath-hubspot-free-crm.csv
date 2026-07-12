@@ -1,0 +1,9 @@
+Contact ID,First Name,Last Name,Email,Company Name,Job Title,Lifecycle Stage,Lead Status,Contact Owner,Create Date,Last Activity Date,Last Contacted,Number of Times Contacted,Associated Deal,Deal Stage,Deal Amount,Notes
+1001,Sarah,Chen,sarah.chen@acmecorp.com,ACME Corp,Owner,Lead,New,Unassigned,2023-11-05,2024-01-15,,0,,,,"Met at Chamber of Commerce event. Said she's overwhelmed with marketing."
+1002,Michael,Rodriguez,m.rodriguez@startup.io,Startup.io Inc.,Co-Founder & CEO,MQL,Working,Jane Smith,2023-12-10,2024-01-20,2024-01-18,3,DEAL-001,Discovery,$4500,"Very interested. Founder-led sales. No marketing budget yet but growing fast."
+1003,Jen,Walsh,jennifer.walsh@corpinc.com,Corp Inc.,Chief Executive Officer,Subscriber,New,Unassigned,2023-08-22,2023-12-01,,0,,,,"Signed up for newsletter after conference. Not followed up."
+1004,Dave,Park,david.park@smecorp.com,SME Corp,President/Owner,Lead,Open,Unassigned,2024-01-02,2024-01-10,,1,,,,"Cold outreach. Replied once then went dark."
+1005,Lisa,Thompson,lisa.thompson@ventures.co,Ventures Co,Founder,SQL,Connected,Jane Smith,2023-11-30,2024-01-22,2024-01-21,5,DEAL-002,Proposal,$7200,"Warm referral from Mike. Asked for proposal. Very aligned on positioning work."
+1006,Bob,Nguyen,r.nguyen@localservices.biz,Local Services LLC,Owner,Subscriber,New,Unassigned,2024-01-03,2024-01-03,,0,,,,
+1007,Patricia,Okoro,patricia.okoro@boutiquefirm.com,Boutique Firm Partners,Managing Partner,MQL,Open,Jane Smith,2024-01-10,2024-01-17,2024-01-16,2,,,,"Strong fit. Decision-maker. Waiting on Q1 budget."
+1008,Wei,Zhang,wei.zhang@consultinghub.net,Consulting Hub LLC,Principal Consultant,Lead,Unqualified,Unassigned,2023-09-15,2023-10-14,,0,,,,"Partner referral but no response in 3 months. Not a fit."

@@ -1,0 +1,11 @@
+Lead ID,Email,First Name,Last Name,Company,Job Title,Segment,ICP Fit Score,ICP Classification,Program Name,Nurture Track,Engagement Score,MQL Date,Persona Tag,Lead Source,Country,State,SFDC Sync Status,SFDC Account Match
+MK-1001,j.cole@apexretail.com,Jennifer,Cole,Apex Retail Solutions,SVP Ops,MM,Medium,Tier B,Q4 Product Demo,Mid-Market Ops Track,78,2023-10-14,Ops Leader,Tradeshow,US,NY,Synced,SF-0001
+MK-1002,s.park@bluemart.com,Steve,Park,BlueMart Inc.,CTO,ENT,High,Tier A,Tech Webinar Series,Enterprise Tech Track,91,2023-11-02,Technical Buyer,Webinar,US,IL,Synced,SF-0002
+MK-1003,r.kim@cornerstonebrands.com,Rachel,Kim,Cornerstone Brands LLC,Chief Digital Officer,ENT,High,Tier A,Executive Roundtable,C-Suite Executive Track,95,2023-09-30,CXO,Referral,US,GA,Synced,SF-0003
+MK-1004,c.rivera@deltamerchants.io,Carlos,Rivera,Delta Merchants,CEO/Founder,SME,Low,Non-ICP,SMB Awareness Nurture,SMB Track,32,,,Owner/Founder,Inbound,US,CA,Synced,SF-0004
+MK-1005,m.tan@echocommerce.com,Michelle,Tan,Echo Commerce,VP Technology,ENT,High,Tier A,Tech Webinar Series,Enterprise Tech Track,88,2023-12-01,Technical Buyer,Paid Search,US,NJ,Synced,SF-0005
+MK-1006,j.liu@frontiergoodsco.com,James,Liu,Frontier Goods Co.,Director IT,MM,Medium,Tier B,Mid-Market Product Nurture,Mid-Market IT Track,61,2024-01-05,IT Buyer,Content Download,US,OH,Synced,SF-0006
+MK-1007,p.lam@gardenworks.com,Patricia,Lam,GardenWorks,COO,SME,Low,Non-ICP,SMB Awareness Nurture,SMB Track,41,,,SMB Executive,Webinar,US,TX,Synced,SF-0007
+MK-1008,d.olsson@harborbrands.com,Derek,Olsson,Harbor Brands International,CIO,ENT,High,Tier A,Executive Roundtable,C-Suite Executive Track,83,2024-01-15,CXO,Sales Outreach,US,CA,Synced,SF-0008
+MK-1009,y.tanaka@nexuscommerce.io,Yuki,Tanaka,Nexus Commerce,VP Product,MM,Medium,Tier B,Mid-Market Product Nurture,Mid-Market Tech Track,67,2023-12-20,Product Buyer,Inbound,US,IL,Synced,SF-0009
+MK-1010,new.contact@horizonretail.com,Alex,Dupont,Horizon Retail Group,Director Digital Commerce,MM,Medium,Tier B,Inbound Nurture,Mid-Market Ops Track,44,,,Digital Ops,Inbound,US,WA,Not Synced,

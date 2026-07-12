@@ -1,0 +1,10 @@
+Account ID,Account Name,Account Type,Industry,Sub-Industry,Employee Range,ARR,ACV Target,Region,Tier,CSM Owner,AE Owner,ICP Score,Stage,Account Health,Contract Renewal Date,NPS Score,Products,Custom Field: Segment Tag,Custom Field: Strategic Priority
+AX-1001,Meridian Financial Group,Customer,Financial Services,Commercial Banking,5001-10000,$125,000,,$280,000,East,T1,Lisa R.,Dan K.,92,Expand,Green,2024-09-30,68,"Platform; Compliance Module","FS-Enterprise","Priority Account"
+AX-1002,Cascade Health Network,Customer,Healthcare,Hospital System,1001-5000,$85,000,,$190,000,West,T1,Mark S.,Dan K.,88,Renew,Green,2024-06-15,71,"Platform; Analytics Add-on","HC-Enterprise","Priority Account"
+AX-1003,TerraLogic Inc,Prospect,Technology,Application Software,501-1000,,$67,000,Central,T2,,Mark S.,71,Discovery,,,,"","Tech-MidMarket",""
+AX-1004,Nexus Corp,Customer,Manufacturing,Industrial Equipment,10001+,$210,000,,$410,000,East,T1,Lisa R.,Amy V.,95,Expand,Green,2025-01-31,74,"Platform; API Suite; Compliance Module","MFG-Enterprise","Strategic Account"
+AX-1005,PinPoint Retail,Lead,Retail,E-commerce,51-200,,$38,000,West,T3,,,45,MQL,,,,"","SMB-Retail",""
+AX-1006,Clearwater Insurance,Prospect,Insurance,Property & Casualty,1001-5000,,$89,000,East,T2,,Amy V.,78,Technical Eval,,,,"","INS-MidMarket",""
+AX-1007,Global Dynamics,Customer,Conglomerate,Diversified Industrials,10001+,$340,000,,$590,000,Global,T0,Lisa R.,Amy V.,98,Expand,Green,2025-03-31,81,"Platform; API Suite; Compliance Module; Analytics Add-on; Professional Services","CORP-Strategic","Board-Level Account"
+AX-1008,Brightline Capital Partners,Prospect,Financial Services,Private Equity,201-500,,$74,000,East,T2,,Dan K.,69,Discovery,,,,"","FS-MidMarket",""
+AX-1009,Apex Health Sciences,Lead,Healthcare,Pharmaceuticals,1001-5000,,$95,000,West,T2,,Mark S.,74,MQL,,,,"","HC-MidMarket",""
