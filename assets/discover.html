@@ -1148,11 +1148,11 @@ async function parseIntakeForOrgProfile() {
     if (!m) return;
     const p = JSON.parse(m[0]);
     let filled = [];
-    if (p.org_name && !state.orgName) { state.orgName = p.org_name; orgNameEl.value = p.org_name; updateOrgDisplay(); filled.push('name'); }
-    if (p.industry && !orgIndustryEl.value) { const opt = Array.from(orgIndustryEl.options).find(o => o.value === p.industry); if (opt) { orgIndustryEl.value = opt.value; filled.push('industry'); } }
-    if (p.team_size && orgTeamEl && !orgTeamEl.value) { const opt = Array.from(orgTeamEl.options).find(o => o.value === p.team_size); if (opt) { orgTeamEl.value = opt.value; state.orgTeam = opt.value; filled.push('team size'); } }
-    if (p.annual_revenue && orgRevEl && !orgRevEl.value) { const opt = Array.from(orgRevEl.options).find(o => o.value === p.annual_revenue); if (opt) { orgRevEl.value = opt.value; state.orgRev = opt.value; filled.push('revenue'); } }
-    if (p.challenge && orgChallengeEl && !orgChallengeEl.value) { orgChallengeEl.value = p.challenge; filled.push('challenge'); }
+    if (p.org_name) { state.orgName = p.org_name; orgNameEl.value = p.org_name; updateOrgDisplay(); filled.push('name'); }
+    if (p.industry) { const opt = Array.from(orgIndustryEl.options).find(o => o.value === p.industry); if (opt) { orgIndustryEl.value = opt.value; filled.push('industry'); } }
+    if (p.team_size && orgTeamEl) { const opt = Array.from(orgTeamEl.options).find(o => o.value === p.team_size); if (opt) { orgTeamEl.value = opt.value; state.orgTeam = opt.value; filled.push('team size'); } }
+    if (p.annual_revenue && orgRevEl) { const opt = Array.from(orgRevEl.options).find(o => o.value === p.annual_revenue); if (opt) { orgRevEl.value = opt.value; state.orgRev = opt.value; filled.push('revenue'); } }
+    if (p.challenge && orgChallengeEl) { orgChallengeEl.value = p.challenge; filled.push('challenge'); }
     updateFooter();
     if (filled.length) showToast(`Auto-filled from documents: ${filled.join(', ')}`);
   } catch (_) {
