@@ -1087,7 +1087,7 @@ function handleDocFiles(e) {
     // Read plain-text files immediately so downstream tools have real content
     if (['txt', 'vtt', 'md'].includes(ext)) {
       const reader = new FileReader();
-      reader.onload = ev => { entry.text = (ev.target.result || '').slice(0, 60000); tryAutoFillFromDoc(entry.text, f.name); };
+      reader.onload = ev => { entry.text = (ev.target.result || '').slice(0, 60000); };
       reader.readAsText(f);
     }
     // PDF/DOCX/PPTX require extraction libraries — Intelligence handles those
@@ -1101,30 +1101,49 @@ function handleDocFiles(e) {
   e.target.value = '';
 }
 
-async function tryAutoFillFromDoc(text, filename) {
+async function parseIntakeForOrgProfile() {
   const apiKey = localStorage.getItem('vec_anthropic_key');
   if (!apiKey) return;
+  // Collect all readable text from uploaded docs
+  const textChunks = state.intake.docs.filter(f => f.text).map(f => `--- ${f.name} ---\n${f.text.slice(0, 8000)}`);
+  if (textChunks.length === 0) return;
   const orgNameEl = document.getElementById('orgName');
   const orgIndustryEl = document.getElementById('orgIndustry');
-  const needsName = !state.orgName;
-  const needsIndustry = !orgIndustryEl.value;
-  if (!needsName && !needsIndustry) return;
+  const orgTeamEl = document.getElementById('orgTeam');
+  const orgRevEl = document.getElementById('orgRev');
+  const orgChallengeEl = document.getElementById('orgChallenge');
+  const btnNext = document.getElementById('btnNext');
+  const origLabel = btnNext.textContent;
+  btnNext.disabled = true;
+  btnNext.textContent = 'Parsing documents…';
   try {
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 200, messages: [{ role: 'user', content: `Extract org profile from this document. Filename: ${filename}\n\nText:\n${text.slice(0,3000)}\n\nReturn JSON only with keys: org_name, industry (one of: technology, financial-services, healthcare, professional-services, retail, manufacturing, media, education, nonprofit, other). Leave blank if unclear.` }] })
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 400,
+        messages: [{ role: 'user', content: `Extract org profile data from these documents. Return ONLY a JSON object with these keys (leave value blank string if not found):\n- org_name: company/org name\n- industry: one of technology|financial-services|healthcare|professional-services|retail|manufacturing|media|education|nonprofit|other\n- team_size: one of 1-5|6-15|16-50|51-200|201-500|500+\n- annual_revenue: one of pre-revenue|<$500K|$500K–$2M|$2M–$10M|$10M–$50M|$50M+\n- challenge: a 1-sentence summary of their main GTM challenge\n\nDocuments:\n${textChunks.join('\n\n')}` }]
+      })
     });
     const d = await resp.json();
     const raw = (d.content?.[0]?.text || '');
     const m = raw.match(/\{[\s\S]*?\}/);
     if (!m) return;
-    const parsed = JSON.parse(m[0]);
-    if (needsName && parsed.org_name) { state.orgName = parsed.org_name; orgNameEl.value = parsed.org_name; updateOrgDisplay(); }
-    if (needsIndustry && parsed.industry) { const opts = Array.from(orgIndustryEl.options); const opt = opts.find(o => o.value === parsed.industry || o.value.includes(parsed.industry)); if (opt) orgIndustryEl.value = opt.value; }
+    const p = JSON.parse(m[0]);
+    let filled = [];
+    if (p.org_name && !state.orgName) { state.orgName = p.org_name; orgNameEl.value = p.org_name; updateOrgDisplay(); filled.push('name'); }
+    if (p.industry && !orgIndustryEl.value) { const opt = Array.from(orgIndustryEl.options).find(o => o.value === p.industry); if (opt) { orgIndustryEl.value = opt.value; filled.push('industry'); } }
+    if (p.team_size && orgTeamEl && !orgTeamEl.value) { const opt = Array.from(orgTeamEl.options).find(o => o.value === p.team_size); if (opt) { orgTeamEl.value = opt.value; state.orgTeam = opt.value; filled.push('team size'); } }
+    if (p.annual_revenue && orgRevEl && !orgRevEl.value) { const opt = Array.from(orgRevEl.options).find(o => o.value === p.annual_revenue); if (opt) { orgRevEl.value = opt.value; state.orgRev = opt.value; filled.push('revenue'); } }
+    if (p.challenge && orgChallengeEl && !orgChallengeEl.value) { orgChallengeEl.value = p.challenge; filled.push('challenge'); }
     updateFooter();
-    showToast('Auto-filled org profile from document');
-  } catch (_) {}
+    if (filled.length) showToast(`Auto-filled from documents: ${filled.join(', ')}`);
+  } catch (_) {
+  } finally {
+    btnNext.disabled = false;
+    btnNext.textContent = origLabel;
+  }
 }
 
 function renderDocFiles() {
@@ -1331,7 +1350,11 @@ function updateFooterHint() {
   document.getElementById('footerHint').textContent = hints[currentStep] || '';
 }
 
-function navNext() {
+async function navNext() {
+  if (currentStep === 1) {
+    await parseIntakeForOrgProfile();
+  }
+
   if (currentStep === 0) {
     if (!state.orgName) {
       const input = document.getElementById('orgName');
