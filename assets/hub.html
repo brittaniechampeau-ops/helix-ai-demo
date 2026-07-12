@@ -104,8 +104,8 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .archived-toggle:hover{color:var(--text2)}
 
 /* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .2s}
-.modal-overlay.open{opacity:1;pointer-events:all}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:none;align-items:center;justify-content:center;padding:16px;opacity:0;transition:opacity .2s}
+.modal-overlay.open{display:flex;opacity:1}
 .modal{background:var(--surface);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:500px;padding:28px;max-height:90vh;overflow-y:auto}
 .modal-title{font-size:17px;font-weight:700;margin-bottom:20px}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -557,6 +557,8 @@ function cardHTML(eng, activeId) {
 }
 
 // --- ACTIVE ENGAGEMENT ---
+function refreshActiveBanner() {}
+
 function setActive(id, name, industry) {
   localStorage.setItem(ENG_KEY, id);
   localStorage.setItem(ENG_NAME_KEY, name);
