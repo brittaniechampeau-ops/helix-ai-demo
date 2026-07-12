@@ -64,7 +64,8 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .section{padding:24px 32px}
 .section-label{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:14px}
 .eng-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px}
-.eng-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;transition:border-color .15s;position:relative}
+.eng-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;transition:border-color .15s;position:relative;cursor:pointer}
+.eng-card:hover{border-color:var(--text-muted)}
 .eng-card:hover{border-color:var(--border2)}
 .eng-card.eng-active{border-color:rgba(59,191,163,.35);box-shadow:0 0 0 1px rgba(59,191,163,.1) inset}
 .eng-card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px}
@@ -86,7 +87,8 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .pd-v{background:rgba(59,191,163,.15);color:var(--teal)}
 .pd-e{background:rgba(255,138,61,.15);color:var(--orange)}
 .eng-actions{display:flex;gap:6px;flex-wrap:wrap}
-.active-chip{position:absolute;top:14px;right:14px;font-size:10px;font-weight:600;color:var(--teal);background:rgba(59,191,163,.12);border:1px solid rgba(59,191,163,.22);padding:2px 7px;border-radius:4px}
+.active-chip{position:absolute;top:12px;left:12px;font-size:10px;font-weight:600;color:var(--teal);background:rgba(59,191,163,.12);border:1px solid rgba(59,191,163,.22);padding:2px 7px;border-radius:4px}
+.eng-card.eng-active .eng-card-header{padding-top:20px}
 
 /* EMPTY STATE */
 .empty-state{padding:60px 32px;text-align:center}
@@ -307,6 +309,9 @@ async function loadEngagements() {
 
 function render() {
   const activeId = localStorage.getItem(ENG_KEY);
+  // Keep industry in sync so Discover can pre-fill from Hub data
+  const activeEng = engagements.find(e => e.id === activeId);
+  if (activeEng?.industry) localStorage.setItem('drive_engagement_industry', activeEng.industry);
   const active = engagements.filter(e => e.status === 'active');
   const archived = engagements.filter(e => e.status === 'archived');
 
@@ -418,7 +423,7 @@ function cardHTML(eng, activeId) {
   const created = eng.created_at ? new Date(eng.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
 
   return `
-  <div class="eng-card${isActive ? ' eng-active' : ''}">
+  <div class="eng-card${isActive ? ' eng-active' : ''}" onclick="if(!event.target.closest('button,a'))setActive('${eng.id}','${jsEsc(eng.client_name)}','${jsEsc(eng.industry||'')}')">
     ${isActive ? '<div class="active-chip">Active</div>' : ''}
     <div class="eng-card-header">
       <div>
@@ -447,7 +452,7 @@ function cardHTML(eng, activeId) {
     <div class="eng-actions">
       ${isActive
         ? (() => { const ft = HUB_FIRST_TOOL[eng.size_tier] || 'discover.html'; const tl = HUB_TOOL_LABELS[ft] || 'Discover'; return `<a class="btn btn-ghost btn-sm" href="/${ft}">Open in ${tl}</a>`; })()
-        : `<button class="btn btn-primary btn-sm" onclick="setActive('${eng.id}','${jsEsc(eng.client_name)}')">Set Active</button>`}
+        : `<button class="btn btn-primary btn-sm" onclick="setActive('${eng.id}','${jsEsc(eng.client_name)}','${jsEsc(eng.industry||'')}')">Set Active</button>`}
       <button class="btn btn-ghost btn-sm" onclick="generateReport('${eng.id}')">↓ Internal Report</button>
       <button class="btn btn-ghost btn-sm" onclick="generateClientExport('${eng.id}')">↓ Client Export</button>
       <button class="btn btn-ghost btn-sm" onclick="shareGuide()" title="Copy onboarding guide link">↗ Share Guide</button>
@@ -460,9 +465,10 @@ function cardHTML(eng, activeId) {
 }
 
 // --- ACTIVE ENGAGEMENT ---
-function setActive(id, name) {
+function setActive(id, name, industry) {
   localStorage.setItem(ENG_KEY, id);
   localStorage.setItem(ENG_NAME_KEY, name);
+  if (industry) localStorage.setItem('drive_engagement_industry', industry);
   refreshActiveBanner();
   render();
   showToast(`Active: ${name}`);

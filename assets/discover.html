@@ -103,7 +103,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 .field-select{height:44px;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:0 14px;color:var(--text);font-size:14px;outline:none;max-width:480px;width:100%;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7A8D' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
 .field-select:focus{border-color:var(--purple-border)}
 .chips-wrap{display:flex;flex-wrap:wrap;gap:8px;max-width:520px}
-.chip{height:32px;padding:0 14px;border-radius:16px;font-size:12px;font-weight:500;border:1px solid var(--border2);color:var(--muted);background:var(--card);cursor:pointer;transition:all .15s}
+.chip{height:32px;padding:0 14px;border-radius:16px;font-size:12px;font-weight:500;border:1px solid var(--border2);color:var(--muted);background:var(--card);cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center}
 .chip:hover{color:var(--text)}
 .chip.sel{background:var(--purple-bg);border-color:var(--purple-border);color:var(--purple)}
 
@@ -347,7 +347,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 </div>
 
 <!-- APP -->
-<div id="app" style="display:none;height:100vh;grid-template-columns:var(--sidebar) 1fr;grid-template-rows:54px 1fr">
+<div id="app" style="display:none;grid-template-columns:var(--sidebar) 1fr;grid-template-rows:54px 1fr">
 
   <!-- TOPBAR -->
   <nav class="topbar">
@@ -894,6 +894,11 @@ async function initAuth() {
     const cloudState = await OrgStore.load('org_discover');
     if (cloudState) { restoreDiscoverState(cloudState); }
     else { const localState = localStorage.getItem('discover_state'); if (localState) { try { restoreDiscoverState(JSON.parse(localState)); } catch (_) {} } }
+    // Pre-fill from Hub active engagement if fields still empty
+    const hubName = localStorage.getItem('drive_engagement_name');
+    const hubIndustry = localStorage.getItem('drive_engagement_industry');
+    if (hubName && !state.orgName) { state.orgName = hubName; const el = document.getElementById('orgName'); if (el) el.value = hubName; updateOrgDisplay(); }
+    if (hubIndustry) { const el = document.getElementById('orgIndustry'); if (el && !el.value) el.value = hubIndustry; }
   } else {
     const saved = localStorage.getItem('disc_last_email');
     if (saved) { document.getElementById('loginEmail').value = saved; document.getElementById('gateEmail').value = saved; }
@@ -1082,7 +1087,7 @@ function handleDocFiles(e) {
     // Read plain-text files immediately so downstream tools have real content
     if (['txt', 'vtt', 'md'].includes(ext)) {
       const reader = new FileReader();
-      reader.onload = ev => { entry.text = (ev.target.result || '').slice(0, 60000); };
+      reader.onload = ev => { entry.text = (ev.target.result || '').slice(0, 60000); tryAutoFillFromDoc(entry.text, f.name); };
       reader.readAsText(f);
     }
     // PDF/DOCX/PPTX require extraction libraries — Intelligence handles those
@@ -1094,6 +1099,32 @@ function handleDocFiles(e) {
   renderDocFiles();
   updateMaterialsBadge();
   e.target.value = '';
+}
+
+async function tryAutoFillFromDoc(text, filename) {
+  const apiKey = localStorage.getItem('vec_anthropic_key');
+  if (!apiKey) return;
+  const orgNameEl = document.getElementById('orgName');
+  const orgIndustryEl = document.getElementById('orgIndustry');
+  const needsName = !state.orgName;
+  const needsIndustry = !orgIndustryEl.value;
+  if (!needsName && !needsIndustry) return;
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 200, messages: [{ role: 'user', content: `Extract org profile from this document. Filename: ${filename}\n\nText:\n${text.slice(0,3000)}\n\nReturn JSON only with keys: org_name, industry (one of: technology, financial-services, healthcare, professional-services, retail, manufacturing, media, education, nonprofit, other). Leave blank if unclear.` }] })
+    });
+    const d = await resp.json();
+    const raw = (d.content?.[0]?.text || '');
+    const m = raw.match(/\{[\s\S]*?\}/);
+    if (!m) return;
+    const parsed = JSON.parse(m[0]);
+    if (needsName && parsed.org_name) { state.orgName = parsed.org_name; orgNameEl.value = parsed.org_name; updateOrgDisplay(); }
+    if (needsIndustry && parsed.industry) { const opts = Array.from(orgIndustryEl.options); const opt = opts.find(o => o.value === parsed.industry || o.value.includes(parsed.industry)); if (opt) orgIndustryEl.value = opt.value; }
+    updateFooter();
+    showToast('Auto-filled org profile from document');
+  } catch (_) {}
 }
 
 function renderDocFiles() {
