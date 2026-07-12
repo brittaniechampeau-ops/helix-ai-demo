@@ -37,6 +37,8 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .auth-btn{width:100%;margin-top:10px;background:var(--purple);color:#fff;border:none;border-radius:8px;padding:11px;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .15s}
 .auth-btn:hover{opacity:.88}
 .auth-msg{margin-top:14px;font-size:13px;color:var(--text2)}
+.auth-link{background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;margin-top:10px;padding:0;text-decoration:underline;display:block;width:100%;text-align:center}
+.auth-link:hover{color:var(--text2)}
 
 /* MAIN */
 #app{display:none;padding-top:36px}
@@ -151,12 +153,21 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 
 <!-- AUTH -->
 <div id="authGate">
-  <div class="auth-card">
+  <div class="auth-card" id="authCard">
     <div class="auth-logo">✦ DRIVE</div>
-    <div class="auth-sub">Engagement Hub — sign in to manage client engagements</div>
-    <input class="auth-input" type="email" id="emailInput" placeholder="your@email.com" />
-    <button class="auth-btn" onclick="sendMagicLink()">Send magic link</button>
+    <div class="auth-sub">Engagement Hub</div>
+    <input class="auth-input" type="email" id="emailInput" placeholder="email" autocomplete="email" />
+    <input class="auth-input" style="margin-top:8px" type="password" id="passwordInput" placeholder="password" autocomplete="current-password" />
+    <button class="auth-btn" onclick="signIn()">Sign in</button>
+    <button class="auth-link" onclick="sendPasswordReset()">Forgot password?</button>
     <div class="auth-msg" id="authMsg"></div>
+  </div>
+  <div class="auth-card" id="resetCard" style="display:none">
+    <div class="auth-logo">✦ DRIVE</div>
+    <div class="auth-sub">Set a new password</div>
+    <input class="auth-input" type="password" id="newPasswordInput" placeholder="new password" autocomplete="new-password" />
+    <button class="auth-btn" onclick="setNewPassword()">Set password</button>
+    <div class="auth-msg" id="resetMsg"></div>
   </div>
 </div>
 
@@ -268,6 +279,13 @@ let showingArchived = false;
 
 // --- AUTH ---
 supa.auth.onAuthStateChange((_ev, session) => {
+  if (_ev === 'PASSWORD_RECOVERY') {
+    document.getElementById('authCard').style.display = 'none';
+    document.getElementById('resetCard').style.display = '';
+    document.getElementById('authGate').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+    return;
+  }
   if (session?.user) {
     currentUser = session.user;
     document.getElementById('navUser').textContent = currentUser.email;
@@ -282,13 +300,33 @@ supa.auth.onAuthStateChange((_ev, session) => {
   }
 });
 
-async function sendMagicLink() {
+async function signIn() {
   const email = document.getElementById('emailInput').value.trim();
-  if (!email) return;
+  const password = document.getElementById('passwordInput').value;
+  if (!email || !password) return;
+  const msg = document.getElementById('authMsg');
+  msg.textContent = 'Signing in…';
+  const { error } = await supa.auth.signInWithPassword({ email, password });
+  if (error) msg.textContent = error.message;
+}
+
+async function sendPasswordReset() {
+  const email = document.getElementById('emailInput').value.trim();
+  if (!email) { document.getElementById('authMsg').textContent = 'Enter your email above first.'; return; }
   const msg = document.getElementById('authMsg');
   msg.textContent = 'Sending…';
-  const { error } = await supa.auth.signInWithOtp({ email, options: { emailRedirectTo: location.href } });
-  msg.textContent = error ? error.message : 'Check your email for the magic link.';
+  const { error } = await supa.auth.resetPasswordForEmail(email, { redirectTo: location.origin + '/hub.html' });
+  msg.textContent = error ? error.message : 'Check your email for a password reset link.';
+}
+
+async function setNewPassword() {
+  const password = document.getElementById('newPasswordInput').value;
+  if (!password || password.length < 8) { document.getElementById('resetMsg').textContent = 'Password must be at least 8 characters.'; return; }
+  const msg = document.getElementById('resetMsg');
+  msg.textContent = 'Setting…';
+  const { error } = await supa.auth.updateUser({ password });
+  if (error) { msg.textContent = error.message; return; }
+  msg.textContent = 'Password set — signing you in…';
 }
 
 async function signOut() {
@@ -1234,7 +1272,13 @@ document.getElementById('engModal').addEventListener('click', e => {
 });
 
 document.getElementById('emailInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter') sendMagicLink();
+  if (e.key === 'Enter') document.getElementById('passwordInput').focus();
+});
+document.getElementById('passwordInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') signIn();
+});
+document.getElementById('newPasswordInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') setNewPassword();
 });
 
 // ── DRIVE mark icon system ───────────────────────────────────
