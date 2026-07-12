@@ -789,7 +789,9 @@ const OrgStore = {
   init(session) {
     this.userEmail = session?.user?.email || '';
     const engId = localStorage.getItem('drive_engagement_id');
-    this.orgId = engId || (this.userEmail.includes('@') ? this.userEmail.split('@')[1] : 'default');
+    // Engagement UUID is the sole data key. Fall back to the full email (never
+    // the domain) so two clients under one consultant can never collide.
+    this.orgId = engId || this.userEmail || 'default';
   },
   async save(table, data) {
     if (!this.orgId) return;
