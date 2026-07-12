@@ -109,12 +109,12 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 
 /* ── INTAKE PANEL ── */
 .source-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
-.source-card{background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:12px}
+.source-card{background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:12px;min-width:0}
 .source-card.has-file{border-color:var(--cyan-border);background:var(--cyan-bg)}
 .source-icon{font-size:20px;flex-shrink:0}
 .source-info{flex:1;min-width:0}
-.source-name{font-size:12px;font-weight:600}
-.source-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.source-name{font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.source-meta{font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .source-status{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;flex-shrink:0}
 .source-status.loaded{background:var(--cyan-bg);color:var(--cyan);border:1px solid var(--cyan-border)}
 .source-status.empty{background:var(--card);color:var(--muted);border:1px solid var(--border2)}
@@ -794,8 +794,7 @@ function renderSources() {
         <div class="source-name">${s.name}</div>
         <div class="source-meta">${s.systemLabel} · ${(s.size/1024).toFixed(0)} KB</div>
       </div>
-      <span class="source-status loaded">${s.systemLabel}</span>
-      <button class="file-item-remove" onclick="removeSource('${s.id}')" style="margin-left:4px">✕</button>
+      <button class="file-item-remove" onclick="removeSource('${s.id}')">✕</button>
     </div>`).join('');
 }
 
@@ -1188,15 +1187,45 @@ function rejectNaming() {
 }
 
 function editNaming() {
-  const val = prompt('Edit naming pattern:', RS.naming.pattern);
-  if (!val || !val.trim()) return;
-  RS.naming.pattern = val.trim();
+  const patternEl = document.getElementById('namingPattern');
+  const actionsEl = document.querySelector('.naming-actions');
+  if (document.getElementById('namingEditInput')) return; // already editing
+  patternEl.innerHTML = `<input id="namingEditInput" class="tax-add-input"
+    style="width:100%;font-family:var(--mono);font-size:15px;font-weight:700;color:var(--cyan)"
+    value="${RS.naming.pattern.replace(/"/g,'&quot;')}"
+    onkeydown="if(event.key==='Enter')saveNaming();if(event.key==='Escape')cancelNamingEdit()">`;
+  actionsEl.innerHTML = `
+    <button class="naming-btn approve" onclick="saveNaming()">✓ Save pattern</button>
+    <button class="naming-btn" onclick="cancelNamingEdit()">Cancel</button>`;
+  document.getElementById('namingEditInput').focus();
+}
+
+function saveNaming() {
+  const input = document.getElementById('namingEditInput');
+  const val = input?.value.trim();
+  if (!val) return;
+  RS.naming.pattern = val;
   RS.naming.status = 'pending';
-  document.getElementById('namingPattern').textContent = RS.naming.pattern;
-  document.getElementById('namingStatus').textContent = 'Pending approval';
-  document.getElementById('namingStatus').style.color = 'var(--amber)';
+  cancelNamingEdit();
   debouncedSave();
   showToast('Pattern updated');
+}
+
+function cancelNamingEdit() {
+  document.getElementById('namingPattern').textContent = RS.naming.pattern;
+  document.querySelector('.naming-actions').innerHTML = `
+    <button class="naming-btn approve" onclick="approveNaming()">✓ Approve pattern</button>
+    <button class="naming-btn reject" onclick="rejectNaming()">✕ Reject</button>
+    <button class="naming-btn" onclick="editNaming()">Edit pattern</button>`;
+  updateNamingStatus();
+}
+
+function updateNamingStatus() {
+  const el = document.getElementById('namingStatus');
+  if (!el) return;
+  const s = RS.naming.status;
+  el.textContent = s === 'approved' ? 'Approved' : s === 'rejected' ? 'Rejected' : 'Pending approval';
+  el.style.color = s === 'approved' ? 'var(--green)' : s === 'rejected' ? 'var(--red)' : 'var(--amber)';
 }
 
 // ── GOVERNANCE RULES ──────────────────────────────────────
