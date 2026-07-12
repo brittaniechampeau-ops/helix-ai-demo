@@ -1112,50 +1112,181 @@ async function extractDocText(file, ext, entry) {
 
 async function parseIntakeForOrgProfile() {
   const apiKey = localStorage.getItem('vec_anthropic_key');
-  if (!apiKey) return;
-  // Wait for any in-progress extractions (pdf.js / mammoth / JSZip are async)
-  const pending = state.intake.docs.filter(f => f.extracting);
-  if (pending.length) {
+  if (!apiKey) { showToast('Add your Anthropic API key to enable document parsing'); return; }
+  // Wait for any in-progress extractions
+  if (state.intake.docs.some(f => f.extracting)) {
     await new Promise(resolve => {
       const check = setInterval(() => { if (!state.intake.docs.some(f => f.extracting)) { clearInterval(check); resolve(); } }, 100);
     });
   }
-  // Collect all readable text from uploaded docs
   const textChunks = state.intake.docs.filter(f => f.text).map(f => `--- ${f.name} ---\n${f.text.slice(0, 8000)}`);
   if (textChunks.length === 0) return;
-  const orgNameEl = document.getElementById('orgName');
-  const orgIndustryEl = document.getElementById('orgIndustry');
-  const orgTeamEl = document.getElementById('orgTeam');
-  const orgRevEl = document.getElementById('orgRev');
-  const orgChallengeEl = document.getElementById('orgChallenge');
+
   const btnNext = document.getElementById('btnNext');
   const origLabel = btnNext.textContent;
   btnNext.disabled = true;
   btnNext.textContent = 'Parsing documents…';
+
+  const CHANNEL_MAP = {
+    'seo': 'Organic search / SEO', 'search': 'Paid search (Google Ads)',
+    'paid social': 'Paid social (LinkedIn / Meta)', 'linkedin': 'Paid social (LinkedIn / Meta)',
+    'email': 'Email marketing', 'content': 'Content / blog', 'blog': 'Content / blog',
+    'events': 'Events / conferences', 'referral': 'Referrals / partners',
+    'partner': 'Referrals / partners', 'cold outreach': 'Cold outreach (SDR/BDR)',
+    'sdr': 'Cold outreach (SDR/BDR)', 'organic social': 'Organic social',
+    'social media': 'Organic social', 'pr': 'PR / media', 'media': 'PR / media',
+  };
+
+  const prompt = `You are analyzing business documents to pre-fill a GTM discovery assessment. Extract as much signal as possible and return ONLY a valid JSON object.
+
+Documents:
+${textChunks.join('\n\n')}
+
+Return this exact JSON structure (use null for unknown, never guess):
+{
+  "org_name": "",
+  "industry": "",
+  "team_size": "",
+  "annual_revenue": "",
+  "challenge": "",
+  "marketing_budget": "",
+  "channels": [],
+  "channel_status": {},
+  "metrics": [],
+  "cac": "",
+  "close_rate": "",
+  "pipeline": "",
+  "mrr": "",
+  "baseline_notes": "",
+  "resolve": [null, null, null, null],
+  "intelligence": [null, null, null, null],
+  "vector": [null, null, null, null],
+  "engine": [null, null, null, null]
+}
+
+Field rules:
+- industry: one of exactly: technology | financial-services | healthcare | professional-services | retail | manufacturing | media | education | nonprofit | other
+- team_size: one of exactly: 1-5 | 6-15 | 16-50 | 51-200 | 201-500 | 500+
+- annual_revenue: one of exactly: pre-revenue | <$500K | $500K–$2M | $2M–$10M | $10M–$50M | $50M+
+- marketing_budget: one of exactly: $0–$25K | $25K–$100K | $100K–$500K | $500K–$2M | $2M+
+- channels: array of any that apply: ["Organic search / SEO","Paid search (Google Ads)","Paid social (LinkedIn / Meta)","Email marketing","Content / blog","Events / conferences","Referrals / partners","Cold outreach (SDR/BDR)","Organic social","PR / media"]
+- channel_status: object mapping channel name to "working" | "mixed" | "not" based on evidence
+- metrics: array of any that apply: ["Pipeline","MRR / ARR","CAC","Close rate","Lead volume","SQLs","NPS","Website traffic","Email open rate","Nothing formal"]
+- resolve[0]: Do they have defined audience segments? 2=yes 1=somewhat 0=no null=unclear
+- resolve[1]: Does team use consistent language for ideal client? 2=yes 1=somewhat 0=no null=unclear
+- resolve[2]: Are content categories and tags standardized? 2=yes 1=somewhat 0=no null=unclear
+- resolve[3]: Could a new hire describe who they serve from existing materials? 2=yes 1=somewhat 0=no null=unclear
+- intelligence[0]: CRM with 6+ months of contact history? 2=yes 1=somewhat 0=no null=unclear
+- intelligence[1]: Track which content/campaigns convert to pipeline? 2=yes 1=somewhat 0=no null=unclear
+- intelligence[2]: Can see conversion rates at each funnel stage? 2=yes 1=somewhat 0=no null=unclear
+- intelligence[3]: Know which channels generate highest-value clients? 2=yes 1=somewhat 0=no null=unclear
+- vector[0]: Defined service offers with names and published pricing? 2=yes 1=somewhat 0=no null=unclear
+- vector[1]: Positioning statement they'd share with a prospect? 2=yes 1=somewhat 0=no null=unclear
+- vector[2]: Active referral/partner channel consistently generating leads? 2=yes 1=somewhat 0=no null=unclear
+- vector[3]: Know which client archetype generates highest LTV? 2=yes 1=somewhat 0=no null=unclear
+- engine[0]: Publish content on consistent cadence (weekly or more)? 2=yes 1=somewhat 0=no null=unclear
+- engine[1]: Templates or playbooks making content creation repeatable? 2=yes 1=somewhat 0=no null=unclear
+- engine[2]: Someone explicitly accountable for content production? 2=yes 1=somewhat 0=no null=unclear
+- engine[3]: Connected to marketing automation or CRM for delivery? 2=yes 1=somewhat 0=no null=unclear`;
+
   try {
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 400,
-        messages: [{ role: 'user', content: `Extract org profile data from these documents. Return ONLY a JSON object with these keys (leave value blank string if not found):\n- org_name: company/org name\n- industry: one of technology|financial-services|healthcare|professional-services|retail|manufacturing|media|education|nonprofit|other\n- team_size: one of 1-5|6-15|16-50|51-200|201-500|500+\n- annual_revenue: one of pre-revenue|<$500K|$500K–$2M|$2M–$10M|$10M–$50M|$50M+\n- challenge: a 1-sentence summary of their main GTM challenge\n\nDocuments:\n${textChunks.join('\n\n')}` }]
-      })
+      body: JSON.stringify({ model: 'claude-sonnet-5', max_tokens: 1200, messages: [{ role: 'user', content: prompt }] })
     });
     const d = await resp.json();
     const raw = (d.content?.[0]?.text || '');
-    const m = raw.match(/\{[\s\S]*?\}/);
+    const m = raw.match(/\{[\s\S]*\}/);
     if (!m) return;
     const p = JSON.parse(m[0]);
     let filled = [];
-    if (p.org_name) { state.orgName = p.org_name; orgNameEl.value = p.org_name; updateOrgDisplay(); filled.push('name'); }
+
+    // Org profile
+    const orgNameEl = document.getElementById('orgName');
+    const orgIndustryEl = document.getElementById('orgIndustry');
+    const orgTeamEl = document.getElementById('orgTeam');
+    const orgRevEl = document.getElementById('orgRev');
+    const orgChallengeEl = document.getElementById('orgChallenge');
+    if (p.org_name) { state.orgName = p.org_name; orgNameEl.value = p.org_name; updateOrgDisplay(); filled.push('org name'); }
     if (p.industry) { const opt = Array.from(orgIndustryEl.options).find(o => o.value === p.industry); if (opt) { orgIndustryEl.value = opt.value; filled.push('industry'); } }
-    if (p.team_size && orgTeamEl) { const opt = Array.from(orgTeamEl.options).find(o => o.value === p.team_size); if (opt) { orgTeamEl.value = opt.value; state.orgTeam = opt.value; filled.push('team size'); } }
-    if (p.annual_revenue && orgRevEl) { const opt = Array.from(orgRevEl.options).find(o => o.value === p.annual_revenue); if (opt) { orgRevEl.value = opt.value; state.orgRev = opt.value; filled.push('revenue'); } }
-    if (p.challenge && orgChallengeEl) { orgChallengeEl.value = p.challenge; filled.push('challenge'); }
+    if (p.team_size) { const opt = Array.from(orgTeamEl.options).find(o => o.value === p.team_size); if (opt) { orgTeamEl.value = opt.value; state.orgTeam = opt.value; filled.push('team size'); } }
+    if (p.annual_revenue) { const opt = Array.from(orgRevEl.options).find(o => o.value === p.annual_revenue); if (opt) { orgRevEl.value = opt.value; state.orgRev = opt.value; filled.push('revenue'); } }
+    if (p.challenge) { orgChallengeEl.value = p.challenge; filled.push('challenge'); }
+
+    // Baseline — budget chip
+    if (p.marketing_budget) {
+      document.querySelectorAll('#budgetChips .chip').forEach(c => {
+        c.classList.toggle('sel', c.textContent.trim() === p.marketing_budget);
+      });
+      state.baseline.budget = p.marketing_budget;
+      filled.push('marketing budget');
+    }
+
+    // Baseline — channels
+    if (Array.isArray(p.channels) && p.channels.length) {
+      p.channels.forEach(ch => {
+        if (!state.baseline.channels.find(c => c.name === ch)) {
+          const status = (p.channel_status && p.channel_status[ch]) || null;
+          state.baseline.channels.push({ name: ch, status });
+        } else if (p.channel_status && p.channel_status[ch]) {
+          const existing = state.baseline.channels.find(c => c.name === ch);
+          if (existing) existing.status = p.channel_status[ch];
+        }
+      });
+      renderChannels();
+      filled.push('channels');
+    }
+
+    // Baseline — metrics
+    if (Array.isArray(p.metrics) && p.metrics.length) {
+      const metricChips = document.querySelectorAll('#metricsChips .chip');
+      p.metrics.forEach(metric => {
+        state.baseline.metrics = state.baseline.metrics.filter(m => m !== metric);
+        state.baseline.metrics.push(metric);
+        metricChips.forEach(c => { if (c.textContent.trim() === metric) c.classList.add('sel'); });
+      });
+      filled.push('metrics');
+    }
+
+    // Baseline — key numbers
+    if (p.cac) { document.getElementById('baselineCAC').value = p.cac; state.baseline.numbers.cac = p.cac; }
+    if (p.close_rate) { document.getElementById('baselineClose').value = p.close_rate; state.baseline.numbers.closeRate = p.close_rate; }
+    if (p.pipeline) { document.getElementById('baselinePipeline').value = p.pipeline; state.baseline.numbers.pipeline = p.pipeline; }
+    if (p.mrr) { document.getElementById('baselineMRR').value = p.mrr; state.baseline.numbers.mrr = p.mrr; }
+    if (p.baseline_notes) { document.getElementById('baselineNotes').value = p.baseline_notes; state.baseline.notes = p.baseline_notes; }
+    if (p.cac || p.close_rate || p.pipeline || p.mrr) filled.push('key numbers');
+
+    // Scoping questions — programmatically set answers and update UI
+    const sectionKeys = ['resolve', 'intelligence', 'vector', 'engine'];
+    sectionKeys.forEach((key, si) => {
+      const answers = p[key];
+      if (!Array.isArray(answers)) return;
+      const list = document.getElementById(`qlist-${si}`);
+      const cards = list ? list.querySelectorAll('.question-card') : [];
+      let anySet = false;
+      answers.forEach((val, qi) => {
+        if (val === null || val === undefined) return;
+        const v = Number(val);
+        if (v !== 0 && v !== 1 && v !== 2) return;
+        state.answers[si][qi] = v;
+        anySet = true;
+        if (cards[qi]) {
+          const btns = cards[qi].querySelectorAll('.ans-btn');
+          btns.forEach(b => b.className = 'ans-btn');
+          if (v === 2 && btns[0]) btns[0].classList.add('sel-yes');
+          else if (v === 1 && btns[1]) btns[1].classList.add('sel-some');
+          else if (v === 0 && btns[2]) btns[2].classList.add('sel-no');
+        }
+      });
+      if (anySet) { recalcScore(si); filled.push(key); }
+    });
+
     updateFooter();
-    if (filled.length) showToast(`Auto-filled from documents: ${filled.join(', ')}`);
-  } catch (_) {
+    applySizePath();
+    showToast(`Parsed from documents: ${filled.join(', ')}`);
+  } catch (err) {
+    showToast('Parse error — check API key or try again');
   } finally {
     btnNext.disabled = false;
     btnNext.textContent = origLabel;
