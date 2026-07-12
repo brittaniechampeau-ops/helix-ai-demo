@@ -47,7 +47,7 @@ serve(async (req) => {
     <div style="background:#0C1830;border:1px solid #1A2C48;border-radius:8px;padding:16px 18px;margin-bottom:32px">
       <div style="font-size:11px;font-weight:700;letter-spacing:.06em;color:#52608080;text-transform:uppercase;margin-bottom:10px">To sign in</div>
       <div style="font-size:13px;color:#8A9FBF;line-height:1.6">
-        Go to <span style="color:#00C8FF">${VECTOR_URL}</span> and enter your email address. No password needed — we'll send you a magic link.
+        ${from} has set up your account. You'll get a separate email to choose your password — once you have, sign in with your email and password at <span style="color:#00C8FF">${VECTOR_URL}</span>.
       </div>
     </div>
 

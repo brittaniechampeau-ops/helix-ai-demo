@@ -5050,7 +5050,7 @@ function showClientReadyModal() {
   const email = VEC.practice.email || '(no email captured)';
   document.getElementById('clientEmailTemplate').innerHTML = `
     Hi ${VEC.practice.founder || 'there'},<br><br>
-    Your Vector practice OS is ready. Use the link below to log in — enter <strong>${email}</strong> and you'll get a magic link in your inbox.<br><br>
+    Your Vector practice OS is ready. You'll get a separate email to set your password — once you have, sign in with <strong>${email}</strong> and your password.<br><br>
     <strong>Your link:</strong> https://vector.brittbowman.ai<br><br>
     Everything from our intake session is already loaded. Let me know if you have any questions.<br><br>
     — Britt`;
@@ -5060,7 +5060,7 @@ function showClientReadyModal() {
 function copyEmailTemplate() {
   const name = VEC.practice.founder || 'there';
   const email = VEC.practice.email || '';
-  const text = `Hi ${name},\n\nYour Vector practice OS is ready. Use the link below to log in — enter ${email} and you'll get a magic link in your inbox.\n\nYour link: https://vector.brittbowman.ai\n\nEverything from our intake session is already loaded. Let me know if you have any questions.\n\n— Britt`;
+  const text = `Hi ${name},\n\nYour Vector practice OS is ready. You'll get a separate email to set your password — once you have, sign in with ${email} and your password.\n\nYour link: https://vector.brittbowman.ai\n\nEverything from our intake session is already loaded. Let me know if you have any questions.\n\n— Britt`;
   navigator.clipboard.writeText(text);
   showToast('Email copied to clipboard');
 }

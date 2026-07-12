@@ -703,7 +703,10 @@ async function addMember() {
   msg.textContent = 'Adding…';
   const { error } = await supa.from('drive_engagement_members').insert({ engagement_id: activeAccessEngId, email });
   if (error) { msg.textContent = error.message; return; }
-  msg.textContent = '';
+  // Send a set-password email so the member can sign in. Supabase only emails
+  // existing accounts; brand-new users need a one-time invite (see notes).
+  try { await supa.auth.resetPasswordForEmail(email, { redirectTo: location.origin + '/hub.html' }); } catch (_) {}
+  msg.textContent = 'Added — sent a set-password email.';
   document.getElementById('newMemberEmail').value = '';
   await loadMembers();
 }
