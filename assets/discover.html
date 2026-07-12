@@ -1029,20 +1029,58 @@ function selectTaxGate(val, el) {
 function handleTaxFiles(e) {
   const files = Array.from(e.target.files);
   files.forEach(f => {
-    const entry = { name: f.name, size: f.size, label: guessTaxLabel(f.name), text: '' };
+    const entry = { name: f.name, size: f.size, label: guessTaxLabel(f.name), text: '', extracting: false };
     state.intake.taxFiles.push(entry);
-    // Read CSV text so Resolve can use real field names for conflict detection
     const ext = f.name.split('.').pop().toLowerCase();
     if (ext === 'csv') {
       const reader = new FileReader();
       reader.onload = ev => { entry.text = (ev.target.result || '').slice(0, 50000); };
       reader.readAsText(f);
+    } else if (ext === 'xlsx' || ext === 'xls') {
+      extractXlsxText(f, entry);
     }
-    // XLSX: store a marker — Resolve will see the system label and use it
   });
   renderTaxFiles();
   updateMaterialsBadge();
   e.target.value = '';
+}
+
+async function extractXlsxText(file, entry) {
+  entry.extracting = true;
+  try {
+    if (typeof JSZip === 'undefined') throw new Error('JSZip not loaded');
+    const ab = await file.arrayBuffer();
+    const zip = await JSZip.loadAsync(ab);
+    // Extract shared strings (all unique text values in the workbook)
+    let strings = [];
+    if (zip.files['xl/sharedStrings.xml']) {
+      const xml = await zip.files['xl/sharedStrings.xml'].async('string');
+      const matches = xml.match(/<t[^>]*>([^<]*)<\/t>/g) || [];
+      strings = matches.map(m => m.replace(/<[^>]*>/g, '').trim()).filter(Boolean);
+    }
+    // Extract headers from each sheet (first row = column names)
+    const sheetFiles = Object.keys(zip.files).filter(n => /^xl\/worksheets\/sheet\d+\.xml$/.test(n));
+    const sheetSamples = [];
+    for (const name of sheetFiles.slice(0, 3)) {
+      const xml = await zip.files[name].async('string');
+      // Grab first row cells
+      const firstRow = (xml.match(/<row[^>]*r="1"[^>]*>([\s\S]*?)<\/row>/) || [])[1] || '';
+      const cellRefs = firstRow.match(/<c[^>]*>([\s\S]*?)<\/c>/g) || [];
+      const headers = cellRefs.map(c => {
+        const vMatch = c.match(/<v>(\d+)<\/v>/);
+        if (vMatch && strings[parseInt(vMatch[1])]) return strings[parseInt(vMatch[1])];
+        const tMatch = c.match(/<t[^>]*>([^<]+)<\/t>/);
+        return tMatch ? tMatch[1] : '';
+      }).filter(Boolean);
+      if (headers.length) sheetSamples.push(`Columns: ${headers.join(', ')}`);
+    }
+    const uniqueStrings = [...new Set(strings)].slice(0, 500);
+    entry.text = `[SPREADSHEET: ${file.name} — ${guessTaxLabel(file.name)}]\n${sheetSamples.join('\n')}\n\nAll field values (sample):\n${uniqueStrings.join(', ')}`.slice(0, 50000);
+  } catch (_) {
+    entry.text = '';
+  } finally {
+    entry.extracting = false;
+  }
 }
 
 function guessTaxLabel(name) {
@@ -1113,13 +1151,18 @@ async function extractDocText(file, ext, entry) {
 async function parseIntakeForOrgProfile() {
   const apiKey = localStorage.getItem('vec_anthropic_key');
   if (!apiKey) { showToast('Add your Anthropic API key to enable document parsing'); return; }
-  // Wait for any in-progress extractions
-  if (state.intake.docs.some(f => f.extracting)) {
+  // Wait for any in-progress extractions (docs + taxonomy files)
+  if ([...state.intake.docs, ...state.intake.taxFiles].some(f => f.extracting)) {
     await new Promise(resolve => {
-      const check = setInterval(() => { if (!state.intake.docs.some(f => f.extracting)) { clearInterval(check); resolve(); } }, 100);
+      const check = setInterval(() => {
+        if (![...state.intake.docs, ...state.intake.taxFiles].some(f => f.extracting)) { clearInterval(check); resolve(); }
+      }, 100);
     });
   }
-  const textChunks = state.intake.docs.filter(f => f.text).map(f => `--- ${f.name} ---\n${f.text.slice(0, 8000)}`);
+  const textChunks = [
+    ...state.intake.taxFiles.filter(f => f.text).map(f => `--- TAXONOMY/SYSTEM EXPORT: ${f.name} (${f.label}) ---\n${f.text.slice(0, 6000)}`),
+    ...state.intake.docs.filter(f => f.text).map(f => `--- DOCUMENT: ${f.name} ---\n${f.text.slice(0, 8000)}`),
+  ];
   if (textChunks.length === 0) return;
 
   const btnNext = document.getElementById('btnNext');
