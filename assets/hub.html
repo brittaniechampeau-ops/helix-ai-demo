@@ -292,7 +292,18 @@ let isAdmin = false;
 let engagements = [];
 let editingId = null;
 let showingArchived = false;
-let inPasswordRecovery = false;
+
+// Detect recovery redirect synchronously — BEFORE any auth events fire.
+// Supabase PKCE recovery links arrive as ?code=... (no type in URL).
+// hub.html never uses OAuth, so any ?code= here is always a recovery redirect.
+let inPasswordRecovery = (
+  window.location.hash.includes('type=recovery') ||
+  new URLSearchParams(window.location.search).has('code')
+);
+if (inPasswordRecovery) {
+  document.getElementById('authCard').style.display = 'none';
+  document.getElementById('resetCard').style.display = '';
+}
 
 // --- AUTH ---
 supa.auth.onAuthStateChange(async (_ev, session) => {
