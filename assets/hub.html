@@ -292,16 +292,22 @@ let isAdmin = false;
 let engagements = [];
 let editingId = null;
 let showingArchived = false;
+let inPasswordRecovery = false;
 
 // --- AUTH ---
 supa.auth.onAuthStateChange(async (_ev, session) => {
   if (_ev === 'PASSWORD_RECOVERY') {
+    inPasswordRecovery = true;
     document.getElementById('authCard').style.display = 'none';
     document.getElementById('resetCard').style.display = '';
     document.getElementById('authGate').style.display = 'flex';
     document.getElementById('app').style.display = 'none';
     return;
   }
+  // Block the SIGNED_IN that Supabase fires immediately after PASSWORD_RECOVERY
+  // until the user actually sets their new password (USER_UPDATED clears the flag)
+  if (inPasswordRecovery && _ev !== 'USER_UPDATED') return;
+  if (_ev === 'USER_UPDATED') inPasswordRecovery = false;
   if (session?.user) {
     currentUser = session.user;
     document.getElementById('navUser').textContent = currentUser.email;
