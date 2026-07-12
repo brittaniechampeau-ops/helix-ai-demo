@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M51.47,8.03 A42,42 0 0,1 89.47,35.64 L68.79,43.16 A20,20 0 0,0 50.70,30.01Z' fill='%23E8547A'/%3E%3Cpath d='M90.37,38.42 A42,42 0 0,1 75.86,83.10 L62.31,65.76 A20,20 0 0,0 69.23,44.49Z' fill='%232EC4B6'/%3E%3Cpath d='M73.49,84.82 A42,42 0 0,1 26.51,84.82 L38.82,66.58 A20,20 0 0,0 61.18,66.58Z' fill='%237B5EA7'/%3E%3Cpath d='M24.14,83.10 A42,42 0 0,1 9.63,38.42 L30.77,44.49 A20,20 0 0,0 37.69,65.76Z' fill='%2354C06E'/%3E%3Cpath d='M10.53,35.64 A42,42 0 0,1 48.53,8.03 L49.30,30.01 A20,20 0 0,0 31.21,43.16Z' fill='%23F4822A'/%3E%3C/svg%3E">
 <title>Discover — DRIVE Intake · Britt Bowman LLC</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -302,47 +303,35 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
       <div id="loginForm" style="display:flex;flex-direction:column;gap:10px">
         <div>
           <div class="login-label">Work email</div>
-          <input class="login-input" id="loginEmail" type="email" placeholder="you@yourfirm.com" onkeydown="if(event.key==='Enter')sendMagicLink()">
+          <input class="login-input" id="loginEmail" type="email" placeholder="you@yourfirm.com" onkeydown="if(event.key==='Enter')loginWithPassword()">
+        </div>
+        <div>
+          <div class="login-label">Password</div>
+          <input class="login-input" id="loginPassword" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')loginWithPassword()">
         </div>
         <div id="loginError" class="login-error"></div>
-        <button class="login-btn" onclick="sendMagicLink()">Send magic link</button>
-      </div>
-      <div id="loginSent" class="login-sent">
-        <strong>Check your inbox.</strong><br>
-        We sent a magic link — click it to open Discovery.
+        <button class="login-btn" onclick="loginWithPassword()">Sign in →</button>
       </div>
     </div>
-    <div class="login-secure">✦ No passwords — secure magic link only</div>
+    <div class="login-secure">✦ Secure sign-in · DRIVE platform</div>
   </div>
 </div>
 
-<!-- RESULT GATE -->
-<div id="resultGate">
-  <div class="login-box">
-    <div class="login-logo" style="font-size:26px">✦</div>
-    <div class="login-head">
-      <h1>Your report is ready</h1>
-      <p>Enter your email to unlock your full DRIVE scoping results.</p>
+<!-- RESULT GATE (hidden — unauthenticated users redirected to login screen) -->
+<div id="resultGate" style="display:none"></div>
+
+<!-- ADD TEAMMATE MODAL -->
+<div id="teammateModal" style="display:none;position:fixed;inset:0;background:rgba(7,9,12,0.7);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:28px;width:380px;max-width:90vw">
+    <div style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:6px">Add a teammate</div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:18px">They'll get access to this org's workspace in DRIVE.</div>
+    <div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Work email</div>
+    <input id="teammateEmail" type="email" placeholder="colleague@yourfirm.com" style="width:100%;box-sizing:border-box;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:9px 11px;font-size:13px;color:var(--text);outline:none;margin-bottom:10px" onkeydown="if(event.key==='Enter')addTeammate()">
+    <div id="teammateMsg" style="font-size:12px;min-height:16px;margin-bottom:14px"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button onclick="closeTeammateModal()" style="background:var(--faint2);border:none;border-radius:6px;padding:8px 16px;font-size:13px;color:var(--text2);cursor:pointer">Cancel</button>
+      <button onclick="addTeammate()" style="background:var(--purple);border:none;border-radius:6px;padding:8px 16px;font-size:13px;color:#fff;cursor:pointer;font-weight:500">Send invite</button>
     </div>
-    <div class="login-form">
-      <div id="gateForm" style="display:flex;flex-direction:column;gap:10px">
-        <div>
-          <div class="login-label">Work email</div>
-          <input class="login-input" id="gateEmail" type="email" placeholder="you@yourfirm.com" onkeydown="if(event.key==='Enter')sendGateLink()">
-        </div>
-        <div>
-          <div class="login-label" style="display:flex;align-items:center;gap:6px">Additional teammates <span style="font-weight:400;opacity:.5">— optional</span></div>
-          <input class="login-input" id="gateTeamEmails" type="text" placeholder="colleague@yourfirm.com, another@yourfirm.com" style="font-size:13px">
-        </div>
-        <div id="gateError" class="login-error"></div>
-        <button class="login-btn" onclick="sendGateLink()">Unlock my report →</button>
-      </div>
-      <div id="gateSent" class="login-sent">
-        <strong>Check your inbox.</strong><br>
-        We sent a magic link — click it to open your report.
-      </div>
-    </div>
-    <div class="login-secure">✦ No passwords — secure magic link only</div>
   </div>
 </div>
 
@@ -361,6 +350,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
       <div class="tb-phase phase-intake" id="tbPhase">Intake</div>
       <button class="tb-save" id="tbSaveBtn" onclick="saveToSupabase()" style="display:none">Save to record</button>
       <span id="sync-indicator" style="font-size:10px;color:#8B7FEC;opacity:0;transition:opacity .3s;margin-left:10px">● Synced</span>
+      <button class="tb-save" id="tbAddTeammateBtn" onclick="openTeammateModal()" style="display:none;background:var(--faint2);color:var(--text2)">+ Add teammate</button>
       <button class="tb-user" onclick="signOut()" id="tbUser" style="display:none">Sign out</button>
     </div>
   </nav>
@@ -674,7 +664,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 
         <!-- Key numbers -->
         <div class="field-group">
-          <div class="field-label">Key numbers <span style="font-weight:400;color:var(--muted)">— fill in what they know (leave blank if unknown)</span></div>
+          <div class="field-label">Key numbers <span style="font-weight:400;color:var(--muted)">— enter manually or leave blank (not available in CRM exports)</span></div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
             <div>
               <div style="font-size:11px;color:var(--muted);margin-bottom:4px">CAC (cost to acquire a customer)</div>
@@ -819,15 +809,23 @@ let currentUser = null;
 let currentPracticeId = null;
 
 // ── AUTH ─────────────────────────────────────────────────
-async function sendMagicLink() {
+async function loginWithPassword() {
   const email = document.getElementById('loginEmail').value.trim();
-  if (!email) { const e = document.getElementById('loginError'); e.textContent = 'Please enter your email address'; e.style.display = 'block'; return; }
-  document.getElementById('loginError').style.display = 'none';
-  const { error } = await supa.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.href } });
-  if (error) { const e = document.getElementById('loginError'); e.textContent = error.message; e.style.display = 'block'; return; }
-  localStorage.setItem('disc_last_email', email);
-  document.getElementById('loginForm').style.display = 'none';
-  document.getElementById('loginSent').style.display = 'block';
+  const password = document.getElementById('loginPassword').value;
+  const errEl = document.getElementById('loginError');
+  if (!email || !password) { errEl.textContent = 'Please enter your email and password'; errEl.style.display = 'block'; return; }
+  errEl.style.display = 'none';
+  const btn = document.querySelector('#loginForm .login-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Signing in…'; }
+  const { data, error } = await supa.auth.signInWithPassword({ email, password });
+  if (btn) { btn.disabled = false; btn.textContent = 'Sign in →'; }
+  if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
+  currentUser = data.user;
+  OrgStore.init(data.session);
+  const cloudState = await OrgStore.load('org_discover');
+  if (cloudState) restoreDiscoverState(cloudState);
+  else { const _dk='discover_state_'+(localStorage.getItem('drive_engagement_id')||'local'); const localState = localStorage.getItem(_dk); if (localState) { try { restoreDiscoverState(JSON.parse(localState)); } catch (_) {} } }
+  showApp();
 }
 
 function restoreDiscoverState(data) {
@@ -838,8 +836,62 @@ function restoreDiscoverState(data) {
     if (data.org_challenge) document.getElementById('orgChallenge').value = data.org_challenge;
     if (data.org_team) { state.orgTeam = data.org_team; document.querySelectorAll('#teamChips .chip').forEach(c => { if (c.textContent.trim() === data.org_team) c.classList.add('sel'); }); }
     if (data.org_rev) { state.orgRev = data.org_rev; document.querySelectorAll('#revChips .chip').forEach(c => { if (c.textContent.trim() === data.org_rev) c.classList.add('sel'); }); }
+
+    // Restore baseline
+    if (data.baseline) {
+      const b = data.baseline;
+      if (b.budget) {
+        state.baseline.budget = b.budget;
+        document.querySelectorAll('#budgetChips .chip').forEach(c => { if (c.textContent.trim() === b.budget) c.classList.add('sel'); });
+      }
+      if (Array.isArray(b.channels) && b.channels.length) {
+        state.baseline.channels = b.channels;
+        renderChannels();
+      }
+      if (Array.isArray(b.metrics) && b.metrics.length) {
+        state.baseline.metrics = b.metrics;
+        document.querySelectorAll('#metricsChips .chip').forEach(c => { if (b.metrics.includes(c.textContent.trim())) c.classList.add('sel'); });
+      }
+      if (b.numbers) {
+        if (b.numbers.cac) { document.getElementById('baselineCAC').value = b.numbers.cac; state.baseline.numbers.cac = b.numbers.cac; }
+        if (b.numbers.closeRate) { document.getElementById('baselineClose').value = b.numbers.closeRate; state.baseline.numbers.closeRate = b.numbers.closeRate; }
+        if (b.numbers.pipeline) { document.getElementById('baselinePipeline').value = b.numbers.pipeline; state.baseline.numbers.pipeline = b.numbers.pipeline; }
+        if (b.numbers.mrr) { document.getElementById('baselineMRR').value = b.numbers.mrr; state.baseline.numbers.mrr = b.numbers.mrr; }
+      }
+      if (b.notes) { document.getElementById('baselineNotes').value = b.notes; state.baseline.notes = b.notes; }
+    }
+
+    // Restore scoping answers + scores
+    if (Array.isArray(data.answers)) {
+      state.answers = data.answers;
+      data.answers.forEach((sectionAnswers, si) => {
+        if (!Array.isArray(sectionAnswers)) return;
+        sectionAnswers.forEach((v, qi) => {
+          if (v === null || v === undefined) return;
+          const list = document.getElementById(`qlist-${si}`);
+          const cards = list ? list.querySelectorAll('.question-card') : [];
+          if (cards[qi]) {
+            const btns = cards[qi].querySelectorAll('.ans-btn');
+            btns.forEach(b => b.className = 'ans-btn');
+            if (v === 2 && btns[0]) btns[0].classList.add('sel-yes');
+            else if (v === 1 && btns[1]) btns[1].classList.add('sel-some');
+            else if (v === 0 && btns[2]) btns[2].classList.add('sel-no');
+          }
+        });
+        recalcScore(si);
+      });
+    }
+
+    // Restore navigation step (so returning users land where they left off)
+    if (data.current_step !== undefined && data.current_step !== null && data.current_step !== 6) {
+      hideCurrentPanel();
+      currentStep = data.current_step;
+      showCurrentPanel();
+    }
+
     updateOrgDisplay();
     updateFooter();
+    updateSidebar();
   } catch (_) {}
 }
 
@@ -861,24 +913,6 @@ function restoreAnonState() {
   } catch (_) {}
 }
 
-async function sendGateLink() {
-  const email = document.getElementById('gateEmail').value.trim();
-  const errEl = document.getElementById('gateError');
-  if (!email) { errEl.textContent = 'Please enter your email address'; errEl.style.display = 'block'; return; }
-  errEl.style.display = 'none';
-  const teamRaw = document.getElementById('gateTeamEmails').value;
-  const teamEmails = teamRaw.split(',').map(e => e.trim()).filter(e => e && e.includes('@'));
-  if (teamEmails.length) localStorage.setItem('disc_team_emails', JSON.stringify(teamEmails));
-  const { error } = await supa.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.href } });
-  if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
-  localStorage.setItem('disc_last_email', email);
-  document.getElementById('gateForm').style.display = 'none';
-  document.getElementById('gateSent').style.display = 'block';
-  try {
-    const anon = JSON.parse(localStorage.getItem('disc_anon') || '{}');
-    supa.functions.invoke('notify-lead', { body: { type: 'gate', email, org_name: anon.orgName, org_industry: anon.orgIndustry, org_team: anon.orgTeam, org_rev: anon.orgRev, anon_scores: anon.scores, path: anon.accountSize } });
-  } catch (_) {}
-}
 
 async function initAuth() {
   const { data: { session } } = await supa.auth.getSession();
@@ -894,7 +928,7 @@ async function initAuth() {
     }
     const cloudState = await OrgStore.load('org_discover');
     if (cloudState) { restoreDiscoverState(cloudState); }
-    else { const localState = localStorage.getItem('discover_state'); if (localState) { try { restoreDiscoverState(JSON.parse(localState)); } catch (_) {} } }
+    else { const _dk='discover_state_'+(localStorage.getItem('drive_engagement_id')||'local'); const localState = localStorage.getItem(_dk); if (localState) { try { restoreDiscoverState(JSON.parse(localState)); } catch (_) {} } }
     // Pre-fill from Hub active engagement if fields still empty
     const hubName = localStorage.getItem('drive_engagement_name');
     const hubIndustry = localStorage.getItem('drive_engagement_industry');
@@ -902,18 +936,20 @@ async function initAuth() {
     if (hubIndustry) { const el = document.getElementById('orgIndustry'); if (el && !el.value) el.value = hubIndustry; }
   } else {
     const saved = localStorage.getItem('disc_last_email');
-    if (saved) { document.getElementById('loginEmail').value = saved; document.getElementById('gateEmail').value = saved; }
+    if (saved) document.getElementById('loginEmail').value = saved;
+    // Not signed in — keep login screen visible
+    return;
   }
   showApp();
   supa.auth.onAuthStateChange((event, session) => {
     if (session && !currentUser) {
       currentUser = session.user;
       OrgStore.init(session);
-      document.getElementById('resultGate').style.display = 'none';
       activateLoggedInUI();
       if (localStorage.getItem('disc_goto_results') === '1') {
         localStorage.removeItem('disc_goto_results');
         restoreAnonState();
+        showApp();
         showResults();
       }
     }
@@ -925,6 +961,38 @@ function activateLoggedInUI() {
   userEl.textContent = currentUser.email.split('@')[0];
   userEl.style.display = '';
   document.getElementById('tbSaveBtn').style.display = '';
+  document.getElementById('tbAddTeammateBtn').style.display = 'inline-flex';
+}
+
+function openTeammateModal() {
+  document.getElementById('teammateEmail').value = '';
+  document.getElementById('teammateMsg').textContent = '';
+  document.getElementById('teammateMsg').style.color = 'var(--text3)';
+  const modal = document.getElementById('teammateModal');
+  modal.style.display = 'flex';
+  setTimeout(() => document.getElementById('teammateEmail').focus(), 50);
+}
+
+function closeTeammateModal() {
+  document.getElementById('teammateModal').style.display = 'none';
+}
+
+async function addTeammate() {
+  const email = document.getElementById('teammateEmail').value.trim().toLowerCase();
+  const msgEl = document.getElementById('teammateMsg');
+  if (!email || !email.includes('@')) { msgEl.textContent = 'Please enter a valid email address.'; msgEl.style.color = 'var(--red)'; return; }
+  const engId = localStorage.getItem('drive_engagement_id');
+  if (!engId) { msgEl.textContent = 'No active engagement — open from Hub first.'; msgEl.style.color = 'var(--red)'; return; }
+  msgEl.textContent = 'Adding…'; msgEl.style.color = 'var(--text3)';
+  const { error } = await supa.from('drive_engagement_members').insert({ engagement_id: engId, email });
+  if (error) {
+    msgEl.textContent = error.code === '23505' ? 'That person is already on this workspace.' : error.message;
+    msgEl.style.color = 'var(--red)';
+    return;
+  }
+  msgEl.textContent = `✓ ${email} added — they can sign in to access this workspace.`;
+  msgEl.style.color = 'var(--green)';
+  document.getElementById('teammateEmail').value = '';
 }
 
 function showApp() {
@@ -1524,7 +1592,8 @@ function setAnswer(si, qi, val, btn) {
 function recalcScore(si) {
   const score = state.answers[si].reduce((s, v) => s + (v ?? 0), 0);
   state.scores[si] = score;
-  document.getElementById(`score-label-${si}`).textContent = `${score}/8`;
+  const labelEl = document.getElementById(`score-label-${si}`);
+  if (labelEl) labelEl.textContent = `${score}/8`;
   document.getElementById(`bar-${si}`).style.width = `${(score/8)*100}%`;
   document.getElementById(`barval-${si}`).textContent = `${score}/8`;
 }
@@ -1538,7 +1607,7 @@ function selectBaseline(field, val, el) {
 
 const CHANNEL_STATUS = ['working', 'mixed', 'not'];
 const CHANNEL_STATUS_LABELS = { working: '✓ Working', mixed: '~ Mixed', not: '✗ Not working' };
-const CHANNEL_STATUS_COLORS = { working: 'var(--teal)', mixed: 'var(--yellow)', not: 'var(--red)' };
+const CHANNEL_STATUS_COLORS = { working: '#54C06E', mixed: '#F4822A', not: '#E8547A' };
 
 function addChannel(name) {
   if (state.baseline.channels.find(c => c.name === name)) return;
@@ -1605,7 +1674,8 @@ function updateFooterHint() {
 
 async function navNext() {
   if (currentStep === 1) {
-    await parseIntakeForOrgProfile();
+    const hasFiles = state.intake.docs.length > 0 || state.intake.taxFiles.length > 0;
+    if (hasFiles) await parseIntakeForOrgProfile();
   }
 
   if (currentStep === 0) {
@@ -1645,6 +1715,8 @@ async function navNext() {
   if (accountSize === 'micro' && currentStep === 1.5 && !hasTaxonomy) next = 4;
   if (accountSize === 'micro' && currentStep === 2 && !hasTaxonomy) next = 4; // shouldn't hit, safety
 
+  silentSave(); // auto-save state before any navigation
+
   if (next <= 5) {
     // Save any parse result hint before updateFooter overwrites it
     const parseHint = currentStep === 1 ? document.getElementById('footerHint').textContent : null;
@@ -1660,6 +1732,7 @@ async function navNext() {
   } else {
     // Show results
     if (!currentUser) {
+      // Not signed in — save state and redirect to login
       try {
         localStorage.setItem('disc_anon', JSON.stringify({
           answers: state.answers, scores: state.scores, accountSize,
@@ -1669,9 +1742,8 @@ async function navNext() {
         }));
       } catch (_) {}
       localStorage.setItem('disc_goto_results', '1');
-      const lastEmail = localStorage.getItem('disc_last_email');
-      if (lastEmail) document.getElementById('gateEmail').value = lastEmail;
-      document.getElementById('resultGate').style.display = 'flex';
+      document.getElementById('app').style.display = 'none';
+      document.getElementById('loginScreen').style.display = 'flex';
     } else {
       showResults();
     }
@@ -1680,6 +1752,7 @@ async function navNext() {
 
 function navBack() {
   if (currentStep <= 0) return;
+  silentSave();
   hideCurrentPanel();
   let prev = currentStep === 2 ? 1.5 : currentStep === 1.5 ? 1 : currentStep - 1;
   // Micro: skip back over Intel (3) and Resolve (2) unless taxonomy files present
@@ -1695,6 +1768,7 @@ function navBack() {
 
 function goToSection(n) {
   if (n === currentStep || n === 6) return;
+  silentSave();
   hideCurrentPanel();
   currentStep = n;
   showCurrentPanel();
@@ -1937,6 +2011,7 @@ function getTrack(size, modules) {
 function showResults() {
   hideCurrentPanel();
   currentStep = 6;
+  updateOrgDisplay();
   document.getElementById('resultsPanel').style.display = 'block';
   document.getElementById('tbPhase').textContent = 'Report ready';
   document.getElementById('tbPhase').className = 'tb-phase phase-results';
@@ -1996,9 +2071,9 @@ function showResults() {
     <div class="track-deliverables">${track.deliverables.map(d => `<span class="track-del">${d}</span>`).join('')}</div>
     <div class="track-focus">${track.focus}</div>
     <div style="margin-top:18px">
-      <a class="launch-cta-btn" href="/${track.firstStep === 'resolve' ? 'resolve' : 'vector'}.html" style="background:${track.color};color:#060E1C;font-size:13px;padding:10px 20px;border-radius:7px;text-decoration:none;font-weight:700;display:inline-block">
+      <button onclick="saveAndOpenTool('${track.firstStep}')" style="background:${track.color};color:#060E1C;font-size:13px;padding:10px 20px;border-radius:7px;border:none;cursor:pointer;font-weight:700">
         Open ${track.firstStep === 'resolve' ? 'Resolve' : 'Vector'} →
-      </a>
+      </button>
     </div>
   `;
   // Insert after the step-header
@@ -2165,6 +2240,38 @@ body{background:#050709;color:#E8EAF0;font-family:-apple-system,BlinkMacSystemFo
   URL.revokeObjectURL(a.href);
 }
 
+// ── SILENT AUTO-SAVE (fires on every nav step) ───────────
+async function silentSave() {
+  const snapshot = {
+    org_name: state.orgName,
+    org_industry: document.getElementById('orgIndustry').value,
+    org_challenge: document.getElementById('orgChallenge').value,
+    org_team: state.orgTeam,
+    org_rev: state.orgRev,
+    answers: state.answers,
+    scores: state.scores,
+    baseline: state.baseline,
+    current_step: currentStep,
+    intake: {
+      taxGate: state.intake.taxGate,
+      taxFiles: state.intake.taxFiles.map(f => ({ name: f.name, label: f.label })),
+      docs: state.intake.docs.map(f => ({ name: f.name, type: f.type, label: f.label })),
+      urls: state.intake.urls.map(u => ({ url: u.url, preview: u.preview })),
+      hasLinkedin: state.intake.linkedin.length > 20,
+    },
+  };
+  try { localStorage.setItem('discover_state_'+(localStorage.getItem('drive_engagement_id')||'local'), JSON.stringify(snapshot)); } catch (_) {}
+  if (currentUser) {
+    try { await OrgStore.save('org_discover', snapshot); } catch (_) {}
+  }
+}
+
+// Save then navigate to a tool (used by "Open Resolve / Vector" buttons)
+async function saveAndOpenTool(firstStep) {
+  await saveToSupabase();
+  window.location.href = '/' + (firstStep === 'resolve' ? 'resolve' : 'vector') + '.html';
+}
+
 // ── SAVE TO SUPABASE ──────────────────────────────────────
 async function saveToSupabase() {
   if (!currentUser) return;
@@ -2201,7 +2308,7 @@ async function saveToSupabase() {
     if (error) throw error;
     currentPracticeId = data?.id;
     localStorage.removeItem('disc_team_emails');
-    localStorage.setItem('discover_state', JSON.stringify(readiness));
+    localStorage.setItem('discover_state_'+(localStorage.getItem('drive_engagement_id')||'local'), JSON.stringify(readiness));
     try { OrgStore.save('org_discover', readiness); } catch (_) {}
     const syncEl = document.getElementById('sync-indicator');
     if (syncEl) { syncEl.style.opacity = '1'; setTimeout(() => { syncEl.style.opacity = '0'; }, 2000); }
