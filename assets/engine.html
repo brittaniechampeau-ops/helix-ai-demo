@@ -323,13 +323,16 @@ body {
     <p style="color:var(--muted);margin-bottom:32px;font-size:14px;">Content Ops Metadata Engine · Britt Bowman LLC</p>
     <div id="loginForm">
       <input id="loginEmail" type="email" placeholder="your@email.com"
-        style="width:100%;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:15px;margin-bottom:12px;outline:none;font-family:var(--font);">
-      <button onclick="sendMagicLink()"
-        style="width:100%;padding:11px;background:var(--orange);border:none;border-radius:8px;color:white;font-size:15px;font-weight:600;cursor:pointer;">Send magic link</button>
+        style="width:100%;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:15px;margin-bottom:12px;outline:none;font-family:var(--font);" onkeydown="if(event.key==='Enter')document.getElementById('loginPassword').focus()">
+      <input id="loginPassword" type="password" placeholder="••••••••"
+        style="width:100%;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:15px;margin-bottom:12px;outline:none;font-family:var(--font);" onkeydown="if(event.key==='Enter')loginWithPassword()">
+      <button onclick="loginWithPassword()"
+        style="width:100%;padding:11px;background:var(--orange);border:none;border-radius:8px;color:white;font-size:15px;font-weight:600;cursor:pointer;">Sign in →</button>
+      <button onclick="forgotPassword()" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;text-decoration:underline;margin-top:10px">Forgot password?</button>
     </div>
     <div id="loginSent" style="display:none;">
-      <p style="color:var(--green);font-size:15px;">✓ Check your email for a sign-in link</p>
-      <p style="color:var(--muted);font-size:13px;margin-top:8px;">You can close this tab — click the link in your email to open Engine.</p>
+      <p style="color:var(--green);font-size:15px;">✓ Password reset sent</p>
+      <p style="color:var(--muted);font-size:13px;margin-top:8px;">Check your email, set a new password in the Hub, then return here to sign in.</p>
     </div>
     <p id="loginError" style="color:var(--red);font-size:13px;margin-top:10px;display:none;"></p>
   </div>
@@ -1213,21 +1216,27 @@ function updateCharCounter(el) {
 }
 
 // ─── SUPABASE AUTH ────────────────────────────────────────────────────────────
-async function sendMagicLink() {
+async function loginWithPassword() {
   const email = document.getElementById('loginEmail').value.trim();
-  if (!email) return;
-  document.getElementById('loginError').style.display = 'none';
-  const { error } = await supa.auth.signInWithOtp({
-    email,
-    options: { emailRedirectTo: 'https://vector.brittbowman.ai/engine.html' }
-  });
-  if (error) {
-    document.getElementById('loginError').textContent = error.message;
-    document.getElementById('loginError').style.display = 'block';
-    return;
-  }
-  document.getElementById('loginForm').style.display  = 'none';
-  document.getElementById('loginSent').style.display  = 'block';
+  const password = document.getElementById('loginPassword').value;
+  const errEl = document.getElementById('loginError');
+  if (!email || !password) { errEl.textContent = 'Enter your email and password'; errEl.style.display = 'block'; return; }
+  errEl.style.display = 'none';
+  const { error } = await supa.auth.signInWithPassword({ email, password });
+  if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
+  // onAuthStateChange → initApp loads the tool once the session is set.
+}
+
+// Password recovery is centralized in the Hub's set-new-password flow.
+async function forgotPassword() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const errEl = document.getElementById('loginError');
+  if (!email) { errEl.textContent = 'Enter your email first'; errEl.style.display = 'block'; return; }
+  errEl.style.display = 'none';
+  const { error } = await supa.auth.resetPasswordForEmail(email, { redirectTo: location.origin + '/hub.html' });
+  if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
+  document.getElementById('loginForm').style.display = 'none';
+  document.getElementById('loginSent').style.display = 'block';
 }
 
 async function signOut() {

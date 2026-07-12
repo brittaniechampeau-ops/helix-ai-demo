@@ -288,11 +288,16 @@ td{padding:11px 14px;vertical-align:middle;white-space:nowrap}
         <div class="login-label">Email address</div>
         <input class="login-input" id="loginEmail" type="email" placeholder="you@company.com" autocomplete="email">
       </div>
+      <div>
+        <div class="login-label">Password</div>
+        <input class="login-input" id="loginPassword" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')loginWithPassword()">
+      </div>
       <div id="loginError" class="login-error"></div>
-      <button class="login-btn" id="loginBtn" onclick="sendMagicLink()">Send Magic Link</button>
+      <button class="login-btn" id="loginBtn" onclick="loginWithPassword()">Sign in →</button>
+      <button onclick="forgotPassword()" style="background:none;border:none;color:inherit;opacity:.55;font-size:12px;cursor:pointer;text-decoration:underline;margin-top:8px">Forgot password?</button>
       <div id="loginSent" class="login-sent">
-        Magic link sent to <strong id="sentEmail"></strong>.<br>
-        Check your inbox and click the link to sign in.
+        Password reset sent to <strong id="sentEmail"></strong>.<br>
+        Check your inbox to set a new password in the Hub.
       </div>
     </div>
     <div class="login-secure">
@@ -432,31 +437,41 @@ async function handleSession(user) {
   loadData();
 }
 
-async function sendMagicLink() {
+async function loginWithPassword() {
   const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
   const btn = document.getElementById('loginBtn');
   const errorEl = document.getElementById('loginError');
-  const sentEl = document.getElementById('loginSent');
 
-  if (!email) { showLoginError('Please enter your email address.'); return; }
+  if (!email || !password) { showLoginError('Please enter your email and password.'); return; }
 
   btn.disabled = true;
-  btn.textContent = 'Sending…';
+  btn.textContent = 'Signing in…';
   errorEl.style.display = 'none';
 
   try {
-    const { error } = await sb.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: window.location.href }
-    });
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    // onAuthStateChange → handleSession runs the admin gate and loads the app.
+  } catch (err) {
+    showLoginError(err.message || 'Sign-in failed. Check your credentials.');
+    btn.disabled = false;
+    btn.textContent = 'Sign in →';
+  }
+}
+
+// Password recovery is centralized in the Hub's set-new-password flow.
+async function forgotPassword() {
+  const email = document.getElementById('loginEmail').value.trim();
+  if (!email) { showLoginError('Enter your email first.'); return; }
+  try {
+    const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + '/hub.html' });
     if (error) throw error;
     document.getElementById('sentEmail').textContent = email;
-    btn.style.display = 'none';
-    sentEl.style.display = 'block';
+    document.getElementById('loginBtn').style.display = 'none';
+    document.getElementById('loginSent').style.display = 'block';
   } catch (err) {
-    showLoginError(err.message || 'Failed to send magic link. Please try again.');
-    btn.disabled = false;
-    btn.textContent = 'Send Magic Link';
+    showLoginError(err.message || 'Could not send reset email.');
   }
 }
 
@@ -489,9 +504,9 @@ function showApp() {
   document.getElementById('app').style.display = 'block';
 }
 
-// Enter key on login
+// Enter key on login email → move to password
 document.getElementById('loginEmail').addEventListener('keydown', e => {
-  if (e.key === 'Enter') sendMagicLink();
+  if (e.key === 'Enter') document.getElementById('loginPassword').focus();
 });
 
 // ── DATA ─────────────────────────────────────────────────────────────────────

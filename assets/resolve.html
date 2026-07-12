@@ -265,8 +265,10 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
       <h1>Resolve</h1>
       <p>Taxonomy Workbench · DRIVE</p>
     </div>
-    <input class="login-input" id="loginEmail" type="email" placeholder="your@email.com" onkeydown="if(event.key==='Enter')sendMagicLink()">
-    <button class="login-btn" onclick="sendMagicLink()">Send magic link</button>
+    <input class="login-input" id="loginEmail" type="email" placeholder="your@email.com" onkeydown="if(event.key==='Enter')document.getElementById('loginPassword').focus()">
+    <input class="login-input" id="loginPassword" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')loginWithPassword()">
+    <button class="login-btn" onclick="loginWithPassword()">Sign in →</button>
+    <button onclick="forgotPassword()" style="background:none;border:none;color:inherit;opacity:.55;font-size:12px;cursor:pointer;text-decoration:underline;margin-top:2px">Forgot password?</button>
     <div class="login-msg" id="loginMsg"></div>
   </div>
 </div>
@@ -602,13 +604,25 @@ const RS = {
 };
 
 // ── AUTH ─────────────────────────────────────────────────
-async function sendMagicLink() {
+async function loginWithPassword() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const msg = document.getElementById('loginMsg');
+  if (!email || !password) { msg.textContent = 'Enter your email and password'; msg.className = 'login-msg error'; return; }
+  msg.textContent = 'Signing in…'; msg.className = 'login-msg';
+  const { data, error } = await supa.auth.signInWithPassword({ email, password });
+  if (error) { msg.textContent = error.message; msg.className = 'login-msg error'; return; }
+  currentUser = data.user; OrgStore.init(data.session); await enterApp();
+}
+
+// Password recovery is centralized in the Hub's set-new-password flow.
+async function forgotPassword() {
   const email = document.getElementById('loginEmail').value.trim();
   const msg = document.getElementById('loginMsg');
-  if (!email) { msg.textContent = 'Enter your email'; msg.className = 'login-msg error'; return; }
-  const { error } = await supa.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.href } });
+  if (!email) { msg.textContent = 'Enter your email first'; msg.className = 'login-msg error'; return; }
+  const { error } = await supa.auth.resetPasswordForEmail(email, { redirectTo: location.origin + '/hub.html' });
   if (error) { msg.textContent = error.message; msg.className = 'login-msg error'; return; }
-  msg.textContent = 'Check your inbox for the magic link.'; msg.className = 'login-msg';
+  msg.textContent = 'Check your inbox — set a new password from the Hub, then return here.'; msg.className = 'login-msg';
 }
 
 async function initAuth() {
