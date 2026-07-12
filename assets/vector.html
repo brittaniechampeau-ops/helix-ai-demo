@@ -394,35 +394,15 @@
   .proc-overlay.active { opacity: 1; pointer-events: all; }
   .proc-inner { text-align: center; max-width: 400px; padding: 20px; position: relative; z-index: 1; }
   .proc-anim { display: flex; justify-content: center; margin-bottom: 32px; }
-  @keyframes vec-draw {
-    0%   { stroke-dashoffset: 200; opacity: 0.4; }
-    50%  { opacity: 1; }
-    100% { stroke-dashoffset: 0; opacity: 0.9; }
-  }
-  @keyframes vec-scan {
-    0%,100% { transform: translateY(-40px); opacity: 0; }
-    20%,80% { opacity: 0.6; }
-    50% { transform: translateY(40px); }
-  }
-  @keyframes vec-glow { 0%,100%{ filter: drop-shadow(0 0 8px #0d9488); } 50%{ filter: drop-shadow(0 0 22px #0d9488) drop-shadow(0 0 40px #10b981); } }
-  .vec-mark-proc {
-    animation: vec-glow 2s ease-in-out infinite;
-  }
-  .vec-mark-proc .v-path {
-    stroke-dasharray: 200;
-    animation: vec-draw 1.8s ease-in-out infinite alternate;
-  }
-  .proc-scanline {
-    position: absolute; left: 0; right: 0; height: 1px;
-    background: linear-gradient(90deg, transparent, #0d9488, transparent);
-    animation: vec-scan 2.4s ease-in-out infinite;
-    top: 50%; pointer-events: none;
-  }
-  .proc-phase-lbl  { font-size: 10px; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase; color: #0d9488; margin-bottom: 10px; }
+  @keyframes drive-spin { to { transform: rotate(360deg); } }
+  @keyframes drive-glow { 0%,100%{ filter: drop-shadow(0 0 12px #54C06E); } 50%{ filter: drop-shadow(0 0 32px #54C06E) drop-shadow(0 0 60px #76E090); } }
+  .proc-drive-mark { animation: drive-spin 1.4s linear infinite; transform-origin: 50px 50px; }
+  .proc-anim { animation: drive-glow 2.2s ease-in-out infinite; }
+  .proc-phase-lbl  { font-size: 10px; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase; color: #54C06E; margin-bottom: 10px; }
   .proc-title-lbl  { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 8px; line-height: 1.25; letter-spacing: -0.3px; }
   .proc-msg-lbl    { font-size: 12px; color: rgba(255,255,255,0.35); min-height: 20px; margin-bottom: 28px; letter-spacing: 0.3px; }
   .proc-bar-wrap   { background: rgba(255,255,255,0.06); height: 2px; width: 240px; margin: 0 auto; overflow: hidden; }
-  .proc-bar        { height: 2px; background: linear-gradient(90deg, #0d9488, #10b981); width: 0%; transition: width 0.5s cubic-bezier(0.4,0,0.2,1); }
+  .proc-bar        { height: 2px; background: linear-gradient(90deg, #54C06E, #76E090); width: 0%; transition: width 0.5s cubic-bezier(0.4,0,0.2,1); }
 
   /* ── MODAL ── */
   .modal-overlay {
@@ -1433,15 +1413,9 @@
 
 <!-- ── PROCESSING OVERLAY ── -->
 <div class="proc-overlay" id="procOverlay">
-  <div class="proc-scanline"></div>
   <div class="proc-inner">
     <div class="proc-anim">
-      <svg class="vec-mark-proc" width="80" height="72" viewBox="0 0 80 72" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <!-- Outer V -->
-        <path class="v-path" d="M4 4 L40 68 L76 4" stroke="#0d9488" stroke-width="6" stroke-linecap="square" stroke-linejoin="miter"/>
-        <!-- Inner notch -->
-        <path class="v-path" d="M28 36 L40 58 L52 36" stroke="#10b981" stroke-width="4" stroke-linecap="square" stroke-linejoin="miter" style="animation-delay:0.2s"/>
-      </svg>
+      <svg class="proc-drive-mark" id="procMark" viewBox="0 0 100 100" width="72" height="72"></svg>
     </div>
     <div class="proc-phase-lbl" id="procPhase">Processing</div>
     <div class="proc-title-lbl" id="procTitle">Analyzing...</div>
@@ -5642,6 +5616,42 @@ function resetIntakeModal() {
   document.getElementById('intakePasteWrap').style.display = 'none';
   renderIntakeSources();
 }
+
+// ── DRIVE mark icon system ───────────────────────────────────
+var DRIVE_PROD_IDX=3;
+(function(){
+  var C=['#E8547A','#2EC4B6','#7B5EA7','#54C06E','#F4822A'];
+  var GAP=4,N=5,SP=72;
+  function seg(cx,cy,ro,ri,a0,a1){
+    function p(r,d){var rad=(d-90)*Math.PI/180;return[cx+r*Math.cos(rad),cy+r*Math.sin(rad)];}
+    var p0=p(ro,a0),p1=p(ro,a1),p2=p(ri,a1),p3=p(ri,a0),lg=(a1-a0)>180?1:0;
+    return'M'+p0[0].toFixed(2)+','+p0[1].toFixed(2)+' A'+ro+','+ro+' 0 '+lg+',1 '+p1[0].toFixed(2)+','+p1[1].toFixed(2)+' L'+p2[0].toFixed(2)+','+p2[1].toFixed(2)+' A'+ri+','+ri+' 0 '+lg+',0 '+p3[0].toFixed(2)+','+p3[1].toFixed(2)+'Z';
+  }
+  function fill(el,activeIdx,singleColor){
+    var dim=parseFloat((el.getAttribute('viewBox')||'0 0 100 100').split(' ')[2]);
+    var cx=dim/2,cy=dim/2,ro=dim*.42,ri=dim*.20;
+    el.innerHTML='';
+    for(var i=0;i<N;i++){
+      var a0=i*SP+GAP/2,a1=(i+1)*SP-GAP/2;
+      var path=document.createElementNS('http://www.w3.org/2000/svg','path');
+      path.setAttribute('d',seg(cx,cy,ro,ri,a0,a1));
+      path.setAttribute('fill',singleColor||(i===activeIdx?C[activeIdx]:'#161616'));
+      el.appendChild(path);
+    }
+  }
+  document.querySelectorAll('.pnav-dot').forEach(function(dot){
+    var a=dot.closest('a');if(!a)return;
+    var h=a.getAttribute('href')||'';
+    var idx=h.indexOf('discover')>=0?0:h.indexOf('resolve')>=0?1:h.indexOf('intelligence')>=0?2:h.indexOf('vector')>=0?3:h.indexOf('engine')>=0?4:-1;
+    var svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('viewBox','0 0 100 100');svg.setAttribute('width','14');svg.setAttribute('height','14');
+    if(idx<0){for(var j=0;j<N;j++){var a0=j*SP+GAP/2,a1=(j+1)*SP-GAP/2;var pp=document.createElementNS('http://www.w3.org/2000/svg','path');pp.setAttribute('d',seg(50,50,42,20,a0,a1));pp.setAttribute('fill',C[j]);svg.appendChild(pp);}}
+    else{fill(svg,idx,null);}
+    dot.parentNode.replaceChild(svg,dot);
+  });
+  var pm=document.getElementById('procMark');
+  if(pm)fill(pm,DRIVE_PROD_IDX,C[DRIVE_PROD_IDX]);
+})();
 </script>
 </body>
 </html>

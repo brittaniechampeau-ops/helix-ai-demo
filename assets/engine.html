@@ -1303,6 +1303,40 @@ supa.auth.onAuthStateChange(async (event, session) => {
     if (assets.length) selectAsset(assets[0].id);
   }
 })();
+
+// ── DRIVE mark icon system ───────────────────────────────────
+var DRIVE_PROD_IDX=4;
+(function(){
+  var C=['#E8547A','#2EC4B6','#7B5EA7','#54C06E','#F4822A'];
+  var GAP=4,N=5,SP=72;
+  function seg(cx,cy,ro,ri,a0,a1){
+    function p(r,d){var rad=(d-90)*Math.PI/180;return[cx+r*Math.cos(rad),cy+r*Math.sin(rad)];}
+    var p0=p(ro,a0),p1=p(ro,a1),p2=p(ri,a1),p3=p(ri,a0),lg=(a1-a0)>180?1:0;
+    return'M'+p0[0].toFixed(2)+','+p0[1].toFixed(2)+' A'+ro+','+ro+' 0 '+lg+',1 '+p1[0].toFixed(2)+','+p1[1].toFixed(2)+' L'+p2[0].toFixed(2)+','+p2[1].toFixed(2)+' A'+ri+','+ri+' 0 '+lg+',0 '+p3[0].toFixed(2)+','+p3[1].toFixed(2)+'Z';
+  }
+  function fill(el,activeIdx,singleColor){
+    var dim=parseFloat((el.getAttribute('viewBox')||'0 0 100 100').split(' ')[2]);
+    var cx=dim/2,cy=dim/2,ro=dim*.42,ri=dim*.20;
+    el.innerHTML='';
+    for(var i=0;i<N;i++){
+      var a0=i*SP+GAP/2,a1=(i+1)*SP-GAP/2;
+      var path=document.createElementNS('http://www.w3.org/2000/svg','path');
+      path.setAttribute('d',seg(cx,cy,ro,ri,a0,a1));
+      path.setAttribute('fill',singleColor||(i===activeIdx?C[activeIdx]:'#161616'));
+      el.appendChild(path);
+    }
+  }
+  document.querySelectorAll('.pnav-dot').forEach(function(dot){
+    var a=dot.closest('a');if(!a)return;
+    var h=a.getAttribute('href')||'';
+    var idx=h.indexOf('discover')>=0?0:h.indexOf('resolve')>=0?1:h.indexOf('intelligence')>=0?2:h.indexOf('vector')>=0?3:h.indexOf('engine')>=0?4:-1;
+    var svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('viewBox','0 0 100 100');svg.setAttribute('width','14');svg.setAttribute('height','14');
+    if(idx<0){for(var j=0;j<N;j++){var a0=j*SP+GAP/2,a1=(j+1)*SP-GAP/2;var pp=document.createElementNS('http://www.w3.org/2000/svg','path');pp.setAttribute('d',seg(50,50,42,20,a0,a1));pp.setAttribute('fill',C[j]);svg.appendChild(pp);}}
+    else{fill(svg,idx,null);}
+    dot.parentNode.replaceChild(svg,dot);
+  });
+})();
 </script>
 </body>
 </html>
