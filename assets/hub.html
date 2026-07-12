@@ -460,6 +460,7 @@ function cardHTML(eng, activeId) {
       ${eng.status === 'active'
         ? `<button class="btn btn-danger btn-sm" onclick="archiveEngagement('${eng.id}')">Archive</button>`
         : `<button class="btn btn-ghost btn-sm" onclick="unarchiveEngagement('${eng.id}')">Restore</button>`}
+      <button class="btn btn-danger btn-sm" onclick="deleteEngagement('${eng.id}','${jsEsc(eng.client_name)}')">Delete</button>
     </div>
   </div>`;
 }
@@ -577,6 +578,15 @@ async function unarchiveEngagement(id) {
   const { error } = await supa.from('drive_engagements').update({ status: 'active', updated_at: new Date().toISOString() }).eq('id', id);
   if (error) { showToast('Failed: ' + error.message); return; }
   showToast('Restored');
+  loadEngagements();
+}
+
+async function deleteEngagement(id, name) {
+  if (!confirm(`Permanently delete "${name}"? This cannot be undone.`)) return;
+  const { error } = await supa.from('drive_engagements').delete().eq('id', id);
+  if (error) { showToast('Failed: ' + error.message); return; }
+  if (localStorage.getItem(ENG_KEY) === id) clearActive();
+  showToast('Deleted');
   loadEngagements();
 }
 
