@@ -1156,9 +1156,9 @@ tr:last-child td{border-bottom:none}
     <div class="card">
       <div style="font-size:14px;color:#374151;line-height:1.7">
         ${roadmapSteps.length
-          ? `We'll kick off with <strong>${rEsc(roadmapSteps[0]?.tool || 'the first phase')}</strong>${roadmapSteps[0]?.action ? ` — ${rEsc(roadmapSteps[0].action.toLowerCase())}` : ''}.
+          ? `We’ll kick off with <strong>${rEsc(roadmapSteps[0]?.tool || 'the first phase')}</strong>${roadmapSteps[0]?.action ? ' — ' + rEsc(roadmapSteps[0].action.toLowerCase()) : ''}.
              From there, each phase is gated on completion of the prior one, so the work compounds rather than runs in parallel.`
-          : 'We'll align on a start date and walk through the onboarding steps together before kicking off the first phase.'}
+          : 'We’ll align on a start date and walk through the onboarding steps together before kicking off the first phase.'}
       </div>
       ${eng.contact_email ? `<div style="margin-top:14px;padding-top:14px;border-top:1px solid #F3F4F6;font-size:13px;color:#6B7280">Questions? Reply directly to ${rEsc(eng.contact_email)}.</div>` : ''}
     </div>
