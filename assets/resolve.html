@@ -586,7 +586,7 @@ async function enterApp() {
   document.getElementById('app').style.display = 'grid';
   document.getElementById('tbUser').textContent = currentUser.email.split('@')[0];
   // Load saved resolve state first
-  const saved = await OrgStore.load('org_resolve');
+  const saved = await OrgStore.load('org_taxonomy');
   if (saved) { Object.assign(RS, saved); }
   // Pull taxonomy files from Discover — add any not already in RS.sources
   const discoverData = await OrgStore.load('org_discover');
@@ -1278,7 +1278,7 @@ function debouncedSave() { clearTimeout(saveTimer); saveTimer = setTimeout(saveT
 
 async function saveTaxonomy() {
   if (!currentUser) return;
-  try { await OrgStore.save('org_resolve', { sources: RS.sources.map(s => ({id:s.id,name:s.name,systemLabel:s.systemLabel,size:s.size||0})), conflicts: RS.conflicts, taxonomy: RS.taxonomy, naming: RS.naming, rules: RS.rules, _updatedAt: new Date().toISOString() }); } catch (_) {}
+  try { await OrgStore.save('org_taxonomy', { sources: RS.sources.map(s => ({id:s.id,name:s.name,systemLabel:s.systemLabel,size:s.size||0})), conflicts: RS.conflicts, taxonomy: RS.taxonomy, naming: RS.naming, rules: RS.rules, _updatedAt: new Date().toISOString() }); } catch (_) {}
 }
 
 async function manualSave() {

@@ -334,7 +334,7 @@ function render() {
 
 async function checkDataPresence(engList, activeId) {
   if (!engList.length) return;
-  const tables = ['org_discover','org_resolve','org_intelligence','org_vec_state','org_engine_assets'];
+  const tables = ['org_discover','org_taxonomy','org_intelligence','org_vec_state','org_engine_assets'];
   const ids = engList.map(e => e.id);
 
   const [approvalRes, ...results] = await Promise.all([
@@ -365,7 +365,7 @@ async function checkDataPresence(engList, activeId) {
     if (!el) return;
     const p = presence[id];
     el.querySelector('.pd-d').classList.toggle('has-data', !!p['org_discover']);
-    el.querySelector('.pd-r').classList.toggle('has-data', !!p['org_resolve']);
+    el.querySelector('.pd-r').classList.toggle('has-data', !!p['org_taxonomy']);
     el.querySelector('.pd-i').classList.toggle('has-data', !!p['org_intelligence']);
     el.querySelector('.pd-v').classList.toggle('has-data', !!p['org_vec_state']);
     el.querySelector('.pd-e').classList.toggle('has-data', !!p['org_engine_assets']);
@@ -580,7 +580,7 @@ async function generateReport(engId) {
   if (!eng) return;
   showToast('Building report…');
 
-  const tables = ['org_discover','org_resolve','org_intelligence','org_vec_state','org_engine_assets'];
+  const tables = ['org_discover','org_taxonomy','org_intelligence','org_vec_state','org_engine_assets'];
   const [dRes, rRes, iRes, vRes, eRes] = await Promise.all(
     tables.map(t => supa.from(t).select('data').eq('org_id', engId).maybeSingle())
   );
@@ -868,7 +868,7 @@ async function generateClientExport(engId) {
   if (!eng) return;
   showToast('Building client export…');
 
-  const tables = ['org_discover','org_resolve','org_intelligence','org_vec_state','org_engine_assets'];
+  const tables = ['org_discover','org_taxonomy','org_intelligence','org_vec_state','org_engine_assets'];
   const [dRes, rRes, iRes, vRes, eRes] = await Promise.all(
     tables.map(t => supa.from(t).select('data').eq('org_id', engId).maybeSingle())
   );

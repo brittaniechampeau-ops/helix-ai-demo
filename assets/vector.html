@@ -1877,7 +1877,7 @@ async function loadDRIVEContext() {
   if (!OrgStore.orgId) return;
   // 1. Canonical taxonomy from Resolve → pre-populate VEC.taxFields if not yet set by user
   try {
-    const resolveData = await OrgStore.load('org_resolve');
+    const resolveData = await OrgStore.load('org_taxonomy');
     if (resolveData?.taxonomy?.categories?.length && (!VEC.taxFields || VEC.taxFields === JSON.parse(JSON.stringify(DEFAULT_TAX_FIELDS)) || !VEC._taxFromUser)) {
       const fromResolve = resolveData.taxonomy.categories.map(cat => ({
         key: cat.label,

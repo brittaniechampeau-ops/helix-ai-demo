@@ -504,7 +504,7 @@ async function loadDRIVEData() {
 
   // Resolve: canonical taxonomy + naming convention
   try {
-    const resolveData = await OrgStore.load('org_resolve');
+    const resolveData = await OrgStore.load('org_taxonomy');
     if (resolveData) {
       taxonomy = resolveData.taxonomy || {};
       if (resolveData.naming?.status === 'approved' && resolveData.naming?.pattern) {
