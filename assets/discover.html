@@ -883,10 +883,14 @@ function restoreDiscoverState(data) {
     }
 
     // Restore navigation step (so returning users land where they left off)
-    if (data.current_step !== undefined && data.current_step !== null && data.current_step !== 6) {
-      hideCurrentPanel();
-      currentStep = data.current_step;
-      showCurrentPanel();
+    if (data.current_step !== undefined && data.current_step !== null) {
+      if (data.current_step === 6) {
+        showResults();
+      } else {
+        hideCurrentPanel();
+        currentStep = data.current_step;
+        showCurrentPanel();
+      }
     }
 
     updateOrgDisplay();
@@ -2308,8 +2312,7 @@ async function saveToSupabase() {
     if (error) throw error;
     currentPracticeId = data?.id;
     localStorage.removeItem('disc_team_emails');
-    localStorage.setItem('discover_state_'+(localStorage.getItem('drive_engagement_id')||'local'), JSON.stringify(readiness));
-    try { OrgStore.save('org_discover', readiness); } catch (_) {}
+    await silentSave();
     const syncEl = document.getElementById('sync-indicator');
     if (syncEl) { syncEl.style.opacity = '1'; setTimeout(() => { syncEl.style.opacity = '0'; }, 2000); }
     btn.textContent = '✓ Saved';
