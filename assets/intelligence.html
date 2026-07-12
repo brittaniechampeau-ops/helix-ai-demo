@@ -126,7 +126,9 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 .fs-done{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
 .fs-error{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
 .file-pbar{height:2px;background:var(--faint);border-radius:1px;overflow:hidden;margin-bottom:6px}
-.file-pfill{height:100%;background:var(--blue);transition:width .3s}
+.file-pfill{height:100%;background:var(--blue);animation:pbar-sweep 8s ease-out forwards}
+@keyframes pbar-sweep{0%{width:0%}100%{width:85%}}
+.file-pfill.done{animation:none;width:100%}
 .file-actions{display:flex;gap:6px}
 .btn-extract{height:26px;padding:0 10px;font-size:11px;font-weight:600;border-radius:5px;cursor:pointer;background:var(--blue-bg);border:1px solid var(--blue-border);color:var(--blue);transition:all .15s}
 .btn-extract:hover{background:rgba(91,140,255,.15)}
@@ -474,6 +476,7 @@ const IS = {
 };
 let activeFilter = 'all';
 let apiKey = '';
+let _extracting = false;
 
 // ── AUTH ──────────────────────────────────────────────────
 async function sendMagicLink() {
@@ -538,6 +541,9 @@ function filterType(type) {
   activeFilter = type;
   setFilter(type, document.getElementById('pill-'+type));
   showPanel('signals');
+  document.querySelectorAll('[id^="filt-"]').forEach(el => el.classList.remove('active'));
+  const filtEl = document.getElementById('filt-' + type);
+  if (filtEl) filtEl.classList.add('active');
 }
 
 function setFilter(type, el) {
@@ -621,7 +627,7 @@ async function addFiles(files) {
       let text = '';
       try { text = await f.text(); } catch(_) {}
       IS.files.push({ id:uid(), name:f.name, size:f.size, status:'queued', signalCount:0, fromDiscover:false, text });
-    }
+    } else { showToast(f.name + ' already added'); }
   }
   renderFiles();
   updateRunBtn();
@@ -658,7 +664,7 @@ function renderFiles() {
         </div>
         <button class="file-del" onclick="removeFile('${f.id}')">✕</button>
       </div>
-      ${f.status==='processing' ? '<div class="file-pbar"><div class="file-pfill" style="width:60%"></div></div>' : ''}
+      ${f.status==='processing' ? '<div class="file-pbar"><div class="file-pfill"></div></div>' : ''}
       <div style="display:flex;align-items:center;justify-content:space-between">
         <span class="file-status ${fclass}">${flabel}</span>
         ${!needsUpload && f.status==='queued' ? `<button class="btn-extract" onclick="extractOne('${f.id}')">Extract →</button>` : ''}
@@ -680,45 +686,63 @@ function updateRunBtn() {
 }
 
 // ── SIGNAL EXTRACTION ──────────────────────────────────────
+function setExtractingUI(busy) {
+  const runBtn = document.getElementById('runBtn');
+  if (runBtn) runBtn.disabled = busy || !(apiKey && apiKey.startsWith('sk-ant-') && IS.files.length > 0);
+  document.querySelectorAll('.btn-extract').forEach(b => { b.disabled = busy; });
+}
+
 async function runExtraction() {
+  if (_extracting) { showToast('Extraction already in progress'); return; }
   const queued = IS.files.filter(f=>f.status==='queued');
   if (!queued.length) { showToast('No queued documents'); return; }
+  _extracting = true;
+  setExtractingUI(true);
   const overlay = document.getElementById('procOverlay');
   const stageEl = document.getElementById('procStage');
   const detailEl = document.getElementById('procDetail');
   overlay.style.display='flex';
-  for (const file of queued) {
-    stageEl.textContent = `Reading ${file.name}…`;
-    detailEl.textContent = 'Extracting text and preparing for analysis';
-    file.status = 'processing';
-    renderFiles();
-    await new Promise(r=>setTimeout(r,400));
-    stageEl.textContent = `Extracting signals from ${file.name}…`;
-    detailEl.textContent = 'Identifying buyer pain, market trends, competitive signals, and intent indicators';
-    const text = file.text || `[Document: ${file.name}]`;
-    try {
-      const extracted = await callClaude(file.name, text, file);
-      IS.signals.push(...extracted);
-      file.signalCount = extracted.length;
-      file.status = 'done';
-    } catch (err) {
-      console.error(err);
-      file.status = 'error';
+  try {
+    for (const file of queued) {
+      stageEl.textContent = `Reading ${file.name}…`;
+      detailEl.textContent = 'Extracting text and preparing for analysis';
+      file.status = 'processing';
+      renderFiles();
+      await new Promise(r=>setTimeout(r,400));
+      stageEl.textContent = `Extracting signals from ${file.name}…`;
+      detailEl.textContent = 'Identifying buyer pain, market trends, competitive signals, and intent indicators';
+      const text = file.text || `[Document: ${file.name}]`;
+      try {
+        const extracted = await callClaude(file.name, text, file);
+        IS.signals.push(...extracted);
+        file.signalCount = extracted.length;
+        file.status = 'done';
+      } catch (err) {
+        console.error(err);
+        file.status = 'error';
+      }
+      renderFiles();
+      await new Promise(r=>setTimeout(r,300));
     }
-    renderFiles();
-    await new Promise(r=>setTimeout(r,300));
+    overlay.style.display='none';
+    render();
+    showPanel('signals');
+    showToast(`${IS.signals.length} total signals extracted`);
+    saveSignals();
+  } finally {
+    _extracting = false;
+    overlay.style.display='none';
+    setExtractingUI(false);
   }
-  overlay.style.display='none';
-  render();
-  showPanel('signals');
-  showToast(`${IS.signals.length} total signals extracted`);
-  saveSignals();
 }
 
 async function extractOne(id) {
+  if (_extracting) { showToast('Extraction already in progress'); return; }
   const file = IS.files.find(f=>f.id===id);
   if (!file || file.status!=='queued') return;
   if (!apiKey || !apiKey.startsWith('sk-ant-')) { showToast('Add Anthropic API key first'); return; }
+  _extracting = true;
+  setExtractingUI(true);
   file.status='processing'; renderFiles();
   const text = file.text || `[Document: ${file.name}]`;
   try {
@@ -731,6 +755,9 @@ async function extractOne(id) {
   } catch (err) {
     file.status='error';
     showToast('Extraction failed — check API key');
+  } finally {
+    _extracting = false;
+    setExtractingUI(false);
   }
   render();
 }
@@ -761,7 +788,7 @@ async function callClaude(filename, text, fileRef) {
     method:'POST',
     headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
     body:JSON.stringify({
-      model:'claude-haiku-4-5-20251001',
+      model:'claude-haiku-4-5',
       max_tokens:2000,
       system:`You are a market intelligence analyst extracting buyer signals from consulting practice documents.
 Extract every meaningful signal — buyer pain, market trends, competitive insight, budget indicators, purchase intent, and objections.

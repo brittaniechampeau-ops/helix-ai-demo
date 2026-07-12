@@ -174,8 +174,8 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       <div class="active-banner-label">Active engagement</div>
       <div class="active-banner-name" id="activeBannerName"></div>
     </div>
-    <div class="active-banner-actions">
-      <a class="btn btn-ghost btn-sm" href="/discover.html">Open in Discover →</a>
+    <div class="active-banner-actions" id="activeBannerActions">
+      <a class="btn btn-ghost btn-sm" id="activeBannerToolLink" href="/discover.html">Open in Discover →</a>
       <button class="btn btn-ghost btn-sm" onclick="clearActive()">Clear</button>
     </div>
   </div>
@@ -295,10 +295,12 @@ async function signOut() {
 
 // --- ENGAGEMENTS ---
 async function loadEngagements() {
+  document.getElementById('engGrid').innerHTML = '<div style="color:var(--text3);font-size:13px;padding:20px 0">Loading…</div>';
   const { data, error } = await supa.from('drive_engagements')
     .select('*')
     .eq('owner_email', currentUser.email)
     .order('updated_at', { ascending: false });
+  if (error) { showToast('Error loading engagements: ' + error.message); return; }
   engagements = data || [];
   render();
 }
@@ -393,11 +395,25 @@ const HUB_TRACK_NAMES = {
   enterprise: 'Enterprise Governance',
 };
 
+const HUB_FIRST_TOOL = {
+  micro:      'vector.html',
+  smb:        'vector.html',
+  mid:        'resolve.html',
+  enterprise: 'resolve.html',
+};
+
+const HUB_TOOL_LABELS = {
+  'vector.html':   'Vector',
+  'resolve.html':  'Resolve',
+  'discover.html': 'Discover',
+};
+
 function cardHTML(eng, activeId) {
   const isActive = eng.id === activeId;
   const tierClass = { micro: 'tier-smb', smb: 'tier-smb', mid: 'tier-mid', enterprise: 'tier-enterprise' }[eng.size_tier] || 'tier-smb';
   const tierLabel = { micro: 'Micro', smb: 'SMB', mid: 'Mid-Market', enterprise: 'Enterprise' }[eng.size_tier] || 'SMB';
-  const trackName = eng.track_name || HUB_TRACK_NAMES[eng.size_tier] || '';
+  const trackName = eng.track_name || null;
+  const trackDisplay = trackName || '— Run Discover';
   const updated = eng.updated_at ? new Date(eng.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
   const created = eng.created_at ? new Date(eng.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
 
@@ -411,7 +427,7 @@ function cardHTML(eng, activeId) {
       </div>
       <div style="text-align:right">
         <span class="eng-tier ${tierClass}">${tierLabel}</span>
-        ${trackName ? `<div style="font-size:10px;font-weight:600;opacity:.55;margin-top:4px;letter-spacing:.03em">${esc(trackName)}</div>` : ''}
+        <div style="font-size:10px;font-weight:600;opacity:${trackName ? '.55' : '.35'};margin-top:4px;letter-spacing:.03em;font-style:${trackName ? 'normal' : 'italic'}">${esc(trackDisplay)}</div>
       </div>
     </div>
     <div class="eng-meta">
@@ -430,7 +446,7 @@ function cardHTML(eng, activeId) {
     </div>
     <div class="eng-actions">
       ${isActive
-        ? `<a class="btn btn-ghost btn-sm" href="/discover.html">Open in Discover</a>`
+        ? (() => { const ft = HUB_FIRST_TOOL[eng.size_tier] || 'discover.html'; const tl = HUB_TOOL_LABELS[ft] || 'Discover'; return `<a class="btn btn-ghost btn-sm" href="/${ft}">Open in ${tl}</a>`; })()
         : `<button class="btn btn-primary btn-sm" onclick="setActive('${eng.id}','${jsEsc(eng.client_name)}')">Set Active</button>`}
       <button class="btn btn-ghost btn-sm" onclick="generateReport('${eng.id}')">↓ Internal Report</button>
       <button class="btn btn-ghost btn-sm" onclick="generateClientExport('${eng.id}')">↓ Client Export</button>
@@ -467,6 +483,11 @@ function refreshActiveBanner() {
   if (id && name) {
     banner.style.display = 'flex';
     document.getElementById('activeBannerName').textContent = name;
+    const eng = engagements.find(e => e.id === id);
+    const firstTool = HUB_FIRST_TOOL[eng?.size_tier] || 'discover.html';
+    const toolLabel = HUB_TOOL_LABELS[firstTool] || 'Discover';
+    const link = document.getElementById('activeBannerToolLink');
+    if (link) { link.href = '/' + firstTool; link.textContent = 'Open in ' + toolLabel + ' →'; }
   } else {
     banner.style.display = 'none';
   }
@@ -539,14 +560,16 @@ async function saveEngagement() {
 
 async function archiveEngagement(id) {
   if (!confirm('Archive this engagement? It will no longer appear in the active list.')) return;
-  await supa.from('drive_engagements').update({ status: 'archived', updated_at: new Date().toISOString() }).eq('id', id);
+  const { error } = await supa.from('drive_engagements').update({ status: 'archived', updated_at: new Date().toISOString() }).eq('id', id);
+  if (error) { showToast('Failed: ' + error.message); return; }
   if (localStorage.getItem(ENG_KEY) === id) clearActive();
   showToast('Archived');
   loadEngagements();
 }
 
 async function unarchiveEngagement(id) {
-  await supa.from('drive_engagements').update({ status: 'active', updated_at: new Date().toISOString() }).eq('id', id);
+  const { error } = await supa.from('drive_engagements').update({ status: 'active', updated_at: new Date().toISOString() }).eq('id', id);
+  if (error) { showToast('Failed: ' + error.message); return; }
   showToast('Restored');
   loadEngagements();
 }
@@ -809,7 +832,7 @@ body{background:#050709;color:#E8EAF0;font-family:-apple-system,BlinkMacSystemFo
     `) : `<p style="color:#4A5270;font-size:13px;font-style:italic">Positioning not yet defined in Vector.</p>`}
     ${cdna ? card(`
       <div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#3BBFA3;margin-bottom:10px">Campaign DNA</div>
-      <div style="font-size:13px;color:#8892A4;line-height:1.7;white-space:pre-wrap">${rEsc(cdna.slice(0, 2000))}${cdna.length > 2000 ? '\n…' : ''}</div>
+      <div style="font-size:13px;color:#8892A4;line-height:1.7;white-space:pre-wrap">${rEsc(cdna.slice(0, 8000))}${cdna.length > 2000 ? '\n…' : ''}</div>
     `) : ''}
   `)}
 
@@ -822,8 +845,8 @@ body{background:#050709;color:#E8EAF0;font-family:-apple-system,BlinkMacSystemFo
 
   <!-- FOOTER -->
   <div style="margin-top:48px;padding-top:24px;border-top:1px solid #1C2535;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+    <div style="font-size:12px;color:#4A5270">Internal use only · Britt Bowman LLC</div>
     <div style="font-size:12px;color:#4A5270">Generated by ✦ DRIVE · ${date}</div>
-    <div style="font-size:12px;color:#4A5270">Confidential — prepared for ${rEsc(eng.client_name)}</div>
   </div>
 
 </div>
@@ -1079,6 +1102,18 @@ tr:last-child td{border-bottom:none}
     ${govRules.length ? `<div class="card"><div style="font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px">Governance Rules</div>${govRules.map(r => `<div style="font-size:13px;color:#374151;padding:7px 0;border-bottom:1px solid #F3F4F6;line-height:1.5">${rEsc(typeof r==='string'?r:r.text||r.rule||'')}</div>`).join('')}</div>` : ''}
   </div>` : ''}
 
+  ${eng.size_tier === 'enterprise' && (R.naming?.pattern || (R.rules||[]).length > 0) ? `<div class="section">
+    <h2>Enterprise Governance</h2>
+    <p style="font-size:14px;color:#6B7280;margin-bottom:20px;line-height:1.6">The following governance framework has been established for your organization and requires stakeholder acknowledgment before go-live.</p>
+    ${R.naming?.pattern ? `<div class="card"><div style="font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Approved Naming Convention</div><div class="mono">${rEsc(R.naming.pattern)}</div></div>` : ''}
+    ${(R.rules||[]).length > 0 ? `<div class="card"><div style="font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px">Governance Rules</div>${(R.rules||[]).map(r => `<div style="font-size:13px;color:#374151;padding:7px 0;border-bottom:1px solid #F3F4F6;line-height:1.5">${rEsc(typeof r==='string'?r:r.text||r.rule||'')}</div>`).join('')}</div>` : ''}
+    <div class="card"><div style="font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Stakeholder Approval Status</div><div style="font-size:14px;font-weight:600;color:#111827">${
+      R.approval?.status === 'approved' ? '✓ Approved'
+      : R.approval?.status === 'changes_requested' ? '→ Changes requested'
+      : 'Pending'
+    }</div></div>
+  </div>` : ''}
+
   <!-- SIGNALS -->
   ${starred.length ? `<div class="section">
     <h2>Market Intelligence Highlights</h2>
@@ -1106,7 +1141,7 @@ tr:last-child td{border-bottom:none}
         ${pos.proof ? `<div><div class="pos-label">Proof</div><div class="pos-value">${rEsc(pos.proof)}</div></div>` : ''}
       </div>
     </div>` : ''}
-    ${cdna ? `<div class="card"><div style="font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Campaign DNA</div><div style="font-size:13px;color:#374151;line-height:1.7;white-space:pre-wrap">${rEsc(cdna.slice(0,2000))}${cdna.length>2000?'\n…':''}</div></div>` : ''}
+    ${cdna ? `<div class="card"><div style="font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Campaign DNA</div><div style="font-size:13px;color:#374151;line-height:1.7;white-space:pre-wrap">${rEsc(cdna.slice(0,8000))}${cdna.length>2000?'\n…':''}</div></div>` : ''}
   </div>` : ''}
 
   <!-- CONTENT THEMES -->
@@ -1132,7 +1167,7 @@ tr:last-child td{border-bottom:none}
   <!-- FOOTER -->
   <div class="footer">
     <div class="footer-text">Prepared by Britt Bowman LLC · ${date}</div>
-    <div class="footer-text">Confidential — for ${rEsc(eng.contact_name || eng.client_name)} only</div>
+    <div class="footer-text">${eng.contact_name ? 'Confidential — for ' + rEsc(eng.contact_name) + ' only' : 'Confidential — internal use only'}</div>
   </div>
 
 </div>
@@ -1158,7 +1193,11 @@ function toggleArchived() {
 
 // --- UTILS ---
 function shareGuide() {
-  const url = window.location.origin + '/onboarding.html';
+  const activeId = localStorage.getItem(ENG_KEY);
+  const eng = engagements.find(e => e.id === activeId) || engagements[0];
+  const url = window.location.origin + '/onboarding.html'
+    + '?client=' + encodeURIComponent(eng?.client_name || '')
+    + '&track=' + encodeURIComponent(eng?.track_name || HUB_TRACK_NAMES[eng?.size_tier] || '');
   navigator.clipboard.writeText(url).then(() => showToast('Guide link copied')).catch(() => {
     prompt('Copy this link to send to your client:', url);
   });

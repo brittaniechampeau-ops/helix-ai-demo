@@ -347,7 +347,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 </div>
 
 <!-- APP -->
-<div id="app" style="display:none;height:100vh;display:none;grid-template-columns:var(--sidebar) 1fr;grid-template-rows:54px 1fr">
+<div id="app" style="display:none;height:100vh;grid-template-columns:var(--sidebar) 1fr;grid-template-rows:54px 1fr">
 
   <!-- TOPBAR -->
   <nav class="topbar">
@@ -467,7 +467,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
       <!-- ═══ STEP 0: ORG PROFILE ═══ -->
       <div class="section-panel active" id="panel-0">
         <div class="step-header">
-          <div class="step-eyebrow" style="color:var(--purple)">Discovery · Step 1 of 6</div>
+          <div class="step-eyebrow" style="color:var(--purple)">Discovery · Step 1 of 7</div>
           <div class="step-title">Tell us about the organization</div>
           <div class="step-desc">This anchors everything — it becomes the header for their DRIVE scoping report and feeds all downstream tools.</div>
         </div>
@@ -535,7 +535,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
       <!-- ═══ STEP 1: MATERIAL INTAKE ═══ -->
       <div class="section-panel" id="panel-1">
         <div class="step-header">
-          <div class="step-eyebrow" style="color:var(--purple)">Discovery · Step 2 of 6</div>
+          <div class="step-eyebrow" style="color:var(--purple)">Discovery · Step 2 of 7</div>
           <div class="step-title">Gather everything</div>
           <div class="step-desc">Harvest all available materials before scoping. Taxonomy files feed Resolve. Documents and transcripts feed Intelligence and Vector. Web sources are fetched automatically.</div>
         </div>
@@ -618,7 +618,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
       <!-- ═══ STEP 1.5: BASELINE CAPTURE ═══ -->
       <div class="section-panel" id="panel-baseline">
         <div class="step-header">
-          <div class="step-eyebrow" style="color:var(--purple)">Discovery · Baseline</div>
+          <div class="step-eyebrow" style="color:var(--purple)">Discovery · Step 2 of 7 · Baseline</div>
           <div class="step-title">Where they are today</div>
           <div class="step-desc">Capture current marketing state before any engagement work begins. This becomes the "before" baseline in the final report and informs the engagement scope.</div>
         </div>
@@ -704,7 +704,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
       <!-- ═══ STEP 2–5: DRIVE SCOPING ═══ -->
       <div class="section-panel" id="panel-2">
         <div class="step-header">
-          <div class="step-eyebrow" style="color:var(--cyan)">Discovery · Step 3 of 6 · Resolve</div>
+          <div class="step-eyebrow" style="color:var(--cyan)">Discovery · Step 3 of 7 · Resolve</div>
           <div class="step-title">Taxonomy readiness</div>
           <div class="step-desc">How clearly defined is their language for who they serve and what they do? This determines whether Resolve is a foundation or a refinement.</div>
         </div>
@@ -713,7 +713,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 
       <div class="section-panel" id="panel-3">
         <div class="step-header">
-          <div class="step-eyebrow" style="color:var(--blue)">Discovery · Step 4 of 6 · Intelligence</div>
+          <div class="step-eyebrow" style="color:var(--blue)">Discovery · Step 4 of 7 · Intelligence</div>
           <div class="step-title">Intelligence readiness</div>
           <div class="step-desc">How much usable data do they have? Intelligence is most valuable when there's existing engagement and pipeline data worth analyzing.</div>
         </div>
@@ -722,7 +722,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 
       <div class="section-panel" id="panel-4">
         <div class="step-header">
-          <div class="step-eyebrow" style="color:var(--teal)">Discovery · Step 5 of 6 · Vector</div>
+          <div class="step-eyebrow" style="color:var(--teal)">Discovery · Step 5 of 7 · Vector</div>
           <div class="step-title">Strategy readiness</div>
           <div class="step-desc">How developed is their growth strategy? A low score means Vector is urgent core work. A high score means Vector refines and activates what's already solid.</div>
         </div>
@@ -731,7 +731,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 
       <div class="section-panel" id="panel-5">
         <div class="step-header">
-          <div class="step-eyebrow" style="color:var(--orange)">Discovery · Step 6 of 6 · Engine</div>
+          <div class="step-eyebrow" style="color:var(--orange)">Discovery · Step 6 of 7 · Engine</div>
           <div class="step-title">Execution readiness</div>
           <div class="step-desc">Do they have the infrastructure to execute? Engine accelerates orgs that are already in motion — it doesn't create motion from nothing.</div>
         </div>
@@ -741,7 +741,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
       <!-- ═══ RESULTS ═══ -->
       <div id="resultsPanel" style="display:none">
         <div class="step-header">
-          <div class="step-eyebrow" style="color:var(--purple)">Discovery complete</div>
+          <div class="step-eyebrow" style="color:var(--purple)">Discovery · Step 7 of 7</div>
           <div class="step-title" id="resTitle">DRIVE recommendation</div>
           <div class="step-desc" id="resDesc"></div>
         </div>
@@ -973,18 +973,19 @@ function updateOrgDisplay() {
 }
 
 // ── ACCOUNT SIZE ─────────────────────────────────────────
+// Note: orgChallenge and orgIndustry are collected for reporting but do not currently influence track selection.
 function getAccountSize() {
   const team = state.orgTeam, rev = state.orgRev;
   if (team === '200+' || rev === '$10M–$50M' || rev === '$50M+') return 'enterprise';
   if (team === '51-200' || team === '21-50' || rev === '$2M–$10M') return 'mid';
   if (team === '1-5' || rev === '<$500K') return 'micro';
-  return 'small';
+  return 'smb';
 }
 
 const SIZE_CONFIG = {
   micro:      { label: 'MICRO',      color: 'var(--purple)', bg: 'var(--purple-bg)', border: 'var(--purple-border)',
                 bannerText: '<strong>Streamlined path.</strong> At your stage, we focus on Strategy and Execution. Taxonomy and Intelligence come later as you scale.' },
-  small:      { label: 'SMALL',      color: 'var(--cyan)',   bg: 'var(--cyan-bg)',   border: 'var(--cyan-border)',
+  smb:        { label: 'SMB',        color: 'var(--cyan)',   bg: 'var(--cyan-bg)',   border: 'var(--cyan-border)',
                 bannerText: '<strong>Growth-stage discovery.</strong> All four dimensions are relevant — we\'ll flag where to start first.' },
   mid:        { label: 'MID-MARKET', color: 'var(--blue)',   bg: 'var(--blue-bg)',   border: 'var(--blue-border)',
                 bannerText: '<strong>Full-stack discovery.</strong> You have the infrastructure for the complete platform — we\'ll sequence it for maximum impact.' },
@@ -1227,7 +1228,7 @@ function recalcScore(si) {
 
 // ── BASELINE INTERACTIONS ─────────────────────────────────
 function selectBaseline(field, val, el) {
-  document.querySelectorAll(`#budgetChips .chip`).forEach(c => c.classList.remove('sel'));
+  document.querySelectorAll(`#${field}Chips .chip`).forEach(c => c.classList.remove('sel'));
   el.classList.add('sel');
   state.baseline[field] = val;
 }
@@ -1288,7 +1289,7 @@ function panelId(step) {
 function updateFooterHint() {
   if (currentStep === 6) return;
   const hints = {
-    0: state.orgName ? `Profiling ${state.orgName}` : 'Enter org name to continue',
+    0: state.orgName && state.orgTeam && state.orgRev ? `Profiling ${state.orgName}` : 'Enter org name, team size, and revenue to continue.',
     1: 'Upload materials or continue without — intake is optional',
     1.5: 'Fill in what you know — all fields are optional',
     2: 'Answer all 4 questions to continue',
@@ -1429,7 +1430,7 @@ function updateFooter() {
   btnBack.style.display = currentStep > 0 ? 'block' : 'none';
   if (currentStep === 0) {
     btnNext.textContent = 'Continue →';
-    btnNext.disabled = !state.orgName || !state.orgTeam;
+    btnNext.disabled = !state.orgName || !state.orgTeam || !state.orgRev;
     btnNext.style.display = 'block';
   } else if (currentStep === 1) {
     btnNext.textContent = 'Capture baseline →';
@@ -1733,6 +1734,16 @@ function showResults() {
   const grid = document.getElementById('resultsGrid');
   grid.innerHTML = '';
   SECTION_META.forEach((sm, i) => {
+    // For micro, Resolve (i=0) and Intelligence (i=1) were auto-scored and not assessed —
+    // show a dimmed placeholder instead of a scored card to avoid misleading the client.
+    if (size === 'micro' && (i === 0 || i === 1)) {
+      const card = document.createElement('div');
+      card.className = 'readiness-card';
+      card.style.cssText = 'opacity:0.4;pointer-events:none';
+      card.innerHTML = `<div class="rc-header"><div class="rc-name" style="color:${sm.color}">${sm.tool} — ${sm.name}</div></div><div class="rc-recommendation" style="font-style:italic">Not assessed at this stage — revisit as the org scales.</div>`;
+      grid.appendChild(card);
+      return;
+    }
     const score = scores[i];
     const lvl = levelFor(score);
     const recIdx = score <= 3 ? 0 : score <= 5 ? 1 : 2;

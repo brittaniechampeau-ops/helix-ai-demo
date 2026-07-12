@@ -500,7 +500,7 @@ async function loadDRIVEData() {
       const vecRaw = localStorage.getItem('vec_v1');
       if (vecRaw) { const v = JSON.parse(vecRaw); practiceData = v.VEC?.practice || {}; cdna = v.VEC?.cdna || {}; }
     }
-  } catch(e) {}
+  } catch(e) { console.warn('Failed to load upstream data:', e); }
 
   // Resolve: canonical taxonomy + naming convention
   try {
@@ -511,7 +511,7 @@ async function loadDRIVEData() {
         namingPattern = resolveData.naming.pattern;
       }
     }
-  } catch(e) {}
+  } catch(e) { console.warn('Failed to load upstream data:', e); }
 
   // Intelligence: starred signals for content theme suggestions
   try {
@@ -519,7 +519,7 @@ async function loadDRIVEData() {
     if (intelData?.signals) {
       intelSignals = intelData.signals.filter(s => s.starred);
     }
-  } catch(e) {}
+  } catch(e) { console.warn('Failed to load upstream data:', e); }
 }
 
 function getPracticeName() {
@@ -710,6 +710,18 @@ function onFieldChange(asset, el) {
   if (el.id === 'field-title') {
     document.getElementById('centerTitle').textContent = el.value || asset.type;
   }
+  // Validate required fields before allowing Approved or Live status
+  if (el.id === 'field-status' && (el.value === 'Approved' || el.value === 'Live')) {
+    const titleEl = document.getElementById('field-title');
+    const ownerEl = document.getElementById('field-owner');
+    const titleVal = (titleEl ? titleEl.value : '').trim();
+    const ownerVal = (ownerEl ? ownerEl.value : '').trim();
+    if (!titleVal || !ownerVal) {
+      el.value = (savedAssets[asset.id] || {}).status || 'Draft';
+      showToast('Set Owner and Title before marking as Approved.');
+      return;
+    }
+  }
   debounceSave();
   updatePreview();
   // refresh list badge if status changed
@@ -818,9 +830,20 @@ function buildForm(asset, saved) {
   const suggestedTitle = `${asset.type} — ${getPracticeName()}`;
 
   // Campaign name: use approved Resolve naming pattern if set, else fallback
-  const suggestedCampaign = s('campaign', namingPattern
-    ? namingPattern.replace(/\[Product\]/i, getOffers()[0] || getPracticeName()).replace(/\[Quarter\]/i, `Q${Math.ceil((new Date().getMonth()+1)/3)} ${new Date().getFullYear()}`)
-    : campaign);
+  const _now = new Date();
+  const _tokens = {
+    '[Product]':  (getOffers && getOffers()[0]) || '',
+    '[Practice]': getPracticeName ? getPracticeName() : '',
+    '[Quarter]':  'Q' + (Math.floor(_now.getMonth() / 3) + 1),
+    '[Year]':     String(_now.getFullYear()),
+    '[Month]':    _now.toLocaleString('default', { month: 'short' }),
+    '[Type]':     asset?.type || '',
+  };
+  let _patternResult = namingPattern || '';
+  Object.entries(_tokens).forEach(([k, v]) => {
+    _patternResult = _patternResult.replace(new RegExp(k.replace(/[[\]]/g, '\\$&'), 'gi'), v || '');
+  });
+  const suggestedCampaign = s('campaign', namingPattern ? _patternResult : campaign);
 
   // Naming convention hint
   const namingHint = namingPattern
@@ -1087,7 +1110,7 @@ function updatePreview() {
 function copyJSON() {
   const obj = collectCurrentValues();
   if (!obj) return;
-  navigator.clipboard.writeText(JSON.stringify(obj, null, 2)).then(() => showToast('Copied!'));
+  navigator.clipboard.writeText(JSON.stringify(obj, null, 2)).then(() => showToast('Copied!')).catch(() => showToast('Copy failed — check clipboard permissions.'));
 }
 
 function exportCSV() {
@@ -1260,7 +1283,7 @@ const loginScreen = document.getElementById('loginScreen');
 supa.auth.onAuthStateChange(async (event, session) => {
   if (session) {
     loginScreen.classList.remove('visible');
-    initApp(session);
+    initApp(session).catch(err => { showToast('Failed to load — please refresh.'); console.error(err); });
   } else {
     loginScreen.classList.add('visible');
     // Also try to init without auth (for local dev / demo)

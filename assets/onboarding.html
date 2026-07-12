@@ -156,6 +156,13 @@ body{
 /* DIVIDER */
 .guide-divider{border:none;border-top:1px solid var(--border);margin:48px 0}
 
+/* TIMELINE TABLE */
+.timeline-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:4px}
+.timeline-table th{text-align:left;padding:7px 12px;border-bottom:1px solid var(--border);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);opacity:.6}
+.timeline-table td{padding:8px 12px;border-bottom:1px solid var(--faint);vertical-align:middle;color:var(--muted);font-size:13px}
+.timeline-table tr:last-child td{border-bottom:none}
+.timeline-table .tname{font-weight:600;color:var(--text)}
+
 /* PRINT — remap every token to a clean light palette */
 @media print{
   :root{
@@ -228,13 +235,14 @@ body{
   </div>
 
   <!-- PHASE NAV -->
+  <!-- FIX 5: replaced hardcoded hex colors with CSS variables -->
   <div class="phase-nav">
     <a href="#before" class="phase-nav-item"><div class="pn-num">0</div>Before you start</a>
-    <a href="#discover" class="phase-nav-item"><div class="pn-num" style="color:#4338CA">D</div>Discover</a>
-    <a href="#resolve" class="phase-nav-item"><div class="pn-num" style="color:#0E7490">R</div>Resolve</a>
-    <a href="#intelligence" class="phase-nav-item"><div class="pn-num" style="color:#1D4ED8">I</div>Intelligence</a>
-    <a href="#vector" class="phase-nav-item"><div class="pn-num" style="color:#15803D">V</div>Vector</a>
-    <a href="#engine" class="phase-nav-item"><div class="pn-num" style="color:#C2410C">E</div>Engine</a>
+    <a href="#discover" class="phase-nav-item"><div class="pn-num" style="color:var(--purple)">D</div>Discover</a>
+    <a href="#resolve" class="phase-nav-item"><div class="pn-num" style="color:var(--teal)">R</div>Resolve</a>
+    <a href="#intelligence" class="phase-nav-item"><div class="pn-num" style="color:var(--blue)">I</div>Intelligence</a>
+    <a href="#vector" class="phase-nav-item"><div class="pn-num" style="color:var(--green)">V</div>Vector</a>
+    <a href="#engine" class="phase-nav-item"><div class="pn-num" style="color:var(--orange)">E</div>Engine</a>
     <a href="#what-you-get" class="phase-nav-item"><div class="pn-num">→</div>Deliverables</a>
   </div>
 
@@ -253,33 +261,57 @@ body{
       </div>
     </div>
 
-    <div class="callout good" style="margin-bottom:16px"><strong>Accessing the platform:</strong> You'll receive a magic link by email — click it to sign in. No password required. Your workspace is at <strong>drive.brittbowman.ai</strong> — bookmark this URL so you can return directly between sessions.</div>
+    <!-- FIX 8: Hub introduced on first contextual mention; access callout comes first -->
+    <div class="callout good" style="margin-bottom:16px"><strong>Accessing the platform:</strong> You'll receive a magic link by email — click it to sign in. No password required. Your workspace is at <strong>drive.brittbowman.ai</strong> — bookmark this URL so you can return directly between sessions. Your central engagement dashboard is called Hub (Hub is your central engagement dashboard — access it at drive.brittbowman.ai); all deliverables and session history live there.</div>
+
+    <!-- FIX 12: Security/data note -->
+    <div class="callout info" style="margin-bottom:16px"><strong>Your data is private and secure:</strong> Your data is stored securely in Supabase and is only accessible to you and your consultant. Files you upload are used only for your engagement and are not used to train AI models.</div>
+
+    <!-- FIX 2: Timeline summary block -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">Engagement tracks — time to budget</div>
+      <div class="card-body">
+        <p style="margin-bottom:12px;font-size:13px;color:var(--muted)">Use this table to budget calendar time before the engagement begins. Session lengths vary; total duration depends on complexity and how quickly your team can review and approve each phase.</p>
+        <table class="timeline-table">
+          <thead><tr><th>Track</th><th>Total duration</th><th>Sessions</th></tr></thead>
+          <tbody>
+            <tr><td class="tname">Vector Sprint</td><td>~3–5 weeks</td><td>2–3 sessions</td></tr>
+            <tr><td class="tname">Growth Sprint</td><td>~4–8 weeks</td><td>3–5 sessions</td></tr>
+            <tr><td class="tname">Foundation + Strategy</td><td>~6–10 weeks</td><td>4–6 sessions</td></tr>
+            <tr><td class="tname">Strategy + Execution</td><td>~6–10 weeks</td><td>4–6 sessions</td></tr>
+            <tr><td class="tname">Full DRIVE Engagement</td><td>~10–16 weeks</td><td>6–10 sessions</td></tr>
+            <tr><td class="tname">Enterprise Governance</td><td>~12–20 weeks</td><td>8–14 sessions</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
     <div class="callout info"><strong>Why this matters:</strong> DRIVE is only as good as the inputs you give it. Vague or missing materials produce generic outputs. Specific, honest materials — even if they're messy — produce outputs that are actually usable.</div>
 
     <div class="card">
       <div class="card-title">Org basics — know these before the session</div>
       <ul class="checklist" id="cl-basics">
-        <li><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-label"><strong>Legal entity name and DBA (if different)</strong><span class="note">The name you operate under publicly — what goes on your website header.</span></div></li>
-        <li><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-label"><strong>Primary industry / vertical</strong><span class="note">e.g. "B2B SaaS — HR Tech", "Professional services — financial advisory", "E-commerce — outdoor goods"</span></div></li>
-        <li><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-label"><strong>Team size (approx.)</strong><span class="note">Total headcount, not just marketing. The system uses this to calibrate recommendations.</span></div></li>
-        <li><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-label"><strong>Annual revenue range</strong><span class="note">Best estimate is fine: &lt;$500K / $500K–$2M / $2M–$10M / $10M–$50M / $50M+</span></div></li>
-        <li><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-label"><strong>Your website URL</strong><span class="note">The system will fetch and analyze it automatically — just have it ready.</span></div></li>
-        <li><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-label"><strong>Your primary growth challenge right now</strong><span class="note">Pick one: Lead generation / Brand &amp; positioning / Retention / Team &amp; process / Category creation / Other</span></div></li>
+        <li><div class="check-box" id="chk-0" onclick="toggleCheck(this)"></div><div class="check-label"><strong>Legal entity name and DBA (if different)</strong><span class="note">The name you operate under publicly — what goes on your website header.</span></div></li>
+        <li><div class="check-box" id="chk-1" onclick="toggleCheck(this)"></div><div class="check-label"><strong>Primary industry / vertical</strong><span class="note">e.g. "B2B SaaS — HR Tech", "Professional services — financial advisory", "E-commerce — outdoor goods"</span></div></li>
+        <li><div class="check-box" id="chk-2" onclick="toggleCheck(this)"></div><div class="check-label"><strong>Team size (approx.)</strong><span class="note">Total headcount, not just marketing. The system uses this to calibrate recommendations.</span></div></li>
+        <li><div class="check-box" id="chk-3" onclick="toggleCheck(this)"></div><div class="check-label"><strong>Annual revenue range</strong><span class="note">Best estimate is fine: &lt;$500K / $500K–$2M / $2M–$10M / $10M–$50M / $50M+</span></div></li>
+        <li><div class="check-box" id="chk-4" onclick="toggleCheck(this)"></div><div class="check-label"><strong>Your website URL</strong><span class="note">The system will fetch and analyze it automatically — just have it ready.</span></div></li>
+        <!-- FIX 1: growth challenge options synced to Discover dropdown -->
+        <li><div class="check-box" id="chk-5" onclick="toggleCheck(this)"></div><div class="check-label"><strong>Your primary growth challenge right now</strong><span class="note">Pick one: Not enough inbound leads / Referral network is inconsistent / Positioning is unclear or generic / Content exists but doesn't convert / No system — everything is ad hoc / Scaling what's already working / Breaking into a new market or segment</span></div></li>
       </ul>
     </div>
 
     <div class="card">
       <div class="card-title">Marketing state — be honest, not aspirational</div>
       <ul class="checklist" id="cl-mktg">
-        <li><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-label"><strong>Annual marketing spend (approximate)</strong><span class="note">All-in: paid ads, agency fees, tools, events, contractor costs. "Unknown" is a valid answer.</span></div></li>
-        <li><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-label"><strong>Every active marketing channel, and your honest read on each</strong><span class="note">List them: Google Ads, LinkedIn, email newsletter, SEO, cold outbound, events, referrals, podcast, etc. For each one: Working / Mixed results / Not working.</span></div></li>
-        <li><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-label"><strong>Which metrics you actually track today</strong><span class="note">Check all that apply: CAC, close rate, lead volume, SQLs, NPS, website traffic, email open rate. If you track nothing formally, say so — that's useful data.</span></div></li>
-        <li><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-label"><strong>Your current CAC (customer acquisition cost)</strong><span class="note">e.g. "$4,200 blended" or "we don't track it" — both are fine.</span></div></li>
-        <li><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-label"><strong>Close rate on qualified leads</strong><span class="note">e.g. "22%" or "roughly 1 in 5"</span></div></li>
-        <li><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-label"><strong>Active pipeline value (approx.)</strong><span class="note">Total value of deals currently in your pipeline.</span></div></li>
-        <li><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-label"><strong>MRR or ARR if subscription-based</strong><span class="note">Monthly or annual recurring revenue.</span></div></li>
-        <li><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-label"><strong>What's not working — in your own words</strong><span class="note">Write 2–3 sentences. This becomes the "in their words" section of your baseline report and directly shapes what we prioritize.</span></div></li>
+        <li><div class="check-box" id="chk-6" onclick="toggleCheck(this)"></div><div class="check-label"><strong>Annual marketing spend (approximate)</strong><span class="note">All-in: paid ads, agency fees, tools, events, contractor costs. "Unknown" is a valid answer.</span></div></li>
+        <li><div class="check-box" id="chk-7" onclick="toggleCheck(this)"></div><div class="check-label"><strong>Every active marketing channel, and your honest read on each</strong><span class="note">List them: Google Ads, LinkedIn, email newsletter, SEO, cold outbound, events, referrals, podcast, etc. For each one: Working / Mixed results / Not working.</span></div></li>
+        <li><div class="check-box" id="chk-8" onclick="toggleCheck(this)"></div><div class="check-label"><strong>Which metrics you actually track today</strong><span class="note">Check all that apply: CAC, close rate, lead volume, SQLs, NPS, website traffic, email open rate. If you track nothing formally, say so — that's useful data.</span></div></li>
+        <li><div class="check-box" id="chk-9" onclick="toggleCheck(this)"></div><div class="check-label"><strong>Your current CAC (customer acquisition cost)</strong><span class="note">e.g. "$4,200 blended" or "we don't track it" — both are fine.</span></div></li>
+        <li><div class="check-box" id="chk-10" onclick="toggleCheck(this)"></div><div class="check-label"><strong>Close rate on qualified leads</strong><span class="note">e.g. "22%" or "roughly 1 in 5"</span></div></li>
+        <li><div class="check-box" id="chk-11" onclick="toggleCheck(this)"></div><div class="check-label"><strong>Active pipeline value (approx.)</strong><span class="note">Total value of deals currently in your pipeline.</span></div></li>
+        <li><div class="check-box" id="chk-12" onclick="toggleCheck(this)"></div><div class="check-label"><strong>MRR or ARR if subscription-based</strong><span class="note">Monthly or annual recurring revenue.</span></div></li>
+        <li><div class="check-box" id="chk-13" onclick="toggleCheck(this)"></div><div class="check-label"><strong>What's not working — in your own words</strong><span class="note">Write 2–3 sentences. This becomes the "in their words" section of your baseline report and directly shapes what we prioritize.</span></div></li>
       </ul>
     </div>
 
@@ -293,7 +325,8 @@ body{
           <tr><td class="fname">Brand / style guide</td><td>Any document that defines how your brand communicates — voice, tone, visual rules, naming conventions. PDF preferred.</td><td><span class="tool-badge tb-r">Resolve</span> <span class="tool-badge tb-v">Vector</span></td></tr>
           <tr><td class="fname">One-pager / pitch deck</td><td>The thing you send to prospects. What you currently use to explain what you do.</td><td><span class="tool-badge tb-r">Resolve</span> <span class="tool-badge tb-v">Vector</span></td></tr>
           <tr><td class="fname">Case studies or win stories</td><td>Any written customer stories, testimonials, or detailed deal narratives. Even rough internal write-ups.</td><td><span class="tool-badge tb-i">Intelligence</span> <span class="tool-badge tb-v">Vector</span></td></tr>
-          <tr><td class="fname">Sales call transcripts</td><td>Recorded call transcripts (VTT or TXT). Gong exports, Otter.ai exports, or pasted text. 2–5 calls is ideal.</td><td><span class="tool-badge tb-i">Intelligence</span></td></tr>
+          <!-- FIX 11: Lead with accessible transcript option -->
+          <tr><td class="fname">Sales call transcripts</td><td>Written call notes or any call recording. Gong, Fireflies, or Otter exports work great — but even a rough typed summary works. Export as .vtt, .txt, or paste directly.</td><td><span class="tool-badge tb-i">Intelligence</span></td></tr>
           <tr><td class="fname">Win/loss notes</td><td>Any internal notes from deals you've won or lost — what the buyer said, what pushed them over the line, why you lost.</td><td><span class="tool-badge tb-i">Intelligence</span></td></tr>
           <tr><td class="fname">Competitor examples</td><td>URLs or PDF exports of 2–3 competitor websites, pricing pages, or positioning pages you're watching.</td><td><span class="tool-badge tb-i">Intelligence</span></td></tr>
           <tr><td class="fname">Industry research</td><td>Any market reports, analyst briefs, or category research you've saved. G2, Gartner, industry association PDFs.</td><td><span class="tool-badge tb-i">Intelligence</span></td></tr>
@@ -361,7 +394,8 @@ body{
             <div class="step-line"><div class="step-dot" style="background:#EEF2FF;color:#4338CA">5</div><div class="step-connector"></div></div>
             <div class="step-body">
               <div class="step-title">Select your primary growth challenge</div>
-              <div class="step-desc">Click the <span class="field">Primary growth challenge</span> dropdown. Options: Lead generation / Brand &amp; positioning / Retention &amp; expansion / Team &amp; process / Category creation / Other. Pick the one that's most urgent right now — not the one that feels most strategic.</div>
+              <!-- FIX 1: options synced to Discover dropdown -->
+              <div class="step-desc">Click the <span class="field">Primary growth challenge</span> dropdown. Options: Not enough inbound leads / Referral network is inconsistent / Positioning is unclear or generic / Content exists but doesn't convert / No system — everything is ad hoc / Scaling what's already working / Breaking into a new market or segment. Pick the one that's most urgent right now — not the one that feels most strategic.</div>
             </div>
           </div>
           <div class="step">
@@ -375,8 +409,9 @@ body{
       </div>
     </div>
 
+    <!-- FIX 4: Section 1.5 renamed to Section 2 — Baseline Snapshot -->
     <div class="card">
-      <div class="card-title">Section 1.5 — Baseline Snapshot</div>
+      <div class="card-title">Section 2 — Baseline Snapshot</div>
       <div class="card-body">
         <p style="margin-bottom:12px">This section captures where you are <em>right now</em> — before any engagement work begins. It becomes the "before" state in your final report and shapes what we prioritize.</p>
         <div class="steps">
@@ -426,8 +461,9 @@ body{
       </div>
     </div>
 
+    <!-- FIX 4: Section 2 → Section 3 -->
     <div class="card">
-      <div class="card-title">Section 2 — Materials Intake</div>
+      <div class="card-title">Section 3 — Materials Intake</div>
       <div class="card-body">
         <p style="margin-bottom:12px">This is where you upload everything you gathered in Phase 0. The system reads it all — taxonomy files go to Resolve, documents and transcripts go to Intelligence, web URLs are fetched automatically.</p>
         <div class="steps">
@@ -464,28 +500,33 @@ body{
       </div>
     </div>
 
+    <!-- FIX 4: Sections 3–6 → Sections 4–7 -->
     <div class="card">
-      <div class="card-title">Sections 3–6 — Readiness Questions</div>
+      <div class="card-title">Sections 4–7 — Readiness Questions</div>
       <div class="card-body">
         <p style="margin-bottom:14px">Four short questionnaires — one for each DRIVE tool. Each has 4–6 questions. Answer based on where you are <em>right now</em>, not where you want to be. The system uses these scores to build your engagement roadmap.</p>
 
         <div style="margin-bottom:16px">
-          <div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#4338CA;margin-bottom:8px">Section 3 — Taxonomy Readiness (feeds Resolve)</div>
+          <!-- FIX 4: Section 3 → Section 4 -->
+          <div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#4338CA;margin-bottom:8px">Section 4 — Taxonomy Readiness (feeds Resolve)</div>
           <div style="font-size:13px;color:var(--ink2);line-height:1.6">Questions about how clearly defined your language is: Do your teams use consistent terms for segments, products, and deal types? Does your CRM field naming match how you actually talk about deals? Is there a single source of truth for contact and campaign taxonomy? <strong>Low score = Resolve is urgent foundational work. High score = Resolve is a refinement pass.</strong></div>
         </div>
 
         <div style="margin-bottom:16px">
-          <div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#1D4ED8;margin-bottom:8px">Section 4 — Intelligence Readiness (feeds Intelligence)</div>
+          <!-- FIX 4: Section 4 → Section 5 -->
+          <div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#1D4ED8;margin-bottom:8px">Section 5 — Intelligence Readiness (feeds Intelligence)</div>
           <div style="font-size:13px;color:var(--ink2);line-height:1.6">Questions about data availability: How much engagement data do you have? Are you tracking what happens after a lead comes in? Do you have call recordings or transcripts you can pull from? <strong>Low score = Intelligence works from competitive and market analysis. High score = Intelligence can mine your own pipeline and engagement data.</strong></div>
         </div>
 
         <div style="margin-bottom:16px">
-          <div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#15803D;margin-bottom:8px">Section 5 — Strategy Readiness (feeds Vector)</div>
+          <!-- FIX 4: Section 5 → Section 6 -->
+          <div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#15803D;margin-bottom:8px">Section 6 — Strategy Readiness (feeds Vector)</div>
           <div style="font-size:13px;color:var(--ink2);line-height:1.6">Questions about positioning clarity: Can you name your ideal buyer in one sentence? Do you have a one-liner that consistently resonates? Do you have a defined offer stack? <strong>Low score = Vector is urgent core work. High score = Vector is activation and systematization of what already works.</strong></div>
         </div>
 
         <div>
-          <div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#C2410C;margin-bottom:8px">Section 6 — Execution Readiness (feeds Engine)</div>
+          <!-- FIX 4: Section 6 → Section 7 -->
+          <div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#C2410C;margin-bottom:8px">Section 7 — Execution Readiness (feeds Engine)</div>
           <div style="font-size:13px;color:var(--ink2);line-height:1.6">Questions about infrastructure: Do you have a content production process? Do you have someone who creates content regularly? Do you have a publishing calendar? <strong>Low score = Engine will be used later, after strategy is stable. High score = Engine can begin running immediately after Vector.</strong></div>
         </div>
       </div>
@@ -499,7 +540,8 @@ body{
             <div class="step-line"><div class="step-dot" style="background:#EEF2FF;color:#4338CA">✓</div></div>
             <div class="step-body">
               <div class="step-title">Click the Save button in the top bar</div>
-              <div class="step-desc">After completing the readiness sections, look for the <span class="click">Save to record</span> button in the top bar. Click it before navigating away from Discover. This syncs your scoping results to Hub and unlocks the downstream tools with your data pre-loaded. <strong>Don't skip this step</strong> — Resolve, Intelligence, and Vector will open without your context if you do.</div>
+              <!-- FIX 8: Hub parenthetical added on first in-flow mention -->
+              <div class="step-desc">After completing the readiness sections, look for the <span class="click">Save to record</span> button in the top bar. Click it before navigating away from Discover. This syncs your scoping results to Hub (Hub is your central engagement dashboard — access it at drive.brittbowman.ai) and unlocks the downstream tools with your data pre-loaded. <strong>Don't skip this step</strong> — Resolve, Intelligence, and Vector will open without your context if you do.</div>
             </div>
           </div>
         </div>
@@ -609,7 +651,8 @@ body{
             <div class="step-line"><div class="step-dot" style="background:#ECFEFF;color:#0E7490">5</div><div class="step-connector"></div></div>
             <div class="step-body">
               <div class="step-title">Add governance rules</div>
-              <div class="step-desc">Click the <span class="field">Add a governance rule…</span> input and press Enter after each one. These become the operating rules for how the taxonomy is maintained. Examples: "All contact records must have a Segment value before moving to Opportunity stage" / "Campaign names must follow the naming convention exactly — no abbreviations" / "The 'Other' segment value is not permitted in reporting". Add as many as are relevant.</div>
+              <!-- FIX 10: Governance rules explanation for non-RevOps clients -->
+              <div class="step-desc"><strong>About governance rules:</strong> Governance rules define how your team uses taxonomy consistently. Think of them as naming agreements — e.g., always use the full product name, never abbreviate. If you don't have a CRM admin, start simple: one or two naming rules you'll actually follow.<br><br>Click the <span class="field">Add a governance rule…</span> input and press Enter after each one. These become the operating rules for how the taxonomy is maintained. Examples: "All contact records must have a Segment value before moving to Opportunity stage" / "Campaign names must follow the naming convention exactly — no abbreviations" / "The 'Other' segment value is not permitted in reporting". Add as many as are relevant.</div>
             </div>
           </div>
         </div>
@@ -696,7 +739,7 @@ body{
             <div class="step-line"><div class="step-dot" style="background:#EFF6FF;color:#1D4ED8">2</div><div class="step-connector"></div></div>
             <div class="step-body">
               <div class="step-title">Upload additional files</div>
-              <div class="step-desc">Drag files into the upload zone on the left, or click it to browse. Accepted: <span class="upload-type">PDF</span> <span class="upload-type">DOCX</span> <span class="upload-type">TXT</span> <span class="upload-type">VTT</span> <span class="upload-type">PPTX</span>. Best files to add: call transcripts (.vtt from Gong/Otter or .txt), win/loss write-ups, customer interview notes, competitor teardowns, analyst reports, industry surveys. Each file is processed independently — you'll see a signal count appear per file once it's analyzed.</div>
+              <div class="step-desc">Drag files into the upload zone on the left, or click it to browse. Accepted: <span class="upload-type">PDF</span> <span class="upload-type">DOCX</span> <span class="upload-type">TXT</span> <span class="upload-type">VTT</span> <span class="upload-type">PPTX</span>. Best files to add: call transcripts (.vtt from Gong/Fireflies/Otter or .txt), win/loss write-ups, customer interview notes, competitor teardowns, analyst reports, industry surveys. Each file is processed independently — you'll see a signal count appear per file once it's analyzed.</div>
             </div>
           </div>
           <div class="step">
@@ -741,6 +784,14 @@ body{
             <div class="step-body">
               <div class="step-title">Add signals manually if needed</div>
               <div class="step-desc">If you know something that didn't make it into any document — something a customer said in a call, or a competitor move you're watching — click <span class="click">+ Add signal</span> and type it in. Give it a type and title.</div>
+            </div>
+          </div>
+          <!-- FIX 9: Add Intelligence export/handoff step -->
+          <div class="step">
+            <div class="step-line"><div class="step-dot" style="background:#EFF6FF;color:#1D4ED8">5</div></div>
+            <div class="step-body">
+              <div class="step-title">When curation is complete</div>
+              <div class="step-desc">Starred signals are automatically available in Vector. No re-import needed. You can return to Intelligence at any time to add or remove signals.</div>
             </div>
           </div>
         </div>
@@ -873,6 +924,8 @@ body{
           </div>
           <div style="padding:12px 16px;background:var(--bg2);border-radius:8px;font-size:13px">
             <strong style="color:var(--ink)">Step 6 — Practice OS:</strong> <span style="color:var(--ink2)">If applicable — how does the marketing function run operationally? Meeting cadence, reporting, content approval flow. This step applies primarily to mid-market and enterprise tracks.</span>
+            <!-- FIX 7: Explicit skip for micro/SMB -->
+            <div class="callout info" style="margin-top:10px;font-size:12px"><strong>If your team is 1–20 people: skip this step.</strong> Your Practice OS is simply the tools and habits you already use — revisit this as your team grows.</div>
           </div>
         </div>
         <div class="callout good" style="margin-top:16px"><strong>After each step:</strong> The AI generates Campaign DNA — a structured document capturing your brand voice, target segments, proof points, and message frameworks. It's updated automatically as you complete more steps. You don't need to trigger it manually.</div>
@@ -906,11 +959,15 @@ body{
         <div class="section-sub">Engine is the production layer. It takes the Campaign DNA from Vector and the taxonomy from Resolve, and uses them to produce on-brand content — emails, LinkedIn posts, ad copy, long-form — at scale. Engine is most powerful when Vector is complete and the positioning is stable.</div>
         <div class="section-meta">
           <div class="section-meta-item">⏱ <strong>Ongoing — 30–60 min to set up, then runs continuously</strong></div>
+          <!-- FIX 6: audience line for Engine, solo operator note added after -->
           <div class="section-meta-item">👤 <strong>Content lead or marketing manager</strong></div>
           <div class="section-meta-item">🔀 <strong>Included in: Full DRIVE, Strategy + Execution, Enterprise tracks</strong></div>
         </div>
       </div>
     </div>
+
+    <!-- FIX 6: Solo operator callout after audience line -->
+    <div class="callout tip"><strong>Solo operator?</strong> You don't need a handoff — use the approved assets directly. A simple scheduler like Buffer or Later, or an email platform like Mailchimp, is all you need to publish.</div>
 
     <div class="callout warn"><strong>Prerequisites:</strong> Engine should not be opened until Vector is complete and Campaign DNA is saved. Content produced without a positioning foundation will be on-brand in format but off-target in message.</div>
 
@@ -950,7 +1007,7 @@ body{
             <div class="step-line"><div class="step-dot" style="background:#FFF7ED;color:#C2410C">5</div><div class="step-connector"></div></div>
             <div class="step-body">
               <div class="step-title">Export approved assets</div>
-              <div class="step-desc">Click <span class="click">↓ Export assets</span> to download all approved content as a structured ZIP file — organized by type and theme, ready to hand to your team or load into your scheduling tools.</div>
+              <div class="step-desc">Click <span class="click">↓ Export assets</span> to download all approved content as a structured ZIP file — organized by type and theme, ready to publish directly or hand off to your team.</div>
             </div>
           </div>
         </div>
@@ -979,7 +1036,8 @@ body{
       <div class="section-num" style="background:#F3F4F6;color:#374151">→</div>
       <div>
         <div class="section-title">What you'll receive</div>
-        <div class="section-sub">At the end of the engagement, you'll have a set of tangible deliverables — documents, frameworks, and approved assets — that you own and can use immediately. Here's what each one is.</div>
+        <!-- FIX 8: Hub explanation in this section before referencing it -->
+        <div class="section-sub">At the end of the engagement, you'll have a set of tangible deliverables — documents, frameworks, and approved assets — that you own and can use immediately. All deliverables are accessible in Hub, your central engagement dashboard at drive.brittbowman.ai. Here's what each one is.</div>
       </div>
     </div>
 
@@ -1020,9 +1078,37 @@ body{
 </div>
 
 <script>
+// FIX 3: localStorage persistence for checklist state
+var STORAGE_KEY = 'drive_onboarding_checks';
+
 function toggleCheck(el) {
   el.classList.toggle('checked');
+  saveChecks();
 }
+
+function saveChecks() {
+  var checked = [];
+  document.querySelectorAll('.check-box').forEach(function(box) {
+    if (box.id && box.classList.contains('checked')) {
+      checked.push(box.id);
+    }
+  });
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(checked)); } catch(e) {}
+}
+
+function restoreChecks() {
+  var stored;
+  try { stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch(e) { stored = []; }
+  stored.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.add('checked');
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  restoreChecks();
+});
+
 // Smooth scroll offset for sticky nav
 document.querySelectorAll('a[href^="#"]').forEach(a => {
   a.addEventListener('click', e => {

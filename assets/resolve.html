@@ -231,14 +231,14 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 <div class="pnav">
   <span class="pnav-brand">✦ DRIVE</span>
   <div class="pnav-sep"></div>
-  <a class="pnav-tool" href="/hub.html"><span class="pnav-dot" style="background:#8B7FEC"></span>Hub</a>
+  <a class="pnav-tool" href="./hub.html"><span class="pnav-dot" style="background:#8B7FEC"></span>Hub</a>
   <div class="pnav-sep"></div>
-  <a class="pnav-tool" href="/discover.html"><span class="pnav-dot" style="background:#8B7FEC"></span>Discover</a>
-  <a class="pnav-tool pnav-active" href="/resolve.html"><span class="pnav-dot" style="background:#4DE8FF"></span>Resolve</a>
-  <a class="pnav-tool" href="/intelligence.html"><span class="pnav-dot" style="background:#5B8CFF"></span>Intelligence</a>
-  <a class="pnav-tool" href="/vector.html"><span class="pnav-dot" style="background:#3BBFA3"></span>Vector</a>
-  <a class="pnav-tool" href="/engine.html"><span class="pnav-dot" style="background:#FF8A3D"></span>Engine</a>
-  <div style="margin-left:auto"><a class="pnav-tool" href="/onboarding.html" target="_blank" style="font-size:11px;opacity:.7">Client Guide ↗</a></div>
+  <a class="pnav-tool" href="./discover.html"><span class="pnav-dot" style="background:#8B7FEC"></span>Discover</a>
+  <a class="pnav-tool pnav-active" href="./resolve.html"><span class="pnav-dot" style="background:#4DE8FF"></span>Resolve</a>
+  <a class="pnav-tool" href="./intelligence.html"><span class="pnav-dot" style="background:#5B8CFF"></span>Intelligence</a>
+  <a class="pnav-tool" href="./vector.html"><span class="pnav-dot" style="background:#3BBFA3"></span>Vector</a>
+  <a class="pnav-tool" href="./engine.html"><span class="pnav-dot" style="background:#FF8A3D"></span>Engine</a>
+  <div style="margin-left:auto"><a class="pnav-tool" href="./onboarding.html" target="_blank" style="font-size:11px;opacity:.7">Client Guide ↗</a></div>
 </div>
 
 <!-- LOGIN -->
@@ -306,7 +306,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
       <div id="approvalChip" style="display:none;font-size:11px;font-weight:700;letter-spacing:.05em;padding:3px 10px;border-radius:5px"></div>
       <button id="approvalBtn" onclick="openApprovalModal()" style="display:none;height:30px;padding:0 14px;background:var(--card);border:1px solid var(--border2);border-radius:7px;font-size:12px;font-weight:600;color:var(--text);cursor:pointer">↑ Send for Approval</button>
       <div class="tb-status status-draft" id="tbStatus">Draft</div>
-      <button class="tb-save" onclick="saveTaxonomy()">Save</button>
+      <button class="tb-save" onclick="manualSave()">Save</button>
       <button class="tb-user" onclick="signOut()" id="tbUser">Sign out</button>
     </div>
   </nav>
@@ -699,11 +699,16 @@ async function sendApproval() {
 
   try {
     const { data: { session } } = await supa.auth.getSession();
+    if (!session?.access_token) {
+      showToast('Sign in to send for approval');
+      btn.textContent = 'Send →'; btn.disabled = false;
+      return;
+    }
     const res = await fetch(`${SUPA_URL}/functions/v1/send-approval-request`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session?.access_token || SUPA_KEY}`,
+        'Authorization': `Bearer ${session.access_token}`,
       },
       body: JSON.stringify({
         engagementId: OrgStore.orgId,
@@ -834,6 +839,7 @@ async function runAnalysis() {
   overlay.style.display = 'none';
   updateStatus('draft');
   render();
+  showApprovalButton();
   showPanel('conflicts');
   showToast(`${RS.conflicts.length} conflicts detected across ${RS.sources.length} sources`);
 }
@@ -957,16 +963,42 @@ function loadDefaultTaxonomy() {
 function resolveConflict(id, resolution) {
   const c = RS.conflicts.find(x => x.id === id);
   if (!c) return;
-  if (resolution === 'custom') {
-    const val = prompt(`Enter canonical value for "${c.label}":`);
-    if (!val || !val.trim()) return;
-    c.custom = val.trim();
-  }
   c.status = resolution;
   renderConflicts();
   updateProgress();
   updateSidebar();
-  saveTaxonomy();
+  debouncedSave();
+  showToast('Conflict resolved');
+}
+
+function showCustomConflictInput(id) {
+  const card = document.querySelector(`.conflict-item[data-cid="${id}"]`);
+  if (!card) return;
+  const actionsDiv = card.querySelector('.ci-actions');
+  if (!actionsDiv) return;
+  actionsDiv.innerHTML = `
+    <input id="customInput-${id}" class="tax-add-input" style="flex:1;min-width:160px"
+      placeholder="Enter canonical value…"
+      onkeydown="if(event.key==='Enter')confirmCustomConflict('${id}');if(event.key==='Escape')renderConflicts()">
+    <button class="ci-btn primary" onclick="confirmCustomConflict('${id}')">Confirm</button>
+    <button class="ci-btn" onclick="renderConflicts()">Cancel</button>
+  `;
+  actionsDiv.style.flexWrap = 'wrap';
+  document.getElementById(`customInput-${id}`)?.focus();
+}
+
+function confirmCustomConflict(id) {
+  const input = document.getElementById(`customInput-${id}`);
+  const val = input?.value.trim();
+  if (!val) return;
+  const c = RS.conflicts.find(x => x.id === id);
+  if (!c) return;
+  c.custom = val;
+  c.status = 'custom';
+  renderConflicts();
+  updateProgress();
+  updateSidebar();
+  debouncedSave();
   showToast('Conflict resolved');
 }
 
@@ -977,6 +1009,7 @@ function undoConflict(id) {
   renderConflicts();
   updateProgress();
   updateSidebar();
+  debouncedSave();
 }
 
 function conflictChosenLabel(c) {
@@ -1006,7 +1039,7 @@ function renderConflicts() {
     const isResolved = c.status !== 'pending';
     const chosen = isResolved ? conflictChosenLabel(c) : '';
     return `
-      <div class="conflict-item ${isResolved ? 'resolved' : 'pending'}">
+      <div class="conflict-item ${isResolved ? 'resolved' : 'pending'}" data-cid="${c.id}">
         <div class="ci-header">
           <div>
             <div class="ci-label">${isResolved ? '✓ ' : '⚠ '}${c.label}</div>
@@ -1024,7 +1057,7 @@ function renderConflicts() {
             <button class="ci-btn primary" onclick="resolveConflict('${c.id}','helix')">Accept recommendation</button>
             <button class="ci-btn" onclick="resolveConflict('${c.id}','sysA')">Use System A</button>
             <button class="ci-btn" onclick="resolveConflict('${c.id}','sysB')">Use System B</button>
-            <button class="ci-btn" onclick="resolveConflict('${c.id}','custom')">Define canonical</button>
+            <button class="ci-btn" onclick="showCustomConflictInput('${c.id}')">Define canonical</button>
           </div>
         ` : `
           <span class="ci-undo" onclick="undoConflict('${c.id}')">Undo</span>
@@ -1089,11 +1122,36 @@ function addTerm(ci) {
 }
 
 function addCategory() {
-  const label = prompt('Category name (e.g. "Buyer Personas", "Content Types"):');
-  if (!label || !label.trim()) return;
-  RS.taxonomy.categories.push({ id: uid(), label: label.trim(), terms: [] });
+  const existing = document.getElementById('addCatInline');
+  if (existing) { existing.querySelector('input').focus(); return; }
+  const row = document.createElement('div');
+  row.id = 'addCatInline';
+  row.style.cssText = 'display:flex;gap:8px;margin-bottom:16px';
+  row.innerHTML = `
+    <input id="addCatInput" class="tax-add-input" style="flex:1;height:34px;font-size:13px"
+      placeholder="Category name (e.g. Buyer Personas, Content Types)…"
+      onkeydown="if(event.key==='Enter')confirmAddCategory();if(event.key==='Escape')cancelAddCategory()">
+    <button class="tax-add-btn" style="height:34px;padding:0 14px" onclick="confirmAddCategory()">Add</button>
+    <button class="tax-add-btn" style="height:34px;padding:0 10px;background:var(--card);border-color:var(--border2);color:var(--muted)" onclick="cancelAddCategory()">✕</button>
+  `;
+  const grid = document.getElementById('taxGrid');
+  grid.parentNode.insertBefore(row, grid);
+  document.getElementById('addCatInput').focus();
+}
+
+function confirmAddCategory() {
+  const input = document.getElementById('addCatInput');
+  const label = input?.value.trim();
+  if (!label) return;
+  RS.taxonomy.categories.push({ id: uid(), label, terms: [] });
+  cancelAddCategory();
   renderTaxonomy();
   debouncedSave();
+}
+
+function cancelAddCategory() {
+  const row = document.getElementById('addCatInline');
+  if (row) row.remove();
 }
 
 function exportTaxonomyCSV() {
@@ -1220,7 +1278,12 @@ function debouncedSave() { clearTimeout(saveTimer); saveTimer = setTimeout(saveT
 
 async function saveTaxonomy() {
   if (!currentUser) return;
-  try { await OrgStore.save('org_resolve', { sources: RS.sources.map(s => ({id:s.id,name:s.name,systemLabel:s.systemLabel})), conflicts: RS.conflicts, taxonomy: RS.taxonomy, naming: RS.naming, rules: RS.rules, _updatedAt: new Date().toISOString() }); } catch (_) {}
+  try { await OrgStore.save('org_resolve', { sources: RS.sources.map(s => ({id:s.id,name:s.name,systemLabel:s.systemLabel,size:s.size||0})), conflicts: RS.conflicts, taxonomy: RS.taxonomy, naming: RS.naming, rules: RS.rules, _updatedAt: new Date().toISOString() }); } catch (_) {}
+}
+
+async function manualSave() {
+  await saveTaxonomy();
+  showToast('Saved');
 }
 
 // ── RENDER ────────────────────────────────────────────────
