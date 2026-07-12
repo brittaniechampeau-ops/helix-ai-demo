@@ -613,6 +613,22 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
           <textarea id="linkedinText" placeholder="Paste LinkedIn profile text here — About section, experience, posts, recommendations…" style="width:100%;min-height:100px;padding:12px 14px;background:var(--card2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:13px;resize:vertical;font-family:inherit;line-height:1.6;outline:none" oninput="updateMaterialsBadge()"></textarea>
         </div>
 
+        <!-- Anthropic API key -->
+        <div class="intake-block" id="apiKeyBlock">
+          <div class="intake-block-header">
+            <div>
+              <div class="intake-block-title"><span>🔑</span> Anthropic API key <span id="apiKeyStatus" style="font-size:11px;font-weight:500;margin-left:8px;color:var(--muted)"></span></div>
+              <div class="intake-block-sub">Required for "Capture baseline" document parsing. Stored only in your browser.</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input id="discApiKeyInput" type="password" placeholder="sk-ant-api03-…" autocomplete="off"
+              style="flex:1;padding:9px 12px;background:var(--card2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:13px;font-family:monospace;outline:none"
+              oninput="saveDiscApiKey()">
+            <button onclick="toggleDiscApiKeyVisibility()" style="padding:8px 12px;background:var(--card2);border:1px solid var(--border2);border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer;white-space:nowrap" id="discApiKeyToggle">Show</button>
+          </div>
+        </div>
+
       </div>
 
       <!-- ═══ STEP 1.5: BASELINE CAPTURE ═══ -->
@@ -1127,6 +1143,40 @@ function handleDocFiles(e) {
   renderDocFiles();
   updateMaterialsBadge();
   e.target.value = '';
+}
+
+function saveDiscApiKey() {
+  const val = document.getElementById('discApiKeyInput').value.trim();
+  if (val) {
+    localStorage.setItem('vec_anthropic_key', val);
+    document.getElementById('apiKeyStatus').textContent = '✓ saved';
+    document.getElementById('apiKeyStatus').style.color = 'var(--teal)';
+  } else {
+    localStorage.removeItem('vec_anthropic_key');
+    document.getElementById('apiKeyStatus').textContent = 'not set';
+    document.getElementById('apiKeyStatus').style.color = 'var(--muted)';
+  }
+}
+
+function toggleDiscApiKeyVisibility() {
+  const inp = document.getElementById('discApiKeyInput');
+  const btn = document.getElementById('discApiKeyToggle');
+  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = 'Hide'; }
+  else { inp.type = 'password'; btn.textContent = 'Show'; }
+}
+
+function initDiscApiKey() {
+  const stored = localStorage.getItem('vec_anthropic_key');
+  const inp = document.getElementById('discApiKeyInput');
+  const status = document.getElementById('apiKeyStatus');
+  if (stored) {
+    inp.value = stored;
+    status.textContent = '✓ saved';
+    status.style.color = 'var(--teal)';
+  } else {
+    status.textContent = 'not set';
+    status.style.color = 'var(--muted)';
+  }
 }
 
 async function extractDocText(file, ext, entry) {
@@ -2224,6 +2274,7 @@ async function saveToSupabase() {
 buildQuestions();
 updateFooter();
 initAuth();
+initDiscApiKey();
 document.getElementById('orgName').addEventListener('input', updateFooter);
 
 // ── DRIVE mark icon system ───────────────────────────────────
