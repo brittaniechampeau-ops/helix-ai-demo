@@ -321,9 +321,8 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
       </div>
     </div>
     <div class="sb-api">
-      <div class="sb-api-label">Anthropic API key</div>
-      <input class="sb-api-input" id="apiKeyInput" type="password" placeholder="sk-ant-…" oninput="saveApiKey()">
-      <div class="sb-api-status" id="apiKeyStatus">Required for signal extraction</div>
+      <div class="sb-api-label">Signal extraction</div>
+      <div class="sb-api-status ok">✓ Runs on the DRIVE server</div>
     </div>
   </aside>
 
@@ -479,7 +478,6 @@ const IS = {
   signals: [],  // {id, type, title, text, confidence, source, starred}
 };
 let activeFilter = 'all';
-let apiKey = '';
 let _extracting = false;
 
 // ── AUTH ──────────────────────────────────────────────────
@@ -506,8 +504,6 @@ async function enterApp() {
   document.getElementById('app').style.display='grid';
   document.getElementById('tbUser').textContent = currentUser.email.split('@')[0];
   // Load API key
-  apiKey = localStorage.getItem('vec_anthropic_key') || '';
-  if (apiKey) { document.getElementById('apiKeyInput').value=apiKey; updateApiStatus(); }
   // Load saved state
   const saved = await OrgStore.load('org_intelligence');
   if (saved) { IS.files = saved.files || []; IS.signals = saved.signals || []; }
@@ -517,21 +513,6 @@ async function enterApp() {
 }
 
 async function signOut() { await supa.auth.signOut(); window.location.reload(); }
-
-// ── API KEY ────────────────────────────────────────────────
-function saveApiKey() {
-  apiKey = document.getElementById('apiKeyInput').value.trim();
-  if (apiKey) localStorage.setItem('vec_anthropic_key', apiKey);
-  updateApiStatus();
-  updateRunBtn();
-}
-
-function updateApiStatus() {
-  const el = document.getElementById('apiKeyStatus');
-  if (apiKey && apiKey.startsWith('sk-ant-')) { el.textContent='✓ Key saved'; el.className='sb-api-status ok'; }
-  else if (apiKey) { el.textContent='Key format unexpected'; el.className='sb-api-status err'; }
-  else { el.textContent='Required for signal extraction'; el.className='sb-api-status'; }
-}
 
 // ── NAVIGATION ─────────────────────────────────────────────
 function showPanel(id) {
@@ -679,20 +660,18 @@ function renderFiles() {
 }
 
 function updateRunBtn() {
-  const hasKey = apiKey && apiKey.startsWith('sk-ant-');
   const hasFiles = IS.files.length > 0;
   const btn = document.getElementById('runBtn');
-  btn.disabled = !(hasKey && hasFiles);
-  document.getElementById('runHint').textContent = !hasKey
-    ? 'Add your Anthropic API key in the sidebar to begin'
-    : !hasFiles ? 'Upload at least one document to extract signals'
+  btn.disabled = !hasFiles;
+  document.getElementById('runHint').textContent = !hasFiles
+    ? 'Upload at least one document to extract signals'
     : `${IS.files.filter(f=>f.status==='queued').length} documents queued`;
 }
 
 // ── SIGNAL EXTRACTION ──────────────────────────────────────
 function setExtractingUI(busy) {
   const runBtn = document.getElementById('runBtn');
-  if (runBtn) runBtn.disabled = busy || !(apiKey && apiKey.startsWith('sk-ant-') && IS.files.length > 0);
+  if (runBtn) runBtn.disabled = busy || !(IS.files.length > 0);
   document.querySelectorAll('.btn-extract').forEach(b => { b.disabled = busy; });
 }
 
@@ -744,7 +723,6 @@ async function extractOne(id) {
   if (_extracting) { showToast('Extraction already in progress'); return; }
   const file = IS.files.find(f=>f.id===id);
   if (!file || file.status!=='queued') return;
-  if (!apiKey || !apiKey.startsWith('sk-ant-')) { showToast('Add Anthropic API key first'); return; }
   _extracting = true;
   setExtractingUI(true);
   file.status='processing'; renderFiles();
@@ -788,11 +766,11 @@ async function callClaude(filename, text, fileRef) {
     ? `\n\nPRACTICE CONTEXT (use to focus signal relevance):\n${practiceContext}\n`
     : '';
 
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
+  const res = await fetch('/api/parse', {
     method:'POST',
-    headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
+    headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
-      model:'claude-haiku-4-5',
+      model:'claude-haiku-4-5-20251001',
       max_tokens:2000,
       system:`You are a market intelligence analyst extracting buyer signals from consulting practice documents.
 Extract every meaningful signal — buyer pain, market trends, competitive insight, budget indicators, purchase intent, and objections.
