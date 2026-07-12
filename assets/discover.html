@@ -613,22 +613,6 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
           <textarea id="linkedinText" placeholder="Paste LinkedIn profile text here — About section, experience, posts, recommendations…" style="width:100%;min-height:100px;padding:12px 14px;background:var(--card2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:13px;resize:vertical;font-family:inherit;line-height:1.6;outline:none" oninput="updateMaterialsBadge()"></textarea>
         </div>
 
-        <!-- Anthropic API key -->
-        <div class="intake-block" id="apiKeyBlock">
-          <div class="intake-block-header">
-            <div>
-              <div class="intake-block-title"><span>🔑</span> Anthropic API key <span id="apiKeyStatus" style="font-size:11px;font-weight:500;margin-left:8px;color:var(--muted)"></span></div>
-              <div class="intake-block-sub">Required for "Capture baseline" document parsing. Stored only in your browser.</div>
-            </div>
-          </div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <input id="discApiKeyInput" type="password" placeholder="sk-ant-api03-…" autocomplete="off"
-              style="flex:1;padding:9px 12px;background:var(--card2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:13px;font-family:monospace;outline:none"
-              oninput="saveDiscApiKey()">
-            <button onclick="toggleDiscApiKeyVisibility()" style="padding:8px 12px;background:var(--card2);border:1px solid var(--border2);border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer;white-space:nowrap" id="discApiKeyToggle">Show</button>
-            <button onclick="testDiscApiKey(this)" style="padding:8px 12px;background:var(--card2);border:1px solid var(--border2);border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer;white-space:nowrap">Test</button>
-          </div>
-        </div>
 
       </div>
 
@@ -1146,67 +1130,6 @@ function handleDocFiles(e) {
   e.target.value = '';
 }
 
-function saveDiscApiKey() {
-  const val = document.getElementById('discApiKeyInput').value.trim();
-  if (val) {
-    localStorage.setItem('vec_anthropic_key', val);
-    document.getElementById('apiKeyStatus').textContent = '✓ saved';
-    document.getElementById('apiKeyStatus').style.color = 'var(--teal)';
-  } else {
-    localStorage.removeItem('vec_anthropic_key');
-    document.getElementById('apiKeyStatus').textContent = 'not set';
-    document.getElementById('apiKeyStatus').style.color = 'var(--muted)';
-  }
-}
-
-function toggleDiscApiKeyVisibility() {
-  const inp = document.getElementById('discApiKeyInput');
-  const btn = document.getElementById('discApiKeyToggle');
-  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = 'Hide'; }
-  else { inp.type = 'password'; btn.textContent = 'Show'; }
-}
-
-async function testDiscApiKey(btn) {
-  const key = localStorage.getItem('vec_anthropic_key');
-  const status = document.getElementById('apiKeyStatus');
-  if (!key) { status.textContent = '✗ no key set'; status.style.color = 'var(--red,#f87)'; return; }
-  const orig = btn.textContent;
-  btn.textContent = 'Testing…'; btn.disabled = true;
-  try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({ model: 'claude-sonnet-5', max_tokens: 10, messages: [{ role: 'user', content: 'hi' }] })
-    });
-    const d = await resp.json();
-    if (!resp.ok || d.error) {
-      status.textContent = '✗ ' + (d.error?.message || 'error ' + resp.status);
-      status.style.color = 'var(--red,#f87)';
-    } else {
-      status.textContent = '✓ connected';
-      status.style.color = 'var(--teal)';
-    }
-  } catch(e) {
-    status.textContent = '✗ ' + (e.message || 'network error');
-    status.style.color = 'var(--red,#f87)';
-  } finally {
-    btn.textContent = orig; btn.disabled = false;
-  }
-}
-
-function initDiscApiKey() {
-  const stored = localStorage.getItem('vec_anthropic_key');
-  const inp = document.getElementById('discApiKeyInput');
-  const status = document.getElementById('apiKeyStatus');
-  if (stored) {
-    inp.value = stored;
-    status.textContent = '✓ saved';
-    status.style.color = 'var(--teal)';
-  } else {
-    status.textContent = 'not set';
-    status.style.color = 'var(--muted)';
-  }
-}
 
 async function extractDocText(file, ext, entry) {
   try {
@@ -1228,9 +1151,7 @@ async function extractDocText(file, ext, entry) {
 }
 
 async function parseIntakeForOrgProfile() {
-  const apiKey = localStorage.getItem('vec_anthropic_key');
   const _hint = el => { const h = document.getElementById('footerHint'); if (h) { h.textContent = el; h.classList.remove('footer-error'); } };
-  if (!apiKey) { _hint('Add Anthropic API key in Vector settings to enable document parsing'); return; }
   // Wait for any in-progress extractions (docs + taxonomy files)
   if ([...state.intake.docs, ...state.intake.taxFiles].some(f => f.extracting)) {
     await new Promise(resolve => {
@@ -1334,10 +1255,10 @@ engine[2]: Someone explicitly accountable for content production?
 engine[3]: Connected to marketing automation or CRM platform for delivery?`;
 
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    const resp = await fetch('/api/parse', {
       method: 'POST',
-      headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({ model: 'claude-sonnet-5', max_tokens: 1200, messages: [{ role: 'user', content: prompt }] })
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ prompt })
     });
     const d = await resp.json();
     if (!resp.ok || d.error) {
@@ -2303,7 +2224,6 @@ async function saveToSupabase() {
 buildQuestions();
 updateFooter();
 initAuth();
-initDiscApiKey();
 document.getElementById('orgName').addEventListener('input', updateFooter);
 
 // ── DRIVE mark icon system ───────────────────────────────────
