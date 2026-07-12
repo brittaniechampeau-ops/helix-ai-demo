@@ -1082,28 +1082,44 @@ function handleDocFiles(e) {
   const files = Array.from(e.target.files);
   files.forEach(f => {
     const ext = f.name.split('.').pop().toLowerCase();
-    const entry = { name: f.name, type: ext, size: f.size, label: DOC_LABELS[ext] || 'Document', text: '' };
+    const entry = { name: f.name, type: ext, size: f.size, label: DOC_LABELS[ext] || 'Document', text: '', extracting: false };
     state.intake.docs.push(entry);
-    // Read plain-text files immediately so downstream tools have real content
-    if (['txt', 'vtt', 'md'].includes(ext)) {
-      const reader = new FileReader();
-      reader.onload = ev => { entry.text = (ev.target.result || '').slice(0, 60000); };
-      reader.readAsText(f);
-    }
-    // PDF/DOCX/PPTX require extraction libraries — Intelligence handles those
-    // when the user uploads the file directly there, so we mark for re-upload
-    if (['pdf', 'docx', 'doc', 'pptx', 'ppt'].includes(ext)) {
-      entry.needsExtraction = true;
-    }
+    extractDocText(f, ext, entry);
   });
   renderDocFiles();
   updateMaterialsBadge();
   e.target.value = '';
 }
 
+async function extractDocText(file, ext, entry) {
+  try {
+    entry.extracting = true;
+    if (['txt', 'vtt', 'md'].includes(ext)) {
+      entry.text = (await file.text()).slice(0, 60000);
+    } else if (ext === 'pdf') {
+      entry.text = (await extractPdfText(file)).slice(0, 60000);
+    } else if (ext === 'docx' || ext === 'doc') {
+      entry.text = (await extractDocxText(file)).slice(0, 60000);
+    } else if (ext === 'pptx' || ext === 'ppt') {
+      entry.text = (await extractPptxText(file)).slice(0, 60000);
+    }
+  } catch (_) {
+    entry.text = '';
+  } finally {
+    entry.extracting = false;
+  }
+}
+
 async function parseIntakeForOrgProfile() {
   const apiKey = localStorage.getItem('vec_anthropic_key');
   if (!apiKey) return;
+  // Wait for any in-progress extractions (pdf.js / mammoth / JSZip are async)
+  const pending = state.intake.docs.filter(f => f.extracting);
+  if (pending.length) {
+    await new Promise(resolve => {
+      const check = setInterval(() => { if (!state.intake.docs.some(f => f.extracting)) { clearInterval(check); resolve(); } }, 100);
+    });
+  }
   // Collect all readable text from uploaded docs
   const textChunks = state.intake.docs.filter(f => f.text).map(f => `--- ${f.name} ---\n${f.text.slice(0, 8000)}`);
   if (textChunks.length === 0) return;
@@ -2002,6 +2018,49 @@ var DRIVE_PROD_IDX=0;
   var brand=document.querySelector('.pnav-brand');
   if(brand){var bSvg=document.createElementNS('http://www.w3.org/2000/svg','svg');bSvg.setAttribute('viewBox','0 0 100 100');bSvg.setAttribute('width','14');bSvg.setAttribute('height','14');bSvg.style.cssText='vertical-align:middle;margin-right:5px;flex-shrink:0';for(var k=0;k<N;k++){var ba0=k*SP+GAP/2,ba1=(k+1)*SP-GAP/2;var bpp=document.createElementNS('http://www.w3.org/2000/svg','path');bpp.setAttribute('d',seg(50,50,42,20,ba0,ba1));bpp.setAttribute('fill',C[k]);bSvg.appendChild(bpp);}brand.innerHTML='';brand.appendChild(bSvg);brand.appendChild(document.createTextNode('DRIVE'));}
 })();
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script>
+async function extractPdfText(file) {
+  if (typeof pdfjsLib === 'undefined') throw new Error('PDF.js not loaded');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  const ab = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+  const pages = [];
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    pages.push(content.items.map(it => it.str).join(' '));
+  }
+  return pages.join('\n\n');
+}
+
+async function extractDocxText(file) {
+  if (typeof mammoth === 'undefined') throw new Error('mammoth.js not loaded');
+  const ab = await file.arrayBuffer();
+  const result = await mammoth.extractRawText({ arrayBuffer: ab });
+  return result.value;
+}
+
+async function extractPptxText(file) {
+  if (typeof JSZip === 'undefined') throw new Error('JSZip not loaded');
+  const ab = await file.arrayBuffer();
+  const zip = await JSZip.loadAsync(ab);
+  const slideFiles = Object.keys(zip.files)
+    .filter(n => /^ppt\/slides\/slide\d+\.xml$/.test(n))
+    .sort((a, b) => parseInt(a.match(/\d+/)[0]) - parseInt(b.match(/\d+/)[0]));
+  const slideTexts = [];
+  for (const name of slideFiles) {
+    const xml = await zip.files[name].async('string');
+    const matches = xml.match(/<a:t[^>]*>([^<]+)<\/a:t>/g) || [];
+    const texts = matches.map(m => m.replace(/<[^>]+>/g, '').trim()).filter(Boolean);
+    if (texts.length) slideTexts.push(texts.join(' '));
+  }
+  if (!slideTexts.length) throw new Error('No readable text in presentation');
+  return slideTexts.map((t, i) => `Slide ${i + 1}: ${t}`).join('\n');
+}
 </script>
 </body>
 </html>
