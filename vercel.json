@@ -3,6 +3,9 @@
   "outputDirectory": "assets",
   "installCommand": null,
   "framework": null,
+  "functions": {
+    "api/*.js": { "runtime": "edge" }
+  },
   "rewrites": [
     { "source": "/", "destination": "/hub.html" },
     { "source": "/vector", "destination": "/vector.html" },
