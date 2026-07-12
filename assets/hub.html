@@ -338,7 +338,6 @@ async function loadEngagements() {
   document.getElementById('engGrid').innerHTML = '<div style="color:var(--text3);font-size:13px;padding:20px 0">Loading…</div>';
   const { data, error } = await supa.from('drive_engagements')
     .select('*')
-    .eq('owner_email', currentUser.email)
     .order('updated_at', { ascending: false });
   if (error) { showToast('Error loading engagements: ' + error.message); return; }
   engagements = data || [];
