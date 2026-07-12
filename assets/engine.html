@@ -1236,8 +1236,17 @@ async function signOut() {
 async function checkSubscription(email) {
   try {
     const { data } = await supa.from('subscriptions').select('status').eq('email', email).single();
-    return data?.status === 'active';
-  } catch (_) { return false; }
+    if (data?.status === 'active') return true;
+  } catch (_) {}
+  // Engagement members are covered by their admin's subscription
+  try {
+    const engId = localStorage.getItem('drive_engagement_id');
+    if (engId) {
+      const { data } = await supa.from('drive_engagement_members').select('id').eq('engagement_id', engId).eq('email', email).maybeSingle();
+      if (data) return true;
+    }
+  } catch (_) {}
+  return false;
 }
 
 async function initApp(session) {
