@@ -626,6 +626,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
               style="flex:1;padding:9px 12px;background:var(--card2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:13px;font-family:monospace;outline:none"
               oninput="saveDiscApiKey()">
             <button onclick="toggleDiscApiKeyVisibility()" style="padding:8px 12px;background:var(--card2);border:1px solid var(--border2);border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer;white-space:nowrap" id="discApiKeyToggle">Show</button>
+            <button onclick="testDiscApiKey(this)" style="padding:8px 12px;background:var(--card2);border:1px solid var(--border2);border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer;white-space:nowrap">Test</button>
           </div>
         </div>
 
@@ -1163,6 +1164,34 @@ function toggleDiscApiKeyVisibility() {
   const btn = document.getElementById('discApiKeyToggle');
   if (inp.type === 'password') { inp.type = 'text'; btn.textContent = 'Hide'; }
   else { inp.type = 'password'; btn.textContent = 'Show'; }
+}
+
+async function testDiscApiKey(btn) {
+  const key = localStorage.getItem('vec_anthropic_key');
+  const status = document.getElementById('apiKeyStatus');
+  if (!key) { status.textContent = '✗ no key set'; status.style.color = 'var(--red,#f87)'; return; }
+  const orig = btn.textContent;
+  btn.textContent = 'Testing…'; btn.disabled = true;
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({ model: 'claude-sonnet-5', max_tokens: 10, messages: [{ role: 'user', content: 'hi' }] })
+    });
+    const d = await resp.json();
+    if (!resp.ok || d.error) {
+      status.textContent = '✗ ' + (d.error?.message || 'error ' + resp.status);
+      status.style.color = 'var(--red,#f87)';
+    } else {
+      status.textContent = '✓ connected';
+      status.style.color = 'var(--teal)';
+    }
+  } catch(e) {
+    status.textContent = '✗ ' + (e.message || 'network error');
+    status.style.color = 'var(--red,#f87)';
+  } finally {
+    btn.textContent = orig; btn.disabled = false;
+  }
 }
 
 function initDiscApiKey() {
