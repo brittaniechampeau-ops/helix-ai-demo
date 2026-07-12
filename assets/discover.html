@@ -1180,12 +1180,12 @@ async function parseIntakeForOrgProfile() {
     'social media': 'Organic social', 'pr': 'PR / media', 'media': 'PR / media',
   };
 
-  const prompt = `You are analyzing business documents to pre-fill a GTM discovery assessment. Extract as much signal as possible and return ONLY a valid JSON object.
+  const prompt = `You are analyzing business documents to pre-fill a GTM discovery assessment. Extract as much signal as possible and return ONLY a valid JSON object with no markdown, no explanation, no code fences — raw JSON only.
 
 Documents:
 ${textChunks.join('\n\n')}
 
-Return this exact JSON structure (use null for unknown, never guess):
+Return this exact JSON structure. Use null for any field where there is not enough evidence — do not guess:
 {
   "org_name": "",
   "industry": "",
@@ -1207,30 +1207,48 @@ Return this exact JSON structure (use null for unknown, never guess):
   "engine": [null, null, null, null]
 }
 
-Field rules:
-- industry: one of exactly: technology | financial-services | healthcare | professional-services | retail | manufacturing | media | education | nonprofit | other
-- team_size: one of exactly: 1-5 | 6-15 | 16-50 | 51-200 | 201-500 | 500+
-- annual_revenue: one of exactly: pre-revenue | <$500K | $500K–$2M | $2M–$10M | $10M–$50M | $50M+
-- marketing_budget: one of exactly: $0–$25K | $25K–$100K | $100K–$500K | $500K–$2M | $2M+
-- channels: array of any that apply: ["Organic search / SEO","Paid search (Google Ads)","Paid social (LinkedIn / Meta)","Email marketing","Content / blog","Events / conferences","Referrals / partners","Cold outreach (SDR/BDR)","Organic social","PR / media"]
-- channel_status: object mapping channel name to "working" | "mixed" | "not" based on evidence
-- metrics: array of any that apply: ["Pipeline","MRR / ARR","CAC","Close rate","Lead volume","SQLs","NPS","Website traffic","Email open rate","Nothing formal"]
-- resolve[0]: Do they have defined audience segments? 2=yes 1=somewhat 0=no null=unclear
-- resolve[1]: Does team use consistent language for ideal client? 2=yes 1=somewhat 0=no null=unclear
-- resolve[2]: Are content categories and tags standardized? 2=yes 1=somewhat 0=no null=unclear
-- resolve[3]: Could a new hire describe who they serve from existing materials? 2=yes 1=somewhat 0=no null=unclear
-- intelligence[0]: CRM with 6+ months of contact history? 2=yes 1=somewhat 0=no null=unclear
-- intelligence[1]: Track which content/campaigns convert to pipeline? 2=yes 1=somewhat 0=no null=unclear
-- intelligence[2]: Can see conversion rates at each funnel stage? 2=yes 1=somewhat 0=no null=unclear
-- intelligence[3]: Know which channels generate highest-value clients? 2=yes 1=somewhat 0=no null=unclear
-- vector[0]: Defined service offers with names and published pricing? 2=yes 1=somewhat 0=no null=unclear
-- vector[1]: Positioning statement they'd share with a prospect? 2=yes 1=somewhat 0=no null=unclear
-- vector[2]: Active referral/partner channel consistently generating leads? 2=yes 1=somewhat 0=no null=unclear
-- vector[3]: Know which client archetype generates highest LTV? 2=yes 1=somewhat 0=no null=unclear
-- engine[0]: Publish content on consistent cadence (weekly or more)? 2=yes 1=somewhat 0=no null=unclear
-- engine[1]: Templates or playbooks making content creation repeatable? 2=yes 1=somewhat 0=no null=unclear
-- engine[2]: Someone explicitly accountable for content production? 2=yes 1=somewhat 0=no null=unclear
-- engine[3]: Connected to marketing automation or CRM for delivery? 2=yes 1=somewhat 0=no null=unclear`;
+IMPORTANT — use ONLY these exact string values (copy-paste, do not rephrase):
+
+industry — pick the closest match:
+"Financial services / advisory" | "Management consulting" | "Marketing / creative agency" | "Technology / SaaS" | "Professional services (law, HR, ops)" | "Real estate / development" | "Healthcare / life sciences" | "Manufacturing / industrial" | "Non-profit / association" | "Other"
+
+team_size — use exactly one of:
+"1-5" | "6-20" | "21-50" | "51-200" | "200+"
+
+annual_revenue — use exactly one of:
+"<$500K" | "$500K–2M" | "$2M–10M" | "$10M–50M" | "$50M+"
+
+marketing_budget — use exactly one of:
+"$0–25K" | "$25K–100K" | "$100K–500K" | "$500K–2M" | "$2M+"
+
+challenge — use exactly one of:
+"Not enough inbound leads" | "Referral network is inconsistent" | "Positioning is unclear or generic" | "Content exists but doesn't convert" | "No system — everything is ad hoc" | "Scaling what's already working" | "Breaking into a new market or segment"
+
+channels — array, use only values from this list exactly:
+["Organic search / SEO","Paid search (Google Ads)","Paid social (LinkedIn / Meta)","Email marketing","Content / blog","Events / conferences","Referrals / partners","Cold outreach (SDR/BDR)","Organic social","PR / media"]
+
+channel_status — keys must be channel names from the list above, values must be "working" | "mixed" | "not"
+
+metrics — array, use only values from this list exactly:
+["Pipeline","MRR / ARR","CAC","Close rate","Lead volume","SQLs","NPS","Website traffic","Email open rate","Nothing formal"]
+
+For each scoping question: 2=clear yes, 1=somewhat/partial, 0=clear no, null=not enough evidence to judge:
+resolve[0]: Defined audience segments with clear names and criteria?
+resolve[1]: Team uses consistent language to describe ideal client?
+resolve[2]: Content categories and tags standardized across channels?
+resolve[3]: Could a new hire describe who they serve from existing materials?
+intelligence[0]: CRM with 6+ months of contact and interaction history?
+intelligence[1]: Track which content/campaigns/outreach converts to pipeline?
+intelligence[2]: Can see conversion rates at each funnel stage?
+intelligence[3]: Know which channels/referral sources generate highest-value clients?
+vector[0]: Defined service offers with names and published pricing?
+vector[1]: Positioning statement they would share confidently with a prospect?
+vector[2]: Active referral or partner channel consistently generating leads?
+vector[3]: Know which client archetype generates highest lifetime value?
+engine[0]: Publish content on consistent cadence (weekly or more)?
+engine[1]: Templates or playbooks making content creation repeatable?
+engine[2]: Someone explicitly accountable for content production?
+engine[3]: Connected to marketing automation or CRM platform for delivery?`;
 
   try {
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
@@ -1245,24 +1263,56 @@ Field rules:
     const p = JSON.parse(m[0]);
     let filled = [];
 
+    // Normalise strings for fuzzy chip/option matching
+    const norm = s => String(s).toLowerCase().replace(/[–—\-]/g, '-').replace(/\s+/g, ' ').trim();
+
+    // Select a chip by matching its onclick state value (2nd arg)
+    function fillChip(groupId, stateKey, val) {
+      if (!val) return false;
+      const chips = document.querySelectorAll('#' + groupId + ' .chip');
+      let hit = null;
+      chips.forEach(c => {
+        const m = (c.getAttribute('onclick') || '').match(/'([^']+)',\s*'([^']+)'/);
+        const chipVal = m ? m[2] : c.textContent.trim();
+        if (norm(chipVal) === norm(val)) hit = { el: c, val: chipVal };
+      });
+      if (!hit) return false;
+      chips.forEach(c => c.classList.remove('sel'));
+      hit.el.classList.add('sel');
+      if (stateKey === 'team') state.orgTeam = hit.val;
+      else if (stateKey === 'rev') state.orgRev = hit.val;
+      else if (stateKey === 'budget') state.baseline.budget = hit.val;
+      return true;
+    }
+
+    // Fuzzy industry: Claude returns display text; <option> has no value attr so .value === .text
+    function fillIndustry(val) {
+      if (!val) return false;
+      const el = document.getElementById('orgIndustry');
+      const opts = Array.from(el.options);
+      const hit = opts.find(o => norm(o.text) === norm(val)) ||
+                  opts.find(o => norm(o.text).includes(norm(val).split(' ')[0])) ||
+                  opts.find(o => norm(val).includes(norm(o.text).split(' ')[0]));
+      if (!hit) return false;
+      el.value = hit.value || hit.text;
+      return true;
+    }
+
     // Org profile
     const orgNameEl = document.getElementById('orgName');
-    const orgIndustryEl = document.getElementById('orgIndustry');
-    const orgTeamEl = document.getElementById('orgTeam');
-    const orgRevEl = document.getElementById('orgRev');
     const orgChallengeEl = document.getElementById('orgChallenge');
     if (p.org_name) { state.orgName = p.org_name; orgNameEl.value = p.org_name; updateOrgDisplay(); filled.push('org name'); }
-    if (p.industry) { const opt = Array.from(orgIndustryEl.options).find(o => o.value === p.industry); if (opt) { orgIndustryEl.value = opt.value; filled.push('industry'); } }
-    if (p.team_size) { const opt = Array.from(orgTeamEl.options).find(o => o.value === p.team_size); if (opt) { orgTeamEl.value = opt.value; state.orgTeam = opt.value; filled.push('team size'); } }
-    if (p.annual_revenue) { const opt = Array.from(orgRevEl.options).find(o => o.value === p.annual_revenue); if (opt) { orgRevEl.value = opt.value; state.orgRev = opt.value; filled.push('revenue'); } }
-    if (p.challenge) { orgChallengeEl.value = p.challenge; filled.push('challenge'); }
+    if (p.industry && fillIndustry(p.industry)) filled.push('industry');
+    if (p.team_size && fillChip('teamChips', 'team', p.team_size)) filled.push('team size');
+    if (p.annual_revenue && fillChip('revChips', 'rev', p.annual_revenue)) filled.push('revenue');
+    if (p.challenge) {
+      const opts = Array.from(orgChallengeEl.options);
+      const hit = opts.find(o => norm(o.text) === norm(p.challenge)) || opts.find(o => norm(o.text).includes(norm(p.challenge).slice(0, 12)));
+      if (hit) { orgChallengeEl.value = hit.value || hit.text; filled.push('challenge'); }
+    }
 
     // Baseline — budget chip
-    if (p.marketing_budget) {
-      document.querySelectorAll('#budgetChips .chip').forEach(c => {
-        c.classList.toggle('sel', c.textContent.trim() === p.marketing_budget);
-      });
-      state.baseline.budget = p.marketing_budget;
+    if (p.marketing_budget && fillChip('budgetChips', 'budget', p.marketing_budget)) {
       filled.push('marketing budget');
     }
 
@@ -1327,9 +1377,10 @@ Field rules:
 
     updateFooter();
     applySizePath();
-    showToast(`Parsed from documents: ${filled.join(', ')}`);
+    if (filled.length) showToast(`Filled from documents: ${filled.join(', ')}`);
+    else showToast('Documents parsed — no matching fields found. Check org profile manually.');
   } catch (err) {
-    showToast('Parse error — check API key or try again');
+    showToast('Parse error: ' + (err && err.message ? err.message : 'check API key'));
   } finally {
     btnNext.disabled = false;
     btnNext.textContent = origLabel;
@@ -1577,8 +1628,10 @@ async function navNext() {
 
   // Determine next step
   let next = currentStep === 1 ? 1.5 : currentStep === 1.5 ? 2 : currentStep + 1;
-  // Micro: skip Resolve (2) and Intel (3), go baseline→4
-  if (accountSize === 'micro' && currentStep === 1.5) next = 4;
+  // Micro: skip Resolve (2) and Intel (3) — BUT include Resolve if taxonomy files were uploaded
+  const hasTaxonomy = state.intake.taxFiles.length > 0;
+  if (accountSize === 'micro' && currentStep === 1.5 && !hasTaxonomy) next = 4;
+  if (accountSize === 'micro' && currentStep === 2 && !hasTaxonomy) next = 4; // shouldn't hit, safety
 
   if (next <= 5) {
     hideCurrentPanel();
@@ -1612,8 +1665,10 @@ function navBack() {
   if (currentStep <= 0) return;
   hideCurrentPanel();
   let prev = currentStep === 2 ? 1.5 : currentStep === 1.5 ? 1 : currentStep - 1;
-  // Micro: skip back over Intel (3) and Resolve (2)
-  if (accountSize === 'micro' && currentStep === 4) prev = 1.5;
+  // Micro: skip back over Intel (3) and Resolve (2) unless taxonomy files present
+  const hasTaxBack = state.intake.taxFiles.length > 0;
+  if (accountSize === 'micro' && currentStep === 4 && !hasTaxBack) prev = 1.5;
+  if (accountSize === 'micro' && currentStep === 4 && hasTaxBack) prev = 3; // skip intel, land on resolve
   currentStep = prev;
   showCurrentPanel();
   updateSidebar();
