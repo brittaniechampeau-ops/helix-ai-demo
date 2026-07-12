@@ -401,10 +401,10 @@ const HUB_TRACK_NAMES = {
 };
 
 const HUB_FIRST_TOOL = {
-  micro:      'vector.html',
-  smb:        'vector.html',
-  mid:        'resolve.html',
-  enterprise: 'resolve.html',
+  micro:      'discover.html',
+  smb:        'discover.html',
+  mid:        'discover.html',
+  enterprise: 'discover.html',
 };
 
 const HUB_TOOL_LABELS = {
@@ -423,7 +423,7 @@ function cardHTML(eng, activeId) {
   const created = eng.created_at ? new Date(eng.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
 
   return `
-  <div class="eng-card${isActive ? ' eng-active' : ''}" onclick="if(!event.target.closest('button,a'))setActive('${eng.id}','${jsEsc(eng.client_name)}','${jsEsc(eng.industry||'')}')">
+  <div class="eng-card${isActive ? ' eng-active' : ''}" onclick="if(!event.target.closest('button,a')){setActive('${eng.id}','${jsEsc(eng.client_name)}','${jsEsc(eng.industry||'')}');window.location.href='/discover.html';}">
     ${isActive ? '<div class="active-chip">Active</div>' : ''}
     <div class="eng-card-header">
       <div>
