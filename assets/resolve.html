@@ -216,6 +216,18 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 .naming-btn.approve{background:var(--green-bg);border-color:var(--green-border);color:var(--green)}
 .naming-btn.reject{background:var(--red-bg);border-color:var(--red-border);color:var(--red)}
 
+/* ── APPROVE & LOCK ── */
+.readiness-item{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--border)}
+.readiness-item:last-child{border-bottom:none}
+.readiness-check{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.readiness-check.ok{background:var(--green-bg);border:1.5px solid var(--green-border);color:var(--green)}
+.readiness-check.fail{background:var(--card2);border:1.5px solid var(--border2);color:var(--muted)}
+.readiness-label{font-size:13px;font-weight:600;margin-bottom:2px}
+.readiness-detail{font-size:11px;color:var(--muted)}
+.lock-btn{height:46px;padding:0 28px;background:var(--green);border:none;border-radius:10px;color:#050709;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s}
+.lock-btn:hover{opacity:.9}
+.lock-btn:disabled{background:var(--faint);color:var(--muted);cursor:default;opacity:1}
+
 /* ── TOAST ── */
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:10px 18px;font-size:13px;color:var(--text);z-index:9999;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
 #toast.show{opacity:1}
@@ -271,30 +283,6 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 <!-- TOAST -->
 <div id="toast"></div>
 
-<!-- APPROVAL MODAL -->
-<div id="approvalModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9998;align-items:center;justify-content:center;padding:16px">
-  <div style="background:var(--panel);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:480px;padding:28px">
-    <div style="font-size:16px;font-weight:700;margin-bottom:6px">Send for Approval</div>
-    <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Send the canonical taxonomy, naming convention, and governance rules to your client contact for sign-off.</div>
-    <div style="margin-bottom:14px">
-      <label style="font-size:12px;font-weight:500;color:var(--muted);display:block;margin-bottom:6px">Contact name</label>
-      <input id="approvalContactName" placeholder="Jane Smith" style="width:100%;background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;font-size:13px;color:var(--text);outline:none">
-    </div>
-    <div style="margin-bottom:20px">
-      <label style="font-size:12px;font-weight:500;color:var(--muted);display:block;margin-bottom:6px">Contact email *</label>
-      <input id="approvalContactEmail" type="email" placeholder="jane@client.com" style="width:100%;background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;font-size:13px;color:var(--text);outline:none">
-    </div>
-    <div style="background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:12px 14px;margin-bottom:20px;font-size:12px;color:var(--muted)">
-      <div style="font-weight:600;color:var(--text);margin-bottom:4px">What will be sent</div>
-      <div id="approvalPreview" style="line-height:1.6"></div>
-    </div>
-    <div style="display:flex;gap:8px;justify-content:flex-end">
-      <button onclick="closeApprovalModal()" style="padding:8px 16px;border-radius:8px;background:var(--card);border:1px solid var(--border2);font-size:13px;font-weight:600;color:var(--muted);cursor:pointer">Cancel</button>
-      <button onclick="sendApproval()" id="approvalSendBtn" style="padding:8px 16px;border-radius:8px;background:var(--cyan);color:#050709;font-size:13px;font-weight:700;border:none;cursor:pointer">Send →</button>
-    </div>
-  </div>
-</div>
-
 <!-- APP -->
 <div id="app" style="display:none;grid-template-columns:var(--sidebar) 1fr;grid-template-rows:52px 1fr">
 
@@ -307,8 +295,6 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
     <div class="tb-sep"></div>
     <div class="tb-org">Taxonomy for <span id="tbOrg">—</span></div>
     <div class="tb-right">
-      <div id="approvalChip" style="display:none;font-size:11px;font-weight:700;letter-spacing:.05em;padding:3px 10px;border-radius:5px"></div>
-      <button id="approvalBtn" onclick="openApprovalModal()" style="display:none;height:30px;padding:0 14px;background:var(--card);border:1px solid var(--border2);border-radius:7px;font-size:12px;font-weight:600;color:var(--text);cursor:pointer">↑ Send for Approval</button>
       <div class="tb-status status-draft" id="tbStatus">Draft</div>
       <button class="tb-save" onclick="manualSave()">Save</button>
       <button class="tb-user" onclick="signOut()" id="tbUser">Sign out</button>
@@ -345,6 +331,11 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
         <div class="sb-item-dot"></div>
         Governance rules
         <span class="sb-item-count info" id="cnt-rules"></span>
+      </div>
+      <div class="sb-item" onclick="showPanel('approve')" id="nav-approve">
+        <div class="sb-item-dot"></div>
+        Approve &amp; lock
+        <span class="sb-item-count" id="cnt-approve"></span>
       </div>
     </div>
     <div class="sb-progress">
@@ -509,6 +500,46 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
         </div>
       </div>
 
+      <!-- ═══ APPROVE & LOCK ═══ -->
+      <div class="panel" id="panel-approve">
+        <div class="sec-header">
+          <div class="sec-eyebrow">Resolve · Final Step</div>
+          <div class="sec-title">Approve &amp; Lock</div>
+          <div class="sec-desc">Complete the readiness checklist below before locking the taxonomy. Once locked, Engine and Vector will use this as the canonical vocabulary for all campaign and content outputs.</div>
+        </div>
+
+        <div class="card" id="readinessCard">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Readiness checklist</div>
+              <div class="card-sub">All four signals must be green to lock</div>
+            </div>
+          </div>
+          <div id="readinessList"></div>
+        </div>
+
+        <div id="lockSection" style="margin-top:8px">
+          <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+            <button class="lock-btn" id="lockBtn" onclick="lockTaxonomy()" disabled>◈ Lock Taxonomy v1.0</button>
+            <div style="font-size:12px;color:var(--muted)" id="lockHint">Complete all readiness checks to lock</div>
+          </div>
+        </div>
+
+        <div id="lockedState" style="display:none;margin-top:8px">
+          <div class="card" style="border-color:var(--green-border);background:rgba(16,185,129,.04)">
+            <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+              <div style="width:40px;height:40px;border-radius:50%;background:var(--green-bg);border:1.5px solid var(--green-border);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--green);flex-shrink:0">✓</div>
+              <div>
+                <div style="font-size:16px;font-weight:700;color:var(--green)">Taxonomy locked v1.0</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:2px" id="lockedAt"></div>
+              </div>
+            </div>
+            <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:16px">This canonical taxonomy is the source of truth for this engagement. Engine uses it to name campaigns and assign tags. Vector uses it to validate content alignment. All governance rules are active.</div>
+            <button class="btn" onclick="unlockTaxonomy()">Unlock to make changes</button>
+          </div>
+        </div>
+      </div>
+
     </div><!-- /content -->
   </div>
 
@@ -558,6 +589,8 @@ const RS = {
     categories: []  // [{id, label, terms:[{id, text, status}]}]
   },
   naming: { pattern: '[Product] — [Region] — [Motion] — [Quarter]', status: 'pending' },
+  locked: false,
+  lockedAt: null,
   rules: [
     { id: uid(), text: 'All taxonomy terms must have a canonical label before publishing', severity: 'blocker', active: true },
     { id: uid(), text: 'Persona picklist values must match canonical buyer vocabulary', severity: 'warning', active: true },
@@ -605,137 +638,134 @@ async function enterApp() {
     });
     if (added > 0) showToast(`${added} taxonomy source${added > 1 ? 's' : ''} imported from Discover`);
   }
-  // Pre-fill approval contact from engagement record
-  const engId = OrgStore.orgId;
-  if (engId && engId.includes('-')) {
-    try {
-      const { data: eng } = await supa.from('drive_engagements').select('contact_name,contact_email,client_name').eq('id', engId).maybeSingle();
-      if (eng) {
-        if (eng.contact_email) document.getElementById('approvalContactEmail').value = eng.contact_email;
-        if (eng.contact_name) document.getElementById('approvalContactName').value = eng.contact_name;
-        window._approvalEngagement = eng;
-      }
-    } catch (_) {}
-  }
-  // Show approval button once there's something to approve
-  showApprovalButton();
-  // Load latest approval status
-  await loadApprovalStatus();
   render();
 }
 
-// ── APPROVAL ─────────────────────────────────────────────
-function showApprovalButton() {
-  const hasTax = RS.taxonomy?.categories?.length > 0;
-  document.getElementById('approvalBtn').style.display = hasTax ? 'block' : 'none';
-}
-
-async function loadApprovalStatus() {
-  const engId = OrgStore.orgId;
-  if (!engId) return;
-  try {
-    const { data } = await supa
-      .from('drive_approvals')
-      .select('status, sent_at, responded_at, notes')
-      .eq('engagement_id', engId)
-      .eq('approval_type', 'taxonomy')
-      .order('sent_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    if (data) renderApprovalChip(data);
-  } catch (_) {}
-}
-
-function renderApprovalChip(approval) {
-  const chip = document.getElementById('approvalChip');
-  const btn  = document.getElementById('approvalBtn');
-  const cfg = {
-    pending:            { label: '⏳ Pending approval', bg: 'rgba(240,192,64,.12)', color: '#F0C040', border: 'rgba(240,192,64,.25)' },
-    approved:           { label: '✓ Approved',           bg: 'rgba(59,191,163,.12)', color: '#3BBFA3', border: 'rgba(59,191,163,.25)' },
-    changes_requested:  { label: '→ Changes requested',  bg: 'rgba(255,138,61,.12)', color: '#FF8A3D', border: 'rgba(255,138,61,.25)' },
-  }[approval.status] || { label: approval.status, bg: 'var(--card)', color: 'var(--muted)', border: 'var(--border2)' };
-  chip.textContent = cfg.label;
-  chip.style.cssText = `display:block;font-size:11px;font-weight:700;letter-spacing:.05em;padding:3px 10px;border-radius:5px;background:${cfg.bg};color:${cfg.color};border:1px solid ${cfg.border}`;
-  if (approval.status === 'changes_requested') {
-    btn.textContent = '↑ Resend for Approval';
-    btn.style.display = 'block';
-  } else if (approval.status === 'pending') {
-    btn.textContent = '↑ Resend';
-    btn.style.display = 'block';
-  }
-}
-
-function openApprovalModal() {
-  const tax    = RS.taxonomy?.categories || [];
-  const naming = RS.naming?.pattern || '';
-  const rules  = RS.rules || [];
-  const preview = document.getElementById('approvalPreview');
-  const parts = [];
-  if (naming) parts.push(`Naming: <code style="font-size:11px;color:var(--cyan)">${naming}</code>`);
-  parts.push(`${tax.length} taxonomy field${tax.length !== 1 ? 's' : ''}`);
-  if (rules.length) parts.push(`${rules.length} governance rule${rules.length !== 1 ? 's' : ''}`);
-  preview.innerHTML = parts.join(' · ');
-  document.getElementById('approvalModal').style.display = 'flex';
-}
-
-function closeApprovalModal() {
-  document.getElementById('approvalModal').style.display = 'none';
-}
-
-async function sendApproval() {
-  const contactEmail = document.getElementById('approvalContactEmail').value.trim();
-  const contactName  = document.getElementById('approvalContactName').value.trim();
-  if (!contactEmail) {
-    document.getElementById('approvalContactEmail').style.borderColor = 'var(--red, #FF5A5A)';
-    return;
-  }
-  const btn = document.getElementById('approvalSendBtn');
-  btn.textContent = 'Sending…'; btn.disabled = true;
-
-  const eng = window._approvalEngagement || {};
-  const clientName = eng.client_name || document.getElementById('tbOrg').textContent || 'Client';
-
-  const summaryJson = {
-    taxonomy: RS.taxonomy || [],
-    naming: RS.naming || {},
-    rules: RS.rules || [],
-  };
-
-  try {
-    const { data: { session } } = await supa.auth.getSession();
-    if (!session?.access_token) {
-      showToast('Sign in to send for approval');
-      btn.textContent = 'Send →'; btn.disabled = false;
-      return;
-    }
-    const res = await fetch(`${SUPA_URL}/functions/v1/send-approval-request`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`,
-      },
-      body: JSON.stringify({
-        engagementId: OrgStore.orgId,
-        ownerEmail: currentUser.email,
-        contactEmail,
-        contactName,
-        clientName,
-        summaryJson,
-      }),
-    });
-    const json = await res.json();
-    if (!res.ok || json.error) throw new Error(json.error || 'Send failed');
-    closeApprovalModal();
-    showToast('Approval request sent to ' + contactEmail);
-    await loadApprovalStatus();
-  } catch (e) {
-    showToast('Error: ' + e.message);
-  } finally {
-    btn.textContent = 'Send →'; btn.disabled = false;
-  }
-}
-
 async function signOut() { await supa.auth.signOut(); window.location.reload(); }
+
+// ── READINESS & LOCK ─────────────────────────────────────
+function computeReadiness() {
+  const cats = RS.taxonomy?.categories || [];
+  const totalTerms = cats.reduce((s, c) => s + c.terms.length, 0);
+  const taxonomyOk = cats.length >= 1 && totalTerms >= 1;
+
+  const totalConflicts = RS.conflicts.length;
+  const pendingConflicts = RS.conflicts.filter(c => c.status === 'pending').length;
+  const conflictsOk = totalConflicts > 0 ? pendingConflicts === 0 : taxonomyOk;
+
+  const namingOk = RS.naming.status === 'approved';
+
+  const activeRules = RS.rules.filter(r => r.active).length;
+  const rulesOk = activeRules >= 1;
+
+  return [
+    {
+      key: 'taxonomy',
+      label: 'Canonical taxonomy built',
+      ok: taxonomyOk,
+      detail: taxonomyOk
+        ? `${cats.length} categor${cats.length !== 1 ? 'ies' : 'y'} · ${totalTerms} term${totalTerms !== 1 ? 's' : ''}`
+        : 'Run analysis or propose a standard taxonomy',
+      panel: 'canonical',
+    },
+    {
+      key: 'conflicts',
+      label: 'Conflicts resolved',
+      ok: conflictsOk,
+      detail: conflictsOk
+        ? totalConflicts > 0 ? `${totalConflicts} conflict${totalConflicts !== 1 ? 's' : ''} resolved` : 'No conflicts — taxonomy is clean'
+        : `${pendingConflicts} of ${totalConflicts} still unresolved`,
+      panel: 'conflicts',
+    },
+    {
+      key: 'naming',
+      label: 'Naming convention approved',
+      ok: namingOk,
+      detail: namingOk ? RS.naming.pattern : 'Approve a naming pattern before locking',
+      panel: 'naming',
+    },
+    {
+      key: 'rules',
+      label: 'Governance rules active',
+      ok: rulesOk,
+      detail: rulesOk
+        ? `${activeRules} rule${activeRules !== 1 ? 's' : ''} active`
+        : 'Add at least one active governance rule',
+      panel: 'rules',
+    },
+  ];
+}
+
+function renderReadiness() {
+  const signals = computeReadiness();
+  const allOk = signals.every(s => s.ok);
+  const el = document.getElementById('readinessList');
+  if (!el) return;
+
+  el.innerHTML = signals.map(s => `
+    <div class="readiness-item">
+      <div class="readiness-check ${s.ok ? 'ok' : 'fail'}">${s.ok ? '✓' : '○'}</div>
+      <div style="flex:1;min-width:0">
+        <div class="readiness-label">${s.label}</div>
+        <div class="readiness-detail" style="${s.ok ? '' : ''}">${s.detail}</div>
+      </div>
+      ${!s.ok ? `<button class="btn btn-primary" style="flex-shrink:0;margin-left:12px" onclick="showPanel('${s.panel}')">Fix →</button>` : ''}
+    </div>`).join('');
+
+  const lockBtn = document.getElementById('lockBtn');
+  const lockHint = document.getElementById('lockHint');
+  const lockSection = document.getElementById('lockSection');
+  const lockedState = document.getElementById('lockedState');
+
+  if (RS.locked) {
+    if (lockSection) lockSection.style.display = 'none';
+    if (lockedState) {
+      lockedState.style.display = 'block';
+      const atEl = document.getElementById('lockedAt');
+      if (atEl && RS.lockedAt) {
+        atEl.textContent = 'Locked ' + new Date(RS.lockedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      }
+    }
+  } else {
+    if (lockSection) lockSection.style.display = 'block';
+    if (lockedState) lockedState.style.display = 'none';
+    if (lockBtn) lockBtn.disabled = !allOk;
+    if (lockHint) {
+      const missing = signals.filter(s => !s.ok).map(s => s.label.toLowerCase());
+      lockHint.textContent = allOk
+        ? 'All checks passed — ready to lock'
+        : `Waiting on: ${missing.join(', ')}`;
+      lockHint.style.color = allOk ? 'var(--green)' : 'var(--muted)';
+    }
+  }
+
+  const cntEl = document.getElementById('cnt-approve');
+  if (cntEl) {
+    const doneCount = signals.filter(s => s.ok).length;
+    cntEl.textContent = RS.locked ? '✓' : `${doneCount}/4`;
+    cntEl.className = 'sb-item-count ' + (RS.locked ? 'ok' : doneCount === 4 ? 'ok' : doneCount > 0 ? 'warn' : 'info');
+  }
+}
+
+async function lockTaxonomy() {
+  const signals = computeReadiness();
+  if (!signals.every(s => s.ok)) return;
+  RS.locked = true;
+  RS.lockedAt = new Date().toISOString();
+  updateStatus('locked');
+  renderReadiness();
+  await saveTaxonomy();
+  showToast('Taxonomy locked v1.0 — Engine and Vector are ready');
+}
+
+async function unlockTaxonomy() {
+  RS.locked = false;
+  RS.lockedAt = null;
+  updateStatus('draft');
+  renderReadiness();
+  await saveTaxonomy();
+  showToast('Taxonomy unlocked — make changes and re-lock when ready');
+}
 
 // ── NAVIGATION ───────────────────────────────────────────
 function showPanel(id) {
@@ -1283,6 +1313,7 @@ function updateProgress() {
   const pct = total > 0 ? Math.round((resolved / total) * 100) : 0;
   document.getElementById('progressFill').style.width = pct + '%';
   document.getElementById('progressPct').textContent = `${resolved} of ${total} conflicts`;
+  if (RS.locked) return;
   if (total > 0 && resolved === total) updateStatus('resolved');
   else if (total > 0) updateStatus('draft');
 }
@@ -1290,7 +1321,8 @@ function updateProgress() {
 function updateStatus(s) {
   const el = document.getElementById('tbStatus');
   el.className = 'tb-status';
-  if (s === 'resolved') { el.classList.add('status-resolved'); el.textContent = 'Resolved'; }
+  if (s === 'locked') { el.classList.add('status-resolved'); el.textContent = 'Locked v1.0'; }
+  else if (s === 'resolved') { el.classList.add('status-resolved'); el.textContent = 'Resolved'; }
   else if (s === 'processing') { el.classList.add('status-processing'); el.textContent = 'Analyzing…'; }
   else { el.classList.add('status-draft'); el.textContent = 'Draft'; }
 }
@@ -1311,7 +1343,7 @@ function debouncedSave() { clearTimeout(saveTimer); saveTimer = setTimeout(saveT
 
 async function saveTaxonomy() {
   if (!currentUser) return;
-  try { await OrgStore.save('org_taxonomy', { sources: RS.sources.map(s => ({id:s.id,name:s.name,systemLabel:s.systemLabel,size:s.size||0})), conflicts: RS.conflicts, taxonomy: RS.taxonomy, naming: RS.naming, rules: RS.rules, _updatedAt: new Date().toISOString() }); } catch (_) {}
+  try { await OrgStore.save('org_taxonomy', { sources: RS.sources.map(s => ({id:s.id,name:s.name,systemLabel:s.systemLabel,size:s.size||0})), conflicts: RS.conflicts, taxonomy: RS.taxonomy, naming: RS.naming, rules: RS.rules, locked: RS.locked, lockedAt: RS.lockedAt, _updatedAt: new Date().toISOString() }); } catch (_) {}
 }
 
 async function manualSave() {
@@ -1325,9 +1357,11 @@ function render() {
   renderConflicts();
   renderTaxonomy();
   renderRules();
+  renderReadiness();
   updateProgress();
   updateSidebar();
   updateRunBtn();
+  if (RS.locked) updateStatus('locked');
   // Restore naming status display
   const ns = RS.naming.status;
   const nsEl = document.getElementById('namingStatus');
