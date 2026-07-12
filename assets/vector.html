@@ -5126,7 +5126,7 @@ async function sendClientInvite() {
 }
 
 // ─── CLIENT HOME ────────────────────────────────────────
-function showClientHome() {
+function enterClientApp() {
   const name = VEC.practice.name || 'Your Practice';
   document.getElementById('clientHomeName').textContent = name;
   document.getElementById('clientHomeEmail').textContent = currentUser.email;
@@ -5343,8 +5343,8 @@ async function openMyWorkspace() {
   document.getElementById('adminHome').style.display = 'none';
   const fromCloud = await cloudLoad();
   applyDiscoverReadiness();
-  if (fromCloud) { restoreUI(); showClientHome(); }
-  else if (restoreFromSave()) { restoreUI(); cloudSave(); showClientHome(); }
+  if (fromCloud) { restoreUI(); enterClientApp(); }
+  else if (restoreFromSave()) { restoreUI(); cloudSave(); enterClientApp(); }
   else { updateSidebar(); }
 }
 
@@ -5383,14 +5383,14 @@ supa.auth.onAuthStateChange(async (event, session) => {
     } else {
       const fromCloud = await cloudLoad();
       applyDiscoverReadiness();
-      if (fromCloud) { restoreUI(); showClientHome(); }
+      if (fromCloud) { restoreUI(); enterClientApp(); }
       else {
         const orgData = await OrgStore.load('org_vec_state');
         if (orgData) {
           Object.assign(VEC, orgData);
           try { localStorage.setItem('vec_v1', JSON.stringify({ VEC, PHASE })); } catch(e) {}
-          restoreUI(); cloudSave(); showClientHome();
-        } else if (restoreFromSave()) { restoreUI(); cloudSave(); showClientHome(); }
+          restoreUI(); cloudSave(); enterClientApp();
+        } else if (restoreFromSave()) { restoreUI(); cloudSave(); enterClientApp(); }
         else { updateSidebar(); }
       }
       await loadDRIVEContext();
