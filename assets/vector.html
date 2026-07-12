@@ -5102,10 +5102,19 @@ function enterClientApp() {
 }
 
 // ─── ADMIN ──────────────────────────────────────────────
-const ADMIN_EMAILS = ['britt@brittbowman.ai', 'brittanie.champeau@gmail.com'];
 let _allClients = [];
+let _isAdmin = false;
 
-function isAdmin() { return currentUser && ADMIN_EMAILS.includes(currentUser.email); }
+// Admin status comes from the drive_admins table (single source of truth),
+// resolved once at auth time and cached so isAdmin() stays synchronous.
+async function resolveAdmin() {
+  if (!currentUser) { _isAdmin = false; return; }
+  try {
+    const { data } = await supa.from('drive_admins').select('user_id').eq('user_id', currentUser.id).maybeSingle();
+    _isAdmin = !!data;
+  } catch (_) { _isAdmin = false; }
+}
+function isAdmin() { return _isAdmin; }
 
 async function loadAdminHome() {
   const { data, error } = await supa.from('practices').select('email,practice_name,updated_at,state').order('updated_at', { ascending: false });
@@ -5331,6 +5340,7 @@ supa.auth.onAuthStateChange(async (event, session) => {
   if (session) {
     currentUser = session.user;
     OrgStore.init(session);
+    await resolveAdmin();
     document.getElementById('userEmail').textContent = currentUser.email;
     loginScreen.style.display = 'none';
     if (isAdmin() && !new URLSearchParams(location.search).has('client')) {
@@ -5352,6 +5362,7 @@ supa.auth.onAuthStateChange(async (event, session) => {
     }
   } else {
     currentUser = null;
+    _isAdmin = false;
     document.getElementById('adminHome').style.display = 'none';
     document.getElementById('clientHome').style.display = 'none';
     document.getElementById('btnBackAdmin').style.display = 'none';

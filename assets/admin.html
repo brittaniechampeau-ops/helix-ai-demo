@@ -395,7 +395,6 @@ td{padding:11px 14px;vertical-align:middle;white-space:nowrap}
 <script>
 const SUPABASE_URL = 'https://ilhljjkiijmjpwinovzj.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsaGxqamtpaWptanB3aW5vdnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MTk4MjIsImV4cCI6MjA5OTE5NTgyMn0.w8asDSA-rXuaDfujC2dr4J-EKCzlCVABOuq3VQeeFsE';
-const ADMIN_EMAILS = ['britt@brittbowman.ai', 'brittanie.champeau@gmail.com'];
 
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -420,9 +419,12 @@ async function init() {
   });
 }
 
-function handleSession(user) {
+async function handleSession(user) {
   currentUser = user;
-  if (!ADMIN_EMAILS.includes(user.email)) {
+  // Admin status comes from the drive_admins table (single source of truth),
+  // not a hardcoded allowlist.
+  const { data: adminRow } = await sb.from('drive_admins').select('user_id').eq('user_id', user.id).maybeSingle();
+  if (!adminRow) {
     showAccessDenied();
     return;
   }
