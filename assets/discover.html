@@ -1236,7 +1236,8 @@ channel_status — keys must be channel names from the list above, values must b
 metrics — array, use only values from this list exactly:
 ["Pipeline","MRR / ARR","CAC","Close rate","Lead volume","SQLs","NPS","Website traffic","Email open rate","Nothing formal"]
 
-For each scoping question: 2=clear yes, 1=somewhat/partial, 0=clear no, null=not enough evidence to judge:
+For each scoping question use ONLY the integer 2, 1, 0, or JSON null — never text strings:
+2 = clear yes  |  1 = somewhat / partial  |  0 = clear no  |  null = not enough evidence
 resolve[0]: Defined audience segments with clear names and criteria?
 resolve[1]: Team uses consistent language to describe ideal client?
 resolve[2]: Content categories and tags standardized across channels?
@@ -1252,7 +1253,9 @@ vector[3]: Know which client archetype generates highest lifetime value?
 engine[0]: Publish content on consistent cadence (weekly or more)?
 engine[1]: Templates or playbooks making content creation repeatable?
 engine[2]: Someone explicitly accountable for content production?
-engine[3]: Connected to marketing automation or CRM platform for delivery?`;
+engine[3]: Connected to marketing automation or CRM platform for delivery?
+
+team_size = total employee count at the company (not number of contacts in the system).`;
 
   try {
     const resp = await fetch('/api/parse', {
