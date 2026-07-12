@@ -304,10 +304,10 @@ supa.auth.onAuthStateChange(async (_ev, session) => {
     document.getElementById('app').style.display = 'none';
     return;
   }
-  // Block the SIGNED_IN that Supabase fires immediately after PASSWORD_RECOVERY
-  // until the user actually sets their new password (USER_UPDATED clears the flag)
-  if (inPasswordRecovery && _ev !== 'USER_UPDATED') return;
-  if (_ev === 'USER_UPDATED') inPasswordRecovery = false;
+  // Block ALL events during recovery — Supabase fires SIGNED_IN, TOKEN_REFRESHED,
+  // and USER_UPDATED as part of the recovery session setup, before the user acts.
+  // The flag is cleared explicitly in setNewPassword() after updateUser() succeeds.
+  if (inPasswordRecovery) return;
   if (session?.user) {
     currentUser = session.user;
     document.getElementById('navUser').textContent = currentUser.email;
@@ -354,7 +354,9 @@ async function setNewPassword() {
   msg.textContent = 'Setting…';
   const { error } = await supa.auth.updateUser({ password });
   if (error) { msg.textContent = error.message; return; }
-  msg.textContent = 'Password set — signing you in…';
+  msg.textContent = '✓ Password set — signing you in…';
+  inPasswordRecovery = false;
+  setTimeout(() => { window.location.href = '/hub.html'; }, 1200);
 }
 
 async function signOut() {
