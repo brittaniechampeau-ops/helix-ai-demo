@@ -2254,6 +2254,28 @@ function runProcessing(phaseLabel, title, messages, callback) {
   tick();
 }
 
+// Real AI generation with the same overlay UX — indeterminate progress while the
+// request is in flight. Replaces the scripted fake-progress for AI-backed steps.
+async function runRealGeneration(phaseLabel, title, message, asyncFn) {
+  if (_isGenerating) return;
+  _isGenerating = true;
+  const overlay = document.getElementById('procOverlay');
+  const bar = document.getElementById('procBar');
+  document.getElementById('procPhase').textContent = phaseLabel;
+  document.getElementById('procTitle').textContent = title;
+  document.getElementById('procMsg').textContent = message;
+  overlay.classList.add('active');
+  let pct = 12; bar.style.width = pct + '%';
+  const creep = setInterval(() => { pct = Math.min(pct + 4, 90); bar.style.width = pct + '%'; }, 450);
+  try {
+    await asyncFn();
+    bar.style.width = '100%';
+  } finally {
+    clearInterval(creep);
+    setTimeout(() => { overlay.classList.remove('active'); _isGenerating = false; }, 350);
+  }
+}
+
 // ─── DROP ZONE ─────────────────────────────────────────
 const rawFiles = [];
 function handleFileSelect(e) { addFiles(Array.from(e.target.files)); }
@@ -2559,7 +2581,7 @@ function runDiagnostic() {
 }
 
 // ─── STEP 1: POSITIONING ───────────────────────────────
-function runPositioning() {
+async function runPositioning() {
   const buyer = document.getElementById('pos-buyer').value.trim();
   const constr = document.getElementById('pos-constraint').value.trim();
   const oneline = document.getElementById('pos-oneline').value.trim();
@@ -2573,30 +2595,86 @@ function runPositioning() {
   VEC.pos.offer2     = { name: document.getElementById('offer2-name').value, price: document.getElementById('offer2-price').value, duration: document.getElementById('offer2-duration').value, desc: document.getElementById('offer2-desc').value };
   VEC.pos.offer3     = { name: document.getElementById('offer3-name').value, price: document.getElementById('offer3-price').value, duration: document.getElementById('offer3-duration').value, desc: document.getElementById('offer3-desc').value };
 
-  const msgs = rawFiles.length
-    ? ['Parsing uploaded materials for positioning signals...', 'Extracting buyer language from source docs...', 'Sharpening one-line against constraint...', 'Structuring offer architecture...', 'Generating positioning artifacts...']
-    : ['Processing positioning canvas...', 'Sharpening one-line against constraint...', 'Structuring offer architecture...', 'Generating positioning artifacts...', 'Finalizing three offer one-pagers...'];
-
-  runProcessing('Foundation 1', 'Generating Positioning', msgs, () => {
+  await runRealGeneration('Foundation 1', 'Generating Positioning', 'Sharpening your positioning with Claude…', async () => {
+    try {
+      VEC.pos.ai = await generatePositioning();
+    } catch (e) {
+      console.error('[positioning]', e);
+      VEC.pos.ai = null;
+      showToast('AI generation unavailable — showing your inputs. ' + (e.message || ''));
+    }
     VEC.pos.generated = true;
-    document.getElementById('posResult').innerHTML = `
-      <div class="result-header"><span class="result-icon">🎯</span><div><div class="result-title">Positioning Generated</div><div class="result-sub">Canvas + 3 Offer One-Pagers ready to download</div></div></div>
-      <div class="output-quote">${oneline}</div>
-      <div class="three-col" style="margin-top:12px;">
-        ${[VEC.pos.offer1, VEC.pos.offer2, VEC.pos.offer3].map(o => `
-          <div style="background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:12px;">
-            <div style="font-size:13px;font-weight:600;margin-bottom:4px;">${o.name || 'Offer'}</div>
-            <div style="font-size:12px;color:var(--accent);margin-bottom:2px;">${o.price}</div>
-            <div style="font-size:12px;color:var(--txt3);">${o.duration}</div>
-          </div>`).join('')}
-      </div>`;
-    document.getElementById('posResult').classList.add('show');
+    renderPositioningResult();
     document.getElementById('nav-1').classList.add('done');
     updateSidebar(); updatePracticeOS(); saveState();
     showProceedBanner(1);
-    showToast('Positioning generated — 4 artifacts ready');
-    logEvent('positioning_generated', { oneline: VEC.pos.oneline, offer1: VEC.pos.offer1?.name, offer2: VEC.pos.offer2?.name, offer3: VEC.pos.offer3?.name });
+    if (VEC.pos.ai) showToast('Positioning generated');
+    logEvent('positioning_generated', { oneline: VEC.pos.oneline, ai: !!VEC.pos.ai });
   });
+}
+
+// Real positioning generation from the practice's own canvas + offers (+ starred
+// Intelligence signals when present). Returns structured JSON via the server proxy.
+async function generatePositioning() {
+  const p = VEC.pos, d = VEC.diag;
+  const signals = (VEC._intelligenceSignals || []).slice(0, 8)
+    .map(s => `- [${s.type}] ${s.title}: ${s.text}`).join('\n');
+  const ctxBlock = signals ? `\n\nMARKET SIGNALS (from Intelligence — weave in where they sharpen the message):\n${signals}` : '';
+  const system = `You are a senior positioning strategist for an independent consulting/advisory practice. Turn the practice's positioning canvas and three offers into sharp, specific, client-ready positioning. Use their own language and proof; avoid generic marketing filler and buzzwords. Be concrete.
+Return ONLY valid JSON (no markdown fences, no commentary) in exactly this shape:
+{
+  "positioning_statement": "2-3 sentences: who they serve, the problem, and why they are different",
+  "refined_oneline": "one sharp sentence; improve on their input only if you can, otherwise return theirs",
+  "pillars": [ { "title": "3-5 word pillar", "body": "one sentence" } ],
+  "offers": [ { "name": "offer name", "summary": "2-3 sentences on the value and outcome", "included": ["deliverable","deliverable","deliverable"], "best_for": "one sentence on who it is for" } ]
+}
+Return exactly 3 pillars, and exactly 3 offers in the same order as the input offers.`;
+  const user = `PRACTICE: ${VEC.practice.name || 'the practice'}${d.track ? ` (Track ${d.track})` : ''}
+TARGET BUYER: ${p.buyer}
+THE REAL CONSTRAINT THEY FACE: ${p.constraint}
+THEIR CURRENT ONE-LINE: ${p.oneline}
+PROOF POINT: ${p.proof || '(none provided)'}
+
+OFFERS:
+1. ${p.offer1.name || '(unnamed)'} — ${p.offer1.price || '?'}, ${p.offer1.duration || '?'} — ${p.offer1.desc || '(no description)'}
+2. ${p.offer2.name || '(unnamed)'} — ${p.offer2.price || '?'}, ${p.offer2.duration || '?'} — ${p.offer2.desc || '(no description)'}
+3. ${p.offer3.name || '(unnamed)'} — ${p.offer3.price || '?'}, ${p.offer3.duration || '?'} — ${p.offer3.desc || '(no description)'}${ctxBlock}
+
+Generate the positioning JSON.`;
+  return await callClaude(system, user, { model: 'claude-sonnet-4-6', maxTokens: 1600 });
+}
+
+function renderPositioningResult() {
+  const p = VEC.pos, ai = p.ai || null;
+  const rawOffers = [p.offer1, p.offer2, p.offer3];
+  const oneline = (ai && ai.refined_oneline) || p.oneline;
+  const pillars = (ai && Array.isArray(ai.pillars)) ? ai.pillars : [];
+  const aiOffers = (ai && Array.isArray(ai.offers)) ? ai.offers : [];
+  let html = `
+      <div class="result-header"><span class="result-icon">🎯</span><div><div class="result-title">Positioning Generated</div><div class="result-sub">${ai ? 'Statement, pillars & 3 offers' : 'Canvas + 3 Offer One-Pagers'} ready to download</div></div></div>
+      <div class="output-quote">${escHtml(oneline)}</div>`;
+  if (ai && ai.positioning_statement) {
+    html += `<div style="font-size:13px;color:var(--txt2);line-height:1.6;margin-top:10px">${escHtml(ai.positioning_statement)}</div>`;
+  }
+  if (pillars.length) {
+    html += `<div style="margin-top:14px;display:flex;flex-direction:column;gap:8px">` + pillars.map(pl => `
+        <div style="background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+          <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:3px">${escHtml(pl.title)}</div>
+          <div style="font-size:12px;color:var(--txt2);line-height:1.5">${escHtml(pl.body)}</div>
+        </div>`).join('') + `</div>`;
+  }
+  html += `<div class="three-col" style="margin-top:12px;">` + rawOffers.map((o, idx) => {
+    const aio = aiOffers[idx] || {};
+    return `<div style="background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:12px;">
+        <div style="font-size:13px;font-weight:600;margin-bottom:4px;">${escHtml(o.name || aio.name || 'Offer')}</div>
+        <div style="font-size:12px;color:var(--accent);margin-bottom:2px;">${escHtml(o.price || '')}</div>
+        <div style="font-size:12px;color:var(--txt3);${aio.summary ? 'margin-bottom:6px;' : ''}">${escHtml(o.duration || '')}</div>
+        ${aio.summary ? `<div style="font-size:11px;color:var(--txt2);line-height:1.5">${escHtml(aio.summary)}</div>` : ''}
+      </div>`;
+  }).join('') + `</div>`;
+  const el = document.getElementById('posResult');
+  el.innerHTML = html;
+  el.classList.add('show');
 }
 
 // ─── STEP 2: REFERRAL ENGINE ───────────────────────────
