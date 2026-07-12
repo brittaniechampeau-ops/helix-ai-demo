@@ -1164,7 +1164,10 @@ async function parseIntakeForOrgProfile() {
     ...state.intake.taxFiles.filter(f => f.text).map(f => `--- TAXONOMY/SYSTEM EXPORT: ${f.name} (${f.label}) ---\n${f.text.slice(0, 6000)}`),
     ...state.intake.docs.filter(f => f.text).map(f => `--- DOCUMENT: ${f.name} ---\n${f.text.slice(0, 8000)}`),
   ];
-  if (textChunks.length === 0) return;
+  console.log('[parse] files:', state.intake.docs.length + state.intake.taxFiles.length, 'chunks with text:', textChunks.length,
+    'docs:', state.intake.docs.map(f => f.name + '(' + f.text.length + ')'),
+    'tax:', state.intake.taxFiles.map(f => f.name + '(' + f.text.length + ')'));
+  if (textChunks.length === 0) { _hint('No text extracted from files — check file types and try again'); return; }
 
   const btnNext = document.getElementById('btnNext');
   const origLabel = btnNext.textContent;
@@ -1258,9 +1261,14 @@ engine[3]: Connected to marketing automation or CRM platform for delivery?`;
       body: JSON.stringify({ model: 'claude-sonnet-5', max_tokens: 1200, messages: [{ role: 'user', content: prompt }] })
     });
     const d = await resp.json();
+    if (!resp.ok || d.error) {
+      const msg = d.error?.message || `API error ${resp.status}`;
+      throw new Error(msg);
+    }
     const raw = (d.content?.[0]?.text || '');
+    console.log('[parse] raw response:', raw.slice(0, 200));
     const m = raw.match(/\{[\s\S]*\}/);
-    if (!m) return;
+    if (!m) { _hint('Parse: no JSON in response — check API key or try again'); return; }
     const p = JSON.parse(m[0]);
     let filled = [];
 
@@ -1635,11 +1643,16 @@ async function navNext() {
   if (accountSize === 'micro' && currentStep === 2 && !hasTaxonomy) next = 4; // shouldn't hit, safety
 
   if (next <= 5) {
+    // Save any parse result hint before updateFooter overwrites it
+    const parseHint = currentStep === 1 ? document.getElementById('footerHint').textContent : null;
     hideCurrentPanel();
     currentStep = next;
     showCurrentPanel();
     updateSidebar();
     updateFooter();
+    if (parseHint && parseHint !== 'Upload materials or continue without — intake is optional') {
+      document.getElementById('footerHint').textContent = parseHint;
+    }
     document.getElementById('contentArea').scrollTop = 0;
   } else {
     // Show results
