@@ -1127,8 +1127,8 @@
     <!-- ═══ STEP 4: INTAKE & DELIVERY ═══ -->
     <div class="step-panel" id="panel-4">
       <div class="step-header">
-        <h1>Client Delivery Kit <span style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:2px 8px;vertical-align:middle;margin-left:8px">Admin only</span></h1>
-        <p>Reusable back-office templates for running a client engagement end to end. You send the <strong>Intake Questionnaire</strong> to a new client <em>before</em> the scoping call; the <strong>Scoping Doc, Kickoff Agenda, Delivery Cadence,</strong> and <strong>Handoff Checklist</strong> structure the engagement itself. These are your operating tools — clients don't see them.</p>
+        <h1>Client Delivery Kit</h1>
+        <p>The templates you reuse to run every engagement with <em>your</em> clients, start to finish: an <strong>Intake Questionnaire</strong> you send before the first call, then a <strong>Scoping Doc, Kickoff Agenda, Delivery Cadence,</strong> and <strong>Handoff Checklist</strong> to run the work — each personalized to your practice and offers. (This is your delivery playbook, separate from the DRIVE assessment.)</p>
       </div>
 
       <div class="card">
@@ -1733,8 +1733,6 @@ function showStep(n) {
     if (m.style) m.style.display = 'none';
     m.classList.remove('active', 'open', 'visible');
   });
-  // Client Delivery Kit (step 4) is admin-only — clients skip straight to the plan.
-  if (n === 4 && !isAdmin()) { if (PHASE < 5) PHASE = 5; n = 5; }
   if (n > 0 && PHASE < STEP_MIN[n]) { showToast('Complete the previous step first'); return; }
   document.querySelectorAll('.step-panel').forEach((p, i) => p.classList.toggle('active', i === n));
   document.querySelectorAll('.step-btn').forEach((b, i) => b.classList.toggle('active', i === n));
@@ -2273,10 +2271,6 @@ function restoreUI() {
   // Hide demo button for non-admin clients
   const demoBtn = document.getElementById('loadDemoBtn');
   if (demoBtn) demoBtn.style.display = isAdmin() ? '' : 'none';
-  // Client Delivery Kit is the consultant's back-office — admin only.
-  const admin = isAdmin();
-  const nav4 = document.getElementById('nav-4'); if (nav4) nav4.style.display = admin ? '' : 'none';
-  const sbOps = document.getElementById('sb-item-ops'); if (sbOps) sbOps.style.display = admin ? '' : 'none';
 }
 
 // ─── TOAST ─────────────────────────────────────────────
