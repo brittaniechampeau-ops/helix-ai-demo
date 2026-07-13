@@ -864,6 +864,7 @@ function restoreDiscoverState(data) {
       if (Array.isArray(b.channels) && b.channels.length) {
         state.baseline.channels = b.channels;
         renderChannels();
+        syncChannelPills();
       }
       if (Array.isArray(b.metrics) && b.metrics.length) {
         state.baseline.metrics = b.metrics;
@@ -1441,6 +1442,7 @@ team_size = total employee count at the company (not number of contacts in the s
         }
       });
       renderChannels();
+      syncChannelPills();
       filled.push('channels');
     }
 
@@ -1643,9 +1645,25 @@ const CHANNEL_STATUS_LABELS = { working: '✓ Working', mixed: '~ Mixed', not: '
 const CHANNEL_STATUS_COLORS = { working: '#54C06E', mixed: '#F4822A', not: '#E8547A' };
 
 function addChannel(name) {
-  if (state.baseline.channels.find(c => c.name === name)) return;
-  state.baseline.channels.push({ name, status: null });
+  // Toggle: clicking an active channel removes it, so the pill reads as on/off.
+  const i = state.baseline.channels.findIndex(c => c.name === name);
+  if (i >= 0) state.baseline.channels.splice(i, 1);
+  else state.baseline.channels.push({ name, status: null });
   renderChannels();
+  syncChannelPills();
+}
+
+// Reflect which channels are active on the add-pills themselves (✓ + highlight),
+// so clicking a pill gives obvious feedback instead of only updating the list below.
+function syncChannelPills() {
+  document.querySelectorAll('#channelAddChips .chip-sm').forEach(pill => {
+    const m = (pill.getAttribute('onclick') || '').match(/addChannel\('([^']+)'\)/);
+    if (!m) return;
+    const active = state.baseline.channels.some(c => c.name === m[1]);
+    pill.classList.toggle('sel', active);
+    const label = pill.textContent.replace(/^[+✓]\s*/, '');
+    pill.textContent = (active ? '✓ ' : '+ ') + label;
+  });
 }
 
 function setChannelStatus(name, status) {
@@ -1657,6 +1675,7 @@ function setChannelStatus(name, status) {
 function removeChannel(name) {
   state.baseline.channels = state.baseline.channels.filter(c => c.name !== name);
   renderChannels();
+  syncChannelPills();
 }
 
 function renderChannels() {
