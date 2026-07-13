@@ -2,7 +2,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!
 const FROM_EMAIL     = Deno.env.get('FROM_EMAIL') ?? 'drive@brittbowman.ai'
-const VECTOR_URL     = 'https://vector.brittbowman.ai'
+const VECTOR_URL     = 'https://drive.brittbowman.ai'
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {

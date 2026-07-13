@@ -3,7 +3,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!
 const NOTIFY_EMAIL   = Deno.env.get('NOTIFY_EMAIL') ?? 'britt@brittbowman.ai'
 const FROM_EMAIL     = Deno.env.get('FROM_EMAIL')   ?? 'drive@brittbowman.ai'
-const VECTOR_URL     = Deno.env.get('VECTOR_URL')   ?? 'https://vector.brittbowman.ai/visualize.html'
+const VECTOR_URL     = Deno.env.get('VECTOR_URL')   ?? 'https://drive.brittbowman.ai/visualize.html'
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -45,7 +45,7 @@ serve(async (req) => {
       <tr><td style="padding:4px 8px;color:#6B7A8D">Path</td><td style="padding:4px 8px">${path || '—'}</td></tr>
       ${scoreRows}
     </table>
-    <a href="https://vector.brittbowman.ai/admin.html" style="display:inline-block;background:#3BBFA3;color:#07090C;font-weight:600;font-size:14px;padding:12px 20px;border-radius:8px;text-decoration:none">View in Lead Dashboard →</a>
+    <a href="https://drive.brittbowman.ai/admin.html" style="display:inline-block;background:#3BBFA3;color:#07090C;font-weight:600;font-size:14px;padding:12px 20px;border-radius:8px;text-decoration:none">View in Lead Dashboard →</a>
   </div>
 </body></html>`
 

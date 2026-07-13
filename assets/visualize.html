@@ -1687,8 +1687,8 @@
     </div>
     <p style="font-size:13px;color:var(--txt2);margin-bottom:16px">Visualize is populated and saved to the cloud. Send your client this link — they'll log in with their email and find everything ready.</p>
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-family:monospace;font-size:14px;color:var(--accent);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:8px">
-      <span>https://vector.brittbowman.ai</span>
-      <button onclick="navigator.clipboard.writeText('https://vector.brittbowman.ai');showToast('Copied!')" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:12px;color:var(--txt2);cursor:pointer">Copy</button>
+      <span>https://drive.brittbowman.ai</span>
+      <button onclick="navigator.clipboard.writeText('https://drive.brittbowman.ai');showToast('Copied!')" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:12px;color:var(--txt2);cursor:pointer">Copy</button>
     </div>
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:13px;color:var(--txt2);line-height:1.6">
       <div style="font-size:11px;color:var(--txt3);font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">Email template</div>
@@ -5247,7 +5247,7 @@ function showClientReadyModal() {
   document.getElementById('clientEmailTemplate').innerHTML = `
     Hi ${VEC.practice.founder || 'there'},<br><br>
     Your Visualize practice OS is ready. You'll get a separate email to set your password — once you have, sign in with <strong>${email}</strong> and your password.<br><br>
-    <strong>Your link:</strong> https://vector.brittbowman.ai<br><br>
+    <strong>Your link:</strong> https://drive.brittbowman.ai<br><br>
     Everything from our intake session is already loaded. Let me know if you have any questions.<br><br>
     — Britt`;
   openModal('clientReadyModal');
@@ -5256,7 +5256,7 @@ function showClientReadyModal() {
 function copyEmailTemplate() {
   const name = VEC.practice.founder || 'there';
   const email = VEC.practice.email || '';
-  const text = `Hi ${name},\n\nYour Visualize practice OS is ready. You'll get a separate email to set your password — once you have, sign in with ${email} and your password.\n\nYour link: https://vector.brittbowman.ai\n\nEverything from our intake session is already loaded. Let me know if you have any questions.\n\n— Britt`;
+  const text = `Hi ${name},\n\nYour Visualize practice OS is ready. You'll get a separate email to set your password — once you have, sign in with ${email} and your password.\n\nYour link: https://drive.brittbowman.ai\n\nEverything from our intake session is already loaded. Let me know if you have any questions.\n\n— Britt`;
   navigator.clipboard.writeText(text);
   showToast('Email copied to clipboard');
 }
