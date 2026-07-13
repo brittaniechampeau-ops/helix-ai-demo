@@ -1387,11 +1387,14 @@ team_size = total employee count at the company (not number of contacts in the s
     // Org profile
     const orgNameEl = document.getElementById('orgName');
     const orgChallengeEl = document.getElementById('orgChallenge');
-    if (p.org_name) { state.orgName = p.org_name; orgNameEl.value = p.org_name; updateOrgDisplay(); filled.push('org name'); }
-    if (p.industry && fillIndustry(p.industry)) filled.push('industry');
-    if (p.team_size && fillChip('teamChips', 'team', p.team_size)) filled.push('team size');
-    if (p.annual_revenue && fillChip('revChips', 'rev', p.annual_revenue)) filled.push('revenue');
-    if (p.challenge) {
+    const orgIndustryEl = document.getElementById('orgIndustry');
+    // Only fill fields the user left blank — a manual selection always wins over
+    // the values parsed from uploaded documents.
+    if (p.org_name && !state.orgName) { state.orgName = p.org_name; orgNameEl.value = p.org_name; updateOrgDisplay(); filled.push('org name'); }
+    if (p.industry && !orgIndustryEl.value && fillIndustry(p.industry)) filled.push('industry');
+    if (p.team_size && !state.orgTeam && fillChip('teamChips', 'team', p.team_size)) filled.push('team size');
+    if (p.annual_revenue && !state.orgRev && fillChip('revChips', 'rev', p.annual_revenue)) filled.push('revenue');
+    if (p.challenge && !orgChallengeEl.value) {
       const opts = Array.from(orgChallengeEl.options);
       const hit = opts.find(o => norm(o.text) === norm(p.challenge)) || opts.find(o => norm(o.text).includes(norm(p.challenge).slice(0, 12)));
       if (hit) { orgChallengeEl.value = hit.value || hit.text; filled.push('challenge'); }
@@ -2322,14 +2325,19 @@ async function saveToSupabase() {
     if (syncEl) { syncEl.style.opacity = '1'; setTimeout(() => { syncEl.style.opacity = '0'; }, 2000); }
     btn.textContent = '✓ Saved';
     setTimeout(() => { btn.textContent = 'Save to record'; btn.disabled = false; }, 2000);
+    // Notify once per engagement — not on every Discover→tool navigation.
     try {
-      supa.functions.invoke('notify-lead', { body: {
-        type: 'saved', email: currentUser.email, team_emails: teamEmails,
-        org_name: readiness.org_name, org_industry: readiness.org_industry,
-        org_team: readiness.org_team, org_rev: readiness.org_rev,
-        scores: { taxonomy: readiness.taxonomy, signal: readiness.signal, strategy: readiness.strategy, execution: readiness.execution },
-        path: readiness.path,
-      }});
+      const notifyKey = 'disc_notified_' + (localStorage.getItem('drive_engagement_id') || currentUser.email);
+      if (!localStorage.getItem(notifyKey)) {
+        supa.functions.invoke('notify-lead', { body: {
+          type: 'saved', email: currentUser.email, team_emails: teamEmails,
+          org_name: readiness.org_name, org_industry: readiness.org_industry,
+          org_team: readiness.org_team, org_rev: readiness.org_rev,
+          scores: { taxonomy: readiness.taxonomy, signal: readiness.signal, strategy: readiness.strategy, execution: readiness.execution },
+          path: readiness.path,
+        }});
+        localStorage.setItem(notifyKey, '1');
+      }
     } catch (_) {}
   } catch (e) {
     console.error(e);
@@ -2372,7 +2380,7 @@ var DRIVE_PROD_IDX=0;
     var idx=h.indexOf('discover')>=0?0:h.indexOf('resolve')>=0?1:h.indexOf('intuit')>=0?2:h.indexOf('visualize')>=0?3:h.indexOf('execute')>=0?4:-1;
     var svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
     svg.setAttribute('viewBox','0 0 100 100');svg.setAttribute('width','14');svg.setAttribute('height','14');
-    if(idx<0){for(var j=0;j<N;j++){var a0=j*SP+GAP/2,a1=(j+1)*SP-GAP/2;var pp=document.createElementNS('http://www.w3.org/2000/svg','path');pp.setAttribute('d',seg(50,50,42,20,a0,a1));pp.setAttribute('fill',C[j]);svg.appendChild(pp);}}
+    if(idx<0){dot.remove();return;}
     else{fill(svg,idx,null);}
     dot.parentNode.replaceChild(svg,dot);
   });

@@ -932,7 +932,7 @@ var DRIVE_PROD_IDX=2;
     var idx=h.indexOf('discover')>=0?0:h.indexOf('resolve')>=0?1:h.indexOf('intuit')>=0?2:h.indexOf('visualize')>=0?3:h.indexOf('execute')>=0?4:-1;
     var svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
     svg.setAttribute('viewBox','0 0 100 100');svg.setAttribute('width','14');svg.setAttribute('height','14');
-    if(idx<0){for(var j=0;j<N;j++){var a0=j*SP+GAP/2,a1=(j+1)*SP-GAP/2;var pp=document.createElementNS('http://www.w3.org/2000/svg','path');pp.setAttribute('d',seg(50,50,42,20,a0,a1));pp.setAttribute('fill',C[j]);svg.appendChild(pp);}}
+    if(idx<0){dot.remove();return;}
     else{fill(svg,idx,null);}
     dot.parentNode.replaceChild(svg,dot);
   });

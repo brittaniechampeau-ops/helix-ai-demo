@@ -1412,7 +1412,7 @@ document.getElementById('newPasswordInput').addEventListener('keydown', e => {
     var idx=h.indexOf('discover')>=0?0:h.indexOf('resolve')>=0?1:h.indexOf('intuit')>=0?2:h.indexOf('visualize')>=0?3:h.indexOf('execute')>=0?4:-1;
     var svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
     svg.setAttribute('viewBox','0 0 100 100');svg.setAttribute('width','14');svg.setAttribute('height','14');
-    fill(svg,idx<0?null:idx);
+    if(idx<0){dot.remove();return;}fill(svg,idx);
     dot.parentNode.replaceChild(svg,dot);
   });
   var brand=document.querySelector('.pnav-brand');
