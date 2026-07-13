@@ -934,7 +934,7 @@
       </div>
 
       <div class="card">
-        <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><span class="card-title">Positioning Canvas</span><button class="btn btn-ghost btn-sm" id="draftPosBtn" onclick="draftPositioning()">✨ Draft from my profile</button></div>
+        <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><span class="card-title">Positioning Canvas</span><button class="btn btn-ghost btn-sm" id="draftPosBtn" onclick="draftPositioning(true)">✨ Draft from my profile</button></div>
         <div class="form-group">
           <label class="form-label">Who is the buyer? (role + company type + size)</label>
           <input class="form-input" id="pos-buyer" placeholder="e.g. VP Operations at mid-market manufacturers ($50M–$300M) navigating post-acquisition integration" title="Who is the buyer? Enter role, company type, and size — e.g. VP Operations at mid-market manufacturers ($50M–$300M) navigating post-acquisition integration" />
@@ -2638,22 +2638,29 @@ function runDiagnostic() {
 }
 
 // ─── STEP 1: POSITIONING — draft from upstream context ──
-async function draftPositioning() {
+// force=true (button) overwrites everything; force=false (auto) only fills blanks
+// so it never clobbers fields the founder has already edited.
+async function draftPositioning(force = false) {
   if (!VEC.diag.track) { showToast('Run the Diagnostic first — the draft builds on it'); return; }
   await runRealGeneration('Foundation 1', 'Drafting Positioning', 'Drafting your positioning from your profile…', async () => {
     try {
       const draft = await generatePositioningDraft();
-      const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
-      if (draft && draft.buyer)      { VEC.pos.buyer = draft.buyer;           set('pos-buyer', draft.buyer); }
-      if (draft && draft.constraint) { VEC.pos.constraint = draft.constraint; set('pos-constraint', draft.constraint); }
-      if (draft && draft.oneline)    { VEC.pos.oneline = draft.oneline;       set('pos-oneline', draft.oneline); }
-      if (draft && draft.proof)      { VEC.pos.proof = draft.proof;           set('pos-proof', draft.proof); }
+      if (!draft) throw new Error('no draft returned');
+      const set = (id, val) => { const el = document.getElementById(id); if (el && val && (force || !el.value.trim())) el.value = val; };
+      const fill = (key, id, val) => { if (val && (force || !VEC.pos[key])) { VEC.pos[key] = val; set(id, val); } };
+      fill('buyer', 'pos-buyer', draft.buyer);
+      fill('constraint', 'pos-constraint', draft.constraint);
+      fill('oneline', 'pos-oneline', draft.oneline);
+      fill('proof', 'pos-proof', draft.proof);
       // Offers — extracted from the carried materials when present, else a sensible 3-tier ladder.
-      if (draft && Array.isArray(draft.offers)) {
+      if (Array.isArray(draft.offers)) {
         ['offer1', 'offer2', 'offer3'].forEach((k, i) => {
           const od = draft.offers[i]; if (!od) return;
-          VEC.pos[k] = { name: od.name || '', price: od.price || '', duration: od.duration || '', desc: od.desc || '' };
-          set(`${k}-name`, od.name); set(`${k}-price`, od.price); set(`${k}-duration`, od.duration); set(`${k}-desc`, od.desc);
+          const existing = VEC.pos[k] && VEC.pos[k].name;
+          if (force || !existing) {
+            VEC.pos[k] = { name: od.name || '', price: od.price || '', duration: od.duration || '', desc: od.desc || '' };
+            set(`${k}-name`, od.name); set(`${k}-price`, od.price); set(`${k}-duration`, od.duration); set(`${k}-desc`, od.desc);
+          }
         });
       }
       VEC.pos._drafted = true;
@@ -2662,7 +2669,6 @@ async function draftPositioning() {
       showToast(usedMaterials ? 'Drafted from your Discover materials — refine, then Generate' : 'Positioning drafted — refine it, then Generate');
     } catch (e) {
       console.error('[draft positioning]', e);
-      VEC.pos._drafted = true; // don't loop the auto-draft on failure
       showToast('Draft unavailable — ' + (e.message || 'try again'));
     }
   });
@@ -2712,12 +2718,18 @@ function renderCarriedMaterials() {
   }
 }
 
-// Auto-draft once when landing on Positioning with an empty canvas + a completed diagnostic.
+// Auto-draft (once per session) when landing on Positioning with a completed
+// diagnostic and either the canvas OR the offers still empty. Non-destructive.
+let _autoDraftedThisSession = false;
 function maybeAutoDraftPositioning() {
-  const buyerEl = document.getElementById('pos-buyer');
-  const canvasEmpty = buyerEl && !buyerEl.value.trim() && !VEC.pos.buyer;
-  if (canvasEmpty && VEC.diag.track && !VEC.pos._drafted && !VEC.pos.generated && !_isGenerating) {
-    draftPositioning();
+  if (_autoDraftedThisSession || _isGenerating || !VEC.diag.track || VEC.pos.generated) return;
+  const buyerEl  = document.getElementById('pos-buyer');
+  const offer1El = document.getElementById('offer1-name');
+  const canvasEmpty = buyerEl  && !buyerEl.value.trim()  && !VEC.pos.buyer;
+  const offersEmpty = offer1El && !offer1El.value.trim() && !(VEC.pos.offer1 && VEC.pos.offer1.name);
+  if (canvasEmpty || offersEmpty) {
+    _autoDraftedThisSession = true;
+    draftPositioning(false);
   }
 }
 
