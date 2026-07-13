@@ -5,6 +5,7 @@
   "framework": null,
   "rewrites": [
     { "source": "/", "destination": "/hub.html" },
+    { "source": "/overview", "destination": "/drive-platform-doc.html" },
     { "source": "/visualize", "destination": "/visualize.html" },
     { "source": "/intuit", "destination": "/intuit.html" },
     { "source": "/execute", "destination": "/execute.html" },
