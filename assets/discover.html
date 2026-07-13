@@ -59,7 +59,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 .phase-intake{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border)}
 .phase-scoping{background:var(--cyan-bg);color:var(--cyan);border:1px solid var(--cyan-border)}
 .phase-results{background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-dim)}
-.tb-save{height:32px;padding:0 14px;background:var(--purple);color:#fff;font-size:12px;font-weight:600;border:none;border-radius:7px;cursor:pointer;display:none}
+.tb-save{height:32px;padding:0 14px;background:var(--purple);color:#fff;font-size:12px;font-weight:600;border:none;border-radius:7px;cursor:pointer;display:none;align-items:center;justify-content:center;white-space:nowrap}
 .tb-save:hover{opacity:.9}
 .tb-user{height:30px;padding:0 12px;background:var(--card);border:1px solid var(--border2);border-radius:6px;font-size:12px;color:var(--muted);cursor:pointer}
 
@@ -1851,10 +1851,13 @@ function updateFooter() {
 // ── RESULTS ──────────────────────────────────────────────
 const SECTION_META = [
   { name: 'Taxonomy', tool: 'RESOLVE', color: 'var(--cyan)', bg: 'var(--cyan-bg)', border: 'var(--cyan-border)' },
-  { name: 'Intuit', tool: 'INTEL', color: 'var(--blue)', bg: 'var(--blue-bg)', border: 'var(--blue-border)' },
+  { name: 'Signal', tool: 'INTEL', color: 'var(--blue)', bg: 'var(--blue-bg)', border: 'var(--blue-border)' },
   { name: 'Strategy', tool: 'VECTOR', color: 'var(--teal)', bg: 'var(--teal-bg)', border: 'var(--teal-dim)' },
   { name: 'Execution', tool: 'ENGINE', color: 'var(--orange)', bg: 'var(--orange-bg)', border: 'var(--orange-border)' },
 ];
+// Internal tool keys stay stable (saved to records); this maps them to the
+// current product display names shown in readiness cards and the roadmap.
+const TOOL_DISPLAY = { RESOLVE: 'RESOLVE', INTEL: 'INTUIT', VECTOR: 'VISUALIZE', ENGINE: 'EXECUTE' };
 
 function levelFor(score) {
   if (score <= 3) return { label: 'Low', bg: '#1A0E0E', color: '#C85A5A', border: '#3A1E1E' };
@@ -2137,7 +2140,7 @@ function showResults() {
       const card = document.createElement('div');
       card.className = 'readiness-card';
       card.style.cssText = 'opacity:0.4;pointer-events:none';
-      card.innerHTML = `<div class="rc-header"><div class="rc-name" style="color:${sm.color}">${sm.tool} — ${sm.name}</div></div><div class="rc-recommendation" style="font-style:italic">Not assessed at this stage — revisit as the org scales.</div>`;
+      card.innerHTML = `<div class="rc-header"><div class="rc-name" style="color:${sm.color}">${TOOL_DISPLAY[sm.tool]||sm.tool} — ${sm.name}</div></div><div class="rc-recommendation" style="font-style:italic">Not assessed at this stage — revisit as the org scales.</div>`;
       grid.appendChild(card);
       return;
     }
@@ -2146,7 +2149,7 @@ function showResults() {
     const recIdx = score <= 3 ? 0 : score <= 5 ? 1 : 2;
     const card = document.createElement('div');
     card.className = 'readiness-card';
-    card.innerHTML = `<div class="rc-header"><div class="rc-name" style="color:${sm.color}">${sm.tool} — ${sm.name}</div><div class="rc-score" style="color:${sm.color}">${score}<span style="font-size:13px;color:var(--muted)">/8</span></div></div><div class="rc-bar-track"><div class="rc-bar-fill" style="width:${(score/8)*100}%;background:${sm.color}"></div></div><div class="rc-level" style="background:${lvl.bg};color:${lvl.color};border:1px solid ${lvl.border}">${lvl.label}</div><div class="rc-recommendation">${RECS[i][recIdx]}</div>`;
+    card.innerHTML = `<div class="rc-header"><div class="rc-name" style="color:${sm.color}">${TOOL_DISPLAY[sm.tool]||sm.tool} — ${sm.name}</div><div class="rc-score" style="color:${sm.color}">${score}<span style="font-size:13px;color:var(--muted)">/8</span></div></div><div class="rc-bar-track"><div class="rc-bar-fill" style="width:${(score/8)*100}%;background:${sm.color}"></div></div><div class="rc-level" style="background:${lvl.bg};color:${lvl.color};border:1px solid ${lvl.border}">${lvl.label}</div><div class="rc-recommendation">${RECS[i][recIdx]}</div>`;
     grid.appendChild(card);
   });
 
@@ -2156,7 +2159,7 @@ function showResults() {
   steps.forEach((s, i) => {
     const row = document.createElement('div');
     row.className = 'roadmap-step';
-    row.innerHTML = `<div class="rs-num" style="background:${s.bg};color:${s.color};border:1px solid ${s.border}">${i+1}</div><div class="rs-body"><div class="rs-tool" style="color:${s.color}">${s.tool}</div><div class="rs-action">${s.action}</div><div class="rs-detail">${s.detail}</div></div><div class="rs-weeks">${s.weeks}</div>`;
+    row.innerHTML = `<div class="rs-num" style="background:${s.bg};color:${s.color};border:1px solid ${s.border}">${i+1}</div><div class="rs-body"><div class="rs-tool" style="color:${s.color}">${TOOL_DISPLAY[s.tool]||s.tool}</div><div class="rs-action">${s.action}</div><div class="rs-detail">${s.detail}</div></div><div class="rs-weeks">${s.weeks}</div>`;
     stepsEl.appendChild(row);
   });
 
@@ -2213,7 +2216,7 @@ body{background:#050709;color:#E8EAF0;font-family:-apple-system,BlinkMacSystemFo
       return `<div style="display:flex;gap:16px;padding:20px 0;border-bottom:1px solid #1C2535;${i===0?'border-top:1px solid #1C2535':''}">
         <div style="width:32px;height:32px;border-radius:8px;background:${color}22;color:${color};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0">${i+1}</div>
         <div style="flex:1">
-          <div style="font-size:11px;font-weight:700;letter-spacing:.06em;color:${color};margin-bottom:4px">${s.tool}</div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:.06em;color:${color};margin-bottom:4px">${TOOL_DISPLAY[s.tool]||s.tool}</div>
           <div style="font-size:15px;font-weight:600;color:#E8EAF0;margin-bottom:6px">${s.action}</div>
           <div style="font-size:13px;color:#8892A4;line-height:1.6">${s.detail}</div>
         </div>

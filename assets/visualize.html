@@ -1893,16 +1893,33 @@ async function loadDRIVEContext() {
   if (!DISCOVER_READINESS) {
     try {
       const discoverData = await OrgStore.load('org_discover');
-      if (discoverData?.state?.scores) {
-        const sc = discoverData.state.scores;
-        DISCOVER_READINESS = {
-          taxonomy:  sc.resolve   || 0,
-          signal:    sc.intelligence || 0,
-          strategy:  sc.vector    || 0,
-          execution: sc.engine    || 0,
-          org_name:  discoverData.org_name || '',
-        };
-        applyDiscoverReadiness();
+      if (discoverData) {
+        // Seed the practice identity from Discover so opening Visualize on an
+        // assessed engagement isn't a blank form.
+        if (!VEC.practice.name) {
+          const seededName = discoverData.org_name || localStorage.getItem('drive_engagement_name') || '';
+          if (seededName) {
+            VEC.practice.name = seededName;
+            const nameEl = document.getElementById('practiceName'); if (nameEl) nameEl.value = seededName;
+            const pill = document.getElementById('practiceNamePill'); if (pill) pill.textContent = seededName;
+          }
+        }
+        // Discover saves scores as an array [taxonomy, signal, strategy, execution];
+        // tolerate the older object shape too.
+        const sc = discoverData.scores;
+        const arr = Array.isArray(sc)
+          ? sc
+          : (sc ? [sc.taxonomy ?? sc.resolve, sc.signal ?? sc.intelligence, sc.strategy ?? sc.vector, sc.execution ?? sc.engine] : null);
+        if (arr) {
+          DISCOVER_READINESS = {
+            taxonomy:  arr[0] || 0,
+            signal:    arr[1] || 0,
+            strategy:  arr[2] || 0,
+            execution: arr[3] || 0,
+            org_name:  discoverData.org_name || '',
+          };
+          applyDiscoverReadiness();
+        }
       }
     } catch (_) {}
   }
