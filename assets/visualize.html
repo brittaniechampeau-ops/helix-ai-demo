@@ -2243,8 +2243,18 @@ function restoreUI() {
   // Dynamic tables
   renderContacts(); renderCases(); renderPlanTracker();
   if (VEC.taxFields) initTaxFields(); else { VEC.taxFields = JSON.parse(JSON.stringify(DEFAULT_TAX_FIELDS)); initTaxFields(); }
-  // Step nav unlock
-  for (let i = 0; i <= 6; i++) {
+  // Derive how far this practice actually got from its saved data — self-heals
+  // when PHASE wasn't persisted — so returning users can revisit every step
+  // they've completed, not just what the linear counter happened to record.
+  let reached = PHASE || 0;
+  if (VEC.pos && VEC.pos.generated) reached = Math.max(reached, 1);
+  if (VEC.ref && (VEC.ref.generated || (VEC.ref.contacts || []).length)) reached = Math.max(reached, 2);
+  if (VEC.cred && (VEC.cred.generated || (VEC.cred.cases || []).length)) reached = Math.max(reached, 3);
+  if (VEC.ops && VEC.ops.generated) reached = Math.max(reached, 4);
+  if (VEC.plan && VEC.plan.generated) reached = Math.max(reached, 5);
+  PHASE = reached;
+  // Step nav unlock — every step up to the furthest reached becomes clickable.
+  for (let i = 0; i <= 7; i++) {
     const btn = document.getElementById('nav-' + i);
     if (!btn) continue;
     if (i > 0 && PHASE >= i) btn.classList.remove('locked');
@@ -2269,6 +2279,8 @@ function restoreUI() {
     showToast('Restored — ' + (p.name || 'practice'));
     // Re-show proceed banner for the current step so returning users don't have to scroll up
     for (let s = 0; s < PHASE && s < 5; s++) showProceedBanner(s);
+    // Land on the furthest step reached instead of dumping the user back at Diagnostic.
+    showStep(Math.min(PHASE, 7));
   }
   // Hide demo button for non-admin clients
   const demoBtn = document.getElementById('loadDemoBtn');
