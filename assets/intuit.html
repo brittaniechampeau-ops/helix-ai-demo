@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M51.47,8.03 A42,42 0 0,1 89.47,35.64 L68.79,43.16 A20,20 0 0,0 50.70,30.01Z' fill='%23E8547A'/%3E%3Cpath d='M90.37,38.42 A42,42 0 0,1 75.86,83.10 L62.31,65.76 A20,20 0 0,0 69.23,44.49Z' fill='%232EC4B6'/%3E%3Cpath d='M73.49,84.82 A42,42 0 0,1 26.51,84.82 L38.82,66.58 A20,20 0 0,0 61.18,66.58Z' fill='%237B5EA7'/%3E%3Cpath d='M24.14,83.10 A42,42 0 0,1 9.63,38.42 L30.77,44.49 A20,20 0 0,0 37.69,65.76Z' fill='%2354C06E'/%3E%3Cpath d='M10.53,35.64 A42,42 0 0,1 48.53,8.03 L49.30,30.01 A20,20 0 0,0 31.21,43.16Z' fill='%23F4822A'/%3E%3C/svg%3E">
+<title>Intuit — Market Signals · DRIVE</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#060E1C;--panel:#0C1830;--card:#102040;--card2:#162850;
+  --blue:#5B8CFF;--blue-bg:rgba(91,140,255,.07);--blue-border:rgba(91,140,255,.2);
+  --cyan:#4DE8FF;--cyan-bg:rgba(77,232,255,.07);--cyan-border:rgba(77,232,255,.2);
+  --purple:#8B7FEC;--purple-bg:rgba(139,127,236,.07);--purple-border:rgba(139,127,236,.2);
+  --teal:#3BBFA3;--teal-bg:rgba(59,191,163,.07);--teal-border:rgba(59,191,163,.2);
+  --orange:#FF8A3D;--orange-bg:rgba(255,138,61,.07);--orange-border:rgba(255,138,61,.2);
+  --green:#10B981;--green-bg:rgba(16,185,129,.1);--green-border:rgba(16,185,129,.3);
+  --amber:#F59E0B;--amber-bg:rgba(245,158,11,.1);--amber-border:rgba(245,158,11,.3);
+  --red:#EF4444;--red-bg:rgba(239,68,68,.1);--red-border:rgba(239,68,68,.3);
+  --pink:#E0187A;--pink-bg:rgba(224,24,122,.08);--pink-border:rgba(224,24,122,.25);
+  --text:#EEF2FF;--muted:#7A90B5;--faint:#1A2C48;--border:#1A2C48;--border2:#243858;
+  --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-serif;
+  --mono:'SF Mono','Fira Code',monospace;
+  --sidebar:220px;
+}
+html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--text);overflow:hidden}
+
+/* ── PLATFORM NAV ── */
+.pnav{height:36px;background:#050709;border-bottom:1px solid #0E1218;display:flex;align-items:center;padding:0 16px;gap:4px;position:fixed;top:0;left:0;right:0;z-index:10000}
+.pnav-brand{font-size:13px;font-weight:700;color:var(--cyan);letter-spacing:-.01em;margin-right:10px;flex-shrink:0}
+.pnav-sep{width:1px;height:14px;background:#1C2535;margin:0 6px;flex-shrink:0}
+.pnav-tool{display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:500;color:#4A5270;text-decoration:none;transition:all .15s;white-space:nowrap}
+.pnav-tool:hover{background:#0E1218;color:var(--text)}
+.pnav-tool.pnav-active{background:#0E1218;color:var(--text)}
+.pnav-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+/* ── LOGIN ── */
+#loginScreen{position:fixed;inset:0;top:36px;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999}
+.login-box{width:100%;max-width:360px;padding:0 24px;display:flex;flex-direction:column;align-items:center;gap:20px}
+.login-logo{width:56px;height:56px;border-radius:14px;background:var(--blue-bg);border:1.5px solid var(--blue-border);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:var(--blue)}
+.login-head{text-align:center}
+.login-head h1{font-size:20px;font-weight:700;margin-bottom:4px}
+.login-head p{font-size:13px;color:var(--muted)}
+.login-input{height:42px;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:0 14px;color:var(--text);font-size:14px;outline:none;width:100%}
+.login-input:focus{border-color:var(--blue-border)}
+.login-btn{height:42px;background:var(--blue);border:none;border-radius:8px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;width:100%}
+.login-btn:hover{opacity:.9}
+.login-msg{font-size:12px;color:var(--muted);text-align:center}
+.login-msg.error{color:var(--red)}
+
+/* ── APP SHELL ── */
+#app{display:none;height:calc(100vh - 36px);margin-top:36px;grid-template-columns:var(--sidebar) 1fr;grid-template-rows:52px 1fr}
+
+/* ── TOPBAR ── */
+.topbar{grid-column:1/-1;background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:16px}
+.tb-logo{display:flex;align-items:center;gap:10px}
+.tb-mark{width:28px;height:28px;border-radius:7px;background:var(--blue-bg);border:1px solid var(--blue-border);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--blue)}
+.tb-name{font-size:14px;font-weight:700;letter-spacing:-.02em}
+.tb-sep{width:1px;height:16px;background:var(--border2)}
+.tb-org{font-size:12px;color:var(--muted)}
+.tb-org span{color:var(--text);font-weight:500}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.tb-count{font-size:11px;font-weight:700;padding:3px 10px;border-radius:5px;background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+.tb-save{height:30px;padding:0 14px;background:var(--blue);color:#fff;font-size:12px;font-weight:700;border:none;border-radius:7px;cursor:pointer}
+.tb-save:hover{opacity:.9}
+.tb-user{height:28px;padding:0 12px;background:var(--card);border:1px solid var(--border2);border-radius:6px;font-size:12px;color:var(--muted);cursor:pointer}
+
+/* ── SIDEBAR ── */
+.sidebar{background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.sb-section{padding:14px 0 6px}
+.sb-label{font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;padding:0 18px;margin-bottom:6px}
+.sb-item{display:flex;align-items:center;padding:8px 18px;gap:10px;cursor:pointer;border-left:2px solid transparent;transition:all .15s;font-size:12px;color:var(--muted)}
+.sb-item:hover{background:var(--card);color:var(--text)}
+.sb-item.active{background:var(--card);border-left-color:var(--blue);color:var(--text)}
+.sb-item-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;background:var(--border2)}
+.sb-item.active .sb-item-dot{background:var(--blue)}
+.sb-item-count{margin-left:auto;font-size:10px;font-weight:700;font-family:var(--mono);color:var(--muted)}
+.sb-item-count.hi{color:var(--blue)}
+
+/* API key section in sidebar */
+.sb-api{padding:14px 18px;border-top:1px solid var(--faint);margin-top:auto}
+.sb-api-label{font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:8px}
+.sb-api-input{width:100%;height:30px;background:var(--card2);border:1px solid var(--border2);border-radius:6px;padding:0 10px;color:var(--text);font-size:11px;font-family:var(--mono);outline:none}
+.sb-api-input:focus{border-color:var(--blue-border)}
+.sb-api-status{font-size:10px;margin-top:5px;color:var(--muted)}
+.sb-api-status.ok{color:var(--green)}
+.sb-api-status.err{color:var(--red)}
+
+/* ── MAIN ── */
+.main{display:flex;flex-direction:column;overflow:hidden}
+
+/* ── PANELS ── */
+.panel{display:none;flex:1;overflow:hidden;flex-direction:column}
+.panel.active{display:flex}
+
+/* ── SOURCES PANEL ── */
+.sources-layout{display:flex;flex:1;overflow:hidden}
+.sources-left{width:320px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.sources-right{flex:1;overflow-y:auto;padding:24px 28px}
+
+.panel-hdr{padding:14px 16px 10px;border-bottom:1px solid var(--border);flex-shrink:0}
+.panel-hdr-title{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.panel-hdr-sub{font-size:11px;color:var(--faint);margin-top:3px}
+
+/* Upload drop zone */
+.drop-zone{margin:12px;border:1.5px dashed var(--border2);border-radius:10px;padding:22px 16px;text-align:center;cursor:pointer;transition:all .2s;background:var(--card)}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--blue-border);background:var(--blue-bg)}
+.drop-zone-icon{font-size:22px;margin-bottom:6px}
+.drop-zone-label{font-size:13px;color:var(--muted)}
+.drop-zone-label strong{color:var(--blue)}
+.drop-zone-hint{font-size:11px;color:var(--faint);margin-top:4px}
+
+/* File cards in left column */
+.file-scroll{flex:1;overflow-y:auto;padding:0 12px 12px}
+.file-card{background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;margin-bottom:8px}
+.file-card-top{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px}
+.file-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.file-meta{flex:1;min-width:0}
+.file-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.file-size{font-size:10px;color:var(--muted);margin-top:2px}
+.file-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:1px 4px}
+.file-del:hover{color:var(--red)}
+.file-status{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px}
+.fs-queued{background:var(--card);color:var(--muted);border:1px solid var(--border2)}
+.fs-processing{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+.fs-done{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.fs-error{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+.file-pbar{height:2px;background:var(--faint);border-radius:1px;overflow:hidden;margin-bottom:6px}
+.file-pfill{height:100%;background:var(--blue);animation:pbar-sweep 8s ease-out forwards}
+@keyframes pbar-sweep{0%{width:0%}100%{width:85%}}
+.file-pfill.done{animation:none;width:100%}
+.file-actions{display:flex;gap:6px}
+.btn-extract{height:26px;padding:0 10px;font-size:11px;font-weight:600;border-radius:5px;cursor:pointer;background:var(--blue-bg);border:1px solid var(--blue-border);color:var(--blue);transition:all .15s}
+.btn-extract:hover{background:rgba(91,140,255,.15)}
+.btn-extract:disabled{opacity:.4;cursor:default}
+.from-discover{font-size:10px;color:var(--teal);font-weight:600;padding:2px 6px;border-radius:4px;background:var(--teal-bg);border:1px solid var(--teal-border)}
+
+/* Right source info */
+.sec-header{margin-bottom:20px}
+.sec-eyebrow{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--blue);margin-bottom:8px}
+.sec-title{font-size:20px;font-weight:700;letter-spacing:-.03em;margin-bottom:6px}
+.sec-desc{font-size:13px;color:var(--muted);line-height:1.6;max-width:500px}
+
+.source-type-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.stype-card{background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:14px 16px}
+.stype-icon{font-size:18px;margin-bottom:6px}
+.stype-label{font-size:12px;font-weight:700;margin-bottom:2px}
+.stype-desc{font-size:11px;color:var(--muted);line-height:1.5}
+
+.run-row{display:flex;align-items:center;gap:14px;margin-top:8px}
+.run-btn{height:42px;padding:0 24px;background:var(--blue);color:#fff;font-size:13px;font-weight:700;border:none;border-radius:9px;cursor:pointer;transition:all .2s}
+.run-btn:hover{opacity:.9}
+.run-btn:disabled{background:var(--faint);color:var(--muted);cursor:default;opacity:1}
+.run-hint{font-size:12px;color:var(--muted)}
+
+/* ── SIGNAL FEED PANEL ── */
+.signal-layout{display:flex;flex:1;overflow:hidden;flex-direction:column}
+.signal-filterbar{display:flex;align-items:center;gap:8px;padding:12px 20px;border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap}
+.filter-pill{padding:4px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border2);background:var(--card);color:var(--muted);transition:all .15s;font-family:var(--font)}
+.filter-pill:hover{color:var(--text)}
+.filter-pill.active{border-color:var(--blue-border);background:var(--blue-bg);color:var(--blue)}
+.signal-count{font-size:12px;color:var(--muted);margin-left:auto;white-space:nowrap}
+.btn-export{height:28px;padding:0 12px;font-size:11px;font-weight:600;border-radius:6px;cursor:pointer;background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal)}
+.btn-export:hover{opacity:.8}
+
+.signals-scroll{flex:1;overflow-y:auto;padding:20px}
+.signals-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+.signal-card{background:var(--panel);border:1px solid var(--border2);border-radius:10px;padding:14px;position:relative;transition:border-color .15s}
+.signal-card:hover{border-color:var(--border)}
+.signal-del{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;opacity:0;transition:opacity .15s}
+.signal-card:hover .signal-del{opacity:1}
+.signal-del:hover{color:var(--red)}
+
+.sig-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:10px}
+.sig-BUYER_PAIN{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+.sig-MARKET_TREND{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+.sig-COMPETITIVE{background:var(--orange-bg);color:var(--orange);border:1px solid var(--orange-border)}
+.sig-BUDGET{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.sig-INTENT{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border)}
+.sig-OBJECTION{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
+
+.sig-title{font-size:13px;font-weight:600;margin-bottom:6px;line-height:1.4;padding-right:20px}
+.sig-text{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:10px}
+.sig-footer{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.sig-conf{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--muted)}
+.conf-dot{width:6px;height:6px;border-radius:50%}
+.conf-high{background:var(--green)}
+.conf-medium{background:var(--amber)}
+.conf-low{background:var(--muted)}
+.sig-source{font-size:10px;color:var(--faint);font-family:var(--mono);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sig-star{background:none;border:none;cursor:pointer;font-size:14px;padding:0;opacity:.4;transition:opacity .15s}
+.sig-star:hover{opacity:1}
+.sig-star.starred{opacity:1}
+
+/* ── EMPTY STATE ── */
+.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:48px 24px;color:var(--muted)}
+.empty-icon{font-size:32px;margin-bottom:14px;opacity:.4}
+.empty-title{font-size:15px;font-weight:600;color:var(--muted);margin-bottom:8px}
+.empty-sub{font-size:13px;color:var(--faint);max-width:300px;line-height:1.6}
+
+/* ── PROCESSING OVERLAY ── */
+#procOverlay{position:fixed;inset:0;top:36px;background:rgba(6,14,28,.92);display:none;align-items:center;justify-content:center;z-index:500;backdrop-filter:blur(4px)}
+.proc-box{text-align:center;max-width:380px;padding:0 24px}
+.proc-mark-wrap{display:flex;justify-content:center;margin:0 auto 28px}
+@keyframes drive-spin{to{transform:rotate(360deg)}}
+@keyframes drive-glow{0%,100%{filter:drop-shadow(0 0 12px #7B5EA7)}50%{filter:drop-shadow(0 0 32px #7B5EA7) drop-shadow(0 0 60px #9B7EC7)}}
+.proc-drive-mark{animation:drive-spin 1.4s linear infinite;transform-origin:50px 50px}
+.proc-mark-wrap{animation:drive-glow 2.2s ease-in-out infinite}
+.proc-stage{font-size:13px;font-weight:600;color:var(--blue);margin-bottom:6px}
+.proc-detail{font-size:12px;color:var(--muted)}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:10px 18px;font-size:13px;color:var(--text);z-index:9999;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
+#toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<!-- PLATFORM NAV -->
+<div class="pnav">
+  <span class="pnav-brand">✦ DRIVE</span>
+  <div class="pnav-sep"></div>
+  <a class="pnav-tool" href="/hub.html"><span class="pnav-dot" style="background:#8B7FEC"></span>Hub</a>
+  <div class="pnav-sep"></div>
+  <a class="pnav-tool" href="/discover.html"><span class="pnav-dot" style="background:#8B7FEC"></span>Discover</a>
+  <a class="pnav-tool" href="/resolve.html"><span class="pnav-dot" style="background:#4DE8FF"></span>Resolve</a>
+  <a class="pnav-tool pnav-active" href="/intuit.html"><span class="pnav-dot" style="background:#5B8CFF"></span>Intuit</a>
+  <a class="pnav-tool" href="/visualize.html"><span class="pnav-dot" style="background:#3BBFA3"></span>Visualize</a>
+  <a class="pnav-tool" href="/execute.html"><span class="pnav-dot" style="background:#FF8A3D"></span>Execute</a>
+  <div style="margin-left:auto"><a class="pnav-tool" href="/onboarding.html" target="_blank" style="font-size:11px;opacity:.7">Client Guide ↗</a></div>
+</div>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">I</div>
+    <div class="login-head">
+      <h1>Intuit</h1>
+      <p>Market Signals · DRIVE</p>
+    </div>
+    <input class="login-input" id="loginEmail" type="email" placeholder="your@email.com" onkeydown="if(event.key==='Enter')document.getElementById('loginPassword').focus()">
+    <input class="login-input" id="loginPassword" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')loginWithPassword()">
+    <button class="login-btn" onclick="loginWithPassword()">Sign in →</button>
+    <button onclick="forgotPassword()" style="background:none;border:none;color:inherit;opacity:.55;font-size:12px;cursor:pointer;text-decoration:underline;margin-top:2px">Forgot password?</button>
+    <div class="login-msg" id="loginMsg"></div>
+  </div>
+</div>
+
+<!-- PROCESSING OVERLAY -->
+<div id="procOverlay">
+  <div class="proc-box">
+    <div class="proc-mark-wrap"><svg class="proc-drive-mark" id="procMark" viewBox="0 0 100 100" width="68" height="68"></svg></div>
+    <div class="proc-stage" id="procStage">Reading documents…</div>
+    <div class="proc-detail" id="procDetail">Scanning for buyer signals, pain points, and market indicators</div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- APP -->
+<div id="app" style="display:none;grid-template-columns:var(--sidebar) 1fr;grid-template-rows:52px 1fr">
+
+  <!-- TOPBAR -->
+  <nav class="topbar">
+    <div class="tb-logo">
+      <div class="tb-mark">I</div>
+      <span class="tb-name">Intuit</span>
+    </div>
+    <div class="tb-sep"></div>
+    <div class="tb-org">Signals for <span id="tbOrg">—</span></div>
+    <div class="tb-right">
+      <div class="tb-count" id="tbCount">0 signals</div>
+      <button class="tb-save" onclick="saveSignals()">Save</button>
+      <button class="tb-user" onclick="signOut()" id="tbUser">Sign out</button>
+    </div>
+  </nav>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-section">
+      <div class="sb-label">Work</div>
+      <div class="sb-item active" onclick="showPanel('sources')" id="nav-sources">
+        <div class="sb-item-dot"></div>Sources
+        <span class="sb-item-count hi" id="cnt-sources"></span>
+      </div>
+      <div class="sb-item" onclick="showPanel('signals')" id="nav-signals">
+        <div class="sb-item-dot"></div>Signal feed
+        <span class="sb-item-count hi" id="cnt-signals"></span>
+      </div>
+      <div class="sb-item" onclick="showPanel('starred')" id="nav-starred">
+        <div class="sb-item-dot"></div>Starred
+        <span class="sb-item-count hi" id="cnt-starred"></span>
+      </div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-label">Signal types</div>
+      <div class="sb-item" onclick="filterType('BUYER_PAIN')" id="filt-BUYER_PAIN">
+        <div class="sb-item-dot" style="background:var(--red)"></div>Buyer pain
+        <span class="sb-item-count" id="cnt-BUYER_PAIN"></span>
+      </div>
+      <div class="sb-item" onclick="filterType('MARKET_TREND')" id="filt-MARKET_TREND">
+        <div class="sb-item-dot" style="background:var(--blue)"></div>Market trends
+        <span class="sb-item-count" id="cnt-MARKET_TREND"></span>
+      </div>
+      <div class="sb-item" onclick="filterType('COMPETITIVE')" id="filt-COMPETITIVE">
+        <div class="sb-item-dot" style="background:var(--orange)"></div>Competitive
+        <span class="sb-item-count" id="cnt-COMPETITIVE"></span>
+      </div>
+      <div class="sb-item" onclick="filterType('BUDGET')" id="filt-BUDGET">
+        <div class="sb-item-dot" style="background:var(--green)"></div>Budget signals
+        <span class="sb-item-count" id="cnt-BUDGET"></span>
+      </div>
+      <div class="sb-item" onclick="filterType('INTENT')" id="filt-INTENT">
+        <div class="sb-item-dot" style="background:var(--purple)"></div>Intent
+        <span class="sb-item-count" id="cnt-INTENT"></span>
+      </div>
+      <div class="sb-item" onclick="filterType('OBJECTION')" id="filt-OBJECTION">
+        <div class="sb-item-dot" style="background:var(--amber)"></div>Objections
+        <span class="sb-item-count" id="cnt-OBJECTION"></span>
+      </div>
+    </div>
+    <div class="sb-api">
+      <div class="sb-api-label">Signal extraction</div>
+      <div class="sb-api-status ok">✓ Runs on the DRIVE server</div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- ═══ SOURCES PANEL ═══ -->
+    <div class="panel active" id="panel-sources">
+      <div class="sources-layout">
+        <!-- Left: file upload -->
+        <div class="sources-left">
+          <div class="panel-hdr">
+            <div class="panel-hdr-title">Documents</div>
+            <div class="panel-hdr-sub">Transcripts, case studies, research, web pages</div>
+          </div>
+
+          <!-- Drop zone -->
+          <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+            <div class="drop-zone-icon">📄</div>
+            <div class="drop-zone-label"><strong>Upload documents</strong> or drag &amp; drop</div>
+            <div class="drop-zone-hint">PDF · DOCX · TXT · VTT · PPTX</div>
+          </div>
+          <input type="file" id="fileInput" accept=".pdf,.docx,.doc,.txt,.vtt,.pptx,.ppt,.md" multiple style="display:none" onchange="handleFileInput(event)">
+
+          <!-- File list -->
+          <div class="file-scroll" id="fileScroll">
+            <!-- populated by renderFiles() -->
+          </div>
+        </div>
+
+        <!-- Right: about Intelligence -->
+        <div class="sources-right">
+          <div class="sec-header">
+            <div class="sec-eyebrow">Intuit · Step 1</div>
+            <div class="sec-title">Market Signals</div>
+            <div class="sec-desc">Intuit reads your transcripts, case studies, research notes, and web sources — then extracts the buyer signals, market trends, and competitive intelligence that inform your positioning and content strategy.</div>
+          </div>
+
+          <div class="source-type-grid">
+            <div class="stype-card">
+              <div class="stype-icon">🎙️</div>
+              <div class="stype-label">Discovery transcripts</div>
+              <div class="stype-desc">Client call recordings and intake sessions from Discover — imported automatically</div>
+            </div>
+            <div class="stype-card">
+              <div class="stype-icon">📋</div>
+              <div class="stype-label">Case studies</div>
+              <div class="stype-desc">Past client outcomes and engagement summaries revealing what buyers care about most</div>
+            </div>
+            <div class="stype-card">
+              <div class="stype-icon">🔗</div>
+              <div class="stype-label">Web &amp; research</div>
+              <div class="stype-desc">Competitor pages, industry reports, and ICP articles uploaded or fetched in Discover</div>
+            </div>
+            <div class="stype-card">
+              <div class="stype-icon">📊</div>
+              <div class="stype-label">Sales &amp; CRM notes</div>
+              <div class="stype-desc">Deal notes, lost reasons, and objection logs from your sales process</div>
+            </div>
+          </div>
+
+          <div id="discoverBanner" style="display:none;background:var(--teal-bg);border:1px solid var(--teal-border);border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:12px;color:var(--muted)">
+            <strong style="color:var(--teal)">✓ Discovery materials loaded</strong> — <span id="discoverCount">0</span> documents imported from your Discover session
+          </div>
+
+          <div class="run-row">
+            <button class="run-btn" id="runBtn" onclick="runExtraction()" disabled>◉ Extract signals</button>
+            <div class="run-hint" id="runHint">Add an Anthropic API key and at least one document to begin</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ SIGNAL FEED PANEL ═══ -->
+    <div class="panel" id="panel-signals">
+      <div class="signal-layout">
+        <div class="signal-filterbar">
+          <span class="filter-pill active" onclick="setFilter('all',this)" id="pill-all">All signals</span>
+          <span class="filter-pill" onclick="setFilter('BUYER_PAIN',this)" id="pill-BUYER_PAIN">Buyer pain</span>
+          <span class="filter-pill" onclick="setFilter('MARKET_TREND',this)" id="pill-MARKET_TREND">Trends</span>
+          <span class="filter-pill" onclick="setFilter('COMPETITIVE',this)" id="pill-COMPETITIVE">Competitive</span>
+          <span class="filter-pill" onclick="setFilter('BUDGET',this)" id="pill-BUDGET">Budget</span>
+          <span class="filter-pill" onclick="setFilter('INTENT',this)" id="pill-INTENT">Intent</span>
+          <span class="filter-pill" onclick="setFilter('OBJECTION',this)" id="pill-OBJECTION">Objections</span>
+          <span class="signal-count" id="sigCount">0 signals</span>
+          <button class="btn-export" onclick="exportSignals()">↓ Export CSV</button>
+        </div>
+        <div class="signals-scroll">
+          <div class="signals-grid" id="signalsGrid">
+            <!-- rendered by renderSignals() -->
+          </div>
+          <div class="empty-state" id="signalsEmpty">
+            <div class="empty-icon">◉</div>
+            <div class="empty-title">No signals yet</div>
+            <div class="empty-sub">Upload documents in Sources and run extraction to surface buyer signals from your materials</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ STARRED PANEL ═══ -->
+    <div class="panel" id="panel-starred">
+      <div class="signal-layout">
+        <div class="signal-filterbar">
+          <span style="font-size:12px;color:var(--muted)">Starred signals — saved for Visualize context and content strategy</span>
+          <span class="signal-count" id="starCount">0 starred</span>
+          <button class="btn-export" onclick="exportStarred()">↓ Export starred</button>
+        </div>
+        <div class="signals-scroll">
+          <div class="signals-grid" id="starredGrid"></div>
+          <div class="empty-state" id="starredEmpty">
+            <div class="empty-icon">★</div>
+            <div class="empty-title">No starred signals</div>
+            <div class="empty-sub">Star signals in the feed to save them here for Visualize to use as strategic context</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+const SUPA_URL = 'https://ilhljjkiijmjpwinovzj.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsaGxqamtpaWptanB3aW5vdnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MTk4MjIsImV4cCI6MjA5OTE5NTgyMn0.w8asDSA-rXuaDfujC2dr4J-EKCzlCVABOuq3VQeeFsE';
+const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+const OrgStore = {
+  orgId: null, userEmail: null,
+  init(session) {
+    this.userEmail = session?.user?.email || '';
+    const engId = localStorage.getItem('drive_engagement_id');
+    // Engagement UUID is the sole data key. Fall back to the full email (never
+    // the domain) so two clients under one consultant can never collide.
+    this.orgId = engId || this.userEmail || 'default';
+  },
+  async save(table, data) {
+    if (!this.orgId) return;
+    try { await supa.from(table).upsert({ org_id: this.orgId, data, updated_at: new Date().toISOString(), updated_by: this.userEmail }, { onConflict: 'org_id' }); } catch (_) {}
+  },
+  async load(table) {
+    if (!this.orgId) return null;
+    try { const { data } = await supa.from(table).select('data').eq('org_id', this.orgId).single(); return data?.data || null; } catch (_) { return null; }
+  }
+};
+
+function uid() { return crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36); }
+function escHtml(s) { const d = document.createElement('div'); d.textContent = String(s||''); return d.innerHTML; }
+function showToast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
+
+// ── STATE ─────────────────────────────────────────────────
+let currentUser = null;
+const IS = {
+  files: [],    // {id, name, size, type, status, text, signalCount}
+  signals: [],  // {id, type, title, text, confidence, source, starred}
+};
+let activeFilter = 'all';
+let _extracting = false;
+
+// ── AUTH ──────────────────────────────────────────────────
+async function loginWithPassword() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const msg = document.getElementById('loginMsg');
+  if (!email || !password) { msg.textContent='Enter your email and password'; msg.className='login-msg error'; return; }
+  msg.textContent='Signing in…'; msg.className='login-msg';
+  const { data, error } = await supa.auth.signInWithPassword({ email, password });
+  if (error) { msg.textContent=error.message; msg.className='login-msg error'; return; }
+  currentUser=data.user; OrgStore.init(data.session); await enterApp();
+}
+
+// Password recovery is centralized in the Hub's set-new-password flow.
+async function forgotPassword() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const msg = document.getElementById('loginMsg');
+  if (!email) { msg.textContent='Enter your email first'; msg.className='login-msg error'; return; }
+  const { error } = await supa.auth.resetPasswordForEmail(email, { redirectTo: location.origin + '/hub.html' });
+  if (error) { msg.textContent=error.message; msg.className='login-msg error'; return; }
+  msg.textContent='Check your inbox — set a new password from the Hub, then return here.'; msg.className='login-msg';
+}
+
+async function initAuth() {
+  const { data: { session } } = await supa.auth.getSession();
+  if (session) { currentUser=session.user; OrgStore.init(session); await enterApp(); }
+  else { document.getElementById('loginScreen').style.display='flex'; }
+  supa.auth.onAuthStateChange(async (event,session) => {
+    if (event==='SIGNED_IN' && session && !currentUser) { currentUser=session.user; OrgStore.init(session); await enterApp(); }
+  });
+}
+
+async function enterApp() {
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('app').style.display='grid';
+  document.getElementById('tbUser').textContent = currentUser.email.split('@')[0];
+  // Load API key
+  // Load saved state
+  const saved = await OrgStore.load('org_intelligence');
+  if (saved) { IS.files = saved.files || []; IS.signals = saved.signals || []; }
+  // Pull Discovery materials
+  await loadDiscoveryMaterials();
+  render();
+}
+
+async function signOut() { await supa.auth.signOut(); window.location.reload(); }
+
+// ── NAVIGATION ─────────────────────────────────────────────
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  document.getElementById('nav-'+id).classList.add('active');
+}
+
+function filterType(type) {
+  activeFilter = type;
+  setFilter(type, document.getElementById('pill-'+type));
+  showPanel('signals');
+  document.querySelectorAll('[id^="filt-"]').forEach(el => el.classList.remove('active'));
+  const filtEl = document.getElementById('filt-' + type);
+  if (filtEl) filtEl.classList.add('active');
+}
+
+function setFilter(type, el) {
+  activeFilter = type;
+  document.querySelectorAll('.filter-pill').forEach(p=>p.classList.remove('active'));
+  if (el) el.classList.add('active');
+  renderSignals();
+}
+
+// ── DISCOVERY MATERIALS ────────────────────────────────────
+let practiceContext = ''; // positioning context from Vector, injected into extraction prompts
+
+async function loadDiscoveryMaterials() {
+  const [discoverData, vecData] = await Promise.all([
+    OrgStore.load('org_discover'),
+    OrgStore.load('org_vec_state'),
+  ]);
+
+  // Build practice context string from Vector positioning for richer signal extraction
+  if (vecData) {
+    const pos = vecData.pos || vecData.practice || {};
+    const parts = [];
+    if (vecData.practice?.name) parts.push(`Practice: ${vecData.practice.name}`);
+    if (pos.buyer || pos.oneline) parts.push(`Positioning: ${pos.oneline || ''}`);
+    if (pos.buyer) parts.push(`Buyer: ${pos.buyer}`);
+    if (pos.constraint) parts.push(`Core problem solved: ${pos.constraint}`);
+    if (parts.length) practiceContext = parts.join('\n');
+  }
+
+  if (!discoverData) return;
+  if (discoverData.org_name) document.getElementById('tbOrg').textContent = discoverData.org_name;
+  const intake = discoverData.intake || {};
+  const docs = intake.docs || [];
+  const urls = intake.urls || [];
+  const linkedin = intake.linkedin || '';
+  let added = 0;
+
+  docs.forEach(doc => {
+    if (!IS.files.find(f => f.name === doc.name && f.fromDiscover)) {
+      IS.files.push({
+        id: uid(), name: doc.name, size: doc.size || 0,
+        status: doc.text ? 'queued' : (doc.needsExtraction ? 'needs-upload' : 'queued'),
+        signalCount: 0, fromDiscover: true,
+        text: doc.text || '',
+        needsExtraction: doc.needsExtraction || false,
+      });
+      added++;
+    }
+  });
+
+  urls.forEach(u => {
+    const name = u.label || u.url;
+    if (!IS.files.find(f => f.name === name && f.fromDiscover)) {
+      // URLs have preview text (300 chars) — fetch full content via Jina at extraction time
+      IS.files.push({ id: uid(), name, size: 0, status: 'queued', signalCount: 0, fromDiscover: true, text: u.preview || '', url: u.url });
+      added++;
+    }
+  });
+
+  if (linkedin && !IS.files.find(f => f.name === 'LinkedIn profile' && f.fromDiscover)) {
+    IS.files.push({ id: uid(), name: 'LinkedIn profile', size: linkedin.length, status: 'queued', signalCount: 0, fromDiscover: true, text: linkedin });
+    added++;
+  }
+
+  if (added > 0) {
+    const banner = document.getElementById('discoverBanner');
+    banner.style.display = 'block';
+    document.getElementById('discoverCount').textContent = added;
+  }
+}
+
+// ── FILE HANDLING ──────────────────────────────────────────
+function handleDrop(e) { e.preventDefault(); document.getElementById('dropZone').classList.remove('drag'); addFiles(Array.from(e.dataTransfer.files)); }
+function handleDragOver(e) { e.preventDefault(); document.getElementById('dropZone').classList.add('drag'); }
+function handleDragLeave() { document.getElementById('dropZone').classList.remove('drag'); }
+function handleFileInput(e) { addFiles(Array.from(e.target.files)); e.target.value=''; }
+
+async function addFiles(files) {
+  for (const f of files) {
+    if (!IS.files.find(x=>x.name===f.name && !x.fromDiscover)) {
+      let text = '';
+      try { text = await f.text(); } catch(_) {}
+      IS.files.push({ id:uid(), name:f.name, size:f.size, status:'queued', signalCount:0, fromDiscover:false, text });
+    } else { showToast(f.name + ' already added'); }
+  }
+  renderFiles();
+  updateRunBtn();
+}
+
+function removeFile(id) {
+  IS.files = IS.files.filter(f=>f.id!==id);
+  renderFiles();
+  updateRunBtn();
+}
+
+function renderFiles() {
+  const el = document.getElementById('fileScroll');
+  if (IS.files.length === 0) { el.innerHTML=''; return; }
+  el.innerHTML = IS.files.map(f => {
+    const ext = f.name.split('.').pop().toLowerCase();
+    const icon = {pdf:'📄',docx:'📝',doc:'📝',txt:'📋',vtt:'🎙️',pptx:'📊',ppt:'📊',md:'📋'}[ext] || '📄';
+    const needsUpload = f.needsExtraction && !f.text;
+    const fclass = needsUpload ? 'fs-error'
+      : {queued:'fs-queued',processing:'fs-processing',done:'fs-done',error:'fs-error'}[f.status] || 'fs-queued';
+    const flabel = needsUpload ? 'Upload locally'
+      : {queued:'Queued',processing:'Processing…',done:`${f.signalCount} signals`,error:'Error'}[f.status] || 'Queued';
+    const discoverMeta = f.fromDiscover
+      ? (needsUpload
+          ? '<span class="from-discover" style="background:rgba(239,68,68,.1);color:#EF4444;border-color:rgba(239,68,68,.3)">Re-upload to extract</span>'
+          : '<span class="from-discover">From Discover</span>')
+      : ((f.size/1024).toFixed(0)+' KB');
+    return `<div class="file-card">
+      <div class="file-card-top">
+        <div class="file-icon">${icon}</div>
+        <div class="file-meta">
+          <div class="file-name">${f.name}</div>
+          <div class="file-size">${discoverMeta}</div>
+        </div>
+        <button class="file-del" onclick="removeFile('${f.id}')">✕</button>
+      </div>
+      ${f.status==='processing' ? '<div class="file-pbar"><div class="file-pfill"></div></div>' : ''}
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <span class="file-status ${fclass}">${flabel}</span>
+        ${!needsUpload && f.status==='queued' ? `<button class="btn-extract" onclick="extractOne('${f.id}')">Extract →</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('cnt-sources').textContent = IS.files.length;
+}
+
+function updateRunBtn() {
+  const hasFiles = IS.files.length > 0;
+  const btn = document.getElementById('runBtn');
+  btn.disabled = !hasFiles;
+  document.getElementById('runHint').textContent = !hasFiles
+    ? 'Upload at least one document to extract signals'
+    : `${IS.files.filter(f=>f.status==='queued').length} documents queued`;
+}
+
+// ── SIGNAL EXTRACTION ──────────────────────────────────────
+function setExtractingUI(busy) {
+  const runBtn = document.getElementById('runBtn');
+  if (runBtn) runBtn.disabled = busy || !(IS.files.length > 0);
+  document.querySelectorAll('.btn-extract').forEach(b => { b.disabled = busy; });
+}
+
+async function runExtraction() {
+  if (_extracting) { showToast('Extraction already in progress'); return; }
+  const queued = IS.files.filter(f=>f.status==='queued');
+  if (!queued.length) { showToast('No queued documents'); return; }
+  _extracting = true;
+  setExtractingUI(true);
+  const overlay = document.getElementById('procOverlay');
+  const stageEl = document.getElementById('procStage');
+  const detailEl = document.getElementById('procDetail');
+  overlay.style.display='flex';
+  try {
+    for (const file of queued) {
+      stageEl.textContent = `Reading ${file.name}…`;
+      detailEl.textContent = 'Extracting text and preparing for analysis';
+      file.status = 'processing';
+      renderFiles();
+      await new Promise(r=>setTimeout(r,400));
+      stageEl.textContent = `Extracting signals from ${file.name}…`;
+      detailEl.textContent = 'Identifying buyer pain, market trends, competitive signals, and intent indicators';
+      const text = file.text || `[Document: ${file.name}]`;
+      try {
+        const extracted = await callClaude(file.name, text, file);
+        IS.signals.push(...extracted);
+        file.signalCount = extracted.length;
+        file.status = 'done';
+      } catch (err) {
+        console.error(err);
+        file.status = 'error';
+      }
+      renderFiles();
+      await new Promise(r=>setTimeout(r,300));
+    }
+    overlay.style.display='none';
+    render();
+    showPanel('signals');
+    showToast(`${IS.signals.length} total signals extracted`);
+    saveSignals();
+  } finally {
+    _extracting = false;
+    overlay.style.display='none';
+    setExtractingUI(false);
+  }
+}
+
+async function extractOne(id) {
+  if (_extracting) { showToast('Extraction already in progress'); return; }
+  const file = IS.files.find(f=>f.id===id);
+  if (!file || file.status!=='queued') return;
+  _extracting = true;
+  setExtractingUI(true);
+  file.status='processing'; renderFiles();
+  const text = file.text || `[Document: ${file.name}]`;
+  try {
+    const extracted = await callClaude(file.name, text, file);
+    IS.signals.push(...extracted);
+    file.signalCount = extracted.length;
+    file.status='done';
+    showToast(`${extracted.length} signals extracted from ${file.name}`);
+    saveSignals();
+  } catch (err) {
+    file.status='error';
+    showToast('Extraction failed — check API key');
+  } finally {
+    _extracting = false;
+    setExtractingUI(false);
+  }
+  render();
+}
+
+async function fetchFullUrl(url) {
+  try {
+    const res = await fetch(`https://r.jina.ai/${url}`, {
+      headers: { 'Accept': 'text/plain', 'X-Return-Format': 'text' },
+      signal: AbortSignal.timeout(12000),
+    });
+    if (!res.ok) return '';
+    return (await res.text()).slice(0, 15000);
+  } catch (_) { return ''; }
+}
+
+async function callClaude(filename, text, fileRef) {
+  // For URL sources with only a preview, fetch the full content now
+  if (fileRef?.url && text.length < 500) {
+    const full = await fetchFullUrl(fileRef.url);
+    if (full) text = full;
+  }
+
+  const contextBlock = practiceContext
+    ? `\n\nPRACTICE CONTEXT (use to focus signal relevance):\n${practiceContext}\n`
+    : '';
+
+  const res = await fetch('/api/parse', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      model:'claude-haiku-4-5-20251001',
+      max_tokens:2000,
+      system:`You are a market intelligence analyst extracting buyer signals from consulting practice documents.
+Extract every meaningful signal — buyer pain, market trends, competitive insight, budget indicators, purchase intent, and objections.
+Prioritize signals most relevant to the practice context if provided.
+Return ONLY a valid JSON array. No markdown fences. No comments.
+
+[{
+  "type": "BUYER_PAIN|MARKET_TREND|COMPETITIVE|BUDGET|INTENT|OBJECTION",
+  "title": "string — 4-8 word headline",
+  "text": "string — 1-2 sentence description of the signal with specific evidence",
+  "confidence": "high|medium|low"
+}]${contextBlock}`,
+      messages:[{role:'user',content:`Source: ${filename}\n\n${text.slice(0,8000)}`}]
+    })
+  });
+  if (!res.ok) throw new Error(`API ${res.status}`);
+  const data = await res.json();
+  let raw = data.content[0].text.trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```\s*$/i,'').trim();
+  const arr = JSON.parse(raw);
+  return arr.map(s => ({ id:uid(), type:s.type, title:s.title, text:s.text, confidence:s.confidence||'medium', source:filename, starred:false }));
+}
+
+// ── RENDER SIGNALS ─────────────────────────────────────────
+function renderSignals() {
+  const grid = document.getElementById('signalsGrid');
+  const empty = document.getElementById('signalsEmpty');
+  let filtered = activeFilter==='all' ? IS.signals : IS.signals.filter(s=>s.type===activeFilter);
+  document.getElementById('sigCount').textContent = `${filtered.length} signal${filtered.length!==1?'s':''}`;
+  if (!filtered.length) { grid.style.display='none'; empty.style.display='flex'; return; }
+  grid.style.display='grid'; empty.style.display='none';
+  grid.innerHTML = filtered.map(s => signalCard(s, false)).join('');
+  updateSidebar();
+}
+
+function renderStarred() {
+  const grid = document.getElementById('starredGrid');
+  const empty = document.getElementById('starredEmpty');
+  const starred = IS.signals.filter(s=>s.starred);
+  document.getElementById('starCount').textContent = `${starred.length} starred`;
+  if (!starred.length) { grid.style.display='none'; empty.style.display='flex'; return; }
+  grid.style.display='grid'; empty.style.display='none';
+  grid.innerHTML = starred.map(s => signalCard(s, true)).join('');
+}
+
+function signalCard(s, inStarPanel) {
+  const TYPE_LABELS = {BUYER_PAIN:'Buyer pain',MARKET_TREND:'Market trend',COMPETITIVE:'Competitive',BUDGET:'Budget',INTENT:'Intent',OBJECTION:'Objection'};
+  const confClass = {high:'conf-high',medium:'conf-medium',low:'conf-low'}[s.confidence]||'conf-medium';
+  return `<div class="signal-card">
+    <button class="signal-del" onclick="deleteSignal('${s.id}')">✕</button>
+    <div class="sig-badge sig-${s.type}">${escHtml(TYPE_LABELS[s.type]||s.type)}</div>
+    <div class="sig-title">${escHtml(s.title)}</div>
+    <div class="sig-text">${escHtml(s.text)}</div>
+    <div class="sig-footer">
+      <div class="sig-conf">
+        <div class="conf-dot ${confClass}"></div>
+        ${escHtml(s.confidence)} confidence
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <div class="sig-source">${escHtml(s.source||'—')}</div>
+        <button class="sig-star ${s.starred?'starred':''}" onclick="toggleStar('${s.id}')" title="${s.starred?'Unstar':'Star'}">${s.starred?'★':'☆'}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function toggleStar(id) {
+  const s = IS.signals.find(x=>x.id===id);
+  if (s) { s.starred=!s.starred; renderSignals(); renderStarred(); updateSidebar(); debouncedSave(); }
+}
+
+function deleteSignal(id) {
+  IS.signals = IS.signals.filter(s=>s.id!==id);
+  renderSignals(); renderStarred(); updateSidebar(); debouncedSave();
+}
+
+// ── EXPORT ────────────────────────────────────────────────
+function exportSignals() { exportSet(IS.signals.filter(s=>activeFilter==='all'||s.type===activeFilter), 'intelligence-signals.csv'); }
+function exportStarred() { exportSet(IS.signals.filter(s=>s.starred), 'intelligence-starred.csv'); }
+function exportSet(set, fname) {
+  const rows = [['Type','Title','Text','Confidence','Source','Starred']];
+  set.forEach(s=>rows.push([s.type,s.title,s.text,s.confidence,s.source||'',s.starred?'Yes':'No']));
+  const csv = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a'); a.href='data:text/csv,'+encodeURIComponent(csv); a.download=fname; a.click();
+}
+
+// ── SIDEBAR COUNTS ────────────────────────────────────────
+function updateSidebar() {
+  const counts = {};
+  IS.signals.forEach(s=>counts[s.type]=(counts[s.type]||0)+1);
+  ['BUYER_PAIN','MARKET_TREND','COMPETITIVE','BUDGET','INTENT','OBJECTION'].forEach(t=>{
+    const el=document.getElementById('cnt-'+t); if(el) el.textContent=counts[t]||'';
+  });
+  const total=IS.signals.length;
+  document.getElementById('cnt-signals').textContent=total||'';
+  document.getElementById('cnt-starred').textContent=IS.signals.filter(s=>s.starred).length||'';
+  document.getElementById('tbCount').textContent=`${total} signal${total!==1?'s':''}`;
+}
+
+// ── SAVE ─────────────────────────────────────────────────
+let saveTimer=null;
+function debouncedSave(){clearTimeout(saveTimer);saveTimer=setTimeout(saveSignals,1500);}
+async function saveSignals(){
+  if(!currentUser)return;
+  try{await OrgStore.save('org_intelligence',{files:IS.files.map(f=>({id:f.id,name:f.name,size:f.size,status:f.status,signalCount:f.signalCount,fromDiscover:f.fromDiscover})),signals:IS.signals});}catch(_){}
+}
+
+// ── RENDER ────────────────────────────────────────────────
+function render() {
+  renderFiles();
+  renderSignals();
+  renderStarred();
+  updateSidebar();
+  updateRunBtn();
+}
+
+initAuth();
+
+// ── DRIVE mark icon system ───────────────────────────────────
+var DRIVE_PROD_IDX=2;
+(function(){
+  var C=['#E8547A','#2EC4B6','#7B5EA7','#54C06E','#F4822A'];
+  var GAP=4,N=5,SP=72;
+  function seg(cx,cy,ro,ri,a0,a1){
+    function p(r,d){var rad=(d-90)*Math.PI/180;return[cx+r*Math.cos(rad),cy+r*Math.sin(rad)];}
+    var p0=p(ro,a0),p1=p(ro,a1),p2=p(ri,a1),p3=p(ri,a0),lg=(a1-a0)>180?1:0;
+    return'M'+p0[0].toFixed(2)+','+p0[1].toFixed(2)+' A'+ro+','+ro+' 0 '+lg+',1 '+p1[0].toFixed(2)+','+p1[1].toFixed(2)+' L'+p2[0].toFixed(2)+','+p2[1].toFixed(2)+' A'+ri+','+ri+' 0 '+lg+',0 '+p3[0].toFixed(2)+','+p3[1].toFixed(2)+'Z';
+  }
+  function fill(el,activeIdx,singleColor){
+    var dim=parseFloat((el.getAttribute('viewBox')||'0 0 100 100').split(' ')[2]);
+    var cx=dim/2,cy=dim/2,ro=dim*.42,ri=dim*.20;
+    el.innerHTML='';
+    for(var i=0;i<N;i++){
+      var a0=i*SP+GAP/2,a1=(i+1)*SP-GAP/2;
+      var path=document.createElementNS('http://www.w3.org/2000/svg','path');
+      path.setAttribute('d',seg(cx,cy,ro,ri,a0,a1));
+      path.setAttribute('fill',singleColor||(i===activeIdx?C[activeIdx]:'#161616'));
+      el.appendChild(path);
+    }
+  }
+  document.querySelectorAll('.pnav-dot').forEach(function(dot){
+    var a=dot.closest('a');if(!a)return;
+    var h=a.getAttribute('href')||'';
+    var idx=h.indexOf('discover')>=0?0:h.indexOf('resolve')>=0?1:h.indexOf('intuit')>=0?2:h.indexOf('visualize')>=0?3:h.indexOf('execute')>=0?4:-1;
+    var svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('viewBox','0 0 100 100');svg.setAttribute('width','14');svg.setAttribute('height','14');
+    if(idx<0){for(var j=0;j<N;j++){var a0=j*SP+GAP/2,a1=(j+1)*SP-GAP/2;var pp=document.createElementNS('http://www.w3.org/2000/svg','path');pp.setAttribute('d',seg(50,50,42,20,a0,a1));pp.setAttribute('fill',C[j]);svg.appendChild(pp);}}
+    else{fill(svg,idx,null);}
+    dot.parentNode.replaceChild(svg,dot);
+  });
+  var pm=document.getElementById('procMark');
+  if(pm)fill(pm,DRIVE_PROD_IDX,C[DRIVE_PROD_IDX]);
+  var brand=document.querySelector('.pnav-brand');
+  if(brand){var bSvg=document.createElementNS('http://www.w3.org/2000/svg','svg');bSvg.setAttribute('viewBox','0 0 100 100');bSvg.setAttribute('width','14');bSvg.setAttribute('height','14');bSvg.style.cssText='vertical-align:middle;margin-right:5px;flex-shrink:0';for(var k=0;k<N;k++){var ba0=k*SP+GAP/2,ba1=(k+1)*SP-GAP/2;var bpp=document.createElementNS('http://www.w3.org/2000/svg','path');bpp.setAttribute('d',seg(50,50,42,20,ba0,ba1));bpp.setAttribute('fill',C[k]);bSvg.appendChild(bpp);}brand.innerHTML='';brand.appendChild(bSvg);brand.appendChild(document.createTextNode('DRIVE'));}
+  var prodColor=C[DRIVE_PROD_IDX];var tm=document.querySelector('.tb-mark,.topbar .logo-mark');if(tm){tm.style.background=prodColor;tm.style.border='none';var tSvg=document.createElementNS('http://www.w3.org/2000/svg','svg');tSvg.setAttribute('viewBox','0 0 100 100');tSvg.setAttribute('width','22');tSvg.setAttribute('height','22');tSvg.style.display='block';fill(tSvg,DRIVE_PROD_IDX,prodColor);tSvg.querySelectorAll('path').forEach(function(p){p.style.fill='rgba(255,255,255,0.25)';});tm.innerHTML='';tm.appendChild(tSvg);}
+})();
+</script>
+</body>
+</html>

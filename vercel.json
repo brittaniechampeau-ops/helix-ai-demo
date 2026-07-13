@@ -5,7 +5,12 @@
   "framework": null,
   "rewrites": [
     { "source": "/", "destination": "/hub.html" },
-    { "source": "/vector", "destination": "/vector.html" },
+    { "source": "/visualize", "destination": "/visualize.html" },
+    { "source": "/intuit", "destination": "/intuit.html" },
+    { "source": "/execute", "destination": "/execute.html" },
+    { "source": "/vector", "destination": "/visualize.html" },
+    { "source": "/intelligence", "destination": "/intuit.html" },
+    { "source": "/engine", "destination": "/execute.html" },
     { "source": "/helix", "destination": "/helix_demo.html" }
   ]
 }

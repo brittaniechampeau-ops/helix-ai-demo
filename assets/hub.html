@@ -142,14 +142,14 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
   <a class="pnav-tool" href="/resolve.html">
     <span class="pnav-dot" style="background:#4DE8FF"></span>Resolve
   </a>
-  <a class="pnav-tool" href="/intelligence.html">
-    <span class="pnav-dot" style="background:#5B8CFF"></span>Intelligence
+  <a class="pnav-tool" href="/intuit.html">
+    <span class="pnav-dot" style="background:#5B8CFF"></span>Intuit
   </a>
-  <a class="pnav-tool" href="/vector.html">
-    <span class="pnav-dot" style="background:#3BBFA3"></span>Vector
+  <a class="pnav-tool" href="/visualize.html">
+    <span class="pnav-dot" style="background:#3BBFA3"></span>Visualize
   </a>
-  <a class="pnav-tool" href="/engine.html">
-    <span class="pnav-dot" style="background:#FF8A3D"></span>Engine
+  <a class="pnav-tool" href="/execute.html">
+    <span class="pnav-dot" style="background:#FF8A3D"></span>Execute
   </a>
   <div class="pnav-right">
     <a class="pnav-tool" href="/onboarding.html" target="_blank" style="font-size:11px;opacity:.7">Client Guide ↗</a>
@@ -482,7 +482,7 @@ async function checkDataPresence(engList, activeId) {
 }
 
 const HUB_TRACK_NAMES = {
-  micro:      'Vector Sprint',
+  micro:      'Visualize Sprint',
   smb:        'Growth Sprint',
   mid:        'Full DRIVE Engagement',
   enterprise: 'Enterprise Governance',
@@ -496,7 +496,7 @@ const HUB_FIRST_TOOL = {
 };
 
 const HUB_TOOL_LABELS = {
-  'vector.html':   'Vector',
+  'visualize.html':   'Visualize',
   'resolve.html':  'Resolve',
   'discover.html': 'Discover',
 };
@@ -533,9 +533,9 @@ function cardHTML(eng, activeId) {
     <div class="eng-pipeline" id="pipeline-${eng.id}" title="DRIVE pipeline progress">
       <div class="pipeline-dot pd-d" title="Discover">D</div>
       <div class="pipeline-dot pd-r" title="Resolve">R</div>
-      <div class="pipeline-dot pd-i" title="Intelligence">I</div>
-      <div class="pipeline-dot pd-v" title="Vector">V</div>
-      <div class="pipeline-dot pd-e" title="Engine">E</div>
+      <div class="pipeline-dot pd-i" title="Intuit">I</div>
+      <div class="pipeline-dot pd-v" title="Visualize">V</div>
+      <div class="pipeline-dot pd-e" title="Execute">E</div>
     </div>
     <div class="eng-actions">
       ${isActive
@@ -981,7 +981,7 @@ body{background:#050709;color:#E8EAF0;font-family:-apple-system,BlinkMacSystemFo
         ${pos.differentiator ? `<div><div style="font-size:11px;color:#4A5270;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Key Differentiator</div><div style="font-size:13px;color:#8892A4">${rEsc(pos.differentiator)}</div></div>` : ''}
         ${pos.proof ? `<div><div style="font-size:11px;color:#4A5270;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Proof</div><div style="font-size:13px;color:#8892A4">${rEsc(pos.proof)}</div></div>` : ''}
       </div>
-    `) : `<p style="color:#4A5270;font-size:13px;font-style:italic">Positioning not yet defined in Vector.</p>`}
+    `) : `<p style="color:#4A5270;font-size:13px;font-style:italic">Positioning not yet defined in Visualize.</p>`}
     ${cdna ? card(`
       <div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#3BBFA3;margin-bottom:10px">Campaign DNA</div>
       <div style="font-size:13px;color:#8892A4;line-height:1.7;white-space:pre-wrap">${rEsc(cdna.slice(0, 8000))}${cdna.length > 2000 ? '\n…' : ''}</div>
@@ -1409,7 +1409,7 @@ document.getElementById('newPasswordInput').addEventListener('keydown', e => {
   document.querySelectorAll('.pnav-dot').forEach(function(dot){
     var a=dot.closest('a');if(!a)return;
     var h=a.getAttribute('href')||'';
-    var idx=h.indexOf('discover')>=0?0:h.indexOf('resolve')>=0?1:h.indexOf('intelligence')>=0?2:h.indexOf('vector')>=0?3:h.indexOf('engine')>=0?4:-1;
+    var idx=h.indexOf('discover')>=0?0:h.indexOf('resolve')>=0?1:h.indexOf('intuit')>=0?2:h.indexOf('visualize')>=0?3:h.indexOf('execute')>=0?4:-1;
     var svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
     svg.setAttribute('viewBox','0 0 100 100');svg.setAttribute('width','14');svg.setAttribute('height','14');
     fill(svg,idx<0?null:idx);

@@ -20,7 +20,7 @@ serve(async (req) => {
     const from     = senderName || founderName || 'Your advisor'
     const subject  = practiceName
       ? `Your ${practiceName} workspace is ready`
-      : 'Your Vector workspace is ready'
+      : 'Your Visualize workspace is ready'
 
     const html = `
 <!DOCTYPE html><html><head><meta charset="UTF-8">
@@ -29,7 +29,7 @@ serve(async (req) => {
 <body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#060E1C;color:#EEF2FF;margin:0;padding:40px 20px">
   <div style="max-width:480px;margin:0 auto">
 
-    <div style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#00C8FF;text-transform:uppercase;margin-bottom:32px">Vector</div>
+    <div style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#00C8FF;text-transform:uppercase;margin-bottom:32px">Visualize</div>
 
     <h1 style="font-size:24px;font-weight:700;letter-spacing:-.02em;margin:0 0 12px;line-height:1.25">
       ${practiceName ? `Your ${practiceName} workspace is ready` : 'Your workspace is ready'}
@@ -37,7 +37,7 @@ serve(async (req) => {
 
     <p style="font-size:15px;color:#8A9FBF;line-height:1.6;margin:0 0 28px">
       ${greeting}<br><br>
-      ${from} has set up your growth workspace in Vector. Your positioning, offer structure, referral engine, and 90-day plan are loaded and waiting for you.
+      ${from} has set up your growth workspace in Visualize. Your positioning, offer structure, referral engine, and 90-day plan are loaded and waiting for you.
     </p>
 
     <a href="${VECTOR_URL}" style="display:inline-block;background:#00C8FF;color:#060E1C;font-weight:700;font-size:15px;padding:14px 28px;border-radius:8px;text-decoration:none;letter-spacing:-.01em;margin-bottom:32px">

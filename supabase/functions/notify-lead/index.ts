@@ -3,7 +3,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!
 const NOTIFY_EMAIL   = Deno.env.get('NOTIFY_EMAIL') ?? 'britt@brittbowman.ai'
 const FROM_EMAIL     = Deno.env.get('FROM_EMAIL')   ?? 'drive@brittbowman.ai'
-const VECTOR_URL     = Deno.env.get('VECTOR_URL')   ?? 'https://vector.brittbowman.ai/vector.html'
+const VECTOR_URL     = Deno.env.get('VECTOR_URL')   ?? 'https://vector.brittbowman.ai/visualize.html'
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -24,9 +24,9 @@ serve(async (req) => {
 
     const scoreRows = scores ? `
       <tr><td style="padding:4px 8px;color:#6B7A8D">Resolve</td><td style="padding:4px 8px;font-weight:600;color:${scoreColor(scores.taxonomy)}">${scores.taxonomy ?? '—'}/8</td></tr>
-      <tr><td style="padding:4px 8px;color:#6B7A8D">Intelligence</td><td style="padding:4px 8px;font-weight:600;color:${scoreColor(scores.signal)}">${scores.signal ?? '—'}/8</td></tr>
-      <tr><td style="padding:4px 8px;color:#6B7A8D">Vector</td><td style="padding:4px 8px;font-weight:600;color:${scoreColor(scores.strategy)}">${scores.strategy ?? '—'}/8</td></tr>
-      <tr><td style="padding:4px 8px;color:#6B7A8D">Engine</td><td style="padding:4px 8px;font-weight:600;color:${scoreColor(scores.execution)}">${scores.execution ?? '—'}/8</td></tr>
+      <tr><td style="padding:4px 8px;color:#6B7A8D">Intuit</td><td style="padding:4px 8px;font-weight:600;color:${scoreColor(scores.signal)}">${scores.signal ?? '—'}/8</td></tr>
+      <tr><td style="padding:4px 8px;color:#6B7A8D">Visualize</td><td style="padding:4px 8px;font-weight:600;color:${scoreColor(scores.strategy)}">${scores.strategy ?? '—'}/8</td></tr>
+      <tr><td style="padding:4px 8px;color:#6B7A8D">Execute</td><td style="padding:4px 8px;font-weight:600;color:${scoreColor(scores.execution)}">${scores.execution ?? '—'}/8</td></tr>
     ` : '<tr><td colspan="2" style="padding:4px 8px;color:#6B7A8D">Scores pending</td></tr>'
 
     const adminHtml = `
@@ -75,9 +75,9 @@ serve(async (req) => {
     <table style="width:100%;border-collapse:collapse;background:#0E1218;border-radius:10px;overflow:hidden;margin-bottom:28px">
       <tr><td colspan="2" style="padding:8px 12px;font-size:11px;font-weight:600;letter-spacing:.06em;color:#6B7A8D;border-bottom:1px solid #1A2030">READINESS SCORES</td></tr>
       <tr><td style="padding:8px 12px;color:#6B7A8D">Resolve</td><td style="padding:8px 12px;font-weight:600;color:${scoreColor(scores.taxonomy)}">${scores.taxonomy ?? '—'} / 8</td></tr>
-      <tr><td style="padding:8px 12px;color:#6B7A8D">Intelligence</td><td style="padding:8px 12px;font-weight:600;color:${scoreColor(scores.signal)}">${scores.signal ?? '—'} / 8</td></tr>
-      <tr><td style="padding:8px 12px;color:#6B7A8D">Vector</td><td style="padding:8px 12px;font-weight:600;color:${scoreColor(scores.strategy)}">${scores.strategy ?? '—'} / 8</td></tr>
-      <tr><td style="padding:8px 12px;color:#6B7A8D">Engine</td><td style="padding:8px 12px;font-weight:600;color:${scoreColor(scores.execution)}">${scores.execution ?? '—'} / 8</td></tr>
+      <tr><td style="padding:8px 12px;color:#6B7A8D">Intuit</td><td style="padding:8px 12px;font-weight:600;color:${scoreColor(scores.signal)}">${scores.signal ?? '—'} / 8</td></tr>
+      <tr><td style="padding:8px 12px;color:#6B7A8D">Visualize</td><td style="padding:8px 12px;font-weight:600;color:${scoreColor(scores.strategy)}">${scores.strategy ?? '—'} / 8</td></tr>
+      <tr><td style="padding:8px 12px;color:#6B7A8D">Execute</td><td style="padding:8px 12px;font-weight:600;color:${scoreColor(scores.execution)}">${scores.execution ?? '—'} / 8</td></tr>
     </table>` : ''}
 
     <a href="${VECTOR_URL}" style="display:inline-block;background:#3BBFA3;color:#07090C;font-weight:600;font-size:14px;padding:14px 24px;border-radius:8px;text-decoration:none;margin-bottom:28px">Open my workspace →</a>

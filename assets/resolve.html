@@ -251,9 +251,9 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
   <div class="pnav-sep"></div>
   <a class="pnav-tool" href="./discover.html"><span class="pnav-dot" style="background:#8B7FEC"></span>Discover</a>
   <a class="pnav-tool pnav-active" href="./resolve.html"><span class="pnav-dot" style="background:#4DE8FF"></span>Resolve</a>
-  <a class="pnav-tool" href="./intelligence.html"><span class="pnav-dot" style="background:#5B8CFF"></span>Intelligence</a>
-  <a class="pnav-tool" href="./vector.html"><span class="pnav-dot" style="background:#3BBFA3"></span>Vector</a>
-  <a class="pnav-tool" href="./engine.html"><span class="pnav-dot" style="background:#FF8A3D"></span>Engine</a>
+  <a class="pnav-tool" href="./intuit.html"><span class="pnav-dot" style="background:#5B8CFF"></span>Intuit</a>
+  <a class="pnav-tool" href="./visualize.html"><span class="pnav-dot" style="background:#3BBFA3"></span>Visualize</a>
+  <a class="pnav-tool" href="./execute.html"><span class="pnav-dot" style="background:#FF8A3D"></span>Execute</a>
   <div style="margin-left:auto"><a class="pnav-tool" href="./onboarding.html" target="_blank" style="font-size:11px;opacity:.7">Client Guide ↗</a></div>
 </div>
 
@@ -437,7 +437,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
         <div class="sec-header">
           <div class="sec-eyebrow">Resolve · Step 3</div>
           <div class="sec-title">Canonical taxonomy</div>
-          <div class="sec-desc">The locked vocabulary — terms your team and all downstream tools (Vector, Engine) use. Add, edit, or mark each term as defined or pending.</div>
+          <div class="sec-desc">The locked vocabulary — terms your team and all downstream tools (Visualize, Execute) use. Add, edit, or mark each term as defined or pending.</div>
         </div>
 
         <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
@@ -480,7 +480,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
         <div class="card">
           <div class="card-header"><div class="card-title">How naming is used</div></div>
           <div style="font-size:13px;color:var(--muted);line-height:1.7">
-            The naming convention flows into <strong style="color:var(--text)">Engine</strong> — all generated campaign names, asset filenames, and CRM record names follow this pattern automatically. Approving it here locks the pattern across all downstream tools.
+            The naming convention flows into <strong style="color:var(--text)">Execute</strong> — all generated campaign names, asset filenames, and CRM record names follow this pattern automatically. Approving it here locks the pattern across all downstream tools.
           </div>
         </div>
       </div>
@@ -507,7 +507,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
         <div class="sec-header">
           <div class="sec-eyebrow">Resolve · Final Step</div>
           <div class="sec-title">Approve &amp; Lock</div>
-          <div class="sec-desc">Complete the readiness checklist below before locking the taxonomy. Once locked, Engine and Vector will use this as the canonical vocabulary for all campaign and content outputs.</div>
+          <div class="sec-desc">Complete the readiness checklist below before locking the taxonomy. Once locked, Execute and Visualize will use this as the canonical vocabulary for all campaign and content outputs.</div>
         </div>
 
         <div class="card" id="readinessCard">
@@ -536,7 +536,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
                 <div style="font-size:12px;color:var(--muted);margin-top:2px" id="lockedAt"></div>
               </div>
             </div>
-            <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:16px">This canonical taxonomy is the source of truth for this engagement. Engine uses it to name campaigns and assign tags. Vector uses it to validate content alignment. All governance rules are active.</div>
+            <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:16px">This canonical taxonomy is the source of truth for this engagement. Execute uses it to name campaigns and assign tags. Visualize uses it to validate content alignment. All governance rules are active.</div>
             <button class="btn" onclick="unlockTaxonomy()">Unlock to make changes</button>
           </div>
         </div>
@@ -771,7 +771,7 @@ async function lockTaxonomy() {
   updateStatus('locked');
   renderReadiness();
   await saveTaxonomy();
-  showToast('Taxonomy locked v1.0 — Engine and Vector are ready');
+  showToast('Taxonomy locked v1.0 — Execute and Visualize are ready');
 }
 
 async function unlockTaxonomy() {
@@ -1418,7 +1418,7 @@ var DRIVE_PROD_IDX=1;
   document.querySelectorAll('.pnav-dot').forEach(function(dot){
     var a=dot.closest('a');if(!a)return;
     var h=a.getAttribute('href')||'';
-    var idx=h.indexOf('discover')>=0?0:h.indexOf('resolve')>=0?1:h.indexOf('intelligence')>=0?2:h.indexOf('vector')>=0?3:h.indexOf('engine')>=0?4:-1;
+    var idx=h.indexOf('discover')>=0?0:h.indexOf('resolve')>=0?1:h.indexOf('intuit')>=0?2:h.indexOf('visualize')>=0?3:h.indexOf('execute')>=0?4:-1;
     var svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
     svg.setAttribute('viewBox','0 0 100 100');svg.setAttribute('width','14');svg.setAttribute('height','14');
     if(idx<0){for(var j=0;j<N;j++){var a0=j*SP+GAP/2,a1=(j+1)*SP-GAP/2;var pp=document.createElementNS('http://www.w3.org/2000/svg','path');pp.setAttribute('d',seg(50,50,42,20,a0,a1));pp.setAttribute('fill',C[j]);svg.appendChild(pp);}}
