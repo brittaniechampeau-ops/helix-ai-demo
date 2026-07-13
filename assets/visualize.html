@@ -1004,6 +1004,7 @@
         <div class="card-header">
           <span class="card-title">Contact Roster</span>
           <div style="display:flex;gap:8px">
+            <button class="btn btn-ghost btn-sm" id="pullContactsBtn" onclick="extractReferralContacts(true)">✨ Pull from materials</button>
             <button class="btn btn-ghost btn-sm" onclick="exportContactsCSV()">↓ CSV</button>
             <button class="btn btn-ghost btn-sm" onclick="openContactModal()">+ Add Contact</button>
           </div>
@@ -1734,6 +1735,7 @@ function showStep(n) {
   document.querySelectorAll('.step-btn').forEach((b, i) => b.classList.toggle('active', i === n));
   currentStep = n;
   if (n === 1) maybeAutoDraftPositioning();
+  if (n === 2) maybeAutoExtractReferrals();
   if (n === 5) {
     const planEmpty = document.getElementById('planCtaEmpty');
     const planGen   = document.getElementById('planCtaGenerated');
@@ -2828,6 +2830,68 @@ function renderPositioningResult() {
   const el = document.getElementById('posResult');
   el.innerHTML = html;
   el.classList.add('show');
+}
+
+// ─── STEP 2: pull the referral roster from the carried materials ──
+async function extractReferralContacts(force = false) {
+  const dc = VEC._discover || {};
+  if (!dc.materials) { if (force) showToast('No Discover materials to pull from'); return; }
+  await runRealGeneration('Foundation 2', 'Finding Referral Contacts', 'Pulling clients and contacts from your materials…', async () => {
+    try {
+      const res = await generateReferralContacts();
+      const list = (res && Array.isArray(res.contacts)) ? res.contacts : [];
+      if (!list.length) { showToast('No clear contacts found in your materials'); return; }
+      const relMap = { 'past-client': 'past-client', 'current-client': 'current-client', 'peer': 'peer', 'vendor': 'vendor', 'partner': 'vendor', 'mentor': 'mentor', 'advisor': 'mentor' };
+      const seen = new Set(VEC.ref.contacts.map(c => (c.name || '').toLowerCase() + '|' + (c.company || '').toLowerCase()));
+      let added = 0;
+      list.forEach((x, i) => {
+        const name = (x.name || x.company || '').trim();
+        if (!name) return;
+        const key = name.toLowerCase() + '|' + (x.company || '').toLowerCase();
+        if (seen.has(key)) return;
+        seen.add(key);
+        VEC.ref.contacts.push({
+          id: Date.now() + i,
+          name,
+          company: (x.company || '').trim(),
+          role: (x.role || '').trim(),
+          type: relMap[(x.relationship || '').toLowerCase()] || 'past-client',
+          value: (x.value_delivered || '').trim(),
+          status: 'not-asked', convo1: '', convo2: '',
+        });
+        added++;
+      });
+      renderContacts(); updateSidebar(); saveState();
+      showToast(added ? `${added} contact${added !== 1 ? 's' : ''} pulled from your materials` : 'Those contacts are already in your roster');
+    } catch (e) {
+      console.error('[referral extract]', e);
+      showToast('Couldn\'t pull contacts — ' + (e.message || 'try again'));
+    }
+  });
+}
+
+async function generateReferralContacts() {
+  const dc = VEC._discover || {}, p = VEC.practice;
+  const system = `You build a referral contact roster for an independent consultant from THEIR OWN materials (case studies, proposals, decks, SOWs). List the real past/current clients and named professional contacts the founder could plausibly ask for a referral or an introduction, and capture what the founder did for them (the value/result — this powers the referral ask).
+STRICT: include only real, specifically-named people or client organizations that actually appear in the materials. Do NOT include template placeholders (e.g. "[Client Name]", "Acme Corp" fillers), the founder's own practice or team, generic hypothetical examples, or vendors selling to the founder.
+Return ONLY valid JSON (no fences): { "contacts": [ { "name": "person's name if given, else leave blank", "company": "client company", "role": "title if known", "relationship": "past-client|current-client|peer|vendor|mentor", "value_delivered": "what the founder did for them / the result, one sentence" } ] }
+If nothing qualifies, return { "contacts": [] }.`;
+  const user = `PRACTICE: ${p.name || 'the practice'}
+
+MATERIALS:
+${dc.materials.slice(0, 30000)}`;
+  return await callClaude(system, user, { model: 'claude-sonnet-4-6', maxTokens: 1500 });
+}
+
+// Auto-pull the roster (once per session) on first entry to Referral Engine.
+let _refExtractedThisSession = false;
+function maybeAutoExtractReferrals() {
+  if (_refExtractedThisSession || _isGenerating) return;
+  const dc = VEC._discover || {};
+  if (dc.materials && VEC.ref.contacts.length === 0 && !VEC.ref.generated) {
+    _refExtractedThisSession = true;
+    extractReferralContacts(false);
+  }
 }
 
 // ─── STEP 2: REFERRAL ENGINE ───────────────────────────
