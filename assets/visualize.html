@@ -933,7 +933,7 @@
       </div>
 
       <div class="card">
-        <div class="card-header"><span class="card-title">Positioning Canvas</span></div>
+        <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><span class="card-title">Positioning Canvas</span><button class="btn btn-ghost btn-sm" id="draftPosBtn" onclick="draftPositioning()">✨ Draft from my profile</button></div>
         <div class="form-group">
           <label class="form-label">Who is the buyer? (role + company type + size)</label>
           <input class="form-input" id="pos-buyer" placeholder="e.g. VP Operations at mid-market manufacturers ($50M–$300M) navigating post-acquisition integration" title="Who is the buyer? Enter role, company type, and size — e.g. VP Operations at mid-market manufacturers ($50M–$300M) navigating post-acquisition integration" />
@@ -1732,6 +1732,7 @@ function showStep(n) {
   document.querySelectorAll('.step-panel').forEach((p, i) => p.classList.toggle('active', i === n));
   document.querySelectorAll('.step-btn').forEach((b, i) => b.classList.toggle('active', i === n));
   currentStep = n;
+  if (n === 1) maybeAutoDraftPositioning();
   if (n === 5) {
     const planEmpty = document.getElementById('planCtaEmpty');
     const planGen   = document.getElementById('planCtaGenerated');
@@ -1919,6 +1920,13 @@ async function loadDRIVEContext() {
         if (!VEC.practice.email   && email)      { VEC.practice.email   = email;      setInput('founderEmail', email); }
         if (!VEC.practice.website && website)    { VEC.practice.website = website;    setInput('practiceWebsite', website); }
         VEC.practice.industry = VEC.practice.industry || discoverData.org_industry || eng?.industry || '';
+        // Keep the rest of the Discover profile for drafting positioning later.
+        VEC._discover = {
+          challenge: discoverData.org_challenge || '',
+          industry:  discoverData.org_industry || eng?.industry || '',
+          rev:       discoverData.org_rev || '',
+          team:      discoverData.org_team || '',
+        };
         // Map Discover's team-size bucket onto the diagnostic firm-size question.
         if (!VEC.diag.size && discoverData.org_team) {
           const sizeMap = { '1-5': 'small', '6-20': 'team', '21-50': 'firm', '51-200': 'firm' };
@@ -2622,6 +2630,54 @@ function runDiagnostic() {
       showToast('Diagnostic complete — Track ' + track);
       showStep(1);
     });
+}
+
+// ─── STEP 1: POSITIONING — draft from upstream context ──
+async function draftPositioning() {
+  if (!VEC.diag.track) { showToast('Run the Diagnostic first — the draft builds on it'); return; }
+  await runRealGeneration('Foundation 1', 'Drafting Positioning', 'Drafting your positioning from your profile…', async () => {
+    try {
+      const draft = await generatePositioningDraft();
+      const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+      if (draft && draft.buyer)      { VEC.pos.buyer = draft.buyer;           set('pos-buyer', draft.buyer); }
+      if (draft && draft.constraint) { VEC.pos.constraint = draft.constraint; set('pos-constraint', draft.constraint); }
+      if (draft && draft.oneline)    { VEC.pos.oneline = draft.oneline;       set('pos-oneline', draft.oneline); }
+      if (draft && draft.proof)      { VEC.pos.proof = draft.proof;           set('pos-proof', draft.proof); }
+      VEC.pos._drafted = true;
+      saveState();
+      showToast('Positioning drafted — refine it, then Generate');
+    } catch (e) {
+      console.error('[draft positioning]', e);
+      VEC.pos._drafted = true; // don't loop the auto-draft on failure
+      showToast('Draft unavailable — ' + (e.message || 'try again'));
+    }
+  });
+}
+
+async function generatePositioningDraft() {
+  const p = VEC.practice, d = VEC.diag, dc = VEC._discover || {};
+  const trackName = { A: 'Discipline & Systematize', B: 'Build From Zero', C: 'Fix & Activate' }[d.track] || '';
+  const system = `You are a positioning strategist for an independent consulting/advisory practice. From the practice profile below, draft a FIRST-DRAFT positioning canvas the founder will then refine. Make reasonable, clearly-plausible assumptions about their ideal buyer from their industry and size, but stay grounded and specific — no generic filler. This is a starting point, not final copy.
+Return ONLY valid JSON (no fences): { "buyer": "role + company type + size", "constraint": "the real thing blocking that buyer's progress (1-2 sentences)", "oneline": "what they do and for whom, no jargon (one sentence)", "proof": "a proof-point in a format they can drop a real number into" }`;
+  const user = `PRACTICE: ${p.name || 'the practice'}${p.founder ? ' (founder: ' + p.founder + ')' : ''}
+INDUSTRY: ${p.industry || dc.industry || 'unknown'}
+TEAM SIZE: ${dc.team || d.size || 'unknown'}
+GROWTH CHALLENGE (from Discover): ${dc.challenge || 'unspecified'}
+DIAGNOSTIC TRACK: ${d.track ? `Track ${d.track} — ${trackName}` : 'unset'}
+MARKET STATE: ${d.market || 'unset'}
+CURRENT MOTION: ${d.motion || 'unset'}
+
+Draft the positioning canvas JSON.`;
+  return await callClaude(system, user, { model: 'claude-sonnet-4-6', maxTokens: 900 });
+}
+
+// Auto-draft once when landing on Positioning with an empty canvas + a completed diagnostic.
+function maybeAutoDraftPositioning() {
+  const buyerEl = document.getElementById('pos-buyer');
+  const canvasEmpty = buyerEl && !buyerEl.value.trim() && !VEC.pos.buyer;
+  if (canvasEmpty && VEC.diag.track && !VEC.pos._drafted && !VEC.pos.generated && !_isGenerating) {
+    draftPositioning();
+  }
 }
 
 // ─── STEP 1: POSITIONING ───────────────────────────────
