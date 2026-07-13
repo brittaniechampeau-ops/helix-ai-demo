@@ -2294,7 +2294,7 @@ async function silentSave() {
     intake: {
       taxGate: state.intake.taxGate,
       taxFiles: state.intake.taxFiles.map(f => ({ name: f.name, label: f.label })),
-      docs: state.intake.docs.map(f => ({ name: f.name, type: f.type, label: f.label })),
+      docs: state.intake.docs.map(f => ({ name: f.name, type: f.type, label: f.label, text: (f.text || '').slice(0, 10000) })),
       urls: state.intake.urls.map(u => ({ url: u.url, preview: u.preview })),
       hasLinkedin: state.intake.linkedin.length > 20,
     },
@@ -2337,7 +2337,7 @@ async function saveToSupabase() {
     intake: {
       taxGate: state.intake.taxGate,
       taxFiles: state.intake.taxFiles.map(f => ({ name: f.name, label: f.label })),
-      docs: state.intake.docs.map(f => ({ name: f.name, type: f.type, label: f.label })),
+      docs: state.intake.docs.map(f => ({ name: f.name, type: f.type, label: f.label, text: (f.text || '').slice(0, 10000) })),
       urls: state.intake.urls.map(u => ({ url: u.url, preview: u.preview })),
       hasLinkedin: state.intake.linkedin.length > 20,
     }

@@ -1044,7 +1044,10 @@
       <div class="card">
         <div class="card-header">
           <span class="card-title">Case Studies</span>
-          <button class="btn btn-ghost btn-sm" onclick="openCaseModal()">+ Add Case Study</button>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-ghost btn-sm" id="pullCasesBtn" onclick="extractCaseStudies(true)">✨ Pull from materials</button>
+            <button class="btn btn-ghost btn-sm" onclick="openCaseModal()">+ Add Case Study</button>
+          </div>
         </div>
         <div id="caseListWrap">
           <p style="color:var(--txt3);font-size:13px;padding:12px 0;">No case studies yet — click Add Case Study or Load Demo.</p>
@@ -1736,6 +1739,7 @@ function showStep(n) {
   currentStep = n;
   if (n === 1) maybeAutoDraftPositioning();
   if (n === 2) maybeAutoExtractReferrals();
+  if (n === 3) maybeAutoExtractCases();
   if (n === 5) {
     const planEmpty = document.getElementById('planCtaEmpty');
     const planGen   = document.getElementById('planCtaGenerated');
@@ -2956,6 +2960,65 @@ function renderReferralResult() {
       <div class="result-header"><span class="result-icon">✅</span><div><div class="result-title">Referral Scripts Generated</div><div class="result-sub">${eligible.length} scripts ready · ${held} contacts in delivery (held)</div></div></div>
       ${cards}`;
   document.getElementById('refResult').classList.add('show');
+}
+
+// ─── STEP 3: pull case studies from the carried materials ──
+async function extractCaseStudies(force = false) {
+  const dc = VEC._discover || {};
+  if (!dc.materials) { if (force) showToast('No Discover materials to pull from'); return; }
+  await runRealGeneration('Foundation 3', 'Finding Case Studies', 'Pulling case studies from your materials…', async () => {
+    try {
+      const res = await generateCaseStudiesFromMaterials();
+      const list = (res && Array.isArray(res.cases)) ? res.cases : [];
+      if (!list.length) { showToast('No case studies found in your materials'); return; }
+      const seen = new Set(VEC.cred.cases.map(c => (c.client || '').toLowerCase()));
+      let added = 0;
+      list.forEach((x, i) => {
+        const client = (x.client || '').trim();
+        if (!client || seen.has(client.toLowerCase())) return;
+        seen.add(client.toLowerCase());
+        VEC.cred.cases.push({
+          id: Date.now() + i, client,
+          industry:   (x.industry || '').trim(),
+          situation:  (x.situation || '').trim(),
+          constraint: (x.constraint || '').trim(),
+          solution:   (x.solution || '').trim(),
+          result:     (x.result || '').trim(),
+          quote:      (x.quote || '').trim(),
+        });
+        added++;
+      });
+      renderCases(); updateSidebar(); saveState();
+      showToast(added ? `${added} case stud${added !== 1 ? 'ies' : 'y'} pulled from your materials` : 'Those case studies are already added');
+    } catch (e) {
+      console.error('[case extract]', e);
+      showToast('Couldn\'t pull case studies — ' + (e.message || 'try again'));
+    }
+  });
+}
+
+async function generateCaseStudiesFromMaterials() {
+  const dc = VEC._discover || {}, p = VEC.practice;
+  const system = `You extract case studies from an independent consultant's OWN materials (case-study docs, decks, proposals). For each real client engagement described, capture the structured story. Keep the client's real numbers; do NOT invent facts.
+STRICT: only real, specifically-named client engagements that appear in the materials. Skip template placeholders (e.g. "[Client Name]"), hypothetical examples, and the practice's own self-description.
+Return ONLY valid JSON (no fences): { "cases": [ { "client": "client name/org", "industry": "if stated else blank", "situation": "what was happening (1-2 sentences)", "constraint": "the real blocker (1 sentence)", "solution": "what the consultant did (1-2 sentences)", "result": "quantified outcome", "quote": "a client quote if present, else empty" } ] }
+If nothing qualifies, return { "cases": [] }.`;
+  const user = `PRACTICE: ${p.name || 'the practice'}
+
+MATERIALS:
+${dc.materials.slice(0, 30000)}`;
+  return await callClaude(system, user, { model: 'claude-sonnet-4-6', maxTokens: 2200 });
+}
+
+// Auto-pull case studies (once per session) on first entry to Credibility.
+let _casesExtractedThisSession = false;
+function maybeAutoExtractCases() {
+  if (_casesExtractedThisSession || _isGenerating) return;
+  const dc = VEC._discover || {};
+  if (dc.materials && VEC.cred.cases.length === 0 && !VEC.cred.generated) {
+    _casesExtractedThisSession = true;
+    extractCaseStudies(false);
+  }
 }
 
 // ─── STEP 3: CREDIBILITY ───────────────────────────────
