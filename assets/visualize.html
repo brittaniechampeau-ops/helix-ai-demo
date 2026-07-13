@@ -1178,7 +1178,10 @@
       <div class="card" id="planCard">
         <div class="card-header">
           <span class="card-title">Implementation Sequence</span>
-          <button class="btn btn-ghost btn-sm" onclick="downloadArtifact('plan')">View Tracker →</button>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-ghost btn-sm" onclick="regeneratePlan()">↻ Rebuild from my work</button>
+            <button class="btn btn-ghost btn-sm" onclick="downloadArtifact('plan')">View Tracker →</button>
+          </div>
         </div>
         <div id="planTableWrap" style="color:var(--txt3);font-size:13px;">
           Run the diagnostic and earlier steps to generate your plan.
@@ -1194,8 +1197,8 @@
       </div>
       <div class="step-cta" id="planCtaGenerated" style="display:none">
         <div class="step-cta-copy">
-          <strong>Plan generated from your diagnostic track.</strong>
-          Tasks marked DO are your immediate actions. Tasks marked WAIT have a prerequisite.
+          <strong>Plan generated from your DRIVE work.</strong>
+          Built from your positioning, offers, roster, and case studies — not a generic template. Tasks marked DO are immediate; WAIT tasks have a prerequisite. Use “↻ Rebuild from my work” after you change anything upstream.
         </div>
         <button class="btn btn-primary" onclick="downloadArtifact('plan')">View Plan Tracker →</button>
       </div>
@@ -3152,7 +3155,8 @@ async function runIntake() {
     }
     VEC.ops.generated = true;
     renderIntakeResult();
-    generatePlan();
+    document.getElementById('procMsg').textContent = 'Sequencing your 30-60-90 plan from your DRIVE work…';
+    await generatePlanFromContext();
     document.getElementById('nav-4').classList.add('done');
     updateSidebar(); updatePracticeOS(); saveState();
     showProceedBanner(4);
@@ -3259,7 +3263,15 @@ function generatePlan() {
     ]
   };
 
-  const rows = (plans[track] || plans.A);
+  // Prefer the AI plan grounded in the practice's actual DRIVE work; fall back
+  // to the static, track-based template when no AI plan has been generated.
+  let rows;
+  if (VEC.plan.ai && VEC.plan.ai.phases) {
+    rows = [];
+    VEC.plan.ai.phases.forEach(ph => ph.items.forEach(it => rows.push([ph.name, it.type, it.area, it.task])));
+  } else {
+    rows = (plans[track] || plans.A);
+  }
   let currentPhase = '';
   const html = `<table class="plan-table">
     <thead><tr><th>Phase</th><th>Type</th><th>Foundation</th><th>Task</th></tr></thead>
@@ -3281,6 +3293,95 @@ function generatePlan() {
   if (planEmpty) planEmpty.style.display = 'none';
   if (planGen)   planGen.style.display   = '';
   updatePracticeOS();
+  renderPlanTracker();   // keep the in-app tracker in sync with the same source
+}
+
+// AI-generate the 30-60-90 plan from the practice's real DRIVE context so it
+// never tells them to redo work they've already completed here.
+async function generatePlanAI() {
+  const p = VEC.practice, d = VEC.diag, dc = VEC._discover || {};
+  const trackName = { A: 'Discipline & Systematize', B: 'Build From Zero', C: 'Fix & Activate' }[d.track] || '';
+  const pos = VEC.pos || {};
+  const offers = [pos.offer1, pos.offer2, pos.offer3].filter(o => o && o.name);
+  const contacts = (VEC.ref && VEC.ref.contacts) || [];
+  const cases = (VEC.cred && VEC.cred.cases) || [];
+  const done = [];
+  if (pos.generated || pos.oneline || pos.buyer) done.push(`Positioning Canvas — one-line: "${pos.oneline || '(set)'}" · buyer: "${pos.buyer || '—'}" · constraint: "${pos.constraint || '—'}"`);
+  if (offers.length) done.push(`Offer ladder — ${offers.map(o => `${o.name}${o.price ? ' (' + o.price + ')' : ''}`).join(', ')}`);
+  if (contacts.length) done.push(`Referral roster — ${contacts.length} contact${contacts.length !== 1 ? 's' : ''} already logged`);
+  if (cases.length) done.push(`Case studies — ${cases.length} already drafted`);
+  if (VEC.ops && VEC.ops.generated) done.push('Intake / delivery kit configured');
+  const signals = (dc.signals || []).slice(0, 6).map(s => '• ' + (s.title || s.text || '')).filter(Boolean).join('\n');
+
+  const system = `You are a fractional CMO writing a 30-60-90 day growth plan for an independent consulting/advisory practice that has ALREADY built its foundations inside a platform called DRIVE.
+HARD RULES:
+- Do NOT tell them to redo finished work. If positioning is done, never say "rewrite" or "complete the positioning canvas" — instead sequence what comes next: validate it with real clients, put it to work in referral asks and content, and move pipeline.
+- Reference their ACTUAL one-line, offers, and contacts where relevant. Be specific, never generic.
+- A WAIT task is something to deliberately hold until a prerequisite is met — use sparingly.
+Return ONLY valid JSON, no code fences: an array of EXACTLY 12 objects (4 per phase, ordered):
+[{"phase":"Foundation"|"Activation"|"Optimization","type":"DO"|"WAIT","area":"Positioning"|"Referral Engine"|"Credibility"|"Intake"|"Growth","task":"one specific instruction","how":["sub-step","sub-step"]}]
+Keep each task to a single sentence. "how" = 2–3 short sub-steps. Be concise — no preamble.`;
+
+  const user = `PRACTICE: ${p.name || 'the practice'}${p.founder ? ' — founder ' + p.founder : ''}
+INDUSTRY: ${p.industry || dc.industry || 'unknown'} · TEAM: ${dc.team || d.size || 'unknown'}
+DIAGNOSTIC TRACK: ${d.track ? `Track ${d.track} — ${trackName}` : 'unset'}
+GROWTH CHALLENGE (from Discover): ${dc.challenge || 'unspecified'}
+
+ALREADY COMPLETED IN DRIVE (do not re-assign these — build forward from them):
+${done.length ? done.map(x => '- ' + x).join('\n') : '- (foundations not yet complete — foundational tasks are OK)'}
+${signals ? `\nBUYER SIGNALS surfaced in Intuit:\n${signals}` : ''}
+
+Write the 30-60-90 plan JSON now — start them from where they actually are.`;
+
+  // Haiku: fast enough to finish inside the edge function's limit, and plenty
+  // capable for structured, context-grounded task sequencing.
+  return await callClaude(system, user, { model: 'claude-haiku-4-5-20251001', maxTokens: 1800 });
+}
+
+// Group the flat AI task list into the three phase buckets the renderers expect.
+function normalizePlan(arr) {
+  if (!Array.isArray(arr)) throw new Error('plan not an array');
+  const buckets = { Foundation: [], Activation: [], Optimization: [] };
+  arr.forEach(t => {
+    const ph = /activ/i.test(t.phase) ? 'Activation' : /optim/i.test(t.phase) ? 'Optimization' : 'Foundation';
+    buckets[ph].push(t);
+  });
+  const titleFor = { Foundation: 'Days 1–30: Foundation', Activation: 'Days 31–60: Activation', Optimization: 'Days 61–90: Optimization' };
+  const phases = ['Foundation', 'Activation', 'Optimization'].map((name, pi) => ({
+    name, title: titleFor[name],
+    items: buckets[name].map((t, ii) => ({
+      id: `ai-${pi}-${ii}`,
+      area: t.area || 'Growth',
+      type: /wait/i.test(t.type) ? 'WAIT' : 'DO',
+      task: String(t.task || '').trim(),
+      how: Array.isArray(t.how) ? t.how.filter(Boolean).map(String) : []
+    })).filter(it => it.task)
+  })).filter(ph => ph.items.length);
+  if (!phases.length) throw new Error('empty plan');
+  return { phases };
+}
+
+// Orchestrator: AI plan → normalize → render. Falls back to the static template
+// on any failure. Assumes a progress overlay is already showing.
+async function generatePlanFromContext() {
+  try {
+    VEC.plan.ai = normalizePlan(await generatePlanAI());
+  } catch (e) {
+    console.error('[plan]', e);
+    VEC.plan.ai = null;
+    showToast('AI plan unavailable — using the standard track template. ' + (e.message || ''));
+  }
+  generatePlan();
+}
+
+// Manual "rebuild" button — lets a returning user regenerate the plan from their
+// current DRIVE work (with its own overlay).
+async function regeneratePlan() {
+  if (_isGenerating) return;
+  await runRealGeneration('30-60-90', 'Rebuilding your plan', 'Sequencing your 30-60-90 plan from your DRIVE work…', async () => {
+    await generatePlanFromContext();
+    saveState();
+  });
 }
 
 // ─── PRACTICE OS ───────────────────────────────────────
@@ -4253,8 +4354,14 @@ const PLAN_MILESTONES = {
 };
 
 function renderPlanTracker() {
-  const track = VEC.diag.track || 'A';
-  const plan = PLAN_MILESTONES[track] || PLAN_MILESTONES['A'];
+  // Prefer the AI plan (grounded in real DRIVE work); fall back to the template.
+  let plan;
+  if (VEC.plan.ai && VEC.plan.ai.phases) {
+    plan = { phases: VEC.plan.ai.phases.map(ph => ({ title: ph.title, items: ph.items.map(it => ({ id: it.id, task: it.task, how: it.how })) })) };
+  } else {
+    const track = VEC.diag.track || 'A';
+    plan = PLAN_MILESTONES[track] || PLAN_MILESTONES['A'];
+  }
   const checked = VEC.plan.checked || {};
   const allItems = plan.phases.flatMap(p => p.items);
   const doneCount = allItems.filter(i => checked[i.id]).length;
@@ -4270,7 +4377,7 @@ function renderPlanTracker() {
     <div style="margin-bottom:20px">
       <div style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--accent);margin-bottom:10px">${phase.title}</div>
       ${phase.items.map(item => {
-        const howto = TASK_HOWTOS[item.id];
+        const howto = (item.how && item.how.length) ? { steps: item.how } : TASK_HOWTOS[item.id];
         const done = !!checked[item.id];
         return `<div style="border-bottom:1px solid var(--surface2)">
           <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0">
