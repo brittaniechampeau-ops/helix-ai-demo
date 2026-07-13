@@ -1903,7 +1903,11 @@ async function loadDRIVEContext() {
     }
   } catch (_) {}
 
-  if (!DISCOVER_READINESS) {
+  // Always load the Discover context (uploaded materials + practice identity),
+  // regardless of whether cloudLoad() already set a readiness record. The old
+  // `if (!DISCOVER_READINESS)` gate skipped this whole block for any assessed
+  // engagement — which silently dropped the carried-over materials.
+  {
     try {
       const discoverData = await OrgStore.load('org_discover');
       if (discoverData) {
@@ -2731,11 +2735,19 @@ function renderCarriedMaterials() {
   if (!el) return;
   const dc = VEC._discover || {};
   const names = dc.docNames || [];
-  if (dc.materials) {
+  const hasText = !!(dc.materials && dc.materials.trim());
+  // Show whenever files carried over — even if their text couldn't be extracted —
+  // so uploads never silently disappear between Discover and Visualize.
+  if (hasText || names.length) {
     el.style.display = 'block';
-    el.innerHTML = names.length
-      ? `<strong style="color:var(--green)">✓ ${names.length} document${names.length !== 1 ? 's' : ''} carried from Discover</strong> — ${names.map(n => escHtml(n)).join(', ')}. These feed your positioning draft — no need to re-upload.`
-      : `<strong style="color:var(--green)">✓ Materials carried from Discover</strong> — used to draft your positioning. No need to re-upload.`;
+    if (names.length) {
+      const fileList = names.map(n => escHtml(n)).join(', ');
+      el.innerHTML = hasText
+        ? `<strong style="color:var(--green)">✓ ${names.length} document${names.length !== 1 ? 's' : ''} carried from Discover</strong> — ${fileList}. These feed your positioning draft — no need to re-upload.`
+        : `<strong style="color:var(--green)">✓ ${names.length} document${names.length !== 1 ? 's' : ''} carried from Discover</strong> — ${fileList}. We couldn't read text from ${names.length !== 1 ? 'these' : 'this'} (often scanned or image-only files) — re-upload below if you want ${names.length !== 1 ? 'them' : 'it'} analyzed.`;
+    } else {
+      el.innerHTML = `<strong style="color:var(--green)">✓ Materials carried from Discover</strong> — used to draft your positioning. No need to re-upload.`;
+    }
   } else {
     el.style.display = 'none';
   }
