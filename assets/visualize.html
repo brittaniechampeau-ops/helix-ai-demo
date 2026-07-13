@@ -1909,10 +1909,15 @@ async function loadDRIVEContext() {
             eng = data;
           } catch (_) {}
         }
+        // Prefer what Discover captured; fall back to the Hub engagement contact.
         const seededName = discoverData.org_name || eng?.org_name || eng?.client_name || localStorage.getItem('drive_engagement_name') || '';
-        if (!VEC.practice.name && seededName) { VEC.practice.name = seededName; setInput('practiceName', seededName); }
-        if (!VEC.practice.founder && eng?.contact_name)  { VEC.practice.founder = eng.contact_name;  setInput('founderName', eng.contact_name); }
-        if (!VEC.practice.email   && eng?.contact_email) { VEC.practice.email   = eng.contact_email; setInput('founderEmail', eng.contact_email); }
+        const founder = discoverData.org_founder || eng?.contact_name || '';
+        const email   = discoverData.org_email   || eng?.contact_email || '';
+        const website = discoverData.org_website  || '';
+        if (!VEC.practice.name    && seededName) { VEC.practice.name    = seededName; setInput('practiceName', seededName); }
+        if (!VEC.practice.founder && founder)    { VEC.practice.founder = founder;    setInput('founderName', founder); }
+        if (!VEC.practice.email   && email)      { VEC.practice.email   = email;      setInput('founderEmail', email); }
+        if (!VEC.practice.website && website)    { VEC.practice.website = website;    setInput('practiceWebsite', website); }
         VEC.practice.industry = VEC.practice.industry || discoverData.org_industry || eng?.industry || '';
         // Map Discover's team-size bucket onto the diagnostic firm-size question.
         if (!VEC.diag.size && discoverData.org_team) {

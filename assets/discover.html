@@ -466,6 +466,18 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
           <input class="field-input" id="orgName" placeholder="Clearfield Advisory" maxlength="60" oninput="updateOrgDisplay()">
         </div>
         <div class="field-group">
+          <div class="field-label">Founder / owner name</div>
+          <input class="field-input" id="orgFounder" placeholder="e.g. Sarah Chen" maxlength="60">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Contact email</div>
+          <input class="field-input" id="orgEmail" type="email" placeholder="sarah@example.com">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Website <span style="font-weight:400;color:var(--muted)">— optional</span></div>
+          <input class="field-input" id="orgWebsite" placeholder="clearfieldadvisory.com">
+        </div>
+        <div class="field-group">
           <div class="field-label">Primary industry</div>
           <select class="field-select" id="orgIndustry" onchange="updateFooter()">
             <option value="">Select industry…</option>
@@ -834,6 +846,9 @@ function restoreDiscoverState(data) {
   if (!data) return;
   try {
     if (data.org_name) { state.orgName = data.org_name; document.getElementById('orgName').value = data.org_name; }
+    if (data.org_founder) document.getElementById('orgFounder').value = data.org_founder;
+    if (data.org_email) document.getElementById('orgEmail').value = data.org_email;
+    if (data.org_website) document.getElementById('orgWebsite').value = data.org_website;
     if (data.org_industry) document.getElementById('orgIndustry').value = data.org_industry;
     if (data.org_challenge) document.getElementById('orgChallenge').value = data.org_challenge;
     if (data.org_team) { state.orgTeam = data.org_team; document.querySelectorAll('#teamChips .chip').forEach(c => { if (c.textContent.trim() === data.org_team) c.classList.add('sel'); }); }
@@ -1266,6 +1281,9 @@ ${textChunks.join('\n\n')}
 Return this exact JSON structure. Use null for any field where there is not enough evidence — do not guess:
 {
   "org_name": "",
+  "founder_name": "",
+  "contact_email": "",
+  "website": "",
   "industry": "",
   "team_size": "",
   "annual_revenue": "",
@@ -1388,9 +1406,15 @@ team_size = total employee count at the company (not number of contacts in the s
     const orgNameEl = document.getElementById('orgName');
     const orgChallengeEl = document.getElementById('orgChallenge');
     const orgIndustryEl = document.getElementById('orgIndustry');
+    const orgFounderEl = document.getElementById('orgFounder');
+    const orgEmailEl = document.getElementById('orgEmail');
+    const orgWebsiteEl = document.getElementById('orgWebsite');
     // Only fill fields the user left blank — a manual selection always wins over
     // the values parsed from uploaded documents.
     if (p.org_name && !state.orgName) { state.orgName = p.org_name; orgNameEl.value = p.org_name; updateOrgDisplay(); filled.push('org name'); }
+    if (p.founder_name && !orgFounderEl.value) { orgFounderEl.value = p.founder_name; filled.push('founder'); }
+    if (p.contact_email && !orgEmailEl.value) { orgEmailEl.value = p.contact_email; filled.push('email'); }
+    if (p.website && !orgWebsiteEl.value) { orgWebsiteEl.value = p.website; filled.push('website'); }
     if (p.industry && !orgIndustryEl.value && fillIndustry(p.industry)) filled.push('industry');
     if (p.team_size && !state.orgTeam && fillChip('teamChips', 'team', p.team_size)) filled.push('team size');
     if (p.annual_revenue && !state.orgRev && fillChip('revChips', 'rev', p.annual_revenue)) filled.push('revenue');
@@ -2256,6 +2280,9 @@ body{background:#050709;color:#E8EAF0;font-family:-apple-system,BlinkMacSystemFo
 async function silentSave() {
   const snapshot = {
     org_name: state.orgName,
+    org_founder: document.getElementById('orgFounder').value,
+    org_email: document.getElementById('orgEmail').value,
+    org_website: document.getElementById('orgWebsite').value,
     org_industry: document.getElementById('orgIndustry').value,
     org_challenge: document.getElementById('orgChallenge').value,
     org_team: state.orgTeam,
