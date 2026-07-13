@@ -2298,6 +2298,13 @@ async function silentSave() {
       urls: state.intake.urls.map(u => ({ url: u.url, preview: u.preview })),
       hasLinkedin: state.intake.linkedin.length > 20,
     },
+    // Persist the extracted materials text so downstream tools (Visualize) can
+    // reuse the uploaded decks/proposals/offers without re-uploading.
+    materials_text: [
+      ...state.intake.docs.filter(f => f.text).map(f => `--- ${f.name} ---\n${f.text.slice(0, 8000)}`),
+      ...state.intake.urls.filter(u => u.preview).map(u => `--- ${u.url} ---\n${String(u.preview).slice(0, 4000)}`),
+      state.intake.linkedin.length > 20 ? `--- LinkedIn ---\n${state.intake.linkedin.slice(0, 6000)}` : '',
+    ].filter(Boolean).join('\n\n').slice(0, 40000),
   };
   try { localStorage.setItem('discover_state_'+(localStorage.getItem('drive_engagement_id')||'local'), JSON.stringify(snapshot)); } catch (_) {}
   if (currentUser) {

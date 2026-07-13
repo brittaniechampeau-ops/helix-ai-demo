@@ -920,6 +920,7 @@
       <div class="card">
         <div class="card-header"><span class="card-title">Raw Materials (optional)</span></div>
         <p style="font-size:13px;color:var(--txt3);margin-bottom:12px;">Upload existing decks, proposals, or case studies. Visualize will extract positioning signals from them.</p>
+        <div id="carriedMaterials" style="display:none;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:11px 14px;margin-bottom:12px;font-size:12.5px;color:var(--txt2);line-height:1.5"></div>
         <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()"
              ondragover="event.preventDefault();this.classList.add('dragover')"
              ondragleave="this.classList.remove('dragover')"
@@ -1920,13 +1921,17 @@ async function loadDRIVEContext() {
         if (!VEC.practice.email   && email)      { VEC.practice.email   = email;      setInput('founderEmail', email); }
         if (!VEC.practice.website && website)    { VEC.practice.website = website;    setInput('practiceWebsite', website); }
         VEC.practice.industry = VEC.practice.industry || discoverData.org_industry || eng?.industry || '';
-        // Keep the rest of the Discover profile for drafting positioning later.
+        // Keep the rest of the Discover profile — including the uploaded
+        // materials text — for drafting positioning and offers later.
         VEC._discover = {
           challenge: discoverData.org_challenge || '',
           industry:  discoverData.org_industry || eng?.industry || '',
           rev:       discoverData.org_rev || '',
           team:      discoverData.org_team || '',
+          materials: discoverData.materials_text || '',
+          docNames:  (discoverData.intake?.docs || []).map(d => d.name),
         };
+        renderCarriedMaterials();
         // Map Discover's team-size bucket onto the diagnostic firm-size question.
         if (!VEC.diag.size && discoverData.org_team) {
           const sizeMap = { '1-5': 'small', '6-20': 'team', '21-50': 'firm', '51-200': 'firm' };
@@ -2643,9 +2648,18 @@ async function draftPositioning() {
       if (draft && draft.constraint) { VEC.pos.constraint = draft.constraint; set('pos-constraint', draft.constraint); }
       if (draft && draft.oneline)    { VEC.pos.oneline = draft.oneline;       set('pos-oneline', draft.oneline); }
       if (draft && draft.proof)      { VEC.pos.proof = draft.proof;           set('pos-proof', draft.proof); }
+      // Offers — extracted from the carried materials when present, else a sensible 3-tier ladder.
+      if (draft && Array.isArray(draft.offers)) {
+        ['offer1', 'offer2', 'offer3'].forEach((k, i) => {
+          const od = draft.offers[i]; if (!od) return;
+          VEC.pos[k] = { name: od.name || '', price: od.price || '', duration: od.duration || '', desc: od.desc || '' };
+          set(`${k}-name`, od.name); set(`${k}-price`, od.price); set(`${k}-duration`, od.duration); set(`${k}-desc`, od.desc);
+        });
+      }
       VEC.pos._drafted = true;
       saveState();
-      showToast('Positioning drafted — refine it, then Generate');
+      const usedMaterials = !!(VEC._discover && VEC._discover.materials);
+      showToast(usedMaterials ? 'Drafted from your Discover materials — refine, then Generate' : 'Positioning drafted — refine it, then Generate');
     } catch (e) {
       console.error('[draft positioning]', e);
       VEC.pos._drafted = true; // don't loop the auto-draft on failure
@@ -2657,18 +2671,45 @@ async function draftPositioning() {
 async function generatePositioningDraft() {
   const p = VEC.practice, d = VEC.diag, dc = VEC._discover || {};
   const trackName = { A: 'Discipline & Systematize', B: 'Build From Zero', C: 'Fix & Activate' }[d.track] || '';
-  const system = `You are a positioning strategist for an independent consulting/advisory practice. From the practice profile below, draft a FIRST-DRAFT positioning canvas the founder will then refine. Make reasonable, clearly-plausible assumptions about their ideal buyer from their industry and size, but stay grounded and specific — no generic filler. This is a starting point, not final copy.
-Return ONLY valid JSON (no fences): { "buyer": "role + company type + size", "constraint": "the real thing blocking that buyer's progress (1-2 sentences)", "oneline": "what they do and for whom, no jargon (one sentence)", "proof": "a proof-point in a format they can drop a real number into" }`;
+  const hasMaterials = !!(dc.materials && dc.materials.trim());
+  const system = `You are a positioning strategist for an independent consulting/advisory practice. Draft a FIRST-DRAFT positioning canvas AND a three-tier offer ladder the founder will then refine.
+${hasMaterials
+    ? 'PRIORITIZE the uploaded materials — pull the real buyer, language, proof points, offer names, pricing, and durations directly from them. Only infer where the materials are silent.'
+    : 'Make reasonable, clearly-plausible assumptions from the industry and size, but stay grounded and specific.'}
+No generic filler. This is a starting point, not final copy.
+Return ONLY valid JSON (no fences): {
+  "buyer": "role + company type + size",
+  "constraint": "the real thing blocking that buyer's progress (1-2 sentences)",
+  "oneline": "what they do and for whom, no jargon (one sentence)",
+  "proof": "a proof-point they can drop a real number into",
+  "offers": [ { "name": "offer name", "price": "$ or range", "duration": "e.g. 3 weeks", "desc": "one sentence" } ]
+}
+Return exactly 3 offers, ordered entry → core → retained.`;
   const user = `PRACTICE: ${p.name || 'the practice'}${p.founder ? ' (founder: ' + p.founder + ')' : ''}
 INDUSTRY: ${p.industry || dc.industry || 'unknown'}
 TEAM SIZE: ${dc.team || d.size || 'unknown'}
 GROWTH CHALLENGE (from Discover): ${dc.challenge || 'unspecified'}
 DIAGNOSTIC TRACK: ${d.track ? `Track ${d.track} — ${trackName}` : 'unset'}
 MARKET STATE: ${d.market || 'unset'}
-CURRENT MOTION: ${d.motion || 'unset'}
+CURRENT MOTION: ${d.motion || 'unset'}${hasMaterials ? `\n\nUPLOADED MATERIALS (decks / proposals / offers the founder provided in Discover — extract real offers, pricing, and language from these):\n${dc.materials.slice(0, 30000)}` : ''}
 
 Draft the positioning canvas JSON.`;
-  return await callClaude(system, user, { model: 'claude-sonnet-4-6', maxTokens: 900 });
+  return await callClaude(system, user, { model: 'claude-sonnet-4-6', maxTokens: hasMaterials ? 1600 : 1000 });
+}
+
+function renderCarriedMaterials() {
+  const el = document.getElementById('carriedMaterials');
+  if (!el) return;
+  const dc = VEC._discover || {};
+  const names = dc.docNames || [];
+  if (dc.materials) {
+    el.style.display = 'block';
+    el.innerHTML = names.length
+      ? `<strong style="color:var(--green)">✓ ${names.length} document${names.length !== 1 ? 's' : ''} carried from Discover</strong> — ${names.map(n => escHtml(n)).join(', ')}. These feed your positioning draft — no need to re-upload.`
+      : `<strong style="color:var(--green)">✓ Materials carried from Discover</strong> — used to draft your positioning. No need to re-upload.`;
+  } else {
+    el.style.display = 'none';
+  }
 }
 
 // Auto-draft once when landing on Positioning with an empty canvas + a completed diagnostic.
