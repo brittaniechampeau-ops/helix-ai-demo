@@ -1894,16 +1894,38 @@ async function loadDRIVEContext() {
     try {
       const discoverData = await OrgStore.load('org_discover');
       if (discoverData) {
-        // Seed the practice identity from Discover so opening Visualize on an
-        // assessed engagement isn't a blank form.
-        if (!VEC.practice.name) {
-          const seededName = discoverData.org_name || localStorage.getItem('drive_engagement_name') || '';
-          if (seededName) {
-            VEC.practice.name = seededName;
-            const nameEl = document.getElementById('practiceName'); if (nameEl) nameEl.value = seededName;
-            const pill = document.getElementById('practiceNamePill'); if (pill) pill.textContent = seededName;
+        // Seed the practice from everything upstream knows, so opening Visualize
+        // on an assessed engagement isn't a blank form. Discover collects the org
+        // name, industry, and team size; the engagement record (Hub) holds the
+        // contact name/email. Only fill fields the user hasn't set.
+        const setInput = (id, val) => { const el = document.getElementById(id); if (el && val && !el.value) el.value = val; };
+        let eng = null;
+        const engId = localStorage.getItem('drive_engagement_id');
+        if (engId) {
+          try {
+            const { data } = await supa.from('drive_engagements')
+              .select('client_name, org_name, industry, contact_name, contact_email')
+              .eq('id', engId).maybeSingle();
+            eng = data;
+          } catch (_) {}
+        }
+        const seededName = discoverData.org_name || eng?.org_name || eng?.client_name || localStorage.getItem('drive_engagement_name') || '';
+        if (!VEC.practice.name && seededName) { VEC.practice.name = seededName; setInput('practiceName', seededName); }
+        if (!VEC.practice.founder && eng?.contact_name)  { VEC.practice.founder = eng.contact_name;  setInput('founderName', eng.contact_name); }
+        if (!VEC.practice.email   && eng?.contact_email) { VEC.practice.email   = eng.contact_email; setInput('founderEmail', eng.contact_email); }
+        VEC.practice.industry = VEC.practice.industry || discoverData.org_industry || eng?.industry || '';
+        // Map Discover's team-size bucket onto the diagnostic firm-size question.
+        if (!VEC.diag.size && discoverData.org_team) {
+          const sizeMap = { '1-5': 'small', '6-20': 'team', '21-50': 'firm', '51-200': 'firm' };
+          const mapped = sizeMap[discoverData.org_team];
+          if (mapped) {
+            VEC.diag.size = mapped;
+            const radio = document.querySelector(`input[name="size"][value="${mapped}"]`);
+            if (radio) { radio.checked = true; radio.dispatchEvent(new Event('change', { bubbles: true })); }
           }
         }
+        const pill = document.getElementById('practiceNamePill'); if (pill) pill.textContent = VEC.practice.name || 'No practice loaded';
+        try { updateSidebar(); } catch (_) {}
         // Discover saves scores as an array [taxonomy, signal, strategy, execution];
         // tolerate the older object shape too.
         const sc = discoverData.scores;
