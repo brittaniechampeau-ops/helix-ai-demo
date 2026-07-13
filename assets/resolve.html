@@ -561,6 +561,8 @@ const OrgStore = {
     // Engagement UUID is the sole data key. Fall back to the full email (never
     // the domain) so two clients under one consultant can never collide.
     this.orgId = engId || this.userEmail || 'default';
+    // Remember this tool as the engagement's last position so the Hub reopens here.
+    if (engId) { try { localStorage.setItem('drive_last_tool_' + engId, 'resolve'); } catch (_) {} }
   },
   async save(table, data) {
     if (!this.orgId) return;

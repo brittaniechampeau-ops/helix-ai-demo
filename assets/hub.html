@@ -290,6 +290,33 @@ const ENG_NAME_KEY = 'drive_engagement_name';
 let currentUser = null;
 let isAdmin = false;
 let engagements = [];
+// Per-engagement pipeline progress {engId: {org_discover:true, ...}}, filled by checkDataPresence.
+const ENG_PROGRESS = {};
+
+// Where to drop a returning user for an engagement: the tool they were last in
+// (recency), else the furthest tool that has data, else Discover. "Sticky to
+// the last completed step" — never force them back to the top of the funnel.
+const TOOL_URL = { discover:'/discover.html', resolve:'/resolve.html', intuit:'/intuit.html', visualize:'/visualize.html', execute:'/execute.html' };
+function landingFor(id) {
+  try {
+    const last = localStorage.getItem('drive_last_tool_' + id);
+    if (last && TOOL_URL[last]) return TOOL_URL[last];
+  } catch (_) {}
+  const p = ENG_PROGRESS[id] || {};
+  const order = [
+    ['org_engine_assets', '/execute.html'],
+    ['org_vec_state',     '/visualize.html'],
+    ['org_intelligence',  '/intuit.html'],
+    ['org_taxonomy',      '/resolve.html'],
+    ['org_discover',      '/discover.html'],
+  ];
+  for (const [table, url] of order) { if (p[table]) return url; }
+  return '/discover.html';
+}
+function openEngagement(id, name, industry) {
+  setActive(id, name, industry);
+  window.location.href = landingFor(id);
+}
 let editingId = null;
 let showingArchived = false;
 
@@ -452,6 +479,7 @@ async function checkDataPresence(engList, activeId) {
       presence[row.org_id][tables[ti]] = true;
     });
   });
+  Object.assign(ENG_PROGRESS, presence);  // let landingFor() route to the furthest-reached tool
 
   ids.forEach(id => {
     const el = document.getElementById(`pipeline-${id}`);
@@ -511,7 +539,7 @@ function cardHTML(eng, activeId) {
   const created = eng.created_at ? new Date(eng.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
 
   return `
-  <div class="eng-card${isActive ? ' eng-active' : ''}" onclick="if(!event.target.closest('button,a')){setActive('${eng.id}','${jsEsc(eng.client_name)}','${jsEsc(eng.industry||'')}');window.location.href='/discover.html';}">
+  <div class="eng-card${isActive ? ' eng-active' : ''}" onclick="if(!event.target.closest('button,a')){openEngagement('${eng.id}','${jsEsc(eng.client_name)}','${jsEsc(eng.industry||'')}');}">
     ${isActive ? '<div class="active-chip">Active</div>' : ''}
     <div class="eng-card-header">
       <div>
