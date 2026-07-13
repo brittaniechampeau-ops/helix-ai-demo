@@ -5554,21 +5554,32 @@ supa.auth.onAuthStateChange(async (event, session) => {
     await resolveAdmin();
     document.getElementById('userEmail').textContent = currentUser.email;
     loginScreen.style.display = 'none';
-    if (isAdmin() && !new URLSearchParams(location.search).has('client')) {
+    const hasClientParam = new URLSearchParams(location.search).has('client');
+    const activeEng = localStorage.getItem('drive_engagement_id');
+    // Follow the active engagement like the other tools. Only show the admin
+    // client roster when an admin arrives with no engagement selected.
+    if (isAdmin() && !activeEng && !hasClientParam) {
       showAdminHome();
     } else {
-      const fromCloud = await cloudLoad();
+      document.getElementById('adminHome').style.display = 'none';
       applyDiscoverReadiness();
-      if (fromCloud) { restoreUI(); enterClientApp(); }
-      else {
-        const orgData = await OrgStore.load('org_vec_state');
-        if (orgData) {
-          Object.assign(VEC, orgData);
-          try { localStorage.setItem('vec_v1', JSON.stringify({ VEC, PHASE })); } catch(e) {}
-          restoreUI(); cloudSave(); enterClientApp();
-        } else if (restoreFromSave()) { restoreUI(); cloudSave(); enterClientApp(); }
-        else { updateSidebar(); }
+      const orgData = await OrgStore.load('org_vec_state');
+      if (orgData) {
+        // This engagement's saved Visualize workspace.
+        Object.assign(VEC, orgData);
+        try { localStorage.setItem('vec_v1', JSON.stringify({ VEC, PHASE })); } catch(e) {}
+        restoreUI(); enterClientApp();
+      } else if (!activeEng) {
+        // No engagement selected — legacy per-user restore.
+        if (await cloudLoad()) { restoreUI(); enterClientApp(); }
+        else if (restoreFromSave()) { restoreUI(); enterClientApp(); }
+        else { updateSidebar(); enterClientApp(); }
+      } else {
+        // Active engagement with no Visualize work yet → fresh workspace for it.
+        updateSidebar(); enterClientApp();
       }
+      // Admins keep a way back to their client roster.
+      document.getElementById('btnBackAdmin').style.display = isAdmin() ? '' : 'none';
       await loadDRIVEContext();
     }
   } else {
