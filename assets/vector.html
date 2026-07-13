@@ -2678,38 +2678,71 @@ function renderPositioningResult() {
 }
 
 // ─── STEP 2: REFERRAL ENGINE ───────────────────────────
-function runReferralEngine() {
+async function runReferralEngine() {
   if (!VEC.ref.contacts.length) { showToast('Add at least one contact before generating scripts'); return; }
+  const eligible = VEC.ref.contacts.filter(c => c.status !== 'in-delivery');
+  await runRealGeneration('Foundation 2', 'Building Referral Scripts', 'Drafting personalized referral asks with Claude…', async () => {
+    try {
+      const gen = await generateReferralScripts(eligible);
+      if (gen && Array.isArray(gen.scripts)) {
+        gen.scripts.forEach((s, i) => { if (eligible[i]) eligible[i].script = s.ask_script || s.script || ''; });
+      }
+    } catch (e) {
+      console.error('[referral]', e);
+      showToast('AI generation unavailable — using relationship templates. ' + (e.message || ''));
+    }
+    VEC.ref.generated = true;
+    renderReferralResult();
+    document.getElementById('nav-2').classList.add('done');
+    updateSidebar(); updatePracticeOS(); saveState();
+    showProceedBanner(2);
+    logEvent('referral_scripts_generated', { count: eligible.length });
+  });
+}
 
-  runProcessing('Foundation 2', 'Building Referral Scripts',
-    ['Analyzing relationship types...', 'Mapping value delivered to ask strength...', 'Identifying two-conversation targets...', 'Drafting introduction requests...', 'Personalizing by relationship type...'],
-    () => {
-      VEC.ref.generated = true;
-      const eligible = VEC.ref.contacts.filter(c => c.status !== 'in-delivery');
-      const scripts = eligible.map(c => {
-        const relType = c.type || c.rel || '';
-        const relLine = relType === 'past-client' ? 'Because you\'ve seen our work firsthand' : relType === 'peer' ? 'Because you know the quality of what we do' : 'Given your understanding of our practice';
-        return `
-          <div class="output-card generated">
-            <div class="output-header"><span class="output-icon">🤝</span><span class="output-title">${c.name} — ${c.company}</span><span class="tag tag-${c.status === 'not-asked' ? 'accent' : 'amber'}">${c.status === 'not-asked' ? 'Ready to ask' : 'In progress'}</span></div>
-            <div class="output-quote">"${relLine}, I wanted to ask for two specific introductions — not warm leads, just conversations with people where what we do might matter. The first is ${c.convo1 || '[name TBD]'}. The second is ${c.convo2 || '[name TBD]'}. Would you be open to making those?"</div>
-            <div style="font-size:12px;color:var(--txt3);">Based on: ${c.value}</div>
-          </div>`;
-      }).join('');
-      document.getElementById('refResult').innerHTML = `
-        <div class="result-header"><span class="result-icon">✅</span><div><div class="result-title">Referral Scripts Generated</div><div class="result-sub">${eligible.length} scripts ready · ${VEC.ref.contacts.filter(c=>c.status==='in-delivery').length} contacts in delivery (held)</div></div></div>
-        ${scripts}`;
-      document.getElementById('refResult').classList.add('show');
-      document.getElementById('nav-2').classList.add('done');
-      updateSidebar(); updatePracticeOS(); saveState();
-      showProceedBanner(2);
-      showToast('Referral scripts generated');
-      logEvent('referral_scripts_generated', { count: eligible.length, contact_types: eligible.map(c => c.type || c.rel) });
-    });
+// One warm, specific referral-ask message per contact, matched to the
+// relationship and the value already delivered.
+async function generateReferralScripts(eligible) {
+  const p = VEC.pos;
+  const list = eligible.map((c, i) => `${i + 1}. ${c.name}${c.company ? ' (' + c.company + ')' : ''} — relationship: ${c.type || c.rel || 'contact'}; value delivered: ${c.value || c.notes || '(unspecified)'}`).join('\n');
+  const system = `You write warm, specific, non-cringey referral-ask messages for an independent consultant. Each message is something the consultant sends to one person in their network asking for a targeted introduction — not a mass blast. Match the tone to the relationship, reference the specific value delivered, and make a clear single ask. 3-5 sentences each. No emojis, no "hope this finds you well," no corporate filler.
+Return ONLY valid JSON (no fences): { "scripts": [ { "name": "contact name", "ask_script": "the full message" } ] }
+Return one entry per contact, in the same order.`;
+  const user = `CONSULTANT POSITIONING: ${p.oneline || '(not set)'}
+IDEAL PEOPLE TO BE INTRODUCED TO: ${p.buyer || '(not set)'}
+
+CONTACTS TO WRITE ASKS FOR:
+${list}
+
+Write one referral-ask message per contact.`;
+  return await callClaude(system, user, { model: 'claude-sonnet-4-6', maxTokens: 2000 });
+}
+
+function fallbackReferralScript(c) {
+  const relType = c.type || c.rel || '';
+  const relLine = relType === 'past-client' ? "Because you've seen our work firsthand" : relType === 'peer' ? 'Because you know the quality of what we do' : 'Given your understanding of our practice';
+  return `${relLine}, I wanted to ask for a specific introduction — someone where ${VEC.pos.oneline || 'what we do'} might matter. Would you be open to making that introduction?`;
+}
+
+function renderReferralResult() {
+  const eligible = VEC.ref.contacts.filter(c => c.status !== 'in-delivery');
+  const held = VEC.ref.contacts.filter(c => c.status === 'in-delivery').length;
+  const cards = eligible.map(c => {
+    const msg = c.script || fallbackReferralScript(c);
+    return `<div class="output-card generated">
+        <div class="output-header"><span class="output-icon">🤝</span><span class="output-title">${escHtml(c.name)}${c.company ? ' — ' + escHtml(c.company) : ''}</span><span class="tag tag-${c.status === 'not-asked' ? 'accent' : 'amber'}">${c.status === 'not-asked' ? 'Ready to ask' : 'In progress'}</span></div>
+        <div class="output-quote">${escHtml(msg)}</div>
+        ${c.value ? `<div style="font-size:12px;color:var(--txt3);">Based on: ${escHtml(c.value)}</div>` : ''}
+      </div>`;
+  }).join('');
+  document.getElementById('refResult').innerHTML = `
+      <div class="result-header"><span class="result-icon">✅</span><div><div class="result-title">Referral Scripts Generated</div><div class="result-sub">${eligible.length} scripts ready · ${held} contacts in delivery (held)</div></div></div>
+      ${cards}`;
+  document.getElementById('refResult').classList.add('show');
 }
 
 // ─── STEP 3: CREDIBILITY ───────────────────────────────
-function runCredibility() {
+async function runCredibility() {
   if (!VEC.cred.cases.length) { showToast('Add at least one case study before generating'); return; }
   VEC.cred.placements = [
     'place-linkedin','place-instagram','place-x','place-facebook','place-youtube','place-tiktok',
@@ -2735,40 +2768,79 @@ function runCredibility() {
      return labels[id] || id.replace('place-','');
    });
 
-  runProcessing('Foundation 3', 'Building Credibility Assets',
-    ['Structuring case study narratives...', 'Extracting quantified outcomes...', 'Mapping to placement targets...', 'Generating placement checklist...', 'Finalizing credibility package...'],
-    () => {
-      VEC.cred.generated = true;
-      const caseCards = VEC.cred.cases.map(cs => `
-        <div class="output-card generated">
-          <div class="output-header"><span class="output-icon">⭐</span><span class="output-title">${cs.client} — ${cs.industry}</span></div>
-          <div style="font-size:13px;color:var(--txt2);line-height:1.6;margin-bottom:8px;">
-            <strong style="color:var(--txt)">The Situation:</strong> ${cs.situation}<br>
-            <strong style="color:var(--txt)">The Real Constraint:</strong> ${cs.constraint}<br>
-            <strong style="color:var(--txt)">What We Did:</strong> ${cs.solution}<br>
-            <strong style="color:var(--txt)">Result:</strong> ${cs.result}
-          </div>
-          ${cs.quote ? `<div class="output-quote">"${cs.quote}"</div>` : ''}
-        </div>`).join('');
-      const placements = VEC.cred.placements.map(p => `<span class="tag tag-blue">${p}</span>`).join(' ') || '<span style="color:var(--txt3)">None selected</span>';
-      document.getElementById('credResult').innerHTML = `
-        <div class="result-header"><span class="result-icon">✅</span><div><div class="result-title">Credibility Assets Generated</div><div class="result-sub">${VEC.cred.cases.length} case study drafts + placement checklist</div></div></div>
-        ${caseCards}
-        <div class="output-card" style="margin-top:4px;">
-          <div class="card-title" style="margin-bottom:8px;">Placement Targets</div>
-          ${placements}
-        </div>`;
-      document.getElementById('credResult').classList.add('show');
-      document.getElementById('nav-3').classList.add('done');
-      updateSidebar(); updatePracticeOS(); saveState();
-      showProceedBanner(3);
-      showToast('Credibility assets generated');
-      logEvent('credibility_run', { case_count: VEC.cred.cases.length, placements: VEC.cred.placements });
-    });
+  await runRealGeneration('Foundation 3', 'Building Credibility Assets', 'Writing case-study narratives with Claude…', async () => {
+    try {
+      const gen = await generateCaseStudies(VEC.cred.cases);
+      if (gen && Array.isArray(gen.cases)) {
+        gen.cases.forEach((ai, i) => { if (VEC.cred.cases[i]) VEC.cred.cases[i].ai = ai; });
+      }
+    } catch (e) {
+      console.error('[credibility]', e);
+      showToast('AI generation unavailable — using your notes. ' + (e.message || ''));
+    }
+    VEC.cred.generated = true;
+    renderCredibilityResult();
+    document.getElementById('nav-3').classList.add('done');
+    updateSidebar(); updatePracticeOS(); saveState();
+    showProceedBanner(3);
+    logEvent('credibility_run', { case_count: VEC.cred.cases.length, placements: VEC.cred.placements });
+  });
+}
+
+// Turn each set of raw case notes into a tight, credible narrative. Never
+// invents facts; keeps the client's real numbers.
+async function generateCaseStudies(cases) {
+  const p = VEC.pos;
+  const list = cases.map((cs, i) => `CASE ${i + 1}: client=${cs.client || '?'}, industry=${cs.industry || '?'}
+  situation: ${cs.situation || '?'}
+  constraint: ${cs.constraint || '?'}
+  what they did: ${cs.solution || '?'}
+  result: ${cs.result || '?'}
+  client quote (raw): ${cs.quote || '(none)'}`).join('\n\n');
+  const system = `You are a case-study writer for an independent consulting practice. Turn each set of raw notes into a tight, credible, specific narrative a buyer would find convincing. Keep the client's real numbers. Do NOT invent facts, names, or metrics. If a client quote is missing, set pull_quote to "".
+Return ONLY valid JSON (no fences): { "cases": [ { "headline": "outcome-focused 6-10 word headline", "situation": "2-3 sentences", "constraint": "1-2 sentences on the real blocker", "approach": "2-3 sentences on what was done", "result": "1-2 sentences, quantified", "pull_quote": "a short client quote or empty string" } ] }
+Return one entry per case, in the same order.`;
+  const user = `PRACTICE POSITIONING: ${p.oneline || '(not set)'}
+
+${list}
+
+Write the case studies.`;
+  return await callClaude(system, user, { model: 'claude-sonnet-4-6', maxTokens: 2200 });
+}
+
+function renderCredibilityResult() {
+  const caseCards = VEC.cred.cases.map(cs => {
+    const ai = cs.ai || null;
+    const head = (ai && ai.headline) ? `${escHtml(cs.client)} — ${escHtml(ai.headline)}` : `${escHtml(cs.client)} — ${escHtml(cs.industry || '')}`;
+    const situation = (ai && ai.situation) || cs.situation;
+    const constraint = (ai && ai.constraint) || cs.constraint;
+    const approach = (ai && ai.approach) || cs.solution;
+    const result = (ai && ai.result) || cs.result;
+    const quote = (ai && ai.pull_quote) || cs.quote;
+    return `<div class="output-card generated">
+        <div class="output-header"><span class="output-icon">⭐</span><span class="output-title">${head}</span></div>
+        <div style="font-size:13px;color:var(--txt2);line-height:1.6;margin-bottom:8px;">
+          <strong style="color:var(--txt)">The Situation:</strong> ${escHtml(situation || '—')}<br>
+          <strong style="color:var(--txt)">The Real Constraint:</strong> ${escHtml(constraint || '—')}<br>
+          <strong style="color:var(--txt)">What We Did:</strong> ${escHtml(approach || '—')}<br>
+          <strong style="color:var(--txt)">Result:</strong> ${escHtml(result || '—')}
+        </div>
+        ${quote ? `<div class="output-quote">"${escHtml(quote)}"</div>` : ''}
+      </div>`;
+  }).join('');
+  const placements = VEC.cred.placements.map(pl => `<span class="tag tag-blue">${escHtml(pl)}</span>`).join(' ') || '<span style="color:var(--txt3)">None selected</span>';
+  document.getElementById('credResult').innerHTML = `
+      <div class="result-header"><span class="result-icon">✅</span><div><div class="result-title">Credibility Assets Generated</div><div class="result-sub">${VEC.cred.cases.length} case study drafts + placement checklist</div></div></div>
+      ${caseCards}
+      <div class="output-card" style="margin-top:4px;">
+        <div class="card-title" style="margin-bottom:8px;">Placement Targets</div>
+        ${placements}
+      </div>`;
+  document.getElementById('credResult').classList.add('show');
 }
 
 // ─── STEP 4: INTAKE ────────────────────────────────────
-function runIntake() {
+async function runIntake() {
   VEC.ops.duration  = document.getElementById('ops-duration').value.trim() || '12 weeks';
   VEC.ops.refAsk    = document.getElementById('ops-ref-ask').checked;
   VEC.ops.caseDraft = document.getElementById('ops-case-draft').checked;
@@ -2776,29 +2848,61 @@ function runIntake() {
   const cadenceEl   = document.querySelector('input[name="cadence"]:checked');
   VEC.ops.cadence   = cadenceEl ? cadenceEl.value : 'weekly';
 
-  runProcessing('Foundation 4', 'Building Intake Kit',
-    ['Generating intake questionnaire...', 'Drafting scoping document template...', 'Building kickoff agenda...', 'Configuring delivery cadence...', 'Assembling handoff checklist...'],
-    () => {
-      VEC.ops.generated = true;
-      const templates = [
-        { icon: '📝', name: 'Intake Questionnaire', desc: '6 questions capturing situation, constraint, success criteria, timeline, budget range, and stakeholder map' },
-        { icon: '📄', name: 'Scoping Document', desc: 'Scope, deliverables, exclusions, assumptions, and payment terms — customized to your offer names and pricing' },
-        { icon: '🚀', name: 'Kickoff Agenda', desc: '90-minute kickoff structure: team intros, project overview, working norms, first-week deliverable, open questions' },
-        { icon: '🔄', name: `Delivery Cadence (${VEC.ops.cadence})`, desc: 'Standing check-in structure with agenda template, status categories, and escalation protocol' },
-        { icon: '🏁', name: 'Handoff Checklist', desc: `10-item handoff checklist${VEC.ops.refAsk ? ' · mandatory referral ask included' : ''}${VEC.ops.caseDraft ? ' · case study draft at handoff' : ''}${VEC.ops.nps ? ' · NPS survey included' : ''}` },
-      ];
-      document.getElementById('opsResult').innerHTML = `
-        <div class="result-header"><span class="result-icon">✅</span><div><div class="result-title">Intake Kit Generated</div><div class="result-sub">5 templates ready to download</div></div></div>
-        ${templates.map(t => `<div class="output-card generated"><div class="output-header"><span class="output-icon">${t.icon}</span><span class="output-title">${t.name}</span></div><div style="font-size:13px;color:var(--txt3)">${t.desc}</div></div>`).join('')}`;
-      document.getElementById('opsResult').classList.add('show');
+  await runRealGeneration('Foundation 4', 'Building Intake Kit', 'Tailoring your intake kit with Claude…', async () => {
+    try {
+      VEC.ops.ai = await generateIntakeKit();
+    } catch (e) {
+      console.error('[intake]', e);
+      VEC.ops.ai = null;
+      showToast('AI generation unavailable — using standard templates. ' + (e.message || ''));
+    }
+    VEC.ops.generated = true;
+    renderIntakeResult();
+    generatePlan();
+    document.getElementById('nav-4').classList.add('done');
+    updateSidebar(); updatePracticeOS(); saveState();
+    showProceedBanner(4);
+  });
+}
 
-      // Also generate 30-60-90 plan
-      generatePlan();
-      document.getElementById('nav-4').classList.add('done');
-      updateSidebar(); updatePracticeOS(); saveState();
-      showProceedBanner(4);
-      showToast('Intake kit generated — 5 templates ready');
-    });
+// Tailors the intake questionnaire and scoping doc to this practice's buyer and
+// core offer, rather than the generic boilerplate.
+async function generateIntakeKit() {
+  const p = VEC.pos, pr = VEC.practice;
+  const system = `You design client-intake and scoping materials for an independent consulting practice. Tailor everything to THIS practice's buyer, offer, and problem — no generic filler.
+Return ONLY valid JSON (no fences):
+{
+  "intake_questions": [ { "q": "the question", "why": "what it tells you (6 words max)" } ],
+  "scoping": { "in_scope": ["deliverable"], "out_of_scope": ["exclusion"], "assumptions": ["assumption"] }
+}
+Return 6-7 intake questions, and 3-5 items in each scoping list.`;
+  const user = `PRACTICE: ${pr.name || 'the practice'}
+POSITIONING: ${p.oneline || '(not set)'}
+TARGET BUYER: ${p.buyer || '(not set)'}
+CORE OFFER: ${p.offer2?.name || '(engagement)'} — ${p.offer2?.price || ''}, ${VEC.ops.duration || p.offer2?.duration || ''} — ${p.offer2?.desc || ''}
+
+Generate the intake kit JSON.`;
+  return await callClaude(system, user, { model: 'claude-sonnet-4-6', maxTokens: 1800 });
+}
+
+function renderIntakeResult() {
+  const ai = VEC.ops.ai || null;
+  const templates = [
+    { icon: '📝', name: 'Intake Questionnaire', desc: ai && Array.isArray(ai.intake_questions) ? `${ai.intake_questions.length} questions tailored to your buyer and offer` : '6 questions capturing situation, constraint, success criteria, timeline, budget range, and stakeholder map' },
+    { icon: '📄', name: 'Scoping Document', desc: ai && ai.scoping ? 'In-scope, out-of-scope, and assumptions tailored to your core offer' : 'Scope, deliverables, exclusions, assumptions, and payment terms — customized to your offer names and pricing' },
+    { icon: '🚀', name: 'Kickoff Agenda', desc: '90-minute kickoff structure: team intros, project overview, working norms, first-week deliverable, open questions' },
+    { icon: '🔄', name: `Delivery Cadence (${VEC.ops.cadence})`, desc: 'Standing check-in structure with agenda template, status categories, and escalation protocol' },
+    { icon: '🏁', name: 'Handoff Checklist', desc: `10-item handoff checklist${VEC.ops.refAsk ? ' · mandatory referral ask included' : ''}${VEC.ops.caseDraft ? ' · case study draft at handoff' : ''}${VEC.ops.nps ? ' · NPS survey included' : ''}` },
+  ];
+  let extra = '';
+  if (ai && Array.isArray(ai.intake_questions) && ai.intake_questions.length) {
+    extra = `<div class="output-card generated"><div class="output-header"><span class="output-icon">📝</span><span class="output-title">Tailored intake questions</span></div><ol style="margin:0;padding-left:18px;font-size:12px;color:var(--txt2);line-height:1.7">${ai.intake_questions.map(q => `<li>${escHtml(q.q)}</li>`).join('')}</ol></div>`;
+  }
+  document.getElementById('opsResult').innerHTML = `
+      <div class="result-header"><span class="result-icon">✅</span><div><div class="result-title">Intake Kit Generated</div><div class="result-sub">5 templates ready to download${ai ? ' · tailored to your offer' : ''}</div></div></div>
+      ${extra}
+      ${templates.map(t => `<div class="output-card generated"><div class="output-header"><span class="output-icon">${t.icon}</span><span class="output-title">${t.name}</span></div><div style="font-size:13px;color:var(--txt3)">${t.desc}</div></div>`).join('')}`;
+  document.getElementById('opsResult').classList.add('show');
 }
 
 // ─── STEP 5: 30-60-90 PLAN ─────────────────────────────
@@ -4361,29 +4465,40 @@ function downloadArtifact(type) {
   const slug = (p.name || 'practice').toLowerCase().replace(/\s+/g,'-');
 
   if (type === 'positioning') {
+    const ai = pos.ai || null;
+    const pillarsHtml = (ai && Array.isArray(ai.pillars) && ai.pillars.length)
+      ? `<h2>Messaging Pillars</h2>${ai.pillars.map(pl => `<h3>${pl.title}</h3><p>${pl.body}</p>`).join('')}` : '';
     dlDoc(`${slug}_positioning_canvas.doc`, 'Positioning Canvas',
       `<h1>Positioning Canvas</h1>
       <p class="meta">${p.name} &nbsp;·&nbsp; ${p.founder}</p>
+      ${ai && ai.positioning_statement ? `<h2>Positioning Statement</h2><div class="highlight"><p>${ai.positioning_statement}</p></div>` : ''}
       <h2>The Buyer</h2><p>${pos.buyer || '—'}</p>
       <h2>The Real Constraint</h2><p>${pos.constraint || '—'}</p>
-      <h2>The One-Line</h2><div class="highlight"><p style="font-size:13pt;font-style:italic">${pos.oneline || '—'}</p></div>
-      <h2>Proof Point</h2><p>${pos.proof || '—'}</p>`);
+      <h2>The One-Line</h2><div class="highlight"><p style="font-size:13pt;font-style:italic">${(ai && ai.refined_oneline) || pos.oneline || '—'}</p></div>
+      <h2>Proof Point</h2><p>${pos.proof || '—'}</p>
+      ${pillarsHtml}`);
     return;
   }
 
   if (type === 'offer1' || type === 'offer2' || type === 'offer3') {
     const offerKey = type;
     const o = pos[offerKey] || {};
+    const idx = { offer1: 0, offer2: 1, offer3: 2 }[offerKey];
+    const aio = (pos.ai && Array.isArray(pos.ai.offers)) ? (pos.ai.offers[idx] || {}) : {};
     const labels = { offer1: 'Entry / Diagnostic Offer', offer2: 'Foundation Build / Core Offer', offer3: 'Retained Relationship' };
     const fileNames = { offer1: 'offer_entry', offer2: 'offer_foundation', offer3: 'offer_retained' };
+    const includedHtml = (Array.isArray(aio.included) && aio.included.length)
+      ? `<h2>What's Included</h2><ul>${aio.included.map(x => `<li>${x}</li>`).join('')}</ul>` : '';
     dlDoc(`${slug}_${fileNames[offerKey]}.doc`, o.name || labels[offerKey],
       `<h1>${o.name || labels[offerKey]}</h1>
       <p class="meta">${p.name} &nbsp;·&nbsp; ${labels[offerKey]}</p>
       <table><tr><th>Price</th><th>Duration</th></tr><tr><td>${o.price || '—'}</td><td>${o.duration || '—'}</td></tr></table>
-      <h2>What You Get</h2><p>${o.desc || '—'}</p>
+      <h2>What You Get</h2><p>${aio.summary || o.desc || '—'}</p>
+      ${includedHtml}
+      ${aio.best_for ? `<h2>Best For</h2><p>${aio.best_for}</p>` : ''}
       <hr>
       <h2>Why This Works</h2>
-      <div class="highlight"><p style="font-style:italic">${pos.oneline || '—'}</p></div>
+      <div class="highlight"><p style="font-style:italic">${(pos.ai && pos.ai.refined_oneline) || pos.oneline || '—'}</p></div>
       <p>${pos.proof || ''}</p>`);
     return;
   }
@@ -4397,8 +4512,7 @@ function downloadArtifact(type) {
         <h2>${c.name}${c.company ? ' — ' + c.company : ''}</h2>
         <p><span class="label">Relationship:</span> ${c.type || c.rel || '—'}</p>
         <p><span class="label">Value delivered:</span> ${c.value || c.notes || '—'}</p>
-        <h3>Conversation 1</h3><p>${c.convo1 || '(To be drafted after generating referral scripts)'}</p>
-        <h3>Conversation 2</h3><p>${c.convo2 || '(To be drafted after generating referral scripts)'}</p>
+        <h3>Ask Script</h3><p>${c.script || (typeof fallbackReferralScript === 'function' ? fallbackReferralScript(c) : '(Generate referral scripts to draft this)')}</p>
         <p><span class="label">Status:</span> ${c.status || 'not-asked'}</p><hr>`).join('')}`);
     return;
   }
@@ -4407,13 +4521,13 @@ function downloadArtifact(type) {
     dlDoc(`${slug}_case_studies.doc`, 'Case Study Drafts',
       `<h1>Case Study Drafts</h1>
       <p class="meta">${p.name}</p>
-      ${VEC.cred.cases.length ? VEC.cred.cases.map(cs => `
-        <h2>${cs.client} — ${cs.industry || ''}</h2>
-        <h3>The Situation</h3><p>${cs.situation || '—'}</p>
-        <h3>The Constraint</h3><p>${cs.constraint || '—'}</p>
-        <h3>What We Did</h3><p>${cs.solution || '—'}</p>
-        <h3>Result</h3><div class="highlight"><p><strong>${cs.result || '—'}</strong></p></div>
-        ${cs.quote ? `<p style="font-style:italic">"${cs.quote}"</p>` : ''}<hr>`).join('') :
+      ${VEC.cred.cases.length ? VEC.cred.cases.map(cs => { const cai = cs.ai || {}; return `
+        <h2>${cs.client}${cai.headline ? ' — ' + cai.headline : (cs.industry ? ' — ' + cs.industry : '')}</h2>
+        <h3>The Situation</h3><p>${cai.situation || cs.situation || '—'}</p>
+        <h3>The Constraint</h3><p>${cai.constraint || cs.constraint || '—'}</p>
+        <h3>What We Did</h3><p>${cai.approach || cs.solution || '—'}</p>
+        <h3>Result</h3><div class="highlight"><p><strong>${cai.result || cs.result || '—'}</strong></p></div>
+        ${(cai.pull_quote || cs.quote) ? `<p style="font-style:italic">"${cai.pull_quote || cs.quote}"</p>` : ''}<hr>`; }).join('') :
         '<p>No case studies added yet. Go to Credibility Presence to add them.</p>'}`);
     return;
   }
@@ -4455,16 +4569,20 @@ function downloadArtifact(type) {
   }
 
   if (type === 'intake') {
-    dlDoc(`${slug}_intake_questionnaire.doc`, 'Client Intake Questionnaire',
-      `<h1>Client Intake Questionnaire</h1>
-      <p class="meta">${p.name} &nbsp;·&nbsp; Send before the scoping call</p>
-      <p>Please answer the following before our first call. Your answers let us prepare a proper scoping document — saving us 30 minutes of basics on the call itself.</p>
-      <h2>1. Describe the situation</h2><p>What is happening right now that has you considering bringing in outside help?</p>
+    const q = (ops.ai && Array.isArray(ops.ai.intake_questions) && ops.ai.intake_questions.length) ? ops.ai.intake_questions : null;
+    const body = q
+      ? q.map((item, i) => `<h2>${i + 1}. ${item.q}</h2>${item.why ? `<p class="label">${item.why}</p>` : ''}`).join('')
+      : `<h2>1. Describe the situation</h2><p>What is happening right now that has you considering bringing in outside help?</p>
       <h2>2. What have you already tried?</h2><p>What approaches have you attempted? What happened?</p>
       <h2>3. What does success look like in 90 days?</h2><p>Be specific. What would you point to as evidence that this worked?</p>
       <h2>4. Who are the key stakeholders?</h2><p>Who must be aligned for this to succeed? Who can block it?</p>
       <h2>5. What is your timeline?</h2><p>Is there a deadline, event, or external forcing function?</p>
-      <h2>6. Budget range</h2><p>Are you working within a defined range? We ask upfront so we don't waste each other's time.</p>`);
+      <h2>6. Budget range</h2><p>Are you working within a defined range? We ask upfront so we don't waste each other's time.</p>`;
+    dlDoc(`${slug}_intake_questionnaire.doc`, 'Client Intake Questionnaire',
+      `<h1>Client Intake Questionnaire</h1>
+      <p class="meta">${p.name} &nbsp;·&nbsp; Send before the scoping call</p>
+      <p>Please answer the following before our first call. Your answers let us prepare a proper scoping document — saving us 30 minutes of basics on the call itself.</p>
+      ${body}`);
     return;
   }
 
@@ -4478,9 +4596,9 @@ function downloadArtifact(type) {
       <tr><td>Fee</td><td>${pos.offer2?.price || '[Fee]'}</td></tr>
       <tr><td>Duration</td><td>${ops.duration || pos.offer2?.duration || '[Duration]'}</td></tr>
       <tr><td>Start Date</td><td>___________</td></tr></table>
-      <h2>In Scope</h2><ul><li>[Deliverable 1]</li><li>[Deliverable 2]</li><li>[Deliverable 3]</li></ul>
-      <h2>Out of Scope</h2><ul><li>[Exclusion 1]</li><li>[Exclusion 2]</li></ul>
-      <h2>Assumptions</h2><ul><li>Client provides access to key systems and stakeholders within week 1</li><li>Key stakeholder availability for [N] hours per week</li></ul>
+      <h2>In Scope</h2><ul>${(ops.ai?.scoping?.in_scope?.length ? ops.ai.scoping.in_scope : ['[Deliverable 1]','[Deliverable 2]','[Deliverable 3]']).map(x => `<li>${x}</li>`).join('')}</ul>
+      <h2>Out of Scope</h2><ul>${(ops.ai?.scoping?.out_of_scope?.length ? ops.ai.scoping.out_of_scope : ['[Exclusion 1]','[Exclusion 2]']).map(x => `<li>${x}</li>`).join('')}</ul>
+      <h2>Assumptions</h2><ul>${(ops.ai?.scoping?.assumptions?.length ? ops.ai.scoping.assumptions : ['Client provides access to key systems and stakeholders within week 1','Key stakeholder availability for [N] hours per week']).map(x => `<li>${x}</li>`).join('')}</ul>
       <h2>Payment Terms</h2><ul><li>50% due on contract signing</li><li>50% due at [milestone / week 6 / completion]</li></ul>
       <h2>Signatures</h2>
       <table><tr><th>${p.founder || p.name}</th><th>Client</th></tr>
