@@ -6,6 +6,7 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M51.47,8.03 A42,42 0 0,1 89.47,35.64 L68.79,43.16 A20,20 0 0,0 50.70,30.01Z' fill='%23E8547A'/%3E%3Cpath d='M90.37,38.42 A42,42 0 0,1 75.86,83.10 L62.31,65.76 A20,20 0 0,0 69.23,44.49Z' fill='%232EC4B6'/%3E%3Cpath d='M73.49,84.82 A42,42 0 0,1 26.51,84.82 L38.82,66.58 A20,20 0 0,0 61.18,66.58Z' fill='%237B5EA7'/%3E%3Cpath d='M24.14,83.10 A42,42 0 0,1 9.63,38.42 L30.77,44.49 A20,20 0 0,0 37.69,65.76Z' fill='%2354C06E'/%3E%3Cpath d='M10.53,35.64 A42,42 0 0,1 48.53,8.03 L49.30,30.01 A20,20 0 0,0 31.21,43.16Z' fill='%23F4822A'/%3E%3C/svg%3E">
 <title>Discover — DRIVE Intake · Britt Bowman LLC</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/drive-archetypes.js?v=1"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -494,6 +495,18 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
           </select>
         </div>
         <div class="field-group">
+          <div class="field-label">Operating archetype</div>
+          <select class="field-select" id="orgArchetype" onchange="updateFooter()">
+            <option value="">Infer from the organization profile…</option>
+            <option value="expert-practice">Expert practice or creative agency</option>
+            <option value="productized-services">Productized professional services</option>
+            <option value="field-services">Field-service organization</option>
+            <option value="b2b-saas">B2B SaaS</option>
+            <option value="enterprise">Enterprise or multi-function organization</option>
+          </select>
+          <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.45">This does not replace Track A–C. It determines which operating system Track A, B, or C should improve.</div>
+        </div>
+        <div class="field-group">
           <div class="field-label">Team size</div>
           <div class="chips-wrap" id="teamChips">
             <div class="chip" onclick="selectChip('team','1-5',this)">1–5</div>
@@ -852,6 +865,7 @@ function restoreDiscoverState(data) {
     if (data.org_email) document.getElementById('orgEmail').value = data.org_email;
     if (data.org_website) document.getElementById('orgWebsite').value = data.org_website;
     if (data.org_industry) document.getElementById('orgIndustry').value = data.org_industry;
+    if (data.org_archetype) document.getElementById('orgArchetype').value = data.org_archetype;
     if (data.org_challenge) document.getElementById('orgChallenge').value = data.org_challenge;
     if (data.org_team) { state.orgTeam = data.org_team; document.querySelectorAll('#teamChips .chip').forEach(c => { if (c.textContent.trim() === data.org_team) c.classList.add('sel'); }); }
     if (data.org_rev) { state.orgRev = data.org_rev; document.querySelectorAll('#revChips .chip').forEach(c => { if (c.textContent.trim() === data.org_rev) c.classList.add('sel'); }); }
@@ -1288,6 +1302,7 @@ Return this exact JSON structure. Use null for any field where there is not enou
   "contact_email": "",
   "website": "",
   "industry": "",
+  "operating_archetype": "",
   "team_size": "",
   "annual_revenue": "",
   "challenge": "",
@@ -1310,6 +1325,9 @@ IMPORTANT — use ONLY these exact string values (copy-paste, do not rephrase):
 
 industry — pick the closest match:
 "Financial services / advisory" | "Management consulting" | "Marketing / creative agency" | "Technology / SaaS" | "Professional services (law, HR, ops)" | "Real estate / development" | "Healthcare / life sciences" | "Manufacturing / industrial" | "Non-profit / association" | "Other"
+
+operating_archetype — use exactly one of, or null if the materials do not establish the business model:
+"expert-practice" | "productized-services" | "field-services" | "b2b-saas" | "enterprise"
 
 team_size — use exactly one of:
 "1-5" | "6-20" | "21-50" | "51-200" | "200+"
@@ -1341,13 +1359,13 @@ intelligence[0]: CRM with 6+ months of contact and interaction history?
 intelligence[1]: Track which content/campaigns/outreach converts to pipeline?
 intelligence[2]: Can see conversion rates at each funnel stage?
 intelligence[3]: Know which channels/referral sources generate highest-value clients?
-vector[0]: Defined service offers with names and published pricing?
+vector[0]: Defined products, services, or offers with clear packaging and pricing?
 vector[1]: Positioning statement they would share confidently with a prospect?
-vector[2]: Active referral or partner channel consistently generating leads?
-vector[3]: Know which client archetype generates highest lifetime value?
-engine[0]: Publish content on consistent cadence (weekly or more)?
-engine[1]: Templates or playbooks making content creation repeatable?
-engine[2]: Someone explicitly accountable for content production?
+vector[2]: At least one repeatable acquisition channel consistently generates qualified demand?
+vector[3]: Know which customer segment generates highest lifetime value?
+engine[0]: Execute GTM activities on a consistent operating cadence?
+engine[1]: Templates or playbooks make execution repeatable?
+engine[2]: Someone explicitly accountable for GTM execution?
 engine[3]: Connected to marketing automation or CRM platform for delivery?
 
 team_size = total employee count at the company (not number of contacts in the system).`;
@@ -1409,6 +1427,7 @@ team_size = total employee count at the company (not number of contacts in the s
     const orgNameEl = document.getElementById('orgName');
     const orgChallengeEl = document.getElementById('orgChallenge');
     const orgIndustryEl = document.getElementById('orgIndustry');
+    const orgArchetypeEl = document.getElementById('orgArchetype');
     const orgFounderEl = document.getElementById('orgFounder');
     const orgEmailEl = document.getElementById('orgEmail');
     const orgWebsiteEl = document.getElementById('orgWebsite');
@@ -1419,6 +1438,7 @@ team_size = total employee count at the company (not number of contacts in the s
     if (p.contact_email && !orgEmailEl.value) { orgEmailEl.value = p.contact_email; filled.push('email'); }
     if (p.website && !orgWebsiteEl.value) { orgWebsiteEl.value = p.website; filled.push('website'); }
     if (p.industry && !orgIndustryEl.value && fillIndustry(p.industry)) filled.push('industry');
+    if (DRIVE_ARCHETYPES.definitions[p.operating_archetype]&&!orgArchetypeEl.value){orgArchetypeEl.value=p.operating_archetype;filled.push('operating archetype')}
     if (p.team_size && !state.orgTeam && fillChip('teamChips', 'team', p.team_size)) filled.push('team size');
     if (p.annual_revenue && !state.orgRev && fillChip('revChips', 'rev', p.annual_revenue)) filled.push('revenue');
     if (p.challenge && !orgChallengeEl.value) {
@@ -1589,16 +1609,16 @@ const QUESTIONS = [
   ],
   // Vector / Strategy
   [
-    'Do you have clearly defined service offers with names and published pricing?',
+    'Do you have clearly defined products, services, or offers with clear packaging and pricing?',
     'Do you have a positioning statement you would share confidently with a prospect?',
-    'Is there an active referral or partner channel consistently generating leads?',
-    'Do you know which client archetype generates the highest lifetime value?',
+    'Does at least one repeatable acquisition channel consistently generate qualified demand?',
+    'Do you know which customer segment generates the highest lifetime value?',
   ],
   // Engine / Execution
   [
-    'Do you publish content on a consistent cadence — weekly or more?',
-    'Do you have templates or playbooks that make content creation repeatable?',
-    'Is someone on your team explicitly accountable for content production?',
+    'Do you execute GTM activities on a consistent operating cadence?',
+    'Do you have templates or playbooks that make execution repeatable?',
+    'Is someone explicitly accountable for GTM execution?',
     'Are you connected to a marketing automation or CRM platform for delivery?',
   ],
 ];
@@ -2118,8 +2138,10 @@ function showResults() {
   tc.id = 'trackCard';
   tc.className = 'track-card';
   tc.style.cssText = `background:${track.bg};border-color:${track.border}`;
+  const archetypeMatch=DRIVE_ARCHETYPES.infer({explicit:document.getElementById('orgArchetype').value,industry:document.getElementById('orgIndustry').value,challenge:document.getElementById('orgChallenge').value,size:getAccountSize(),name:state.orgName});
   tc.innerHTML = `
     <div class="track-name" style="color:${track.color}">${track.name}</div>
+    <div class="track-tagline">${DRIVE_ARCHETYPES.definitions[archetypeMatch.key].label} · ${archetypeMatch.confidence==='explicit'?'Confirmed operating model':'Inferred operating model'}</div>
     <div class="track-tagline">${track.tagline}</div>
     <div class="track-meta">
       <div class="track-meta-item"><div class="track-meta-label">Duration</div>${track.duration}</div>
@@ -2305,6 +2327,7 @@ async function silentSave() {
     org_email: document.getElementById('orgEmail').value,
     org_website: document.getElementById('orgWebsite').value,
     org_industry: document.getElementById('orgIndustry').value,
+    org_archetype: DRIVE_ARCHETYPES.infer({explicit:document.getElementById('orgArchetype').value,industry:document.getElementById('orgIndustry').value,challenge:document.getElementById('orgChallenge').value,size:getAccountSize(),name:state.orgName}).key,
     org_challenge: document.getElementById('orgChallenge').value,
     org_team: state.orgTeam,
     org_rev: state.orgRev,
@@ -2348,6 +2371,7 @@ async function saveToSupabase() {
     assessed_at: new Date().toISOString(),
     org_name: state.orgName,
     org_industry: document.getElementById('orgIndustry').value,
+    org_archetype: DRIVE_ARCHETYPES.infer({explicit:document.getElementById('orgArchetype').value,industry:document.getElementById('orgIndustry').value,challenge:document.getElementById('orgChallenge').value,size:getAccountSize(),name:state.orgName}).key,
     org_team: state.orgTeam, org_rev: state.orgRev,
     org_challenge: document.getElementById('orgChallenge').value,
     path: pathLabel(modules),
