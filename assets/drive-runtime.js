@@ -103,7 +103,7 @@
           const engagementRequest = (async () => {
             try {
               const { data } = await supabase.from('drive_engagements')
-                .select('id, owner_email, client_name, org_name, industry, contact_name, contact_email, status')
+                .select('id, owner_email, client_name, org_name, industry, size_tier, contact_name, contact_email, status')
                 .eq('id', engagementId).maybeSingle();
               engagement = data || null;
             } catch (_) {}
@@ -130,6 +130,7 @@
           organizationName,
           clientName: engagement?.client_name || readLocal(KEYS.engagementName) || '',
           industry,
+          sizeTier: engagement?.size_tier || '',
           contact: Object.freeze({ name: engagement?.contact_name || '', email: engagement?.contact_email || '' }),
           ownerEmail: engagement?.owner_email || '',
           status: engagement?.status || '',
