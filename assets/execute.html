@@ -4,9 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M51.47,8.03 A42,42 0 0,1 89.47,35.64 L68.79,43.16 A20,20 0 0,0 50.70,30.01Z' fill='%23E8547A'/%3E%3Cpath d='M90.37,38.42 A42,42 0 0,1 75.86,83.10 L62.31,65.76 A20,20 0 0,0 69.23,44.49Z' fill='%232EC4B6'/%3E%3Cpath d='M73.49,84.82 A42,42 0 0,1 26.51,84.82 L38.82,66.58 A20,20 0 0,0 61.18,66.58Z' fill='%237B5EA7'/%3E%3Cpath d='M24.14,83.10 A42,42 0 0,1 9.63,38.42 L30.77,44.49 A20,20 0 0,0 37.69,65.76Z' fill='%2354C06E'/%3E%3Cpath d='M10.53,35.64 A42,42 0 0,1 48.53,8.03 L49.30,30.01 A20,20 0 0,0 31.21,43.16Z' fill='%23F4822A'/%3E%3C/svg%3E">
-<title>Execute — Content Ops Metadata</title>
+<title>Execute — Operating Workflow</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/drive-runtime.js"></script>
+<script src="/drive-archetypes.js?v=1"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -347,13 +348,14 @@ body {
     <div class="logo">
       <div class="logo-mark">⚙️</div>
       <span class="logo-text">Execute</span>
-      <span class="logo-tag">Content Ops</span>
+      <span class="logo-tag" id="executeModeLabel">Content Ops</span>
     </div>
     <div class="topbar-divider"></div>
     <div class="context-pill">
       <span class="dot"></span>
       <span id="practiceNamePill">No practice loaded</span>
     </div>
+    <div class="context-pill" id="operatingContextPill" style="display:none"></div>
   </div>
   <div class="topbar-right">
     <span class="user-email" id="userEmailDisplay"></span>
@@ -368,7 +370,7 @@ body {
   <!-- LEFT: CONTENT PLAN -->
   <div class="left-panel">
     <div class="left-panel-header">
-      <h2>Content Plan</h2>
+      <h2 id="leftPanelTitle">Content Plan</h2>
     </div>
     <div class="left-panel-list" id="assetList">
       <!-- populated by JS -->
@@ -385,8 +387,8 @@ body {
       <!-- empty state shown initially -->
       <div class="empty-state" id="emptyState">
         <div class="empty-state-icon">📭</div>
-        <h2>No practice data found</h2>
-        <p>Complete the Visualize diagnostic first to generate your content plan. Your Campaign DNA drives the asset list and pre-fills all metadata fields.</p>
+        <h2 id="emptyStateTitle">No practice data found</h2>
+        <p id="emptyStateText">Complete the Visualize diagnostic first to generate your content plan. Your Campaign DNA drives the asset list and pre-fills all metadata fields.</p>
         <a href="/visualize.html" class="btn-orange">→ Go to Visualize</a>
       </div>
       <!-- form injected here -->
@@ -397,7 +399,7 @@ body {
   <!-- RIGHT: DAM PREVIEW -->
   <div class="right-panel">
     <div class="right-panel-header">
-      <h2>DAM Metadata Preview</h2>
+      <h2 id="rightPanelTitle">DAM Metadata Preview</h2>
     </div>
     <div class="right-panel-body">
       <div class="json-preview" id="jsonPreview"><span style="color:var(--muted)">Select an asset to preview its metadata specification.</span></div>
@@ -459,23 +461,48 @@ let assets       = []; // flat array of asset descriptors
 let savedAssets  = {}; // keyed by asset_id, stores form values
 let activeId     = null;
 let saveTimer    = null;
+let operatingArchetype = '';
+let motionTrack = '';
+let executeMode = 'content';
 
 // ─── LOAD DATA ────────────────────────────────────────────────────────────────
 let namingPattern = null; // approved naming convention from Resolve
 
-async function loadDRIVEData() {
+async function loadDRIVEData(engagementContext = {}) {
   // Vector: practice profile + campaign DNA
   try {
     const vecData = await OrgStore.load('org_vec_state');
     if (vecData) {
       practiceData = vecData.practice || vecData.pos || {};
       cdna = vecData.cdna || {};
+      operatingArchetype = vecData.diag?.archetype || operatingArchetype;
+      motionTrack = vecData.diag?.track || motionTrack;
     } else {
       // Fallback: try legacy localStorage key
       const vecRaw = localStorage.getItem('vec_v1');
-      if (vecRaw) { const v = JSON.parse(vecRaw); practiceData = v.VEC?.practice || {}; cdna = v.VEC?.cdna || {}; }
+      if (vecRaw) {
+        const v = JSON.parse(vecRaw);
+        practiceData = v.VEC?.practice || {};
+        cdna = v.VEC?.cdna || {};
+        operatingArchetype = v.VEC?.diag?.archetype || operatingArchetype;
+        motionTrack = v.VEC?.diag?.track || motionTrack;
+      }
     }
   } catch(e) { console.warn('Failed to load upstream data:', e); }
+
+  try {
+    const discovery = await OrgStore.load('org_discover') || {};
+    const inferred = DRIVE_ARCHETYPES.infer({
+      explicit: discovery.org_archetype || operatingArchetype || null,
+      industry: discovery.industry || engagementContext.industry,
+      challenge: discovery.challenge || discovery.primary_challenge,
+      name: engagementContext.organizationName,
+      sizeTier: discovery.size_tier || engagementContext.sizeTier
+    });
+    operatingArchetype = inferred.key;
+  } catch(e) { console.warn('Failed to resolve operating archetype:', e); }
+
+  executeMode = operatingArchetype !== 'expert-practice' && !!motionTrack ? 'workflow' : 'content';
 
   // Resolve: canonical taxonomy + naming convention
   try {
@@ -554,6 +581,18 @@ function damFolder(practiceArea, assetType) {
 
 // ─── BUILD ASSET LIST ─────────────────────────────────────────────────────────
 function buildAssets() {
+  if (executeMode === 'workflow') {
+    const work = DRIVE_ARCHETYPES.execute(operatingArchetype, motionTrack) || [];
+    assets = work.map(item => ({
+      ...item,
+      mode: 'workflow',
+      type: item.focus,
+      icon: item.phase === 'Foundation' ? '◆' : item.phase === 'Activation' ? '▶' : '↗',
+      channel: item.phase,
+      offer: item.measure
+    }));
+    return;
+  }
   const channels = getChannels();
   assets = [];
 
@@ -601,8 +640,8 @@ function renderAssetList() {
     html += `<div class="channel-label">${channel}</div>`;
     byChannel[channel].forEach(a => {
       const saved = savedAssets[a.id] || {};
-      const status = saved.status || 'Draft';
-      const statusClass = { 'Draft': 'status-draft', 'In Review': 'status-review', 'Approved': 'status-approved', 'Live': 'status-live' }[status] || 'status-draft';
+      const status = saved.status || (a.mode === 'workflow' ? 'Planned' : 'Draft');
+      const statusClass = { 'Draft': 'status-draft', 'Planned': 'status-draft', 'In Review': 'status-review', 'In Progress': 'status-review', 'Blocked': 'status-review', 'Approved': 'status-approved', 'Live': 'status-live', 'Complete': 'status-live' }[status] || 'status-draft';
       const title = saved.title || a.type;
       html += `<div class="asset-item${activeId === a.id ? ' active' : ''}" id="item-${a.id}" onclick="selectAsset('${a.id}')">
         <span class="asset-item-icon">${a.icon}</span>
@@ -624,10 +663,11 @@ function updateBottomCount() {
   const total    = assets.length;
   const approved = assets.filter(a => {
     const s = (savedAssets[a.id] || {}).status;
-    return s === 'Approved' || s === 'Live';
+    return s === 'Approved' || s === 'Live' || s === 'Complete';
   }).length;
   const el = document.getElementById('assetCount');
-  if (el) el.innerHTML = `<strong>${total}</strong> assets · <strong>${approved}</strong> approved`;
+  const noun = executeMode === 'workflow' ? 'work items' : 'assets';
+  if (el) el.innerHTML = `<strong>${total}</strong> ${noun} · <strong>${approved}</strong> approved`;
 }
 
 // ─── ASSET SELECTION & FORM ───────────────────────────────────────────────────
@@ -686,7 +726,7 @@ function onFieldChange(asset, el) {
     document.getElementById('centerTitle').textContent = el.value || asset.type;
   }
   // Validate required fields before allowing Approved or Live status
-  if (el.id === 'field-status' && (el.value === 'Approved' || el.value === 'Live')) {
+  if (el.id === 'field-status' && (el.value === 'Approved' || el.value === 'Live' || el.value === 'Complete')) {
     const titleEl = document.getElementById('field-title');
     const ownerEl = document.getElementById('field-owner');
     const titleVal = (titleEl ? titleEl.value : '').trim();
@@ -791,6 +831,7 @@ function textarea(id, value, rows, maxlen, placeholder) {
 }
 
 function buildForm(asset, saved) {
+  if (asset.mode === 'workflow') return buildWorkflowForm(asset, saved);
   const offers       = getOffers();
   const themes       = getThemes();
   const persona      = getPersona();
@@ -847,6 +888,30 @@ function buildForm(asset, saved) {
   html += buildTypeFields(asset, saved, practiceArea, year);
 
   return html;
+}
+
+function buildWorkflowForm(asset, saved) {
+  const s = (key, fallback) => saved[key] !== undefined ? saved[key] : fallback;
+  return `<div class="form-section">
+    <div class="form-section-title">Accountable Work Record</div>
+    <div class="form-grid single">${fld('title', 'Work Item', inp('title', s('title', asset.action), 'Required action'))}</div>
+    <div class="form-grid">
+      ${fld('status', 'Status', sel('status', ['Planned','In Progress','Blocked','Complete'], s('status','Planned')))}
+      ${fld('owner', 'Accountable Owner', inp('owner', s('owner',''), asset.ownerRole))}
+      ${fld('due_date', 'Decision or Completion Date', dateinp('due_date', s('due_date','')))}
+      ${fld('cadence', 'Review Cadence', sel('cadence', ['Weekly','Biweekly','Monthly','Quarterly'], s('cadence',asset.cadence)))}
+      ${fld('measure', 'Primary Measure', inp('measure', s('measure',asset.measure), 'Observable measure'))}
+      ${fld('baseline', 'Baseline', inp('baseline', s('baseline',''), 'Current result'))}
+      ${fld('target', 'Target', inp('target', s('target',''), 'Target result and date'))}
+      ${fld('decision', 'Decision', sel('decision', ['Not decided','Continue','Revise','Stop','Expand'], s('decision','Not decided')))}
+    </div>
+  </div>
+  <div class="form-section">
+    <div class="form-section-title">Evidence and Completion</div>
+    ${fld('definition_of_done', 'Definition of Done', textarea('definition_of_done', s('definition_of_done',asset.definitionOfDone), 3, null, 'Observable completion criteria'))}
+    ${fld('evidence', 'Evidence or Source Link', textarea('evidence', s('evidence',''), 3, null, 'Link or describe the transcript, document, system record, or result'))}
+    ${fld('notes', 'Implementation Notes', textarea('notes', s('notes',''), 3, null, 'Dependencies, risks, and next action'))}
+  </div>`;
 }
 
 function buildTypeFields(asset, saved, practiceArea, year) {
@@ -1010,6 +1075,28 @@ function collectCurrentValues() {
     if (tokens.length) vals['personalization_tokens'] = tokens;
   }
 
+  if (asset.mode === 'workflow') {
+    return {
+      work_item_id: asset.id,
+      archetype: operatingArchetype,
+      track: motionTrack,
+      phase: asset.phase,
+      focus: asset.focus,
+      title: vals.title || asset.action,
+      status: vals.status || 'Planned',
+      accountable_owner: vals.owner || null,
+      due_date: vals.due_date || null,
+      review_cadence: vals.cadence || asset.cadence,
+      primary_measure: vals.measure || asset.measure,
+      baseline: vals.baseline || null,
+      target: vals.target || null,
+      decision: vals.decision || 'Not decided',
+      definition_of_done: vals.definition_of_done || asset.definitionOfDone,
+      evidence: vals.evidence || null,
+      implementation_notes: vals.notes || null
+    };
+  }
+
   return {
     asset_id:   asset.id,
     asset_type: asset.type,
@@ -1095,6 +1182,23 @@ function exportCSV() {
 }
 
 function exportAllCSV() {
+  if (executeMode === 'workflow') {
+    const rows = assets.map(a => {
+      const saved = savedAssets[a.id] || {};
+      return {
+        work_item_id: a.id, archetype: operatingArchetype, track: motionTrack,
+        phase: a.phase, focus: a.focus, title: saved.title || a.action,
+        status: saved.status || 'Planned', accountable_owner: saved.owner || '',
+        due_date: saved.due_date || '', review_cadence: saved.cadence || a.cadence,
+        primary_measure: saved.measure || a.measure, baseline: saved.baseline || '',
+        target: saved.target || '', decision: saved.decision || 'Not decided',
+        definition_of_done: saved.definition_of_done || a.definitionOfDone,
+        evidence: saved.evidence || '', implementation_notes: saved.notes || ''
+      };
+    });
+    downloadCSV(rows, 'execute-work-system.csv');
+    return;
+  }
   // FIX 3: Include type-specific fields in every row (blank for types that don't use them)
   const rows = assets.map(a => {
     const saved = savedAssets[a.id] || {};
@@ -1228,18 +1332,19 @@ async function initApp(session) {
     if (raw) { try { savedAssets = JSON.parse(raw); } catch(_) {} }
   }
 
-  await loadDRIVEData();
+  await loadDRIVEData(engagementContext);
 
   const practiceName = getPracticeName() === DEFAULT_PRACTICE && engagementContext.organizationName
     ? engagementContext.organizationName : getPracticeName();
   document.getElementById('practiceNamePill').textContent = practiceName;
+  applyExecuteContext();
 
   const email = session?.user?.email || '';
   document.getElementById('userEmailDisplay').textContent = email;
 
   buildAssets();
 
-  const hasVecData = !!(Object.keys(practiceData).length || Object.keys(cdna).length);
+  const hasVecData = executeMode === 'workflow' || !!(Object.keys(practiceData).length || Object.keys(cdna).length);
   if (hasVecData) {
     document.getElementById('emptyState').style.display = 'none';
   }
@@ -1250,6 +1355,18 @@ async function initApp(session) {
   if (assets.length && hasVecData) {
     selectAsset(assets[0].id);
   }
+}
+
+function applyExecuteContext() {
+  const definition = DRIVE_ARCHETYPES.definitions[operatingArchetype];
+  if (executeMode !== 'workflow' || !definition) return;
+  document.getElementById('executeModeLabel').textContent = 'Workflow Ops';
+  document.getElementById('leftPanelTitle').textContent = '90-Day Execution System';
+  document.getElementById('rightPanelTitle').textContent = 'Operating Record Preview';
+  document.getElementById('operatingContextPill').style.display = 'flex';
+  document.getElementById('operatingContextPill').textContent = `${definition.label} · Track ${motionTrack}`;
+  document.querySelector('.right-panel-actions .btn:last-child').textContent = '↓ Export Record';
+  document.querySelector('.bottom-bar .btn').textContent = '↓ Export All Work';
 }
 
 const loginScreen = document.getElementById('loginScreen');
@@ -1270,7 +1387,8 @@ DriveAuth.onChange(async (event, session) => {
   const { data: { session } } = await DriveAuth.getSession();
   if (!session) {
     // Still init the UI so it's explorable
-    loadDRIVEData();
+    await loadDRIVEData();
+    applyExecuteContext();
     buildAssets();
     renderAssetList();
     const practiceName = getPracticeName();

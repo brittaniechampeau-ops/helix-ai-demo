@@ -38,5 +38,26 @@ const FOUNDATIONS={
   'enterprise':['Portfolio & Value','Governance & Ownership','Context & Workflow','Adoption & Measurement']
 };
 function weights(key,track){const labels=FOUNDATIONS[key];if(!labels)return null;const values=track==='B'?[35,30,20,15]:track==='C'?[20,40,20,20]:[25,25,25,25];return Object.fromEntries(labels.map((label,index)=>[label,values[index]]))}
-global.DRIVE_ARCHETYPES=Object.freeze({definitions:ARCHETYPES,infer,plan,weights});
+const OPERATING_ROLES={
+  'productized-services':['Commercial owner','Delivery owner','Engagement owner'],
+  'field-services':['Demand owner','Service manager','Operations owner'],
+  'b2b-saas':['Revenue owner','Customer owner','Executive sponsor'],
+  'enterprise':['Portfolio owner','Business owner','Executive sponsor']
+};
+function execute(key,track){
+  const items=plan(key,track),definition=ARCHETYPES[key];
+  if(!items||!definition)return null;
+  return items.map((item,index)=>{
+    const [phase,,focus,action]=item,phaseIndex=['Foundation','Activation','Optimization'].indexOf(phase);
+    const measure=definition.measures[(index+Math.max(phaseIndex,0))%definition.measures.length];
+    return{
+      id:`${key}-${track}-${index+1}-${focus.toLowerCase().replace(/[^a-z0-9]+/g,'-')}`,
+      phase,focus,action,measure,
+      ownerRole:OPERATING_ROLES[key][Math.max(phaseIndex,0)],
+      cadence:phase==='Foundation'?'Weekly':phase==='Activation'?'Biweekly':'Monthly',
+      definitionOfDone:`${action}. Owner is named, evidence is attached, and the result is reviewed against ${measure.toLowerCase()}.`
+    };
+  });
+}
+global.DRIVE_ARCHETYPES=Object.freeze({definitions:ARCHETYPES,infer,plan,weights,execute});
 })(window);
