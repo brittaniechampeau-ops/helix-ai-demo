@@ -1200,7 +1200,7 @@
         <div class="card-header">
           <span class="card-title">Implementation Sequence</span>
           <div style="display:flex;gap:8px">
-            <button class="btn btn-ghost btn-sm" onclick="regeneratePlan()">↻ Rebuild from my work</button>
+            <button class="btn btn-ghost btn-sm" onclick="regeneratePlan()">↻ Refresh from Recommendations</button>
             <button class="btn btn-ghost btn-sm" onclick="downloadArtifact('plan')">View Tracker →</button>
           </div>
         </div>
@@ -1211,10 +1211,10 @@
 
       <div class="step-cta" id="planCtaEmpty" style="display:none">
         <div class="step-cta-copy">
-          <strong>Plan not yet generated.</strong>
-          Complete the diagnostic and earlier evidence steps to generate an implementation sequence.
+          <strong>An advisor recommendation is required.</strong>
+          Visualize will not substitute a generic plan. Build or approve the ranked intervention in Recommendations first.
         </div>
-        <button class="btn btn-ghost btn-disabled">↓ Download Plan</button>
+        <a class="btn btn-primary" href="/portfolio.html">Open Recommendations →</a>
       </div>
       <div class="step-cta" id="planCtaGenerated" style="display:none">
         <div class="step-cta-copy">
@@ -1733,6 +1733,7 @@
 <script>
 // ─── STATE ─────────────────────────────────────────────
 let DISCOVER_READINESS = null; // populated from Supabase readiness column if Discover was run first
+let PORTFOLIO_STATE = null; // authoritative recommendation and reviewed evidence for this engagement
 
 const VEC = {
   practice: { name: '', founder: '', email: '', website: '' },
@@ -1856,6 +1857,10 @@ async function loadDRIVEContext() {
     contact_name: engagementContext.contact.name,
     contact_email: engagementContext.contact.email,
   } : null;
+  try {
+    PORTFOLIO_STATE = await OrgStore.load('org_gtm_portfolio') || null;
+    VEC._portfolioLoadedAt = new Date().toISOString();
+  } catch (_) { PORTFOLIO_STATE = null; }
   // 1. Canonical taxonomy from Resolve → pre-populate VEC.taxFields if not yet set by user
   try {
     const resolveData = await OrgStore.load('org_taxonomy');
@@ -1885,6 +1890,10 @@ async function loadDRIVEContext() {
       if (resolveUpdated > dnaGenerated) showStaleDNABanner();
     }
   } catch (_) {}
+
+  // A restored Visualize plan may predate the current recommendation. Re-render
+  // only after the authoritative portfolio has loaded so legacy templates cannot win.
+  if (VEC.plan?.generated || authoritativeRecommendation()) generatePlan();
 
   // 2. Starred Intelligence signals → attach to VEC for use in AI prompts
   try {
@@ -3220,10 +3229,10 @@ function renderIntakeResult() {
 }
 
 // ─── STEP 5: EVIDENCE-BASED IMPLEMENTATION SEQUENCE ─────
+function authoritativeRecommendation(){const p=PORTFOLIO_STATE||{},active=(p.enhancements||[]).filter(x=>x.advisorDecision==='accepted'&&!['Rejected','Complete'].includes(x.status)),priority={Critical:4,High:3,Medium:2,Low:1};if(active.length)return active.sort((a,b)=>(priority[b.priority]||0)-(priority[a.priority]||0)||String(b.updatedAt||b.advisorAcceptedAt||'').localeCompare(String(a.updatedAt||a.advisorAcceptedAt||'')))[0];return(p.proposals||[]).filter(x=>x.decision==='pending').sort((a,b)=>(a.rank||99)-(b.rank||99)||(b.score||0)-(a.score||0))[0]||null}
+function recommendationRows(rec){const seq=(rec.implementationSequence||[]).filter(x=>x&&x.action);if(seq.length)return seq.map((x,i)=>[i<2?'Foundation':i===2?'Activation':'Optimization',i===0&&rec.decision==='pending'?'WAIT':'DO',x.gate||'Decision',x.action]);const prerequisites=(rec.prerequisites||[]).filter(Boolean),milestones=(rec.milestones||[]).map(x=>typeof x==='string'?x:x.title).filter(Boolean),measure=rec.measure||'the agreed business measure';return[['Foundation',rec.decision==='pending'?'WAIT':'DO','Decision',rec.decision==='pending'?'Advisor accepts or revises the ranked recommendation.':`Confirm the binding constraint: ${rec.constraint||'recorded recommendation constraint'}`],...prerequisites.map(x=>['Foundation','DO','Prerequisite',x]),['Activation','DO','Intervention',rec.recommendation||'Run the approved bounded intervention.'],...milestones.map((x,i)=>[i===milestones.length-1?'Optimization':'Activation','DO',i===milestones.length-1?'Measurement':'Milestone',x]),['Optimization','DO','Outcome decision',`Review ${measure.toLowerCase()} and record continue, revise, stop, or expand.`]]}
+function renderRecommendationRequired(){const wrap=document.getElementById('planTableWrap');if(wrap)wrap.innerHTML='<div class="step-cta-copy" style="padding:18px"><strong>No authoritative recommendation is available.</strong><br>Visualize will not generate a Track A-C substitute. Build and approve the ranked intervention in Recommendations.</div>';VEC.plan.generated=false;VEC.plan.source='recommendation-required';const empty=document.getElementById('planCtaEmpty'),generated=document.getElementById('planCtaGenerated');if(empty)empty.style.display='';if(generated)generated.style.display='none';renderPlanTracker()}
 function generatePlan() {
-  const track = VEC.diag.track || 'A';
-  const customProfilePlan=!VEC.diag.operatingProfile?.archetypePreset?DRIVE_OPERATING_PROFILE.execution(VEC.diag.operatingProfile,track)?.map(x=>[x.phase,'DO',x.focus,x.action]):null;
-  const archetypePlan = customProfilePlan || DRIVE_ARCHETYPES.plan(VEC.diag.archetype || 'expert-practice', track);
   const plans = {
     A: [
       // Foundation (Days 1–30)
@@ -3281,15 +3290,12 @@ function generatePlan() {
     ]
   };
 
-  // Prefer the AI plan grounded in the practice's actual DRIVE work; fall back
-  // to the static, track-based template when no AI plan has been generated.
-  let rows;
-  if (VEC.plan.ai && VEC.plan.ai.phases) {
-    rows = [];
-    VEC.plan.ai.phases.forEach(ph => ph.items.forEach(it => rows.push([ph.name, it.type, it.area, it.task])));
-  } else {
-    rows = archetypePlan || (plans[track] || plans.A);
-  }
+  // Portfolio recommendations are authoritative. Persisted AI and Track A-C
+  // templates are deliberately ignored so old state cannot outrank reviewed evidence.
+  const recommendation=authoritativeRecommendation();
+  if(!recommendation){renderRecommendationRequired();return}
+  const rows=recommendationRows(recommendation);
+  VEC.plan.source='portfolio-recommendation';VEC.plan.sourceFingerprint=recommendation.sourceFingerprint||recommendation.fingerprint||recommendation.id;VEC.plan.sourceDecision=recommendation.advisorDecision==='accepted'?'advisor-approved':'advisor-review-required';VEC.plan.ai=null;
   let currentPhase = '';
   const html = `<table class="plan-table">
     <thead><tr><th>Phase</th><th>Type</th><th>Foundation</th><th>Task</th></tr></thead>
@@ -3300,7 +3306,7 @@ function generatePlan() {
         phaseRow = `<tr class="plan-phase-row"><td colspan="4">${phase} · ${decisionGate}</td></tr>`;
         currentPhase = phase;
       }
-      return `${phaseRow}<tr><td></td><td><span class="type-${type.toLowerCase()}">${type}</span></td><td>${found}</td><td>${task}</td></tr>`;
+      return `${phaseRow}<tr><td></td><td><span class="type-${type.toLowerCase()}">${type}</span></td><td>${escHtml(found)}</td><td>${escHtml(task)}</td></tr>`;
     }).join('')}</tbody>
   </table>`;
   document.getElementById('planTableWrap').innerHTML = html;
@@ -3389,13 +3395,8 @@ function normalizePlan(arr) {
 // Orchestrator: AI plan → normalize → render. Falls back to the static template
 // on any failure. Assumes a progress overlay is already showing.
 async function generatePlanFromContext() {
-  try {
-    VEC.plan.ai = normalizePlan(await generatePlanAI());
-  } catch (e) {
-    console.error('[plan]', e);
-    VEC.plan.ai = null;
-    showToast('AI plan unavailable — using the standard track template. ' + (e.message || ''));
-  }
+  // Visualize consumes the recommendation authority. Rebuilding the actual
+  // recommendation from accumulated intelligence belongs in Recommendations.
   generatePlan();
 }
 
@@ -3403,8 +3404,9 @@ async function generatePlanFromContext() {
 // current DRIVE work (with its own overlay).
 async function regeneratePlan() {
   if (_isGenerating) return;
-  await runRealGeneration('Implementation sequence', 'Rebuilding your sequence', 'Sequencing the intervention from evidence and dependencies…', async () => {
-    await generatePlanFromContext();
+  await runRealGeneration('Implementation sequence', 'Refreshing recommendation', 'Loading the latest reviewed intervention and evidence…', async () => {
+    PORTFOLIO_STATE=await OrgStore.load('org_gtm_portfolio')||null;
+    generatePlan();
     saveState();
   });
 }
@@ -4379,22 +4381,14 @@ const PLAN_MILESTONES = {
 };
 
 function renderPlanTracker() {
-  // Prefer the AI plan (grounded in real DRIVE work); fall back to the template.
-  let plan;
-  if (VEC.plan.ai && VEC.plan.ai.phases) {
-    plan = { phases: VEC.plan.ai.phases.map(ph => ({ title: ph.title, items: ph.items.map(it => ({ id: it.id, task: it.task, how: it.how })) })) };
-  } else {
-    const track = VEC.diag.track || 'A';
-    plan = PLAN_MILESTONES[track] || PLAN_MILESTONES['A'];
-  }
+  const recommendation=authoritativeRecommendation(),trackerEl=document.getElementById('planTracker'),pctEl=document.getElementById('planProgressPct');
+  if(!trackerEl||!pctEl)return;
+  if(!recommendation){pctEl.textContent='';trackerEl.innerHTML='<div class="pattern-warning">No advisor recommendation is available. The legacy Track A-C tracker has been disabled.</div>';return}
+  const fingerprint=recommendation.sourceFingerprint||recommendation.fingerprint||recommendation.id||'recommendation',rows=recommendationRows(recommendation),groups={Foundation:[],Activation:[],Optimization:[]};rows.forEach((row,index)=>groups[row[0]].push({id:`${fingerprint}-${index}`,task:row[3],how:[]}));const titles={Foundation:'Foundation: validate and establish',Activation:'Activation: run the bounded intervention',Optimization:'Optimization: measure and decide'},plan={phases:Object.keys(groups).filter(name=>groups[name].length).map(name=>({title:titles[name],items:groups[name]}))};
   const checked = VEC.plan.checked || {};
   const allItems = plan.phases.flatMap(p => p.items);
   const doneCount = allItems.filter(i => checked[i.id]).length;
   const pct = allItems.length ? Math.round((doneCount / allItems.length) * 100) : 0;
-
-  const pctEl = document.getElementById('planProgressPct');
-  const trackerEl = document.getElementById('planTracker');
-  if (!pctEl || !trackerEl) return;
 
   pctEl.textContent = `${doneCount}/${allItems.length} complete · ${pct}%`;
 
