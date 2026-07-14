@@ -8,6 +8,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/drive-runtime.js"></script>
 <script src="/drive-archetypes.js?v=1"></script>
+<script src="/drive-operating-profile.js?v=1"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1735,7 +1736,7 @@ let DISCOVER_READINESS = null; // populated from Supabase readiness column if Di
 
 const VEC = {
   practice: { name: '', founder: '', email: '', website: '' },
-  diag: { size: '', who: '', market: '', motion: '', archetype: '', crm: [], pm: [], storage: [], comms: [], track: '', tier: '', weights: {} },
+  diag: { size: '', who: '', market: '', motion: '', archetype: '', operatingProfile: null, crm: [], pm: [], storage: [], comms: [], track: '', tier: '', weights: {} },
   pos:  { buyer: '', constraint: '', oneline: '', proof: '', offer1: {}, offer2: {}, offer3: {}, generated: false },
   ref:  { contacts: [], generated: false },
   cred: { cases: [], placements: [], generated: false },
@@ -1910,6 +1911,7 @@ async function loadDRIVEContext() {
         const discovery = discoverData || {};
         const archetypeMatch = DRIVE_ARCHETYPES.infer({explicit:discovery.org_archetype||VEC.diag.archetype,industry:discovery.org_industry||eng?.industry,challenge:discovery.org_challenge,sizeTier:engagementContext.sizeTier,name:discovery.org_name||eng?.org_name||eng?.client_name});
         VEC.diag.archetype = archetypeMatch.key;
+        VEC.diag.operatingProfile = DRIVE_OPERATING_PROFILE.build({operating_profile:discovery.operating_profile,archetype:archetypeMatch.key});
         const archetypeSelect=document.getElementById('operatingArchetype'),archetypeReason=document.getElementById('archetypeReason');
         if(archetypeSelect)archetypeSelect.value=archetypeMatch.key;
         if(archetypeReason)archetypeReason.textContent=`${DRIVE_ARCHETYPES.definitions[archetypeMatch.key].description} ${archetypeMatch.reason}.`;
@@ -1929,6 +1931,7 @@ async function loadDRIVEContext() {
           challenge: discovery.org_challenge || '',
           industry:  discovery.org_industry || eng?.industry || '',
           archetype: archetypeMatch.key,
+          operatingProfile: VEC.diag.operatingProfile,
           rev:       discovery.org_rev || '',
           team:      discovery.org_team || '',
           materials: discovery.materials_text || '',
@@ -2182,6 +2185,7 @@ function restoreUI() {
   if (p.website) document.getElementById('practiceWebsite').value = p.website;
   const restoredArchetype=DRIVE_ARCHETYPES.infer({explicit:d.archetype,industry:p.industry||VEC._discover?.industry,size:d.size,name:p.name});
   d.archetype=restoredArchetype.key;
+  d.operatingProfile=DRIVE_OPERATING_PROFILE.build({operatingProfile:d.operatingProfile||VEC._discover?.operatingProfile,archetype:d.archetype});
   document.getElementById('operatingArchetype').value=restoredArchetype.key;
   document.getElementById('archetypeReason').textContent=DRIVE_ARCHETYPES.definitions[restoredArchetype.key].description+' '+restoredArchetype.reason+'.';
   // Radios
@@ -2651,7 +2655,7 @@ function runDiagnostic() {
           <div style="margin-top:4px;">${stackTags}</div>
         </div>`;
       document.getElementById('diagResult').classList.add('show');
-      const expertPath=VEC.diag.archetype==='expert-practice';
+      const expertPath=VEC.diag.operatingProfile?.archetypePreset==='expert-practice'||(!VEC.diag.operatingProfile&&VEC.diag.archetype==='expert-practice');
       document.getElementById('phaseBadge').textContent = expertPath?'Positioning':'90-Day Operating Plan';
       unlockStep(1); unlockStep(2); unlockStep(3); unlockStep(4); unlockStep(5); unlockStep(6); unlockStep(7);
       document.getElementById('nav-0').classList.add('done');
@@ -3218,7 +3222,8 @@ function renderIntakeResult() {
 // ─── STEP 5: 30-60-90 PLAN ─────────────────────────────
 function generatePlan() {
   const track = VEC.diag.track || 'A';
-  const archetypePlan = DRIVE_ARCHETYPES.plan(VEC.diag.archetype || 'expert-practice', track);
+  const customProfilePlan=!VEC.diag.operatingProfile?.archetypePreset?DRIVE_OPERATING_PROFILE.execution(VEC.diag.operatingProfile,track)?.map(x=>[x.phase,'DO',x.focus,x.action]):null;
+  const archetypePlan = customProfilePlan || DRIVE_ARCHETYPES.plan(VEC.diag.archetype || 'expert-practice', track);
   const plans = {
     A: [
       // Foundation (Days 1–30)

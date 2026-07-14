@@ -7,6 +7,7 @@
 <title>Discover — DRIVE Intake · Britt Bowman LLC</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/drive-archetypes.js?v=1"></script>
+<script src="/drive-operating-profile.js?v=1"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -495,7 +496,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
           </select>
         </div>
         <div class="field-group">
-          <div class="field-label">Operating archetype</div>
+          <div class="field-label">Starting operating model (optional)</div>
           <select class="field-select" id="orgArchetype" onchange="updateFooter()">
             <option value="">Infer from the organization profile…</option>
             <option value="expert-practice">Expert practice or creative agency</option>
@@ -504,7 +505,12 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
             <option value="b2b-saas">B2B SaaS</option>
             <option value="enterprise">Enterprise or multi-function organization</option>
           </select>
-          <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.45">This does not replace Track A–C. It determines which operating system Track A, B, or C should improve.</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.45">This is a starting preset, not a classification. The dimensions below define the actual operating profile.</div>
+        </div>
+        <div class="field-group" style="grid-column:1/-1">
+          <div class="field-label">Composable operating profile</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px" id="operatingProfileFields"></div>
+          <div style="font-size:11px;color:var(--muted);margin-top:7px;line-height:1.45">Track A–C describes the condition of the motion. This profile determines which commercial and operating capabilities the track should improve.</div>
         </div>
         <div class="field-group">
           <div class="field-label">Team size</div>
@@ -866,6 +872,7 @@ function restoreDiscoverState(data) {
     if (data.org_website) document.getElementById('orgWebsite').value = data.org_website;
     if (data.org_industry) document.getElementById('orgIndustry').value = data.org_industry;
     if (data.org_archetype) document.getElementById('orgArchetype').value = data.org_archetype;
+    restoreOperatingProfile(data.operating_profile);
     if (data.org_challenge) document.getElementById('orgChallenge').value = data.org_challenge;
     if (data.org_team) { state.orgTeam = data.org_team; document.querySelectorAll('#teamChips .chip').forEach(c => { if (c.textContent.trim() === data.org_team) c.classList.add('sel'); }); }
     if (data.org_rev) { state.orgRev = data.org_rev; document.querySelectorAll('#revChips .chip').forEach(c => { if (c.textContent.trim() === data.org_rev) c.classList.add('sel'); }); }
@@ -1062,6 +1069,26 @@ const state = {
     notes: '',
   }
 };
+
+function renderOperatingProfileFields() {
+  const wrap = document.getElementById('operatingProfileFields');
+  if (!wrap) return;
+  wrap.innerHTML = Object.entries(DRIVE_OPERATING_PROFILE.fields).map(([key,field]) => `<label style="display:block"><span style="display:block;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">${field.label}</span><select class="field-select" id="profile-${key}" onchange="updateFooter()"><option value="">Select…</option>${Object.entries(field.options).map(([value,label])=>`<option value="${value}">${label}</option>`).join('')}</select></label>`).join('');
+}
+function restoreOperatingProfile(profile) {
+  if (!profile) return;
+  const normalized = DRIVE_OPERATING_PROFILE.build({operating_profile:profile});
+  Object.entries(normalized.dimensions).forEach(([key,value]) => { const el=document.getElementById('profile-'+key); if(el&&value)el.value=value; });
+}
+function getOperatingProfile() {
+  const dimensions={};
+  Object.keys(DRIVE_OPERATING_PROFILE.fields).forEach(key=>{dimensions[key]=document.getElementById('profile-'+key)?.value||''});
+  return DRIVE_OPERATING_PROFILE.build({dimensions,archetype:document.getElementById('orgArchetype')?.value||''});
+}
+function applyArchetypePreset() {
+  const preset=DRIVE_OPERATING_PROFILE.presets[document.getElementById('orgArchetype')?.value]||{};
+  Object.entries(preset).forEach(([key,value])=>{const el=document.getElementById('profile-'+key);if(el&&!el.value)el.value=value});
+}
 let currentStep = 0; // 0=profile, 1=intake, 1.5=baseline, 2-5=RIVE scoping, 6=results
 const chipSelections = { team: null, rev: null };
 
@@ -2321,6 +2348,7 @@ body{background:#050709;color:#E8EAF0;font-family:-apple-system,BlinkMacSystemFo
 
 // ── SILENT AUTO-SAVE (fires on every nav step) ───────────
 async function silentSave() {
+  applyArchetypePreset();
   const snapshot = {
     org_name: state.orgName,
     org_founder: document.getElementById('orgFounder').value,
@@ -2328,6 +2356,7 @@ async function silentSave() {
     org_website: document.getElementById('orgWebsite').value,
     org_industry: document.getElementById('orgIndustry').value,
     org_archetype: DRIVE_ARCHETYPES.infer({explicit:document.getElementById('orgArchetype').value,industry:document.getElementById('orgIndustry').value,challenge:document.getElementById('orgChallenge').value,size:getAccountSize(),name:state.orgName}).key,
+    operating_profile: getOperatingProfile(),
     org_challenge: document.getElementById('orgChallenge').value,
     org_team: state.orgTeam,
     org_rev: state.orgRev,
@@ -2372,6 +2401,7 @@ async function saveToSupabase() {
     org_name: state.orgName,
     org_industry: document.getElementById('orgIndustry').value,
     org_archetype: DRIVE_ARCHETYPES.infer({explicit:document.getElementById('orgArchetype').value,industry:document.getElementById('orgIndustry').value,challenge:document.getElementById('orgChallenge').value,size:getAccountSize(),name:state.orgName}).key,
+    operating_profile: getOperatingProfile(),
     org_team: state.orgTeam, org_rev: state.orgRev,
     org_challenge: document.getElementById('orgChallenge').value,
     path: pathLabel(modules),
@@ -2427,6 +2457,8 @@ async function saveToSupabase() {
 
 // ── INIT ─────────────────────────────────────────────────
 buildQuestions();
+renderOperatingProfileFields();
+document.getElementById('orgArchetype').addEventListener('change',()=>{applyArchetypePreset();updateFooter()});
 updateFooter();
 initAuth();
 document.getElementById('orgName').addEventListener('input', updateFooter);

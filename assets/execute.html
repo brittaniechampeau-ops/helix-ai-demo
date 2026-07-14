@@ -8,6 +8,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/drive-runtime.js"></script>
 <script src="/drive-archetypes.js?v=1"></script>
+<script src="/drive-operating-profile.js?v=1"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -464,6 +465,7 @@ let saveTimer    = null;
 let operatingArchetype = '';
 let motionTrack = '';
 let executeMode = 'content';
+let operatingProfile = null;
 
 // ─── LOAD DATA ────────────────────────────────────────────────────────────────
 let namingPattern = null; // approved naming convention from Resolve
@@ -492,6 +494,7 @@ async function loadDRIVEData(engagementContext = {}) {
 
   try {
     const discovery = await OrgStore.load('org_discover') || {};
+    operatingProfile = DRIVE_OPERATING_PROFILE.build({operating_profile:discovery.operating_profile,archetype:discovery.operating_profile?'':(discovery.org_archetype||operatingArchetype)});
     const inferred = DRIVE_ARCHETYPES.infer({
       explicit: discovery.org_archetype || operatingArchetype || null,
       industry: discovery.industry || engagementContext.industry,
@@ -500,9 +503,11 @@ async function loadDRIVEData(engagementContext = {}) {
       sizeTier: discovery.size_tier || engagementContext.sizeTier
     });
     operatingArchetype = inferred.key;
+    if (operatingProfile?.legacyArchetype) operatingArchetype = operatingProfile.legacyArchetype;
   } catch(e) { console.warn('Failed to resolve operating archetype:', e); }
 
-  executeMode = operatingArchetype !== 'expert-practice' && !!motionTrack ? 'workflow' : 'content';
+  const customProfile=operatingProfile&&DRIVE_OPERATING_PROFILE.completeness(operatingProfile)>0&&!operatingProfile.archetypePreset;
+  executeMode = !!motionTrack && (customProfile || operatingArchetype !== 'expert-practice') ? 'workflow' : 'content';
 
   // Resolve: canonical taxonomy + naming convention
   try {
@@ -582,7 +587,7 @@ function damFolder(practiceArea, assetType) {
 // ─── BUILD ASSET LIST ─────────────────────────────────────────────────────────
 function buildAssets() {
   if (executeMode === 'workflow') {
-    const work = DRIVE_ARCHETYPES.execute(operatingArchetype, motionTrack) || [];
+    const work = (!operatingProfile?.archetypePreset ? DRIVE_OPERATING_PROFILE.execution(operatingProfile,motionTrack) : null) || DRIVE_ARCHETYPES.execute(operatingArchetype, motionTrack) || [];
     assets = work.map(item => ({
       ...item,
       mode: 'workflow',
@@ -1364,7 +1369,9 @@ function applyExecuteContext() {
   document.getElementById('leftPanelTitle').textContent = '90-Day Execution System';
   document.getElementById('rightPanelTitle').textContent = 'Operating Record Preview';
   document.getElementById('operatingContextPill').style.display = 'flex';
-  document.getElementById('operatingContextPill').textContent = `${definition.label} · Track ${motionTrack}`;
+  const business=DRIVE_OPERATING_PROFILE.label('businessModel',operatingProfile?.dimensions?.businessModel);
+  const condition=DRIVE_OPERATING_PROFILE.label('marketCondition',operatingProfile?.dimensions?.marketCondition);
+  document.getElementById('operatingContextPill').textContent = `${business||definition.label} · ${condition||'Operating plan'} · Track ${motionTrack}`;
   document.querySelector('.right-panel-actions .btn:last-child').textContent = '↓ Export Record';
   document.querySelector('.bottom-bar .btn').textContent = '↓ Export All Work';
 }
