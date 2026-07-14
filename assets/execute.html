@@ -6,6 +6,7 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M51.47,8.03 A42,42 0 0,1 89.47,35.64 L68.79,43.16 A20,20 0 0,0 50.70,30.01Z' fill='%23E8547A'/%3E%3Cpath d='M90.37,38.42 A42,42 0 0,1 75.86,83.10 L62.31,65.76 A20,20 0 0,0 69.23,44.49Z' fill='%232EC4B6'/%3E%3Cpath d='M73.49,84.82 A42,42 0 0,1 26.51,84.82 L38.82,66.58 A20,20 0 0,0 61.18,66.58Z' fill='%237B5EA7'/%3E%3Cpath d='M24.14,83.10 A42,42 0 0,1 9.63,38.42 L30.77,44.49 A20,20 0 0,0 37.69,65.76Z' fill='%2354C06E'/%3E%3Cpath d='M10.53,35.64 A42,42 0 0,1 48.53,8.03 L49.30,30.01 A20,20 0 0,0 31.21,43.16Z' fill='%23F4822A'/%3E%3C/svg%3E">
 <title>Execute — Content Ops Metadata</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/drive-runtime.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -312,10 +313,12 @@ body {
   <a class="pnav-tool pnav-active" href="/execute.html">
     <span class="pnav-dot" style="background:#FF8A3D"></span>Execute
   </a>
+  <a class="pnav-tool" href="/portfolio.html">Portfolio</a>
   <div style="margin-left:auto"><a class="pnav-tool" href="/onboarding.html" target="_blank" style="font-size:11px;opacity:.7">Client Guide ↗</a></div>
 </div>
 
 <!-- ── LOGIN SCREEN ── -->
+<div id="authLoading" style="position:fixed;inset:0;background:var(--bg);z-index:10000;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px">Checking your session…</div>
 <div id="loginScreen">
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:48px 40px;max-width:420px;width:100%;text-align:center;">
     <div style="width:48px;height:48px;background:var(--orange);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:24px;">⚙️</div>
@@ -424,44 +427,8 @@ const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
 
 // ── ORG STORE ─────────────────────────────────────────────
-const OrgStore = {
-  orgId: null,
-  userEmail: null,
-
-  init(session) {
-    this.userEmail = session?.user?.email || '';
-    const engId = localStorage.getItem('drive_engagement_id');
-    // Engagement UUID is the sole data key. Fall back to the full email (never
-    // the domain) so two clients under one consultant can never collide.
-    this.orgId = engId || this.userEmail || 'default';
-    // Remember this tool as the engagement's last position so the Hub reopens here.
-    if (engId) { try { localStorage.setItem('drive_last_tool_' + engId, 'execute'); } catch (_) {} }
-  },
-
-  async save(table, data) {
-    if (!this.orgId) return;
-    const { error } = await supa.from(table).upsert({
-      org_id: this.orgId,
-      data: data,
-      updated_at: new Date().toISOString(),
-      updated_by: this.userEmail
-    }, { onConflict: 'org_id' });
-    if (error) throw error;
-  },
-
-  async load(table) {
-    if (!this.orgId) return null;
-    try {
-      const { data, error } = await supa
-        .from(table)
-        .select('data')
-        .eq('org_id', this.orgId)
-        .single();
-      if (error || !data) return null;
-      return data.data;
-    } catch (_) { return null; }
-  }
-};
+const OrgStore = DRIVE.createStore(supa, 'execute');
+const DriveAuth = DRIVE.createAuth(supa);
 // ──────────────────────────────────────────────────────────
 
 const DEFAULT_PRACTICE = 'Your Practice';
@@ -1224,7 +1191,7 @@ async function loginWithPassword() {
   const errEl = document.getElementById('loginError');
   if (!email || !password) { errEl.textContent = 'Enter your email and password'; errEl.style.display = 'block'; return; }
   errEl.style.display = 'none';
-  const { error } = await supa.auth.signInWithPassword({ email, password });
+  const { error } = await DriveAuth.signIn(email, password);
   if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
   // onAuthStateChange → initApp loads the tool once the session is set.
 }
@@ -1235,37 +1202,20 @@ async function forgotPassword() {
   const errEl = document.getElementById('loginError');
   if (!email) { errEl.textContent = 'Enter your email first'; errEl.style.display = 'block'; return; }
   errEl.style.display = 'none';
-  const { error } = await supa.auth.resetPasswordForEmail(email, { redirectTo: location.origin + '/hub.html' });
+  const { error } = await DriveAuth.resetPassword(email);
   if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
   document.getElementById('loginForm').style.display = 'none';
   document.getElementById('loginSent').style.display = 'block';
 }
 
 async function signOut() {
-  await supa.auth.signOut();
+  await DriveAuth.signOut();
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
-async function checkSubscription(email) {
-  try {
-    const { data } = await supa.from('subscriptions').select('status').eq('email', email).single();
-    if (data?.status === 'active') return true;
-  } catch (_) {}
-  // Engagement members are covered by their admin's subscription
-  try {
-    const engId = localStorage.getItem('drive_engagement_id');
-    if (engId) {
-      const { data } = await supa.from('drive_engagement_members').select('id').eq('engagement_id', engId).eq('email', email).maybeSingle();
-      if (data) return true;
-    }
-  } catch (_) {}
-  return false;
-}
-
 async function initApp(session) {
-  const hasSubscription = await checkSubscription(session?.user?.email);
-  if (!hasSubscription) { window.location.href = '/pricing.html?from=engine'; return; }
   OrgStore.init(session);
+  const engagementContext = await OrgStore.resolveContext();
 
   // Load engine assets from Supabase org store, fall back to localStorage
   const orgData = await OrgStore.load('org_engine_assets');
@@ -1280,7 +1230,8 @@ async function initApp(session) {
 
   await loadDRIVEData();
 
-  const practiceName = getPracticeName();
+  const practiceName = getPracticeName() === DEFAULT_PRACTICE && engagementContext.organizationName
+    ? engagementContext.organizationName : getPracticeName();
   document.getElementById('practiceNamePill').textContent = practiceName;
 
   const email = session?.user?.email || '';
@@ -1303,7 +1254,8 @@ async function initApp(session) {
 
 const loginScreen = document.getElementById('loginScreen');
 
-supa.auth.onAuthStateChange(async (event, session) => {
+DriveAuth.onChange(async (event, session) => {
+  document.getElementById('authLoading').style.display = 'none';
   if (session) {
     loginScreen.classList.remove('visible');
     initApp(session).catch(err => { showToast('Failed to load — please refresh.'); console.error(err); });
@@ -1315,7 +1267,7 @@ supa.auth.onAuthStateChange(async (event, session) => {
 
 // Kick off session check; also init without auth for demo purposes
 (async () => {
-  const { data: { session } } = await supa.auth.getSession();
+  const { data: { session } } = await DriveAuth.getSession();
   if (!session) {
     // Still init the UI so it's explorable
     loadDRIVEData();

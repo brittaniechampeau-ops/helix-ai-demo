@@ -6,6 +6,7 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M51.47,8.03 A42,42 0 0,1 89.47,35.64 L68.79,43.16 A20,20 0 0,0 50.70,30.01Z' fill='%23E8547A'/%3E%3Cpath d='M90.37,38.42 A42,42 0 0,1 75.86,83.10 L62.31,65.76 A20,20 0 0,0 69.23,44.49Z' fill='%232EC4B6'/%3E%3Cpath d='M73.49,84.82 A42,42 0 0,1 26.51,84.82 L38.82,66.58 A20,20 0 0,0 61.18,66.58Z' fill='%237B5EA7'/%3E%3Cpath d='M24.14,83.10 A42,42 0 0,1 9.63,38.42 L30.77,44.49 A20,20 0 0,0 37.69,65.76Z' fill='%2354C06E'/%3E%3Cpath d='M10.53,35.64 A42,42 0 0,1 48.53,8.03 L49.30,30.01 A20,20 0 0,0 31.21,43.16Z' fill='%23F4822A'/%3E%3C/svg%3E">
 <title>Visualize — Growth Command Center</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/drive-runtime.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -551,11 +552,13 @@
   <a class="pnav-tool" href="/execute.html">
     <span class="pnav-dot" style="background:#FF8A3D"></span>Execute
   </a>
+  <a class="pnav-tool" href="/portfolio.html">Portfolio</a>
   <div style="margin-left:auto"><a class="pnav-tool" href="/onboarding.html" target="_blank" style="font-size:11px;opacity:.7">Client Guide ↗</a></div>
 </div>
 
 <!-- ── LOGIN SCREEN ── -->
-<div id="loginScreen" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;">
+<div id="authLoading" style="position:fixed;inset:0;background:var(--bg);z-index:10000;display:flex;align-items:center;justify-content:center;color:var(--txt3);font-size:13px">Checking your session…</div>
+<div id="loginScreen" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:9999;align-items:center;justify-content:center;">
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:48px 40px;max-width:420px;width:100%;text-align:center;">
     <div style="width:48px;height:48px;background:linear-gradient(135deg,#0d9488,#10b981);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
@@ -1769,45 +1772,8 @@ const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
 
 // ── ORG STORE ─────────────────────────────────────────────
-const OrgStore = {
-  orgId: null,
-  userEmail: null,
-
-  init(session) {
-    this.userEmail = session?.user?.email || '';
-    const engId = localStorage.getItem('drive_engagement_id');
-    // Engagement UUID is the sole data key. Fall back to the full email (never
-    // the domain) so two clients under one consultant can never collide.
-    this.orgId = engId || this.userEmail || 'default';
-    // Remember this tool as the engagement's last position so the Hub reopens here.
-    if (engId) { try { localStorage.setItem('drive_last_tool_' + engId, 'visualize'); } catch (_) {} }
-  },
-
-  async save(table, data) {
-    if (!this.orgId) return;
-    try {
-      await supa.from(table).upsert({
-        org_id: this.orgId,
-        data: data,
-        updated_at: new Date().toISOString(),
-        updated_by: this.userEmail
-      }, { onConflict: 'org_id' });
-    } catch (_) {}
-  },
-
-  async load(table) {
-    if (!this.orgId) return null;
-    try {
-      const { data, error } = await supa
-        .from(table)
-        .select('data')
-        .eq('org_id', this.orgId)
-        .single();
-      if (error || !data) return null;
-      return data.data;
-    } catch (_) { return null; }
-  }
-};
+const OrgStore = DRIVE.createStore(supa, 'visualize');
+const DriveAuth = DRIVE.createAuth(supa);
 // ──────────────────────────────────────────────────────────
 
 let currentUser = null;
@@ -1818,7 +1784,7 @@ async function loginWithPassword() {
   const errEl = document.getElementById('loginError');
   if (!email || !password) { errEl.textContent = 'Enter your email and password'; errEl.style.display = 'block'; return; }
   errEl.style.display = 'none';
-  const { error } = await supa.auth.signInWithPassword({ email, password });
+  const { error } = await DriveAuth.signIn(email, password);
   if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
   localStorage.setItem('vec_last_email', email);
   // onAuthStateChange loads the admin/client app once the session is set.
@@ -1830,7 +1796,7 @@ async function forgotPassword() {
   const errEl = document.getElementById('loginError');
   if (!email) { errEl.textContent = 'Enter your email first'; errEl.style.display = 'block'; return; }
   errEl.style.display = 'none';
-  const { error } = await supa.auth.resetPasswordForEmail(email, { redirectTo: location.origin + '/hub.html' });
+  const { error } = await DriveAuth.resetPassword(email);
   if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
   document.getElementById('loginForm').style.display = 'none';
   document.getElementById('loginSent').style.display = 'block';
@@ -1843,7 +1809,7 @@ async function forgotPassword() {
 })();
 
 async function signOut() {
-  await supa.auth.signOut();
+  await DriveAuth.signOut();
   location.reload();
 }
 
@@ -1864,6 +1830,14 @@ function hideStaleDNABanner() {
 // ── LOAD CONTEXT FROM RESOLVE + INTELLIGENCE ─────────────
 async function loadDRIVEContext() {
   if (!OrgStore.orgId) return;
+  const engagementContext = OrgStore.context || await OrgStore.resolveContext();
+  const eng = engagementContext.engagementId ? {
+    client_name: engagementContext.clientName,
+    org_name: engagementContext.organizationName,
+    industry: engagementContext.industry,
+    contact_name: engagementContext.contact.name,
+    contact_email: engagementContext.contact.email,
+  } : null;
   // 1. Canonical taxonomy from Resolve → pre-populate VEC.taxFields if not yet set by user
   try {
     const resolveData = await OrgStore.load('org_taxonomy');
@@ -1910,47 +1884,38 @@ async function loadDRIVEContext() {
   {
     try {
       const discoverData = await OrgStore.load('org_discover');
-      if (discoverData) {
+      if (discoverData || eng) {
         // Seed the practice from everything upstream knows, so opening Visualize
         // on an assessed engagement isn't a blank form. Discover collects the org
         // name, industry, and team size; the engagement record (Hub) holds the
         // contact name/email. Only fill fields the user hasn't set.
         const setInput = (id, val) => { const el = document.getElementById(id); if (el && val && !el.value) el.value = val; };
-        let eng = null;
-        const engId = localStorage.getItem('drive_engagement_id');
-        if (engId) {
-          try {
-            const { data } = await supa.from('drive_engagements')
-              .select('client_name, org_name, industry, contact_name, contact_email')
-              .eq('id', engId).maybeSingle();
-            eng = data;
-          } catch (_) {}
-        }
+        const discovery = discoverData || {};
         // Prefer what Discover captured; fall back to the Hub engagement contact.
-        const seededName = discoverData.org_name || eng?.org_name || eng?.client_name || localStorage.getItem('drive_engagement_name') || '';
-        const founder = discoverData.org_founder || eng?.contact_name || '';
-        const email   = discoverData.org_email   || eng?.contact_email || '';
-        const website = discoverData.org_website  || '';
+        const seededName = discovery.org_name || eng?.org_name || eng?.client_name || localStorage.getItem('drive_engagement_name') || '';
+        const founder = discovery.org_founder || eng?.contact_name || '';
+        const email   = discovery.org_email   || eng?.contact_email || '';
+        const website = discovery.org_website  || '';
         if (!VEC.practice.name    && seededName) { VEC.practice.name    = seededName; setInput('practiceName', seededName); }
         if (!VEC.practice.founder && founder)    { VEC.practice.founder = founder;    setInput('founderName', founder); }
         if (!VEC.practice.email   && email)      { VEC.practice.email   = email;      setInput('founderEmail', email); }
         if (!VEC.practice.website && website)    { VEC.practice.website = website;    setInput('practiceWebsite', website); }
-        VEC.practice.industry = VEC.practice.industry || discoverData.org_industry || eng?.industry || '';
+        VEC.practice.industry = VEC.practice.industry || discovery.org_industry || eng?.industry || '';
         // Keep the rest of the Discover profile — including the uploaded
         // materials text — for drafting positioning and offers later.
         VEC._discover = {
-          challenge: discoverData.org_challenge || '',
-          industry:  discoverData.org_industry || eng?.industry || '',
-          rev:       discoverData.org_rev || '',
-          team:      discoverData.org_team || '',
-          materials: discoverData.materials_text || '',
-          docNames:  (discoverData.intake?.docs || []).map(d => d.name),
+          challenge: discovery.org_challenge || '',
+          industry:  discovery.org_industry || eng?.industry || '',
+          rev:       discovery.org_rev || '',
+          team:      discovery.org_team || '',
+          materials: discovery.materials_text || '',
+          docNames:  (discovery.intake?.docs || []).map(d => d.name),
         };
         renderCarriedMaterials();
         // Map Discover's team-size bucket onto the diagnostic firm-size question.
-        if (!VEC.diag.size && discoverData.org_team) {
+        if (!VEC.diag.size && discovery.org_team) {
           const sizeMap = { '1-5': 'small', '6-20': 'team', '21-50': 'firm', '51-200': 'firm' };
-          const mapped = sizeMap[discoverData.org_team];
+          const mapped = sizeMap[discovery.org_team];
           if (mapped) {
             VEC.diag.size = mapped;
             const radio = document.querySelector(`input[name="size"][value="${mapped}"]`);
@@ -5960,10 +5925,12 @@ function adminNewClient() {
 // ─── INIT ──────────────────────────────────────────────
 const loginScreen = document.getElementById('loginScreen');
 
-supa.auth.onAuthStateChange(async (event, session) => {
+DriveAuth.onChange(async (event, session) => {
+  document.getElementById('authLoading').style.display = 'none';
   if (session) {
     currentUser = session.user;
     OrgStore.init(session);
+    await OrgStore.resolveContext();
     await resolveAdmin();
     document.getElementById('userEmail').textContent = currentUser.email;
     loginScreen.style.display = 'none';
@@ -6260,4 +6227,3 @@ var DRIVE_PROD_IDX=3;
 </script>
 </body>
 </html>
-

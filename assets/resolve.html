@@ -6,6 +6,7 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M51.47,8.03 A42,42 0 0,1 89.47,35.64 L68.79,43.16 A20,20 0 0,0 50.70,30.01Z' fill='%23E8547A'/%3E%3Cpath d='M90.37,38.42 A42,42 0 0,1 75.86,83.10 L62.31,65.76 A20,20 0 0,0 69.23,44.49Z' fill='%232EC4B6'/%3E%3Cpath d='M73.49,84.82 A42,42 0 0,1 26.51,84.82 L38.82,66.58 A20,20 0 0,0 61.18,66.58Z' fill='%237B5EA7'/%3E%3Cpath d='M24.14,83.10 A42,42 0 0,1 9.63,38.42 L30.77,44.49 A20,20 0 0,0 37.69,65.76Z' fill='%2354C06E'/%3E%3Cpath d='M10.53,35.64 A42,42 0 0,1 48.53,8.03 L49.30,30.01 A20,20 0 0,0 31.21,43.16Z' fill='%23F4822A'/%3E%3C/svg%3E">
 <title>Resolve — Taxonomy Workbench · DRIVE</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/drive-runtime.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -35,7 +36,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 .pnav-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 
 /* ── LOGIN ── */
-#loginScreen{position:fixed;inset:0;top:36px;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999}
+#loginScreen{position:fixed;inset:0;top:36px;background:var(--bg);display:none;align-items:center;justify-content:center;z-index:999}
 .login-box{width:100%;max-width:360px;padding:0 24px;display:flex;flex-direction:column;align-items:center;gap:20px}
 .login-logo{width:56px;height:56px;border-radius:14px;background:var(--cyan-bg);border:1.5px solid var(--cyan-border);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:var(--cyan)}
 .login-head{text-align:center}
@@ -254,10 +255,12 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
   <a class="pnav-tool" href="./intuit.html"><span class="pnav-dot" style="background:#5B8CFF"></span>Intuit</a>
   <a class="pnav-tool" href="./visualize.html"><span class="pnav-dot" style="background:#3BBFA3"></span>Visualize</a>
   <a class="pnav-tool" href="./execute.html"><span class="pnav-dot" style="background:#FF8A3D"></span>Execute</a>
+  <a class="pnav-tool" href="./portfolio.html">Portfolio</a>
   <div style="margin-left:auto"><a class="pnav-tool" href="./onboarding.html" target="_blank" style="font-size:11px;opacity:.7">Client Guide ↗</a></div>
 </div>
 
 <!-- LOGIN -->
+<div id="authLoading" style="position:fixed;inset:36px 0 0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:1000;color:var(--muted);font-size:13px">Checking your session…</div>
 <div id="loginScreen">
   <div class="login-box">
     <div class="login-logo">R</div>
@@ -553,30 +556,8 @@ const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
 
 // ── ORG STORE ────────────────────────────────────────────
-const OrgStore = {
-  orgId: null, userEmail: null,
-  init(session) {
-    this.userEmail = session?.user?.email || '';
-    const engId = localStorage.getItem('drive_engagement_id');
-    // Engagement UUID is the sole data key. Fall back to the full email (never
-    // the domain) so two clients under one consultant can never collide.
-    this.orgId = engId || this.userEmail || 'default';
-    // Remember this tool as the engagement's last position so the Hub reopens here.
-    if (engId) { try { localStorage.setItem('drive_last_tool_' + engId, 'resolve'); } catch (_) {} }
-  },
-  async save(table, data) {
-    if (!this.orgId) return;
-    try { await supa.from(table).upsert({ org_id: this.orgId, data, updated_at: new Date().toISOString(), updated_by: this.userEmail }, { onConflict: 'org_id' }); } catch (_) {}
-  },
-  async load(table) {
-    if (!this.orgId) return null;
-    try {
-      const { data, error } = await supa.from(table).select('data').eq('org_id', this.orgId).single();
-      if (error || !data) return null;
-      return data.data;
-    } catch (_) { return null; }
-  }
-};
+const OrgStore = DRIVE.createStore(supa, 'resolve');
+const DriveAuth = DRIVE.createAuth(supa);
 
 // ── UTILS ────────────────────────────────────────────────
 function uid() { return crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36); }
@@ -612,7 +593,7 @@ async function loginWithPassword() {
   const msg = document.getElementById('loginMsg');
   if (!email || !password) { msg.textContent = 'Enter your email and password'; msg.className = 'login-msg error'; return; }
   msg.textContent = 'Signing in…'; msg.className = 'login-msg';
-  const { data, error } = await supa.auth.signInWithPassword({ email, password });
+  const { data, error } = await DriveAuth.signIn(email, password);
   if (error) { msg.textContent = error.message; msg.className = 'login-msg error'; return; }
   currentUser = data.user; OrgStore.init(data.session); await enterApp();
 }
@@ -622,16 +603,17 @@ async function forgotPassword() {
   const email = document.getElementById('loginEmail').value.trim();
   const msg = document.getElementById('loginMsg');
   if (!email) { msg.textContent = 'Enter your email first'; msg.className = 'login-msg error'; return; }
-  const { error } = await supa.auth.resetPasswordForEmail(email, { redirectTo: location.origin + '/hub.html' });
+  const { error } = await DriveAuth.resetPassword(email);
   if (error) { msg.textContent = error.message; msg.className = 'login-msg error'; return; }
   msg.textContent = 'Check your inbox — set a new password from the Hub, then return here.'; msg.className = 'login-msg';
 }
 
 async function initAuth() {
-  const { data: { session } } = await supa.auth.getSession();
+  const { data: { session } } = await DriveAuth.getSession();
+  document.getElementById('authLoading').style.display = 'none';
   if (session) { currentUser = session.user; OrgStore.init(session); await enterApp(); }
   else { document.getElementById('loginScreen').style.display = 'flex'; }
-  supa.auth.onAuthStateChange(async (event, session) => {
+  DriveAuth.onChange(async (event, session) => {
     if (event === 'SIGNED_IN' && session && !currentUser) { currentUser = session.user; OrgStore.init(session); await enterApp(); }
   });
 }
@@ -645,7 +627,9 @@ async function enterApp() {
   if (saved) { Object.assign(RS, saved); }
   // Pull taxonomy files from Discover — add any not already in RS.sources
   const discoverData = await OrgStore.load('org_discover');
-  if (discoverData?.org_name) document.getElementById('tbOrg').textContent = discoverData.org_name;
+  const engagementContext = await OrgStore.resolveContext();
+  const engagementName = discoverData?.org_name || engagementContext.organizationName;
+  if (engagementName) document.getElementById('tbOrg').textContent = engagementName;
   if (discoverData?.intake?.taxFiles?.length) {
     let added = 0;
     discoverData.intake.taxFiles.forEach(f => {
@@ -659,7 +643,7 @@ async function enterApp() {
   render();
 }
 
-async function signOut() { await supa.auth.signOut(); window.location.reload(); }
+async function signOut() { await DriveAuth.signOut(); window.location.reload(); }
 
 // ── READINESS & LOCK ─────────────────────────────────────
 function computeReadiness() {
