@@ -728,7 +728,7 @@
   </button>
   <span class="step-arrow">›</span>
   <button class="step-btn locked" id="nav-5" onclick="showStep(5)">
-    <span class="snum"><span>6</span></span> 30-60-90
+    <span class="snum"><span>6</span></span> Implementation Sequence
   </button>
   <span class="step-arrow">›</span>
   <button class="step-btn locked" id="nav-6" onclick="showStep(6)">
@@ -1189,11 +1189,11 @@
       </div>
     </div>
 
-    <!-- ═══ STEP 5: 30-60-90 ═══ -->
+    <!-- ═══ STEP 5: IMPLEMENTATION SEQUENCE ═══ -->
     <div class="step-panel" id="panel-5">
       <div class="step-header">
-        <h1>30-60-90 Day Plan</h1>
-        <p>Your sequenced build schedule — what to do and what to hold, in order.</p>
+        <h1>Evidence-Based Implementation Sequence</h1>
+        <p>What to decide, establish, test, and measure, ordered by dependency rather than an arbitrary calendar.</p>
       </div>
 
       <div class="card" id="planCard">
@@ -1212,14 +1212,14 @@
       <div class="step-cta" id="planCtaEmpty" style="display:none">
         <div class="step-cta-copy">
           <strong>Plan not yet generated.</strong>
-          Run the Diagnostic and complete earlier steps to generate your 30-60-90 plan.
+          Complete the diagnostic and earlier evidence steps to generate an implementation sequence.
         </div>
         <button class="btn btn-ghost btn-disabled">↓ Download Plan</button>
       </div>
       <div class="step-cta" id="planCtaGenerated" style="display:none">
         <div class="step-cta-copy">
           <strong>Plan generated from your DRIVE work.</strong>
-          Built from your positioning, offers, roster, and case studies — not a generic template. Tasks marked DO are immediate; WAIT tasks have a prerequisite. Use “↻ Rebuild from my work” after you change anything upstream.
+          Built from the recorded constraint, operating profile, completed work, and dependencies. Tasks marked DO are ready; WAIT tasks name the prerequisite that must be satisfied first.
         </div>
         <button class="btn btn-primary" onclick="downloadArtifact('plan')">View Plan Tracker →</button>
       </div>
@@ -1229,7 +1229,7 @@
     <div class="step-panel" id="panel-6">
       <div class="step-header">
         <h1>Growth Command Center</h1>
-        <p>Your Growth system, assembled. Track your 30-60-90 progress and download client deliverables.</p>
+        <p>Your Growth system, assembled. Track implementation decisions, dependencies, and outcomes.</p>
       </div>
 
       <!-- Discovery Prep — shown only when no diagnostic data yet -->
@@ -1252,7 +1252,7 @@
               <div class="kv-row"><span class="kv-key">🤝 Referral Engine</span><span id="fs-ref" class="kv-val">—</span></div>
               <div class="kv-row"><span class="kv-key">⭐ Credibility</span><span id="fs-cred" class="kv-val">—</span></div>
               <div class="kv-row"><span class="kv-key">📄 Client Delivery Kit</span><span id="fs-ops" class="kv-val">—</span></div>
-              <div class="kv-row"><span class="kv-key">📅 30-60-90 Plan</span><span id="fs-plan" class="kv-val">—</span></div>
+              <div class="kv-row"><span class="kv-key">📅 Implementation Sequence</span><span id="fs-plan" class="kv-val">—</span></div>
             </div>
           </div>
         </div>
@@ -1268,10 +1268,10 @@
 
       <div class="card" style="margin-bottom:20px">
         <div class="card-header">
-          <span class="card-title">30-60-90 Day Progress Tracker</span>
+          <span class="card-title">Implementation Progress Tracker</span>
           <span id="planProgressPct" style="font-size:12px;color:var(--accent);font-weight:600"></span>
         </div>
-        <div id="planTracker" style="font-size:13px;color:var(--txt3);">Run the 30-60-90 Plan step to generate your build sequence.</div>
+        <div id="planTracker" style="font-size:13px;color:var(--txt3);">Generate the implementation sequence to track decisions and outcomes.</div>
       </div>
 
       <div class="card" style="margin-bottom:20px">
@@ -3171,7 +3171,7 @@ async function runIntake() {
     }
     VEC.ops.generated = true;
     renderIntakeResult();
-    document.getElementById('procMsg').textContent = 'Sequencing your 30-60-90 plan from your DRIVE work…';
+    document.getElementById('procMsg').textContent = 'Sequencing the intervention from your evidence and dependencies…';
     await generatePlanFromContext();
     document.getElementById('nav-4').classList.add('done');
     updateSidebar(); updatePracticeOS(); saveState();
@@ -3219,7 +3219,7 @@ function renderIntakeResult() {
   document.getElementById('opsResult').classList.add('show');
 }
 
-// ─── STEP 5: 30-60-90 PLAN ─────────────────────────────
+// ─── STEP 5: EVIDENCE-BASED IMPLEMENTATION SEQUENCE ─────
 function generatePlan() {
   const track = VEC.diag.track || 'A';
   const customProfilePlan=!VEC.diag.operatingProfile?.archetypePreset?DRIVE_OPERATING_PROFILE.execution(VEC.diag.operatingProfile,track)?.map(x=>[x.phase,'DO',x.focus,x.action]):null;
@@ -3296,8 +3296,8 @@ function generatePlan() {
     <tbody>${rows.map(([phase, type, found, task]) => {
       let phaseRow = '';
       if (phase !== currentPhase) {
-        const dayRange = phase === 'Foundation' ? 'Days 1–30' : phase === 'Activation' ? 'Days 31–60' : 'Days 61–90';
-        phaseRow = `<tr class="plan-phase-row"><td colspan="4">${phase} — ${dayRange}</td></tr>`;
+        const decisionGate = phase === 'Foundation' ? 'Validate the constraint and establish prerequisites' : phase === 'Activation' ? 'Run the bounded intervention' : 'Measure the outcome and decide what changes next';
+        phaseRow = `<tr class="plan-phase-row"><td colspan="4">${phase} · ${decisionGate}</td></tr>`;
         currentPhase = phase;
       }
       return `${phaseRow}<tr><td></td><td><span class="type-${type.toLowerCase()}">${type}</span></td><td>${found}</td><td>${task}</td></tr>`;
@@ -3314,8 +3314,7 @@ function generatePlan() {
   renderPlanTracker();   // keep the in-app tracker in sync with the same source
 }
 
-// AI-generate the 30-60-90 plan from the practice's real DRIVE context so it
-// never tells them to redo work they've already completed here.
+// Generate an implementation sequence from the practice's real DRIVE context.
 async function generatePlanAI() {
   const p = VEC.practice, d = VEC.diag, dc = VEC._discover || {};
   const archetype=DRIVE_ARCHETYPES.definitions[d.archetype||'expert-practice'];
@@ -3332,15 +3331,17 @@ async function generatePlanAI() {
   if (VEC.ops && VEC.ops.generated) done.push('Intake / delivery kit configured');
   const signals = (dc.signals || []).slice(0, 6).map(s => '• ' + (s.title || s.text || '')).filter(Boolean).join('\n');
 
-  const system = `You are a GTM operating-model advisor writing a 30-60-90 day plan for a ${archetype.label} that has ALREADY completed work inside a platform called DRIVE.
+  const system = `You are a GTM operating-model advisor sequencing one evidence-based intervention for a ${archetype.label} that has ALREADY completed work inside a platform called DRIVE.
 HARD RULES:
 - Do NOT tell them to redo finished work. If positioning is done, never say "rewrite" or "complete the positioning canvas" — instead sequence what comes next: validate it with real clients, put it to work in referral asks and content, and move pipeline.
 - Use the organization's operating model. Do not force referrals, LinkedIn, case studies, packaged consulting offers, or founder-led selling unless they fit this archetype and the evidence.
 - Prioritize these outcome measures where relevant: ${archetype.measures.join(', ')}.
 - Reference their ACTUAL one-line, offers, and contacts where relevant. Be specific, never generic.
-- A WAIT task is something to deliberately hold until a prerequisite is met — use sparingly.
-Return ONLY valid JSON, no code fences: an array of EXACTLY 12 objects (4 per phase, ordered):
-[{"phase":"Foundation"|"Activation"|"Optimization","type":"DO"|"WAIT","area":"Positioning"|"Referral Engine"|"Credibility"|"Intake"|"Growth","task":"one specific instruction","how":["sub-step","sub-step"]}]
+- A WAIT task must name the evidence or operating prerequisite that blocks it.
+- Do not use 30, 60, or 90 day framing. Sequence by decisions and dependencies. Timing belongs only where the evidence establishes a real deadline.
+- Foundation validates the binding constraint and establishes ownership and baseline. Activation runs one bounded intervention. Optimization measures the business outcome and records continue, revise, stop, or expand.
+Return ONLY valid JSON, no code fences: an array of EXACTLY 9 objects (3 per phase, ordered):
+[{"phase":"Foundation"|"Activation"|"Optimization","type":"DO"|"WAIT","area":"Decision"|"Operating Foundation"|"Intervention"|"Measurement","task":"one specific instruction","prerequisite":"evidence or condition required","measure":"observable completion or business measure","how":["sub-step","sub-step"]}]
 Keep each task to a single sentence. "how" = 2–3 short sub-steps. Be concise — no preamble.`;
 
   const user = `ORGANIZATION: ${p.name || 'the organization'}${p.founder ? ' — leader ' + p.founder : ''}
@@ -3353,7 +3354,7 @@ ALREADY COMPLETED IN DRIVE (do not re-assign these — build forward from them):
 ${done.length ? done.map(x => '- ' + x).join('\n') : '- (foundations not yet complete — foundational tasks are OK)'}
 ${signals ? `\nBUYER SIGNALS surfaced in Intuit:\n${signals}` : ''}
 
-Write the 30-60-90 plan JSON now — start them from where they actually are.`;
+Write the dependency-based implementation sequence now. Start from where they actually are and make every task traceable to a recorded constraint, prerequisite, or measure.`;
 
   // Haiku: fast enough to finish inside the edge function's limit, and plenty
   // capable for structured, context-grounded task sequencing.
@@ -3368,7 +3369,7 @@ function normalizePlan(arr) {
     const ph = /activ/i.test(t.phase) ? 'Activation' : /optim/i.test(t.phase) ? 'Optimization' : 'Foundation';
     buckets[ph].push(t);
   });
-  const titleFor = { Foundation: 'Days 1–30: Foundation', Activation: 'Days 31–60: Activation', Optimization: 'Days 61–90: Optimization' };
+  const titleFor = { Foundation: 'Foundation: validate and establish', Activation: 'Activation: run the bounded intervention', Optimization: 'Optimization: measure and decide' };
   const phases = ['Foundation', 'Activation', 'Optimization'].map((name, pi) => ({
     name, title: titleFor[name],
     items: buckets[name].map((t, ii) => ({
@@ -3376,6 +3377,8 @@ function normalizePlan(arr) {
       area: t.area || 'Growth',
       type: /wait/i.test(t.type) ? 'WAIT' : 'DO',
       task: String(t.task || '').trim(),
+      prerequisite: String(t.prerequisite || '').trim(),
+      measure: String(t.measure || '').trim(),
       how: Array.isArray(t.how) ? t.how.filter(Boolean).map(String) : []
     })).filter(it => it.task)
   })).filter(ph => ph.items.length);
@@ -3400,7 +3403,7 @@ async function generatePlanFromContext() {
 // current DRIVE work (with its own overlay).
 async function regeneratePlan() {
   if (_isGenerating) return;
-  await runRealGeneration('30-60-90', 'Rebuilding your plan', 'Sequencing your 30-60-90 plan from your DRIVE work…', async () => {
+  await runRealGeneration('Implementation sequence', 'Rebuilding your sequence', 'Sequencing the intervention from evidence and dependencies…', async () => {
     await generatePlanFromContext();
     saveState();
   });
@@ -4298,21 +4301,21 @@ const PLAN_MILESTONES = {
   A: {
     label: 'Discipline & Systematize',
     phases: [
-      { title: 'Days 1–30: Foundation', items: [
+      { title: 'Foundation: validate and establish', items: [
         { id:'a-1-1', task:'Lock final positioning one-line and share with 3 trusted peers for feedback' },
         { id:'a-1-2', task:'Finalize all three offer one-pagers with real prices and durations' },
         { id:'a-1-3', task:'Build contact roster — minimum 6 names, type and relationship noted' },
         { id:'a-1-4', task:'Set up intake questionnaire and scoping document template' },
         { id:'a-1-5', task:'Block one Growth day per week (standing, non-negotiable)' },
       ]},
-      { title: 'Days 31–60: Activation', items: [
+      { title: 'Activation: run the bounded intervention', items: [
         { id:'a-2-1', task:'Make first referral ask with top 2 contacts (use your scripted language)' },
         { id:'a-2-2', task:'Publish Meridian-style case study to LinkedIn' },
         { id:'a-2-3', task:'Complete 2 referral conversations (Convo 1 with each priority contact)' },
         { id:'a-2-4', task:'Submit case study to one trade association or industry publication' },
         { id:'a-2-5', task:'Run first full Growth day with structured agenda' },
       ]},
-      { title: 'Days 61–90: Optimization', items: [
+      { title: 'Optimization: measure and decide', items: [
         { id:'a-3-1', task:'Close or formally advance one referral-sourced opportunity' },
         { id:'a-3-2', task:'Make second round of referral asks (Convo 2 or next contacts)' },
         { id:'a-3-3', task:'Complete second case study draft (Lakeside or next engagement)' },
@@ -4324,21 +4327,21 @@ const PLAN_MILESTONES = {
   B: {
     label: 'Build From Zero',
     phases: [
-      { title: 'Days 1–30: Foundation', items: [
+      { title: 'Foundation: validate and establish', items: [
         { id:'b-1-1', task:'Finalize positioning one-line for the new market' },
         { id:'b-1-2', task:'Write first case study (even if anonymized) to establish proof' },
         { id:'b-1-3', task:'Identify 3 credibility placement targets in the new market' },
         { id:'b-1-4', task:'Build a 15-name prospect list — no shortcuts' },
         { id:'b-1-5', task:'Draft all three offer one-pagers with new-market pricing' },
       ]},
-      { title: 'Days 31–60: Activation', items: [
+      { title: 'Activation: run the bounded intervention', items: [
         { id:'b-2-1', task:'Publish first piece of content to LinkedIn (case study or POV)' },
         { id:'b-2-2', task:'Submit to trade association or industry event' },
         { id:'b-2-3', task:'Begin outbound sequence — 5 targeted outreach attempts per week' },
         { id:'b-2-4', task:'Attend one in-person industry event' },
         { id:'b-2-5', task:'Request introductions from cross-market peers who know this space' },
       ]},
-      { title: 'Days 61–90: Optimization', items: [
+      { title: 'Optimization: measure and decide', items: [
         { id:'b-3-1', task:'Secure at least 3 qualified discovery conversations' },
         { id:'b-3-2', task:'Publish second content piece or case study' },
         { id:'b-3-3', task:'Adjust outbound messaging based on response data' },
@@ -4350,21 +4353,21 @@ const PLAN_MILESTONES = {
   C: {
     label: 'Fix & Activate',
     phases: [
-      { title: 'Days 1–30: Fix the Foundation', items: [
+      { title: 'Foundation: validate the binding constraint', items: [
         { id:'c-1-1', task:'Rewrite positioning one-line — kill all jargon, test on 3 people outside your industry' },
         { id:'c-1-2', task:'Identify the single biggest positioning gap and document why it stalls you' },
         { id:'c-1-3', task:'Audit current pipeline — which contacts are genuinely warm vs. just in the list' },
         { id:'c-1-4', task:'Rebuild contact roster with honest relationship ratings' },
         { id:'c-1-5', task:'Set a Growth day cadence — even if just 4 hours per week' },
       ]},
-      { title: 'Days 31–60: Activate', items: [
+      { title: 'Activation: run the bounded intervention', items: [
         { id:'c-2-1', task:'Make one well-scripted referral ask to your highest-trust contact' },
         { id:'c-2-2', task:'Finalize offer pricing and package names (no more TBD)' },
         { id:'c-2-3', task:'Publish one proof point (case study excerpt or LinkedIn post)' },
         { id:'c-2-4', task:'Have 2 structured Growth conversations using intake framework' },
         { id:'c-2-5', task:'Send one follow-up to a stalled prospect with a specific next step' },
       ]},
-      { title: 'Days 61–90: Optimize', items: [
+      { title: 'Optimization: measure and decide', items: [
         { id:'c-3-1', task:'Close or formally decline every open opportunity — clear the pipeline' },
         { id:'c-3-2', task:'Make second referral ask (different contact or Convo 2)' },
         { id:'c-3-3', task:'Publish full case study to LinkedIn' },
@@ -4740,7 +4743,7 @@ const ARTIFACTS = [
   { id: 'kickoff',      icon: '🚀', name: 'Kickoff Agenda',              file: 'kickoff_agenda.doc' },
   { id: 'cadence',      icon: '🔄', name: 'Delivery Cadence Template',   file: 'delivery_cadence.doc' },
   { id: 'handoff',      icon: '🏁', name: 'Handoff Checklist',           file: 'handoff_checklist.doc' },
-  { id: 'plan',         icon: '📅', name: '30-60-90 Day Plan',           file: null }
+  { id: 'plan',         icon: '📅', name: 'Implementation Sequence',      file: null }
 ];
 
 const DELIVERY_STATES = ['draft', 'sent', 'reviewed'];
@@ -5108,7 +5111,7 @@ function downloadArtifact(type) {
       const el = document.getElementById('planTracker');
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 200);
-    showToast('Your 30-60-90 plan tracker is below ↓');
+    showToast('Your implementation tracker is below ↓');
     return;
   }
 

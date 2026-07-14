@@ -151,7 +151,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
   <a class="pnav-tool" href="/execute.html">
     <span class="pnav-dot" style="background:#FF8A3D"></span>Execute
   </a>
-  <a class="pnav-tool" href="/portfolio.html">Portfolio</a>
+  <a class="pnav-tool" href="/portfolio.html">Recommendations</a>
   <div class="pnav-right">
     <a class="pnav-tool" href="/onboarding.html" target="_blank" style="font-size:11px;opacity:.7">Client Guide ↗</a>
     <span class="pnav-user" id="navUser"></span>
@@ -567,6 +567,7 @@ function cardHTML(eng, activeId) {
       <div class="pipeline-dot pd-e" title="Execute">E</div>
     </div>
     <div class="eng-actions">
+      <button class="btn btn-primary btn-sm" onclick="openRecommendations('${eng.id}','${jsEsc(eng.client_name)}','${jsEsc(eng.industry||'')}')">Open recommendations</button>
       ${isActive
         ? (() => { const ft = HUB_FIRST_TOOL[eng.size_tier] || 'discover.html'; const tl = HUB_TOOL_LABELS[ft] || 'Discover'; return `<a class="btn btn-ghost btn-sm" href="/${ft}">Open in ${tl}</a>`; })()
         : `<button class="btn btn-primary btn-sm" onclick="setActive('${eng.id}','${jsEsc(eng.client_name)}','${jsEsc(eng.industry||'')}')">Set Active</button>`}
@@ -596,6 +597,8 @@ function setActive(id, name, industry) {
   render();
   showToast(`Active: ${name}`);
 }
+
+function openRecommendations(id,name,industry){localStorage.setItem(ENG_KEY,id);localStorage.setItem(ENG_NAME_KEY,name);if(industry)localStorage.setItem('drive_engagement_industry',industry);location.href='/portfolio.html'}
 
 function clearActive() {
   localStorage.removeItem(ENG_KEY);
