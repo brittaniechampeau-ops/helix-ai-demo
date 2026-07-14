@@ -10,6 +10,7 @@
     { "source": "/intuit", "destination": "/intuit.html" },
     { "source": "/execute", "destination": "/execute.html" },
     { "source": "/portfolio", "destination": "/portfolio.html" },
+    { "source": "/practice", "destination": "/practice.html" },
     { "source": "/vector", "destination": "/visualize.html" },
     { "source": "/intelligence", "destination": "/intuit.html" },
     { "source": "/engine", "destination": "/execute.html" },
