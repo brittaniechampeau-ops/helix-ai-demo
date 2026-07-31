@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Newsletter Ledger · DRIVE</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/drive-runtime.js"></script>
+  <style>
+    :root{--bg:#07090d;--surface:#0e1218;--surface2:#141a23;--border:#222b39;--text:#e8eaf0;--muted:#8490a3;--purple:#8b7fec;--green:#3bbfa3;--amber:#f0a832;--red:#e76464}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px Inter,system-ui,sans-serif}.pnav{height:44px;display:flex;align-items:center;gap:14px;padding:0 20px;border-bottom:1px solid var(--border);background:#050709}.pnav a{color:var(--muted);text-decoration:none}.pnav a.active{color:var(--text)}.brand{font-weight:800;color:var(--purple)}main{max-width:1280px;margin:auto;padding:28px}h1{margin:0 0 6px;font-size:25px}.sub{color:var(--muted);line-height:1.5}.grid{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;margin-top:22px}.panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px}.panel h2{font-size:16px;margin:0 0 14px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}.wide{grid-column:1/-1}label{display:block;color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}input,select,textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);padding:9px;font:inherit}textarea{min-height:92px;resize:vertical}.check{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px}.check input{width:auto}.actions{display:flex;gap:8px;margin-top:12px}.btn{border:0;border-radius:7px;padding:9px 13px;font-weight:700;cursor:pointer}.primary{background:var(--green);color:#07100e}.secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}.msg{min-height:20px;margin-top:10px;color:var(--muted);font-size:12px}.msg.error{color:var(--red)}.msg.success{color:var(--green)}.list{display:grid;gap:9px;margin-top:20px}.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px}.row{display:flex;justify-content:space-between;gap:16px}.eyebrow{font-size:10px;text-transform:uppercase;color:var(--purple);font-weight:800;letter-spacing:.06em}.title{font-size:15px;font-weight:750;margin:4px 0}.detail{color:#b7c0ce;line-height:1.45}.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}.chip{font-size:10px;background:var(--surface2);border-radius:12px;padding:3px 7px;color:var(--muted)}.warn{color:var(--amber)}.loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--muted);z-index:10}@media(max-width:900px){.grid,.fields{grid-template-columns:1fr}.wide{grid-column:auto}.row{flex-direction:column}}
+  </style>
+</head>
+<body>
+  <div id="authLoading" class="loading">Loading newsletter ledger…</div>
+  <nav class="pnav"><span class="brand">✦ DRIVE</span><a href="/hub.html">Hub</a><a href="/portfolio.html">Recommendations</a><a class="active" href="/newsletter.html">Newsletter</a></nav>
+  <main id="app" style="display:none">
+    <h1>Newsletter Ledger</h1>
+    <div class="sub">DRIVE’s internal record of source posts, recorded performance, newsletter coverage, and post reuse. This page never retrieves data from LinkedIn.</div>
+    <section class="grid">
+      <form class="panel" id="postForm">
+        <h2>Record a post</h2>
+        <div class="fields">
+          <div><label for="postId">Post ID</label><input id="postId" required placeholder="Stable source ID"></div>
+          <div><label for="sourceUrl">Stored source URL</label><input id="sourceUrl" type="url" required placeholder="https://…"></div>
+          <div><label for="publishedAt">Publication date and time</label><input id="publishedAt" type="datetime-local" required></div>
+          <div><label for="title">Internal title</label><input id="title" required></div>
+          <div class="wide"><label for="sourceText">Source copy or stored excerpt</label><textarea id="sourceText" required></textarea></div>
+          <div class="wide check"><input id="sourceTextComplete" type="checkbox"><span>This is the complete source post, not an excerpt</span></div>
+          <div><label for="topic">Topic</label><input id="topic"></div>
+          <div><label for="pillar">Pillar</label><select id="pillar"><option value="">Unclassified</option><option>Commercial authority</option><option>Founder journey</option></select></div>
+          <div><label for="spineProblem">Spine problem</label><select id="spineProblem"><option value="">Unclassified</option><option>revenue leakage</option><option>AI readiness</option><option>forecast trust</option><option>GTM plateau</option><option>founder bottleneck</option><option>pilot adoption</option></select></div>
+          <div><label for="observedAt">Metrics observed</label><input id="observedAt" type="datetime-local"></div>
+          <div><label for="icpRelevance">ICP relevance, 0–5</label><input id="icpRelevance" type="number" min="0" max="5"></div>
+          <div><label for="operatingInsight">Operating insight, 0–5</label><input id="operatingInsight" type="number" min="0" max="5"></div>
+          <div><label for="conversationPotential">Conversation potential, 0–5</label><input id="conversationPotential" type="number" min="0" max="5"></div>
+          <div><label for="impressions">Impressions</label><input id="impressions" type="number" min="0"></div>
+          <div><label for="reactions">Reactions</label><input id="reactions" type="number" min="0"></div>
+          <div><label for="comments">Comments</label><input id="comments" type="number" min="0"></div>
+          <div><label for="reposts">Reposts</label><input id="reposts" type="number" min="0"></div>
+          <div><label for="profileViewers">Profile viewers</label><input id="profileViewers" type="number" min="0"></div>
+        </div>
+        <div class="actions"><button class="btn primary" type="submit">Save post</button><button class="btn secondary" type="button" onclick="postForm.reset()">Clear</button></div>
+        <div class="msg" id="postMsg"></div>
+      </form>
+      <form class="panel" id="queueForm">
+        <h2>Record newsletter coverage</h2>
+        <div class="fields">
+          <div><label for="newsletterDate">Tuesday date</label><input id="newsletterDate" type="date" required></div>
+          <div><label for="queueStatus">Status</label><select id="queueStatus"><option>draft</option><option>approved</option><option selected>scheduled</option><option>published</option><option>skipped</option></select></div>
+          <div class="wide"><label for="queueSourcePost">Source post</label><select id="queueSourcePost"><option value="">Unknown or not post-derived</option></select></div>
+          <div class="wide"><label for="queueSubject">Subject</label><input id="queueSubject"></div>
+          <div class="wide"><label for="queueNotes">Notes</label><textarea id="queueNotes"></textarea></div>
+        </div>
+        <div class="actions"><button class="btn primary" type="submit">Save coverage</button><button class="btn secondary" type="button" onclick="queueForm.reset()">Clear</button></div>
+        <div class="msg" id="queueMsg"></div>
+        <div class="list" id="queueList"></div>
+      </form>
+    </section>
+    <section class="list" id="postList"></section>
+  </main>
+  <script>
+    // The public anon key is assigned separately below to keep this page aligned
+    // with the other DRIVE admin surfaces.
+    const SUPA_URL='https://ilhljjkiijmjpwinovzj.supabase.co';
+    const REAL_SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsaGxqamtpaWptanB3aW5vdnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MTk4MjIsImV4cCI6MjA5OTE5NTgyMn0.w8asDSA-rXuaDfujC2dr4J-EKCzlCVABOuq3VQeeFsE';
+    const supa=supabase.createClient(SUPA_URL,REAL_SUPA_KEY),DriveAuth=DRIVE.createAuth(supa),OrgStore=DRIVE.createStore(supa,'newsletter');
+    let posts=[],queue=[];
+    const numeric=(id)=>document.getElementById(id).value===''?null:Number(document.getElementById(id).value);
+    const iso=(id)=>document.getElementById(id).value?new Date(document.getElementById(id).value).toISOString():null;
+    function esc(value){const div=document.createElement('div');div.textContent=value??'';return div.innerHTML}
+    function message(id,text,type=''){const el=document.getElementById(id);el.textContent=text;el.className=`msg ${type}`}
+    function render(){
+      queueSourcePost.innerHTML='<option value="">Unknown or not post-derived</option>'+posts.map(p=>`<option value="${esc(p.post_id)}">${esc(p.title)} · ${esc(p.published_at.slice(0,10))}</option>`).join('');
+      queueList.innerHTML=queue.map(item=>`<article class="card"><div class="row"><div><div class="eyebrow">${esc(item.newsletter_date)} · ${esc(item.status)}</div><div class="title">${esc(item.subject||'Subject not stored')}</div><div class="detail">${esc(item.notes||'No notes')}</div><div class="chips"><span class="chip">${esc(item.source_post_id||'Source mapping unknown')}</span></div></div><button class="btn secondary" type="button" data-edit-queue="${esc(item.newsletter_date)}">Add missing details</button></div></article>`).join('');
+      const used=new Set(queue.filter(item=>['approved','scheduled','published'].includes(item.status)&&item.source_post_id).map(item=>item.source_post_id));
+      postList.innerHTML=posts.map(post=>`<article class="card"><div class="row"><div><div class="eyebrow">${esc(post.published_at.slice(0,10))} · ${esc(post.spine_problem||'Unclassified')}</div><div class="title">${esc(post.title)}</div><div class="detail">${esc(post.source_text)}</div><div class="chips"><span class="chip">${Number(post.impressions||0).toLocaleString()} impressions</span><span class="chip">${Number(post.comments||0)} comments</span><span class="chip">ICP ${post.icp_relevance??'–'}/5</span><span class="chip">Insight ${post.operating_insight??'–'}/5</span><span class="chip">Conversation ${post.conversation_potential??'–'}/5</span><span class="chip ${post.source_text_complete?'':'warn'}">${post.source_text_complete?'Complete copy':'Excerpt only'}</span>${used.has(post.post_id)?'<span class="chip">Used by newsletter</span>':''}</div></div><button class="btn secondary" type="button" data-edit-post="${esc(post.post_id)}">Edit</button></div></article>`).join('');
+      document.querySelectorAll('[data-edit-post]').forEach(button=>button.addEventListener('click',()=>editPost(button.dataset.editPost)));
+      document.querySelectorAll('[data-edit-queue]').forEach(button=>button.addEventListener('click',()=>editQueue(button.dataset.editQueue)));
+    }
+    function editPost(id){const post=posts.find(item=>item.post_id===id);if(!post)return;postId.value=post.post_id;sourceUrl.value=post.source_url;publishedAt.value=post.published_at.slice(0,16);title.value=post.title;sourceText.value=post.source_text;sourceTextComplete.checked=post.source_text_complete;topic.value=post.topic||'';pillar.value=post.pillar||'';spineProblem.value=post.spine_problem||'';observedAt.value=post.observed_at?post.observed_at.slice(0,16):'';icpRelevance.value=post.icp_relevance??'';operatingInsight.value=post.operating_insight??'';conversationPotential.value=post.conversation_potential??'';impressions.value=post.impressions??'';reactions.value=post.reactions??'';comments.value=post.comments??'';reposts.value=post.reposts??'';profileViewers.value=post.profile_viewers??'';window.scrollTo({top:0,behavior:'smooth'})}
+    function editQueue(date){const item=queue.find(row=>row.newsletter_date===date);if(!item)return;newsletterDate.value=item.newsletter_date;queueStatus.value=item.status;queueSourcePost.value=item.source_post_id||'';queueSubject.value=item.subject||'';queueNotes.value=item.notes||'';window.scrollTo({top:0,behavior:'smooth'})}
+    async function load(){const[{data:postRows,error:postError},{data:queueRows,error:queueError}]=await Promise.all([supa.from('drive_content_posts').select('*').order('published_at',{ascending:false}),supa.from('drive_newsletter_queue').select('*').order('newsletter_date',{ascending:true})]);if(postError||queueError)throw postError||queueError;posts=postRows||[];queue=queueRows||[];render()}
+    postForm.addEventListener('submit',async(event)=>{event.preventDefault();message('postMsg','Saving…');const row={post_id:postId.value.trim(),source_url:sourceUrl.value.trim(),published_at:iso('publishedAt'),title:title.value.trim(),source_text:sourceText.value.trim(),source_text_complete:sourceTextComplete.checked,topic:topic.value.trim()||null,pillar:pillar.value||null,spine_problem:spineProblem.value||null,icp_relevance:numeric('icpRelevance'),operating_insight:numeric('operatingInsight'),conversation_potential:numeric('conversationPotential'),impressions:numeric('impressions'),reactions:numeric('reactions'),comments:numeric('comments'),reposts:numeric('reposts'),profile_viewers:numeric('profileViewers'),observed_at:iso('observedAt'),evidence_source:'manual_drive_entry',updated_at:new Date().toISOString()};const{error}=await supa.from('drive_content_posts').upsert(row,{onConflict:'post_id'});if(error){message('postMsg',error.message,'error');return}message('postMsg','Saved to DRIVE.','success');await load()});
+    queueForm.addEventListener('submit',async(event)=>{event.preventDefault();message('queueMsg','Saving…');const existing=queue.find(item=>item.newsletter_date===newsletterDate.value);const requested={status:queueStatus.value,subject:queueSubject.value.trim()||null,source_post_id:queueSourcePost.value||null,notes:queueNotes.value.trim()||null};if(existing&&['approved','scheduled','published'].includes(existing.status)){const changesProtected=existing.status!==requested.status||(existing.subject&&requested.subject&&existing.subject!==requested.subject)||(existing.source_post_id&&requested.source_post_id&&existing.source_post_id!==requested.source_post_id);if(changesProtected){message('queueMsg','Protected newsletter status, subject, and source cannot be overwritten here.','error');return}requested.status=existing.status;requested.subject=existing.subject||requested.subject;requested.source_post_id=existing.source_post_id||requested.source_post_id;requested.notes=existing.notes||requested.notes}const row={newsletter_date:newsletterDate.value,...requested,verified_source:'DRIVE admin entry',verified_at:new Date().toISOString(),updated_at:new Date().toISOString()};const{error}=await supa.from('drive_newsletter_queue').upsert(row,{onConflict:'newsletter_date'});if(error){message('queueMsg',error.message,'error');return}message('queueMsg','Coverage saved to DRIVE.','success');await load()});
+    DriveAuth.onChange(async(_event,session)=>{authLoading.style.display='none';if(!session){location.href='/hub.html';return}OrgStore.init(session);const context=await OrgStore.resolveContext();if(!context.permissions.isAdmin){location.href='/hub.html';return}try{await load();app.style.display='block'}catch(error){app.style.display='block';postList.innerHTML=`<div class="card">${esc(error.message)}</div>`}});
+  </script>
+</body>
+</html>

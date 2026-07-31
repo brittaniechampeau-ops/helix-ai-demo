@@ -1,0 +1,28 @@
+# Allow the unattended newsletter automation to run one fixed read-only query
+# against the already-linked DRIVE project. No arbitrary SQL prefix is allowed.
+prefix_rule(
+    pattern = [
+        "supabase",
+        "db",
+        "query",
+        "--linked",
+        "select public.newsletter_automation_feed(current_date,21) as feed;",
+    ],
+    decision = "allow",
+    justification = "Read the private DRIVE newsletter feed for the weekly candidate automation",
+    match = [
+        "supabase db query --linked 'select public.newsletter_automation_feed(current_date,21) as feed;'",
+    ],
+    not_match = [
+        "supabase db query --linked 'select * from public.drive_content_posts;'",
+        "supabase db query --linked 'delete from public.drive_content_posts;'",
+    ],
+)
+
+prefix_rule(
+    pattern = ["supabase", "migration", "list", "--linked"],
+    decision = "allow",
+    justification = "Refresh the linked Supabase login state after a temporary connection error",
+    match = ["supabase migration list --linked"],
+    not_match = ["supabase migration repair --linked"],
+)
