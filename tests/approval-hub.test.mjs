@@ -182,6 +182,66 @@ await t('a content approval without its content is refused by the database', () 
     assert.ok(mig.includes(type), `${type} must carry its content`);
 });
 
+console.log('\nIMMEDIATE DISPATCH AND IMMUTABLE CONTENT');
+await t('the gateway freezes the approved words and hashes them', () => {
+  const gw = fs.readFileSync(new URL('../supabase/functions/approval-gateway/index.ts', import.meta.url), 'utf8');
+  assert.match(gw, /approved_content: content/, 'the snapshot is stored');
+  assert.match(gw, /content_hash: hash/, 'and hashed');
+  assert.match(gw, /sha256/, 'with a real digest');
+});
+await t('approving dispatches immediately with a deadline', () => {
+  const gw = fs.readFileSync(new URL('../supabase/functions/approval-gateway/index.ts', import.meta.url), 'utf8');
+  assert.match(gw, /dispatched_at: now\.toISOString\(\)/);
+  assert.match(gw, /dispatch_deadline: deadline\.toISOString\(\)/);
+  assert.match(gw, /approved_and_dispatched/, 'the audit records the dispatch');
+});
+await t('changed content after approval invalidates and returns for review', () => {
+  const gw = fs.readFileSync(new URL('../supabase/functions/approval-gateway/index.ts', import.meta.url), 'utf8');
+  assert.match(gw, /invalidated_content_changed/);
+  assert.match(gw, /status: 'awaiting_approval', approved_at: null/, 'it goes back to needing a decision');
+});
+await t('the database refuses to mutate approved content', () => {
+  const mig = fs.readFileSync(new URL('../supabase/migrations/20260906030000_immediate_dispatch.sql', import.meta.url), 'utf8');
+  assert.match(mig, /approved content is immutable/);
+  assert.match(mig, /drive_hub_freeze_approved_content/);
+});
+await t('overdue dispatch parks automatically as an exception', () => {
+  const mig = fs.readFileSync(new URL('../supabase/migrations/20260906030000_immediate_dispatch.sql', import.meta.url), 'utf8');
+  assert.match(mig, /drive_hub_park_overdue/);
+  assert.match(mig, /never verified by its deadline/);
+  const gw = fs.readFileSync(new URL('../supabase/functions/approval-gateway/index.ts', import.meta.url), 'utf8');
+  assert.match(gw, /parkOverdue\(supa\)/, 'and the gateway sweeps on every claim');
+});
+await t('a worker claim takes the frozen content, not the live source', () => {
+  const gw = fs.readFileSync(new URL('../supabase/functions/approval-gateway/index.ts', import.meta.url), 'utf8');
+  assert.match(gw, /approved_content, content_hash/, 'claims return the snapshot');
+});
+await t('sweep runs and reports without side effects', async () => {
+  const r = await agent('sweep');
+  assert.equal(r.status, 200);
+  assert.equal(typeof r.body.parked, 'number');
+});
+
+console.log('\nTHE HUB IS THE ONLY SURFACE');
+await t('no card sends Britt to another operating surface', () => {
+  const html = fs.readFileSync(new URL('../assets/approvals.html', import.meta.url), 'utf8');
+  const ui = html.slice(html.indexOf('function card'), html.indexOf('function render'));
+  for (const app of ['Kleo', 'Kit', 'LinkedIn', 'Apollo'])
+    assert.ok(!new RegExp(`(publish|send|post|do it) (from|in) ${app}`, 'i').test(ui),
+      `the card must not tell her to finish the job in ${app}`);
+});
+await t('approved work shows as in flight with nothing left to do', () => {
+  const html = fs.readFileSync(new URL('../assets/approvals.html', import.meta.url), 'utf8');
+  assert.match(html, /class="queued"/, 'there is an in-flight state');
+  assert.match(html, /Nothing else for you to do/);
+  assert.match(html, /queued\|\|\['declined'/, 'an in-flight item shows no buttons');
+});
+await t('a manual LinkedIn action stays one tap', () => {
+  const html = fs.readFileSync(new URL('../assets/approvals.html', import.meta.url), 'utf8');
+  assert.match(html, /I did this\. Record it\./);
+  assert.ok(!/required.*final text/i.test(html), 'pasting the final text is never required');
+});
+
 console.log('\nUI CONTRACT');
 await t('the page has no arbitrary execution path', () => {
   const html = fs.readFileSync(new URL('../assets/approvals.html', import.meta.url), 'utf8');

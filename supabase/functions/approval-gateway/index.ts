@@ -18,6 +18,8 @@ const INTEGRATION_SECRET = Deno.env.get('HUB_INTEGRATION_SECRET') ?? ''
 const BRIDGE_SYNC_KEY = Deno.env.get('BRIDGE_SYNC_KEY') ?? ''
 const BRIDGE_BASE = Deno.env.get('BRIDGE_BASE_URL') ?? 'https://assessment.brittbowman.ai'
 const CLAIM_SECONDS = 120
+// How long a dispatched item may stay unverified before it parks as an exception.
+const DISPATCH_DEADLINE_MIN = Number(Deno.env.get('HUB_DISPATCH_DEADLINE_MIN') ?? 15)
 const MAX_RETRIES = 3
 
 const cors = {
@@ -46,6 +48,26 @@ interface Handler {
 }
 
 const str = (v: unknown) => (typeof v === 'string' ? v.trim() : '')
+
+/** The exact words being approved, wherever they live on the record. */
+function contentOf(a: Record<string, unknown>): string {
+  const p = (a.action_payload ?? {}) as Record<string, unknown>
+  return str(a.artifact) || str(p.text) || str(p.body) || str(p.message) || ''
+}
+
+async function sha256(text: string): Promise<string> {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text))
+  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('')
+}
+
+/** Park anything dispatched that blew its deadline. Silence is never success. */
+async function parkOverdue(supa: SupabaseClient) {
+  const { data } = await supa.rpc('drive_hub_park_overdue')
+  for (const r of data ?? []) {
+    await logEvent(supa, r.id, 'system', 'system', 'parked_overdue', 'approved', 'failed', { reason: r.reason })
+  }
+  return data ?? []
+}
 
 /** Internal-only decisions. No external effect, so readback is the row itself. */
 function internalHandler(kind: string, required: string[] = []): Handler {
@@ -221,7 +243,7 @@ async function logEvent(supa: SupabaseClient, approval_id: string | null, actor:
 // ── Operations ────────────────────────────────────────────────────────────────
 
 const HUMAN_ONLY = new Set(['approve', 'decline', 'edit', 'snooze', 'cancel', 'retry', 'confirm_manual', 'acknowledge'])
-const AGENT_ONLY = new Set(['upsert', 'supersede', 'record_auto', 'attach_evidence', 'ping', 'claim_approved', 'submit_result'])
+const AGENT_ONLY = new Set(['upsert', 'supersede', 'record_auto', 'attach_evidence', 'ping', 'claim_approved', 'submit_result', 'sweep'])
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
@@ -243,6 +265,11 @@ serve(async (req) => {
     // ── connectivity, no side effect ──
     if (op === 'ping') return json({ ok: true, caller: auth.kind, actor: auth.actor, handlers: Object.keys(HANDLERS).length })
 
+    if (op === 'sweep') {
+      const parked = await parkOverdue(supa)
+      return json({ ok: true, parked: parked.length, items: parked })
+    }
+
     // ── agent: create or update an approval idempotently ──
     if (op === 'upsert') {
       const key = str(body.idempotency_key)
@@ -257,6 +284,24 @@ serve(async (req) => {
 
       const { data: existing } = await supa.from('drive_hub_approvals')
         .select('id, status, source_fingerprint').eq('idempotency_key', key).maybeSingle()
+
+      // If the words changed after Britt approved them, the approval no longer
+      // describes what would ship. Invalidate and send it back for review rather
+      // than publishing copy she has not seen.
+      if (existing && ['approved', 'executing'].includes(existing.status)) {
+        const incoming = contentOf({ artifact: body.artifact, action_payload: body.action_payload })
+        const { data: full } = await supa.from('drive_hub_approvals').select('content_hash').eq('id', existing.id).maybeSingle()
+        if (incoming && full?.content_hash && (await sha256(incoming)) !== full.content_hash) {
+          await supa.from('drive_hub_approvals').update({
+            status: 'awaiting_approval', approved_at: null, dispatched_at: null, dispatch_deadline: null,
+            approved_content: null, content_hash: null,
+            invalidated_reason: 'The content changed after you approved it, so the approval was withdrawn. Read it again before it goes out.',
+          }).eq('id', existing.id)
+          await logEvent(supa, existing.id, auth.actor, 'agent', 'invalidated_content_changed', existing.status, 'awaiting_approval', {})
+          return json({ ok: true, id: existing.id, status: 'awaiting_approval', invalidated: true })
+        }
+        return json({ ok: true, id: existing.id, status: existing.status, unchanged: true, note: 'in flight; not modified' })
+      }
 
       // A decided item is never silently reopened by a repeat request.
       if (existing && !['awaiting_approval', 'snoozed', 'manual_action_ready', 'failed'].includes(existing.status)) {
@@ -334,10 +379,19 @@ serve(async (req) => {
     if (op === 'claim_approved') {
       const types = Array.isArray(body.types) ? body.types.map(String) : []
       if (!types.length) return json({ error: 'types is required' }, 400)
+      await parkOverdue(supa)
+      const worker = str(body.worker) || 'unnamed-worker'
       const { data, error } = await supa.from('drive_hub_approvals')
-        .select('id, approval_type, action_payload, idempotency_key, source_record_id')
-        .eq('status', 'approved').in('approval_type', types).limit(Number(body.limit ?? 10))
+        .select('id, approval_type, action_payload, idempotency_key, source_record_id, approved_content, content_hash, destination, requested_timing, dispatch_deadline')
+        .eq('status', 'approved').in('approval_type', types)
+        .order('dispatched_at', { ascending: true }).limit(Number(body.limit ?? 10))
       if (error) return json({ error: error.message }, 500)
+      for (const item of data ?? []) {
+        await supa.from('drive_hub_approvals').update({ status: 'executing', worker, execution_started_at: new Date().toISOString() })
+          .eq('id', item.id).eq('status', 'approved')
+        await logEvent(supa, item.id, worker, 'agent', 'claimed', 'approved', 'executing', {})
+      }
+      // approved_content is the contract. A worker publishes these words or none.
       return json({ ok: true, items: data ?? [] })
     }
 
@@ -458,15 +512,30 @@ serve(async (req) => {
 
       const availability = handler.available()
       if (!availability.ok && availability.deferred) {
+        // Freeze the exact words, dispatch now, and start a deadline. The scheduled
+        // jobs are a safety net for this, not the thing that makes it happen.
+        const content = contentOf(approval)
+        if (!content) return json({ error: 'nothing to publish: this approval carries no content' }, 400)
+        const hash = await sha256(content)
+        const now = new Date()
+        const deadline = new Date(now.getTime() + DISPATCH_DEADLINE_MIN * 60000)
         await supa.from('drive_hub_approvals').update({
-          status: 'approved', approved_at: new Date().toISOString(),
+          status: 'approved',
+          approved_at: approval.approved_at ?? now.toISOString(),
+          approved_content: content,
+          content_hash: hash,
+          destination: str(payload.destination) || availability.executor || 'marketing-os',
+          requested_timing: str(payload.requested_timing) || 'immediate',
+          dispatched_at: now.toISOString(),
+          dispatch_deadline: deadline.toISOString(),
           destination_system: availability.executor ?? 'marketing-os',
-          failure_reason: null,
+          failure_reason: null, invalidated_reason: null, parked_at: null,
         }).eq('id', id)
-        await logEvent(supa, id, auth.actor, 'human', 'approved_queued_for_executor', approval.status, 'approved',
-          { executor: availability.executor })
-        return json({ ok: true, status: 'approved', executed: false, queued_for: availability.executor,
-          note: `Approved. ${availability.executor} publishes it on its next run and reports back here.` })
+        await logEvent(supa, id, auth.actor, 'human', 'approved_and_dispatched', approval.status, 'approved',
+          { executor: availability.executor, content_hash: hash, deadline: deadline.toISOString(), chars: content.length })
+        return json({ ok: true, status: 'approved', dispatched: true, executor: availability.executor,
+          content_hash: hash, deadline: deadline.toISOString(),
+          note: `Dispatched to ${availability.executor} now. If it is not verified by ${deadline.toISOString().slice(11,16)} UTC it parks here as an exception.` })
       }
       if (!availability.ok) {
         await supa.from('drive_hub_approvals').update({
