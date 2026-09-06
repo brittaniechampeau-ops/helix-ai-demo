@@ -399,7 +399,7 @@ async function logEvent(supa: SupabaseClient, approval_id: string | null, actor:
 // ── Operations ────────────────────────────────────────────────────────────────
 
 const HUMAN_ONLY = new Set(['approve', 'decline', 'edit', 'snooze', 'cancel', 'retry', 'confirm_manual', 'acknowledge', 'attest_final'])
-const AGENT_ONLY = new Set(['upsert', 'supersede', 'record_auto', 'attach_evidence', 'claim_approved', 'submit_result', 'sweep', 'purge_test_items', 'approval_events', 'activation', 'cron_diagnostic'])
+const AGENT_ONLY = new Set(['upsert', 'supersede', 'record_auto', 'attach_evidence', 'claim_approved', 'submit_result', 'sweep', 'purge_test_items', 'approval_events', 'activation', 'cron_diagnostic', 'vacation_reconcile', 'capture_baseline', 'set_precondition', 'vacation_baseline'])
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
@@ -468,6 +468,66 @@ serve(async (req) => {
       const { data, error } = await supa.rpc('drive_cron_diagnostic')
       if (error) return dbError(error)
       return json({ ok: true, ...data })
+    }
+
+    if (op === 'vacation_reconcile') {
+      const { data, error } = await supa.rpc('drive_vacation_reconcile')
+      if (error) return dbError(error)
+      return json({ ok: true, ...data })
+    }
+
+    if (op === 'vacation_baseline') {
+      const { data, error } = await supa.from('drive_test_baseline')
+        .select('id, captured_at, counts, note').order('id', { ascending: false }).limit(1).maybeSingle()
+      if (error) return dbError(error)
+      return json({ ok: true, ...(data ?? {}) })
+    }
+
+    // ── capture the baseline the external-attribution rules are measured against ──
+    // The gateway reads the counts itself rather than being told them, so the
+    // baseline cannot be a number someone typed.
+    if (op === 'capture_baseline') {
+      const counts: Record<string, unknown> = {}
+      const errs: string[] = []
+      const b = async (path: string) => {
+        try {
+          const r = await fetch(`${BRIDGE_BASE}${path}`, { headers: { 'x-sync-key': BRIDGE_SYNC_KEY }, signal: AbortSignal.timeout(20000) })
+          if (!r.ok) { errs.push(`${path} -> ${r.status}`); return null }
+          return await r.json()
+        } catch (e) { errs.push(`${path}: ${String(e instanceof Error ? e.message : e)}`); return null }
+      }
+      const funnel = await b('/api/sync?counts=funnel')
+      const kit = await b('/api/sync?kit=stats')
+      const c = funnel?.counts ?? {}
+      const k = kit?.stats ?? {}
+      counts.purchases = c.purchases_total ?? null
+      counts.revenue_cents = c.revenue_cents_total ?? null
+      counts.assessment_completions = c.assessment_completions_total ?? null
+      counts.active_subscribers = k.subscriber_count ?? null
+      counts.broadcasts_total = k.broadcasts_total ?? null
+      counts.broadcasts_sent_or_scheduled = Array.isArray(k.broadcasts_recent)
+        ? k.broadcasts_recent.filter((x: Record<string, unknown>) => x.send_at || x.published_at).length : null
+      // Booked calls have no instrument yet. Null, and it says so, rather than zero.
+      counts.booked_calls = null
+      counts.booked_calls_note = 'no instrument; Calendly token not installed'
+
+      const { data, error } = await supa.from('drive_test_baseline')
+        .insert({ counts, note: str(body.note) || 'captured before the corrected 48-hour window' })
+        .select('id, captured_at').single()
+      if (error) return dbError(error)
+      return json({ ok: true, baseline_id: data.id, captured_at: data.captured_at, counts, errors: errs })
+    }
+
+    // ── record a precondition as met, with its evidence ──
+    if (op === 'set_precondition') {
+      const pid = str(body.precondition)
+      if (!pid) return json({ error: 'precondition is required' }, 400)
+      const { error } = await supa.from('drive_test_preconditions')
+        .upsert({ id: pid, met: body.met !== false, evidence: body.evidence ?? null,
+                  met_at: body.met !== false ? new Date().toISOString() : null })
+      if (error) return dbError(error)
+      const { data: all } = await supa.from('drive_test_preconditions').select('id, met, met_at').order('id')
+      return json({ ok: true, preconditions: all })
     }
 
     // ── read-only: the activation dashboard ──
