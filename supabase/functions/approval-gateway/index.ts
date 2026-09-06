@@ -242,7 +242,7 @@ async function logEvent(supa: SupabaseClient, approval_id: string | null, actor:
 
 // ── Operations ────────────────────────────────────────────────────────────────
 
-const HUMAN_ONLY = new Set(['approve', 'decline', 'edit', 'snooze', 'cancel', 'retry', 'confirm_manual', 'acknowledge'])
+const HUMAN_ONLY = new Set(['approve', 'decline', 'edit', 'snooze', 'cancel', 'retry', 'confirm_manual', 'acknowledge', 'attest_final'])
 const AGENT_ONLY = new Set(['upsert', 'supersede', 'record_auto', 'attach_evidence', 'ping', 'claim_approved', 'submit_result', 'sweep'])
 
 serve(async (req) => {
@@ -483,6 +483,26 @@ serve(async (req) => {
       await logEvent(supa, id, auth.actor, 'human', 'edited', approval.status, approval.status,
         { changed_keys: Object.keys(patch), before: approval.action_payload, after: merged })
       return json({ ok: true, action_payload: merged })
+    }
+
+    // Britt pastes what she actually posted. One optional field, prefilled with the
+    // approved version. Attested is stronger than approved and weaker than a
+    // destination read, and reconciliation may still upgrade it later.
+    if (op === 'attest_final') {
+      const finalText = str(body.final_text)
+      if (!finalText) return json({ error: 'final_text is required' }, 400)
+      const proposed = contentOf(approval)
+      await supa.from('drive_hub_approvals').update({
+        destination_readback: { attested: true, final_text: finalText, proposed_text: proposed,
+                                differs: finalText !== proposed, attested_by: auth.actor, at: new Date().toISOString() },
+        execution_result: { ...(approval.execution_result as object ?? {}), attestation: 'user_attested_published_final' },
+      }).eq('id', id)
+      await logEvent(supa, id, auth.actor, 'human', 'attested_published_final', approval.status, approval.status,
+        { differs: finalText !== proposed, proposed_chars: proposed.length, final_chars: finalText.length })
+      return json({ ok: true, quality: 'user_attested_published_final', differs: finalText !== proposed,
+        note: finalText !== proposed
+          ? 'Recorded as what you actually posted. The difference from the draft becomes a preference pair.'
+          : 'Recorded. It matches the approved version.' })
     }
 
     if (op === 'acknowledge' || op === 'confirm_manual' || op === 'approve' || op === 'retry') {
