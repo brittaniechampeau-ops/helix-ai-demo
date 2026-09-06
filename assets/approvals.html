@@ -68,6 +68,10 @@
     .empty{text-align:center;color:var(--muted);padding:44px 20px;font-size:14px}
     .empty .big{font-size:34px;margin-bottom:10px}
     .loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--muted);z-index:10}
+    .pub{background:#2a1416;border:1px solid #4a2226;border-radius:9px;padding:9px 12px;font-size:13px;font-weight:650;color:#f19a9a;margin:10px 0}
+    .facts{display:grid;grid-template-columns:auto 1fr;gap:5px 14px;margin:10px 0 0;font-size:12.5px}
+    .facts dt{color:var(--muted);font-weight:700;white-space:nowrap}
+    .facts dd{margin:0;color:#b7c0ce}
     .queued{background:#101d19;border:1px solid #1f4038;border-radius:9px;padding:10px 12px;font-size:13px;margin:10px 0;color:#7fd8bd}
     .blocked{background:#2a2213;border:1px solid #4a3a1c;border-radius:9px;padding:10px 12px;font-size:13px;margin:10px 0;color:#f0c882}
     .hist{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--border);font-size:13.5px}
@@ -188,7 +192,14 @@ function card(a){
     <h2 class="title">${esc(a.title)}</h2>
     ${a.artifact?'':`<p class="summary">${esc(a.decision_summary)}</p>`}
     ${artifactBlock(a)}
+    ${a.is_public===true?`<div class="pub">This publishes publicly as you.</div>`:''}
     <div class="effect">${esc(a.proposed_action)}${a.affects?` <span style="color:var(--muted)">· ${esc(a.affects)}</span>`:''}</div>
+    <dl class="facts">
+      <dt>Goes to</dt><dd>${esc(a.destination||'not stated')}</dd>
+      <dt>When</dt><dd>${esc(a.requested_timing||'not stated')}</dd>
+      <dt>Public</dt><dd>${a.is_public===true?'Yes':a.is_public===false?'No, internal only':'not stated'}</dd>
+      <dt>Closes when</dt><dd>${esc(a.readback_criteria||'not stated')}</dd>
+    </dl>
     ${queued?`<div class="queued">Approved. It publishes on the next agent run and closes here with the result. Nothing else for you to do.</div>`:''}
     ${blocked?`<div class="blocked"><b>Recorded, not executed.</b> ${esc(a.failure_reason)}. Only this action type is blocked.</div>`:''}
     ${a.status==='failed'?`<div class="blocked"><b>Failed.</b> ${esc(a.failure_reason||'no reason recorded')}. Retried ${a.retry_count} time(s).</div>`:''}

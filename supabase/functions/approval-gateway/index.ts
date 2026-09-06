@@ -323,7 +323,15 @@ serve(async (req) => {
         proposed_action: str(body.proposed_action) || type,
         action_payload: body.action_payload ?? {},
         artifact: str(body.artifact) || null,
+        destination: str(body.destination) || null,
+        requested_timing: str(body.requested_timing) || null,
+        is_public: typeof body.is_public === 'boolean' ? body.is_public : null,
+        readback_criteria: str(body.readback_criteria) || null,
         artifact_label: str(body.artifact_label) || null,
+        // Internal provenance: which strategy rules and which same-channel voice
+        // samples produced this draft. A trigger rejects an authored item without
+        // it. It is never rendered on Britt's card.
+        evidence_manifest: body.evidence_manifest ?? null,
         affects: str(body.affects) || null,
         source_links: body.source_links ?? [],
         risk: ['low', 'medium', 'high'].includes(str(body.risk)) ? str(body.risk) : 'low',
