@@ -92,6 +92,82 @@ function internalHandler(kind: string, required: string[] = []): Handler {
   }
 }
 
+/**
+ * Types whose payload is copy Britt will be seen to have written. These carry the
+ * heaviest validation, because the cost of a bad one is public.
+ */
+const AUTHORED_TYPES = ['content_publish', 'kleo_create_draft', 'newsletter_send']
+const ANCHOR_QUALITY = ['published_authoritative', 'sent_authoritative', 'britt_edited_final']
+
+type Invalid = { field: string; message: string }
+
+/**
+ * Deterministic request validation. A malformed submission is the caller's bug,
+ * not a server fault, so it answers 422 with the offending field named. The
+ * database triggers still stand behind this: they are the last line, not the first
+ * one a job should hit.
+ */
+function validateApproval(type: string, body: Record<string, unknown>): Invalid[] {
+  const bad: Invalid[] = []
+  if (type !== 'test_echo') {
+    for (const f of ['destination', 'readback_criteria']) {
+      if (!str(body[f])) bad.push({ field: f, message: `${f} is required: an approval must state where it goes and what counts as verified` })
+    }
+    if (typeof body.is_public !== 'boolean') {
+      bad.push({ field: 'is_public', message: 'is_public is required: Britt must know whether this speaks publicly as her' })
+    }
+  }
+  if (!AUTHORED_TYPES.includes(type)) return bad
+
+  const m = body.evidence_manifest as Record<string, unknown> | null | undefined
+  if (!m || typeof m !== 'object') {
+    bad.push({ field: 'evidence_manifest', message: `${type} must carry an evidence_manifest: the strategy rules it applied and the same-channel voice samples it sounded like` })
+    return bad
+  }
+  const channel = str(m.channel)
+  if (!channel) bad.push({ field: 'evidence_manifest.channel', message: 'evidence_manifest.channel is required' })
+
+  const strategy = Array.isArray(m.strategy) ? m.strategy : null
+  if (!strategy) bad.push({ field: 'evidence_manifest.strategy', message: 'evidence_manifest.strategy must be an array' })
+  else if (!strategy.length) bad.push({ field: 'evidence_manifest.strategy', message: 'evidence_manifest.strategy is empty: no retrieved strategy rule supports this draft' })
+
+  const voice = Array.isArray(m.voice) ? m.voice : null
+  if (!voice) bad.push({ field: 'evidence_manifest.voice', message: 'evidence_manifest.voice must be an array' })
+  else if (channel) {
+    const anchored = voice.filter((v) => {
+      const o = v as Record<string, unknown>
+      return str(o?.channel) === channel && ANCHOR_QUALITY.includes(str(o?.quality))
+    })
+    if (!anchored.length) {
+      bad.push({
+        field: 'evidence_manifest.voice',
+        message: `no published or Britt-final ${channel} sample: a draft may not borrow another channel's voice, and approved-only evidence is too weak to anchor one`,
+      })
+    }
+  }
+  return bad
+}
+
+const invalid = (bad: Invalid[]) =>
+  json({ error: bad[0].message, code: 'evidence_validation_failed', invalid: bad }, 422)
+
+/**
+ * A trigger that rejected a write is still a validation failure, not a server
+ * fault. Map the ones we raise ourselves onto 422 so a caller sees the same status
+ * whether it was caught here or in the database. Anything else stays a 500.
+ */
+const VALIDATION_RAISES = [
+  'must carry an evidence_manifest', 'evidence_manifest.channel is required',
+  'evidence_manifest.strategy is empty', 'evidence_manifest.voice has no',
+  'must state destination', 'requires an artifact', 'is immutable once approved',
+]
+function dbError(error: { message: string }) {
+  const hit = VALIDATION_RAISES.find((v) => error.message.includes(v))
+  return hit
+    ? json({ error: error.message, code: 'evidence_validation_failed', invalid: [{ field: 'evidence_manifest', message: error.message }] }, 422)
+    : json({ error: error.message }, 500)
+}
+
 const HANDLERS: Record<string, Handler> = {
   // Deterministic test adapter. Proves the whole lifecycle with no external effect.
   test_echo: {
@@ -277,6 +353,11 @@ serve(async (req) => {
       const type = str(body.approval_type)
       if (!HANDLERS[type]) return json({ error: `unknown approval_type "${type}". Allowed: ${Object.keys(HANDLERS).join(', ')}` }, 400)
 
+      // Fail closed, but say exactly what is wrong and answer 4xx. A caller that
+      // gets a 500 cannot tell a bad request from an outage and retries forever.
+      const bad = validateApproval(type, body)
+      if (bad.length) return invalid(bad)
+
       const { data: policy } = await supa.from('drive_hub_policies')
         .select('id, disposition').eq('action_type', type).is('revoked_at', null).maybeSingle()
       if (policy?.disposition === 'prohibited')
@@ -347,7 +428,7 @@ serve(async (req) => {
 
       const { data: saved, error } = await supa.from('drive_hub_approvals')
         .upsert(row, { onConflict: 'idempotency_key' }).select('id, status').single()
-      if (error) return json({ error: error.message }, 500)
+      if (error) return dbError(error)
 
       await logEvent(supa, saved.id, auth.actor, 'agent',
         existing ? 'updated' : 'created', existing?.status ?? null, saved.status,
@@ -367,7 +448,7 @@ serve(async (req) => {
         destination_id: str(body.destination_id) || null,
         detail: body.detail ?? {},
       }).select('id').single()
-      if (error) return json({ error: error.message }, 500)
+      if (error) return dbError(error)
       return json({ ok: true, id: data.id })
     }
 
@@ -393,7 +474,7 @@ serve(async (req) => {
         .select('id, approval_type, action_payload, idempotency_key, source_record_id, approved_content, content_hash, destination, requested_timing, dispatch_deadline')
         .eq('status', 'approved').in('approval_type', types)
         .order('dispatched_at', { ascending: true }).limit(Number(body.limit ?? 10))
-      if (error) return json({ error: error.message }, 500)
+      if (error) return dbError(error)
       for (const item of data ?? []) {
         await supa.from('drive_hub_approvals').update({ status: 'executing', worker, execution_started_at: new Date().toISOString() })
           .eq('id', item.id).eq('status', 'approved')
@@ -497,20 +578,60 @@ serve(async (req) => {
     // approved version. Attested is stronger than approved and weaker than a
     // destination read, and reconciliation may still upgrade it later.
     if (op === 'attest_final') {
+      // Two things can arrive here, together or separately. `final_text` is what she
+      // actually posted, which may differ from the draft and is the highest-authority
+      // voice evidence there is. `live_url` is the address, which Kleo's connector
+      // cannot supply, and which is the one missing piece stopping a published item
+      // from closing.
       const finalText = str(body.final_text)
-      if (!finalText) return json({ error: 'final_text is required' }, 400)
+      const liveUrl = str(body.live_url)
+      if (!finalText && !liveUrl) return json({ error: 'final_text or live_url is required' }, 422)
+      if (liveUrl && !/^https:\/\/(www\.)?linkedin\.com\//i.test(liveUrl))
+        return json({ error: 'live_url must be a linkedin.com URL', code: 'bad_live_url' }, 422)
+
       const proposed = contentOf(approval)
-      await supa.from('drive_hub_approvals').update({
-        destination_readback: { attested: true, final_text: finalText, proposed_text: proposed,
-                                differs: finalText !== proposed, attested_by: auth.actor, at: new Date().toISOString() },
+      const prior = (approval.destination_readback ?? {}) as Record<string, unknown>
+      const readback: Record<string, unknown> = { ...prior, attested_by: auth.actor, at: new Date().toISOString() }
+      if (finalText) {
+        readback.attested = true
+        readback.final_text = finalText
+        readback.proposed_text = proposed
+        readback.differs = finalText !== proposed
+      }
+      if (liveUrl) readback.live_url = liveUrl
+
+      const patch: Record<string, unknown> = {
+        destination_readback: readback,
         execution_result: { ...(approval.execution_result as object ?? {}), attestation: 'user_attested_published_final' },
-      }).eq('id', id)
-      await logEvent(supa, id, auth.actor, 'human', 'attested_published_final', approval.status, approval.status,
-        { differs: finalText !== proposed, proposed_chars: proposed.length, final_chars: finalText.length })
-      return json({ ok: true, quality: 'user_attested_published_final', differs: finalText !== proposed,
-        note: finalText !== proposed
-          ? 'Recorded as what you actually posted. The difference from the draft becomes a preference pair.'
-          : 'Recorded. It matches the approved version.' })
+      }
+
+      // A live URL from Britt is better evidence than any readback we could fetch.
+      // It closes an item the executor could only park.
+      let closed = false
+      if (liveUrl && approval.status === 'awaiting_confirmation') {
+        patch.status = 'completed'
+        patch.completed_at = new Date().toISOString()
+        patch.destination_system = 'linkedin'
+        patch.readback_verified = true
+        patch.failure_reason = null
+        closed = true
+      }
+
+      const { error: uerr } = await supa.from('drive_hub_approvals').update(patch).eq('id', id)
+      if (uerr) return dbError(uerr)
+      await logEvent(supa, id, auth.actor, 'human', closed ? 'attested_and_closed' : 'attested_published_final',
+        approval.status, closed ? 'completed' : approval.status,
+        { differs: finalText ? finalText !== proposed : null, has_live_url: !!liveUrl })
+
+      return json({
+        ok: true, quality: 'user_attested_published_final', closed,
+        differs: finalText ? finalText !== proposed : null,
+        note: closed
+          ? 'Closed. That link is the proof the executor could not get on its own.'
+          : finalText && finalText !== proposed
+            ? 'Recorded as what you actually posted. The difference from the draft becomes a preference pair.'
+            : 'Recorded.',
+      })
     }
 
     if (op === 'acknowledge' || op === 'confirm_manual' || op === 'approve' || op === 'retry') {

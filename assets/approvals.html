@@ -72,6 +72,20 @@
     .facts{display:grid;grid-template-columns:auto 1fr;gap:5px 14px;margin:10px 0 0;font-size:12.5px}
     .facts dt{color:var(--muted);font-weight:700;white-space:nowrap}
     .facts dd{margin:0;color:#b7c0ce}
+.posted{background:#122318;border:1px solid #1e4029;border-radius:9px;padding:10px 12px;font-size:13px;color:#9fd8ae;margin:10px 0}
+.posted b{color:#c9edd3}
+.attested{font-size:12.5px;color:var(--muted);margin:8px 0 0}
+.attest{margin:10px 0 0;border-top:1px solid var(--line);padding-top:9px}
+.attest>summary{cursor:pointer;font-size:12.5px;color:var(--muted);list-style:none}
+.attest>summary::-webkit-details-marker{display:none}
+.attest>summary::before{content:'+ ';opacity:.7}
+.attest[open]>summary::before{content:'– '}
+.at-url,.at-text{width:100%;box-sizing:border-box;margin-top:8px;background:#0e1116;color:var(--fg);
+  border:1px solid var(--line);border-radius:8px;padding:9px 10px;font:inherit;font-size:13px}
+.at-text{resize:vertical;min-height:76px;line-height:1.45}
+.at-url:focus,.at-text:focus{outline:2px solid var(--accent);outline-offset:1px}
+.at-note{font-size:11.5px;color:var(--muted);margin-top:6px}
+.btn.sm{padding:7px 12px;font-size:12.5px;margin-top:8px}
     .queued{background:#101d19;border:1px solid #1f4038;border-radius:9px;padding:10px 12px;font-size:13px;margin:10px 0;color:#7fd8bd}
     .blocked{background:#2a2213;border:1px solid #4a3a1c;border-radius:9px;padding:10px 12px;font-size:13px;margin:10px 0;color:#f0c882}
     .hist{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--border);font-size:13.5px}
@@ -178,6 +192,38 @@ function artifactBlock(a){
   </div>`;
 }
 
+
+// It published, the live body matches her words, and Kleo simply does not expose a
+// linkedin.com permalink. That is not a failure and must not read like one.
+function postedNeedsUrl(a){
+  const rb=a.destination_readback||{};
+  return a.status==='awaiting_confirmation'&&rb.text_matches_approved===true&&!rb.live_url;
+}
+
+/**
+ * Attestation. Optional everywhere, never a chore. One tap still records a manual
+ * action; the textarea is for the case where she reworded it in the app, and it is
+ * prefilled with the approved version so the common answer is "leave it alone".
+ */
+function attestBlock(a){
+  const needsUrl=postedNeedsUrl(a);
+  const canAttestText=a.status==='manual_action_ready'||a.status==='awaiting_confirmation'||a.status==='completed';
+  if(!needsUrl&&!canAttestText)return '';
+  const rb=a.destination_readback||{};
+  if(rb.attested&&!needsUrl)
+    return `<div class="attested">Recorded as posted${rb.differs?', with your edits':''}.</div>`;
+  const approved=a.approved_content||a.artifact||(a.action_payload&&a.action_payload.text)||'';
+  return `<details class="attest"${needsUrl?' open':''}>
+    <summary>${needsUrl?'Paste the link':'Posted it differently? Paste what you actually posted'}</summary>
+    ${needsUrl?`<input class="at-url" type="url" inputmode="url" autocomplete="off"
+        placeholder="https://www.linkedin.com/feed/update/..." aria-label="Link to the live post">`:''}
+    <textarea class="at-text" rows="4" aria-label="What you actually posted"
+      placeholder="Only if it changed.">${esc(approved)}</textarea>
+    <div class="at-note">Optional. This teaches the drafting how you actually sound, and nothing else uses it.</div>
+    ${needsUrl?'':`<button class="btn ghost sm" data-act="attest_text">Record this as final</button>`}
+  </details>`;
+}
+
 function card(a){
   const isManual=a.status==='manual_action_ready';
   const ev=Array.isArray(a.evidence)?a.evidence:[];
@@ -203,7 +249,12 @@ function card(a){
     ${queued?`<div class="queued">Approved. It publishes on the next agent run and closes here with the result. Nothing else for you to do.</div>`:''}
     ${blocked?`<div class="blocked"><b>Recorded, not executed.</b> ${esc(a.failure_reason)}. Only this action type is blocked.</div>`:''}
     ${a.status==='failed'?`<div class="blocked"><b>Failed.</b> ${esc(a.failure_reason||'no reason recorded')}. Retried ${a.retry_count} time(s).</div>`:''}
-    ${a.status==='awaiting_confirmation'?`<div class="blocked"><b>Uncertain.</b> ${esc(a.failure_reason||'')} Check the destination before retrying so nothing fires twice.</div>`:''}
+    ${postedNeedsUrl(a)
+      ? `<div class="posted"><b>It posted, and the words match what you approved.</b> The only thing missing is the link, which Kleo does not hand back. Paste it and this closes.</div>`
+      : a.status==='awaiting_confirmation'
+        ? `<div class="blocked"><b>Uncertain.</b> ${esc(a.failure_reason||'')} Check the destination before retrying so nothing fires twice.</div>`
+        : ''}
+    ${attestBlock(a)}
     ${(ev.length||a.why_escalated)?`<details><summary>Context</summary>${a.why_escalated?`<p class="ev" style="padding-left:0;margin-bottom:8px">${esc(a.why_escalated)}</p>`:''}${ev.length?`<ul class="ev">${ev.map(e=>`<li>${esc(typeof e==='string'?e:(e.label?e.label+': ':'')+(e.value??JSON.stringify(e)))}</li>`).join('')}</ul>`:''}</details>`:''}
     ${links.length?`<div class="links">${links.map(l=>`<a href="${esc(l.url||l)}" target="_blank" rel="noopener">${esc(l.label||'Open source')} ↗</a>`).join('')}</div>`:''}
     <div class="chips">
@@ -214,7 +265,9 @@ function card(a){
     </div>
     ${VIEWS.done(a.status)||queued||['declined','cancelled','expired'].includes(a.status)?'':`
     <div class="actions">
-      ${isManual
+      ${postedNeedsUrl(a)
+        ? `<button class="btn approve wide" data-act="attest_url">Save the link and close this</button>`
+        : isManual
         ? `<button class="btn manual wide" data-act="confirm_manual">I did this. Record it.</button>
            <button class="btn ghost" data-act="edit">Edit wording</button>
            <button class="btn ghost" data-act="snooze">Snooze</button>`
@@ -260,6 +313,24 @@ async function act(id,action,el){
   const msg=el.closest('.card').querySelector('.msg');
   const set=(t,c='')=>{msg.textContent=t;msg.className='msg '+c};
 
+  if(action==='attest_url'||action==='attest_text'){
+    const art=el.closest('[data-id]');
+    const url=art.querySelector('.at-url')?.value.trim()||'';
+    const txt=art.querySelector('.at-text')?.value.trim()||'';
+    const approved=a.approved_content||a.artifact||(a.action_payload&&a.action_payload.text)||'';
+    const payload={id};
+    if(url)payload.live_url=url;
+    if(txt&&txt!==approved)payload.final_text=txt;
+    if(action==='attest_url'&&!url){set('Paste the link to the live post first.','err');return}
+    if(action==='attest_text'&&!payload.final_text){set('That matches the approved version, so there is nothing to record.','ok');return}
+    try{
+      set(url?'Saving…':'Recording…');
+      const out=await call('attest_final',payload);
+      set(out.closed?'Closed. That link is the proof.':out.note||'Recorded.','ok');
+      await load();
+    }catch(e){set(e.message,'err')}
+    return;
+  }
   if(action==='edit')return openEdit(a);
   if(action==='snooze'){
     const until=new Date(Date.now()+864e5).toISOString();
