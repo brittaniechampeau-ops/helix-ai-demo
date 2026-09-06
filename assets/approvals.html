@@ -68,6 +68,7 @@
     .empty{text-align:center;color:var(--muted);padding:44px 20px;font-size:14px}
     .empty .big{font-size:34px;margin-bottom:10px}
     .loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--muted);z-index:10}
+    .queued{background:#101d19;border:1px solid #1f4038;border-radius:9px;padding:10px 12px;font-size:13px;margin:10px 0;color:#7fd8bd}
     .blocked{background:#2a2213;border:1px solid #4a3a1c;border-radius:9px;padding:10px 12px;font-size:13px;margin:10px 0;color:#f0c882}
     .hist{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--border);font-size:13.5px}
     .hist:last-child{border-bottom:0}
@@ -96,7 +97,8 @@
     <div class="tabs" role="tablist" aria-label="Decision views">
       <button class="tab" role="tab" data-view="decide" aria-selected="true">Needs decision<span class="n" id="n-decide"></span></button>
       <button class="tab" role="tab" data-view="manual" aria-selected="false">My manual action<span class="n" id="n-manual"></span></button>
-      <button class="tab" role="tab" data-view="failed" aria-selected="false">Failed or blocked<span class="n" id="n-failed"></span></button>
+      <button class="tab" role="tab" data-view="running" aria-selected="false">In flight<span class="n" id="n-running"></span></button>
+      <button class="tab" role="tab" data-view="failed" aria-selected="false">Needs a look<span class="n" id="n-failed"></span></button>
       <button class="tab" role="tab" data-view="done" aria-selected="false">Recently completed<span class="n" id="n-done"></span></button>
       <button class="tab" role="tab" data-view="all" aria-selected="false">All history</button>
     </div>
@@ -134,9 +136,10 @@ const supa=supabase.createClient(SUPA_URL,SUPA_KEY),DriveAuth=DRIVE.createAuth(s
 let items=[],view='decide',session=null;
 const esc=v=>{const d=document.createElement('div');d.textContent=v??'';return d.innerHTML};
 const VIEWS={
-  decide:s=>['awaiting_approval','snoozed','awaiting_confirmation'].includes(s),
+  decide:s=>['awaiting_approval','snoozed'].includes(s),
   manual:s=>s==='manual_action_ready',
-  failed:s=>['failed','approved'].includes(s),
+  running:s=>['approved','executing'].includes(s),
+  failed:s=>['failed','awaiting_confirmation'].includes(s),
   done:s=>s==='completed',
   all:()=>true,
 };
@@ -177,18 +180,20 @@ function card(a){
   const links=Array.isArray(a.source_links)?a.source_links:[];
   const d=due(a.due_at||a.expires_at);
   const blocked=a.status==='approved'&&a.failure_reason?.startsWith('blocked adapter');
+  // Approved with no failure means an agent is carrying it out. Not a dead end,
+  // and nothing for Britt to chase in another app.
+  const queued=a.status==='approved'&&!a.failure_reason;
   return `<article class="card risk-${esc(a.risk)}" data-id="${esc(a.id)}">
     <div class="eyebrow">${esc(a.approval_type.replace(/_/g,' '))} · ${esc(a.source_system)}</div>
     <h2 class="title">${esc(a.title)}</h2>
-    <p class="summary">${esc(a.decision_summary)}</p>
+    ${a.artifact?'':`<p class="summary">${esc(a.decision_summary)}</p>`}
     ${artifactBlock(a)}
-    <div class="why"><b>Why this reached you.</b> ${esc(a.why_escalated)}</div>
-    ${a.recommendation?`<div class="rec"><b>Recommendation.</b> ${esc(a.recommendation)}</div>`:''}
-    <div class="effect"><b>What happens if you approve.</b> ${esc(a.proposed_action)}${a.affects?` <span style="color:var(--muted)">Affects: ${esc(a.affects)}</span>`:''}</div>
-    ${blocked?`<div class="blocked"><b>Recorded, not executed.</b> ${esc(a.failure_reason)}. Only this action type is blocked. Nothing else is affected.</div>`:''}
+    <div class="effect">${esc(a.proposed_action)}${a.affects?` <span style="color:var(--muted)">· ${esc(a.affects)}</span>`:''}</div>
+    ${queued?`<div class="queued">Approved. It publishes on the next agent run and closes here with the result. Nothing else for you to do.</div>`:''}
+    ${blocked?`<div class="blocked"><b>Recorded, not executed.</b> ${esc(a.failure_reason)}. Only this action type is blocked.</div>`:''}
     ${a.status==='failed'?`<div class="blocked"><b>Failed.</b> ${esc(a.failure_reason||'no reason recorded')}. Retried ${a.retry_count} time(s).</div>`:''}
     ${a.status==='awaiting_confirmation'?`<div class="blocked"><b>Uncertain.</b> ${esc(a.failure_reason||'')} Check the destination before retrying so nothing fires twice.</div>`:''}
-    ${ev.length?`<details><summary>Evidence (${ev.length})</summary><ul class="ev">${ev.map(e=>`<li>${esc(typeof e==='string'?e:(e.label?e.label+': ':'')+(e.value??JSON.stringify(e)))}</li>`).join('')}</ul></details>`:''}
+    ${(ev.length||a.why_escalated)?`<details><summary>Context</summary>${a.why_escalated?`<p class="ev" style="padding-left:0;margin-bottom:8px">${esc(a.why_escalated)}</p>`:''}${ev.length?`<ul class="ev">${ev.map(e=>`<li>${esc(typeof e==='string'?e:(e.label?e.label+': ':'')+(e.value??JSON.stringify(e)))}</li>`).join('')}</ul>`:''}</details>`:''}
     ${links.length?`<div class="links">${links.map(l=>`<a href="${esc(l.url||l)}" target="_blank" rel="noopener">${esc(l.label||'Open source')} ↗</a>`).join('')}</div>`:''}
     <div class="chips">
       <span class="chip ${a.risk==='high'?'high':a.risk==='medium'?'med':''}">${esc(a.risk)} risk</span>
@@ -196,7 +201,7 @@ function card(a){
       <span class="chip">${esc(when(a.created_at))}</span>
       ${a.policy_id?`<span class="chip">policy ${esc(a.policy_id)}</span>`:''}
     </div>
-    ${VIEWS.done(a.status)||['declined','cancelled','expired'].includes(a.status)?'':`
+    ${VIEWS.done(a.status)||queued||['declined','cancelled','expired'].includes(a.status)?'':`
     <div class="actions">
       ${isManual
         ? `<button class="btn manual wide" data-act="confirm_manual">I did this. Record it.</button>

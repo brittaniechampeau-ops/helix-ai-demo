@@ -38,7 +38,10 @@ type HandlerResult = { destination_system: string; destination_id: string | null
 
 interface Handler {
   validate: (payload: Record<string, unknown>) => string | null
-  available: () => { ok: boolean; missing?: string; setup?: string }
+  // `deferred` means DRIVE holds no credential but an authenticated marketing-os
+  // job does. Britt approves here and the job executes on its next run. She never
+  // opens the destination app.
+  available: () => { ok: boolean; missing?: string; setup?: string; deferred?: boolean; executor?: string }
   run: (ctx: Ctx, payload: Record<string, unknown>) => Promise<HandlerResult>
 }
 
@@ -167,17 +170,22 @@ const HANDLERS: Record<string, Handler> = {
   },
 
   // Declared so the hub can hold and explain them, never executed from here.
+  // Publishing runs on the marketing-os side, which holds the authenticated Kleo
+  // connector. Britt approves here; the job publishes and reports back.
   kleo_create_draft: {
     validate: (p) => (str(p.text) ? null : 'payload.text is required'),
-    available: () => ({ ok: false, missing: 'KLEO_API_TOKEN',
-      setup: 'Kleo has no server-side credential in DRIVE. Today its drafts are created by the marketing-os content-cycle job through the authenticated Kleo connector. Approving here marks the draft approved for that job to act on.' }),
-    async run() { throw new Error('unreachable: availability is checked before run') },
+    available: () => ({ ok: false, deferred: true, executor: 'marketing-os content-cycle' }),
+    async run() { throw new Error('unreachable: deferred to the executor') },
+  },
+  content_publish: {
+    validate: (p) => (str(p.text) ? null : 'payload.text is required'),
+    available: () => ({ ok: false, deferred: true, executor: 'marketing-os content-cycle' }),
+    async run() { throw new Error('unreachable: deferred to the executor') },
   },
   newsletter_send: {
-    validate: () => null,
-    available: () => ({ ok: false, missing: 'KIT_API_KEY',
-      setup: 'No Kit credential is held server-side, and creating or sending a Kit broadcast is not authorized. Approving here marks the candidate approved for Britt to send from Kit.' }),
-    async run() { throw new Error('unreachable') },
+    validate: (p) => (str(p.body) ? null : 'payload.body is required'),
+    available: () => ({ ok: false, deferred: true, executor: 'marketing-os newsletter-cycle' }),
+    async run() { throw new Error('unreachable: deferred to the executor') },
   },
   apollo_enrollment: {
     validate: () => null,
@@ -213,7 +221,7 @@ async function logEvent(supa: SupabaseClient, approval_id: string | null, actor:
 // ── Operations ────────────────────────────────────────────────────────────────
 
 const HUMAN_ONLY = new Set(['approve', 'decline', 'edit', 'snooze', 'cancel', 'retry', 'confirm_manual', 'acknowledge'])
-const AGENT_ONLY = new Set(['upsert', 'supersede', 'record_auto', 'attach_evidence', 'ping'])
+const AGENT_ONLY = new Set(['upsert', 'supersede', 'record_auto', 'attach_evidence', 'ping', 'claim_approved', 'submit_result'])
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
@@ -322,6 +330,57 @@ serve(async (req) => {
       return json({ ok: true, id: existing.id, status: 'cancelled' })
     }
 
+    // ── executor: take the work Britt approved ──
+    if (op === 'claim_approved') {
+      const types = Array.isArray(body.types) ? body.types.map(String) : []
+      if (!types.length) return json({ error: 'types is required' }, 400)
+      const { data, error } = await supa.from('drive_hub_approvals')
+        .select('id, approval_type, action_payload, idempotency_key, source_record_id')
+        .eq('status', 'approved').in('approval_type', types).limit(Number(body.limit ?? 10))
+      if (error) return json({ error: error.message }, 500)
+      return json({ ok: true, items: data ?? [] })
+    }
+
+    // ── executor: report what actually happened at the destination ──
+    if (op === 'submit_result') {
+      const rid = str(body.id)
+      if (!rid) return json({ error: 'id is required' }, 400)
+      const { data: row } = await supa.from('drive_hub_approvals').select('id, status').eq('id', rid).maybeSingle()
+      if (!row) return json({ error: 'approval not found' }, 404)
+      if (row.status === 'completed') return json({ ok: true, status: 'completed', note: 'already completed' })
+      if (row.status !== 'approved' && row.status !== 'executing')
+        return json({ error: `cannot submit a result from status ${row.status}` }, 409)
+
+      const verified = body.verified === true
+      const failed = body.failed === true
+      if (failed) {
+        await supa.from('drive_hub_approvals').update({
+          status: 'failed', failure_reason: str(body.reason) || 'executor reported a failure',
+        }).eq('id', rid)
+        await logEvent(supa, rid, auth.actor, 'agent', 'executor_failed', row.status, 'failed', { reason: str(body.reason) })
+        return json({ ok: false, status: 'failed' })
+      }
+      if (!verified) {
+        await supa.from('drive_hub_approvals').update({
+          status: 'awaiting_confirmation', destination_id: str(body.destination_id) || null,
+          destination_readback: body.readback ?? null,
+          failure_reason: 'the executor could not verify the destination; reconcile before retrying',
+        }).eq('id', rid)
+        await logEvent(supa, rid, auth.actor, 'agent', 'executor_unverified', row.status, 'awaiting_confirmation', {})
+        return json({ ok: false, status: 'awaiting_confirmation' })
+      }
+      await supa.from('drive_hub_approvals').update({
+        status: 'completed', completed_at: new Date().toISOString(),
+        destination_system: str(body.destination_system) || 'marketing-os',
+        destination_id: str(body.destination_id) || null,
+        destination_readback: body.readback ?? null,
+        execution_result: body.result ?? null, readback_verified: true, failure_reason: null,
+      }).eq('id', rid)
+      await logEvent(supa, rid, auth.actor, 'agent', 'executor_completed', row.status, 'completed',
+        { destination_id: str(body.destination_id), readback: body.readback })
+      return json({ ok: true, status: 'completed' })
+    }
+
     // ── human decisions ──
     const id = str(body.id)
     if (!id) return json({ error: 'id is required' }, 400)
@@ -398,6 +457,17 @@ serve(async (req) => {
       if (invalid) return json({ error: `payload failed validation: ${invalid}` }, 400)
 
       const availability = handler.available()
+      if (!availability.ok && availability.deferred) {
+        await supa.from('drive_hub_approvals').update({
+          status: 'approved', approved_at: new Date().toISOString(),
+          destination_system: availability.executor ?? 'marketing-os',
+          failure_reason: null,
+        }).eq('id', id)
+        await logEvent(supa, id, auth.actor, 'human', 'approved_queued_for_executor', approval.status, 'approved',
+          { executor: availability.executor })
+        return json({ ok: true, status: 'approved', executed: false, queued_for: availability.executor,
+          note: `Approved. ${availability.executor} publishes it on its next run and reports back here.` })
+      }
       if (!availability.ok) {
         await supa.from('drive_hub_approvals').update({
           status: 'approved', approved_at: new Date().toISOString(),

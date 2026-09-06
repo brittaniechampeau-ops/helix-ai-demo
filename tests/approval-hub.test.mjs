@@ -159,8 +159,10 @@ await t('the card renders the artifact, not a description of it', () => {
   const html = fs.readFileSync(new URL('../assets/approvals.html', import.meta.url), 'utf8');
   assert.match(html, /function artifactBlock/, 'there is an artifact block');
   assert.match(html, /a\.artifact\|\|p\.text\|\|p\.body\|\|p\.message/, 'it reads the real content fields');
-  assert.ok(html.indexOf('artifactBlock(a)') < html.indexOf('Why this reached you'),
-    'the content appears above the rationale, because reading it is the decision');
+  assert.ok(html.indexOf('artifactBlock(a)') < html.indexOf('class="effect"'),
+    'the content appears before anything else on the card, because reading it is the decision');
+  assert.ok(!/class="why"/.test(html), 'no rationale block on the card; the reason lives behind Context');
+  assert.ok(!/<b>Recommendation\.<\/b>/.test(html), 'no recommendation prose competing with the content');
 });
 await t('long content clamps and expands instead of trapping page scroll', () => {
   const html = fs.readFileSync(new URL('../assets/approvals.html', import.meta.url), 'utf8');
