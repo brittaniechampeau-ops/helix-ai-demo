@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="color-scheme" content="dark">
+  <title>Decisions · DRIVE</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/drive-runtime.js"></script>
+  <style>
+    :root{--bg:#07090d;--surface:#0e1218;--surface2:#141a23;--border:#222b39;--text:#e8eaf0;--muted:#8490a3;--purple:#8b7fec;--green:#3bbfa3;--amber:#f0a832;--red:#e76464;--focus:#8b7fec}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 Inter,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+    :focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:6px}
+    .pnav{height:44px;display:flex;align-items:center;gap:14px;padding:0 16px;border-bottom:1px solid var(--border);background:#050709;position:sticky;top:0;z-index:5}
+    .pnav a{color:var(--muted);text-decoration:none;font-size:13px}.pnav a.active{color:var(--text)}
+    .brand{font-weight:800;color:var(--purple)}
+    main{max-width:760px;margin:auto;padding:20px 16px 80px}
+    h1{margin:0 0 4px;font-size:23px;letter-spacing:-.01em}
+    .sub{color:var(--muted);font-size:13px;margin-bottom:18px}
+    .tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;margin-bottom:14px;-webkit-overflow-scrolling:touch}
+    .tab{flex:none;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:20px;padding:7px 13px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+    .tab[aria-selected="true"]{background:var(--purple);border-color:var(--purple);color:#0a0713}
+    .tab .n{opacity:.75;margin-left:5px}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px}
+    .card.risk-high{border-left:3px solid var(--red)}
+    .card.risk-medium{border-left:3px solid var(--amber)}
+    .card.risk-low{border-left:3px solid var(--green)}
+    .eyebrow{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;font-weight:800;color:var(--purple)}
+    .title{font-size:17px;font-weight:700;margin:5px 0 7px;letter-spacing:-.01em}
+    .summary{color:#c3cbd8;margin-bottom:10px}
+    .why{background:var(--surface2);border-radius:9px;padding:10px 12px;font-size:13.5px;color:#b7c0ce;margin-bottom:10px}
+    .why b{color:var(--text);font-weight:650}
+    .rec{border-left:2px solid var(--green);padding-left:11px;margin:10px 0;font-size:14px}
+    .rec b{color:var(--green);font-weight:700}
+    .effect{background:#151b12;border:1px solid #2b3a20;border-radius:9px;padding:10px 12px;font-size:13px;margin:10px 0}
+    .effect b{color:var(--amber)}
+    details{margin:10px 0}summary{cursor:pointer;color:var(--muted);font-size:13px;font-weight:600;padding:4px 0}
+    .ev{font-size:13px;color:#b7c0ce;margin:6px 0 0;padding-left:16px}
+    .ev li{margin-bottom:4px}
+    .chips{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+    .chip{font-size:11px;background:var(--surface2);border-radius:12px;padding:4px 9px;color:var(--muted)}
+    .chip.high{background:#2a1416;color:#f19a9a}.chip.med{background:#2a2213;color:#f0c882}.chip.due{background:#1a1430;color:#b3a6f5}
+    .links{display:flex;gap:10px;flex-wrap:wrap;font-size:13px;margin:8px 0}
+    .links a{color:var(--purple)}
+    .actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+    .actions .wide{grid-column:1/-1}
+    .btn{border:0;border-radius:9px;padding:12px 14px;font:inherit;font-weight:700;cursor:pointer;min-height:44px}
+    .approve{background:var(--green);color:#052019}
+    .manual{background:var(--purple);color:#0a0713}
+    .ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+    .danger{background:#2a1416;color:#f19a9a;border:1px solid #4a2226}
+    .msg{font-size:13px;margin-top:10px;min-height:18px;color:var(--muted)}
+    .msg.err{color:var(--red)}.msg.ok{color:var(--green)}
+    .empty{text-align:center;color:var(--muted);padding:44px 20px;font-size:14px}
+    .empty .big{font-size:34px;margin-bottom:10px}
+    .loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--muted);z-index:10}
+    .blocked{background:#2a2213;border:1px solid #4a3a1c;border-radius:9px;padding:10px 12px;font-size:13px;margin:10px 0;color:#f0c882}
+    .hist{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--border);font-size:13.5px}
+    .hist:last-child{border-bottom:0}
+    .hist .when{color:var(--muted);font-size:12px;white-space:nowrap}
+    .st{font-size:11px;font-weight:700;padding:3px 8px;border-radius:10px}
+    .st-completed{background:#10241d;color:var(--green)}.st-failed{background:#2a1416;color:#f19a9a}
+    .st-declined{background:var(--surface2);color:var(--muted)}.st-cancelled{background:var(--surface2);color:var(--muted)}
+    dialog{background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:14px;padding:18px;max-width:520px;width:92vw}
+    dialog::backdrop{background:rgba(3,5,8,.72)}
+    textarea,input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px;font:inherit}
+    textarea{min-height:150px;resize:vertical}
+    label{display:block;color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin:10px 0 5px}
+    .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+    @media(max-width:520px){main{padding:16px 12px 80px}h1{font-size:21px}.title{font-size:16px}.actions{grid-template-columns:1fr}}
+    @media(prefers-reduced-motion:no-preference){.card{transition:opacity .15s}}
+  </style>
+</head>
+<body>
+  <div id="authLoading" class="loading" role="status">Loading decisions…</div>
+  <nav class="pnav"><span class="brand">✦ DRIVE</span><a href="/hub.html">Hub</a><a class="active" href="/approvals.html" aria-current="page">Decisions</a><a href="/newsletter.html">Newsletter</a></nav>
+
+  <main id="app" style="display:none">
+    <h1>Today's decisions</h1>
+    <p class="sub" id="lede">The agents handled everything else.</p>
+
+    <div class="tabs" role="tablist" aria-label="Decision views">
+      <button class="tab" role="tab" data-view="decide" aria-selected="true">Needs decision<span class="n" id="n-decide"></span></button>
+      <button class="tab" role="tab" data-view="manual" aria-selected="false">My manual action<span class="n" id="n-manual"></span></button>
+      <button class="tab" role="tab" data-view="failed" aria-selected="false">Failed or blocked<span class="n" id="n-failed"></span></button>
+      <button class="tab" role="tab" data-view="done" aria-selected="false">Recently completed<span class="n" id="n-done"></span></button>
+      <button class="tab" role="tab" data-view="all" aria-selected="false">All history</button>
+    </div>
+
+    <div id="list" role="region" aria-live="polite" aria-label="Decisions"></div>
+  </main>
+
+  <dialog id="editDlg" aria-labelledby="editTitle">
+    <h2 id="editTitle" style="margin:0 0 4px;font-size:17px">Edit before approving</h2>
+    <p style="color:var(--muted);font-size:13px;margin:0">This edits the actual proposal. Approving sends the edited version, not a copy you paste somewhere else.</p>
+    <div id="editFields"></div>
+    <div class="actions" style="margin-top:16px">
+      <button class="btn ghost" id="editCancel" type="button">Cancel</button>
+      <button class="btn approve" id="editSave" type="button">Save and approve</button>
+    </div>
+    <div class="msg" id="editMsg"></div>
+  </dialog>
+
+  <dialog id="confirmDlg" aria-labelledby="confirmTitle">
+    <h2 id="confirmTitle" style="margin:0 0 8px;font-size:17px">Confirm</h2>
+    <p id="confirmBody" style="color:#c3cbd8;font-size:14px;margin:0 0 4px"></p>
+    <p style="color:var(--muted);font-size:13px;margin:8px 0 0">This one is not easily undone.</p>
+    <div class="actions" style="margin-top:16px">
+      <button class="btn ghost" id="confirmNo" type="button">Back</button>
+      <button class="btn approve" id="confirmYes" type="button">Yes, do it</button>
+    </div>
+  </dialog>
+
+<script>
+const SUPA_URL='https://ilhljjkiijmjpwinovzj.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsaGxqamtpaWptanB3aW5vdnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MTk4MjIsImV4cCI6MjA5OTE5NTgyMn0.w8asDSA-rXuaDfujC2dr4J-EKCzlCVABOuq3VQeeFsE';
+const GATEWAY=SUPA_URL+'/functions/v1/approval-gateway';
+const supa=supabase.createClient(SUPA_URL,SUPA_KEY),DriveAuth=DRIVE.createAuth(supa),OrgStore=DRIVE.createStore(supa,'approvals');
+
+let items=[],view='decide',session=null;
+const esc=v=>{const d=document.createElement('div');d.textContent=v??'';return d.innerHTML};
+const VIEWS={
+  decide:s=>['awaiting_approval','snoozed','awaiting_confirmation'].includes(s),
+  manual:s=>s==='manual_action_ready',
+  failed:s=>['failed','approved'].includes(s),
+  done:s=>s==='completed',
+  all:()=>true,
+};
+const when=iso=>{if(!iso)return'';const d=new Date(iso),h=(Date.now()-d)/36e5;
+  if(h<1)return`${Math.max(1,Math.round(h*60))}m ago`;if(h<24)return`${Math.round(h)}h ago`;
+  if(h<168)return`${Math.round(h/24)}d ago`;return d.toISOString().slice(0,10)};
+const due=iso=>{if(!iso)return null;const h=(Date.parse(iso)-Date.now())/36e5;
+  if(h<0)return'overdue';if(h<24)return`due in ${Math.max(1,Math.round(h))}h`;return`due in ${Math.round(h/24)}d`};
+
+async function call(op,payload){
+  const{data:{session:s}}=await supa.auth.getSession();
+  const res=await fetch(GATEWAY,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+s.access_token},body:JSON.stringify({op,...payload})});
+  const out=await res.json().catch(()=>({error:'unreadable response'}));
+  if(!res.ok)throw new Error(out.error||`gateway ${res.status}`);
+  return out;
+}
+
+function card(a){
+  const isManual=a.status==='manual_action_ready';
+  const ev=Array.isArray(a.evidence)?a.evidence:[];
+  const links=Array.isArray(a.source_links)?a.source_links:[];
+  const d=due(a.due_at||a.expires_at);
+  const blocked=a.status==='approved'&&a.failure_reason?.startsWith('blocked adapter');
+  return `<article class="card risk-${esc(a.risk)}" data-id="${esc(a.id)}">
+    <div class="eyebrow">${esc(a.approval_type.replace(/_/g,' '))} · ${esc(a.source_system)}</div>
+    <h2 class="title">${esc(a.title)}</h2>
+    <p class="summary">${esc(a.decision_summary)}</p>
+    <div class="why"><b>Why this reached you.</b> ${esc(a.why_escalated)}</div>
+    ${a.recommendation?`<div class="rec"><b>Recommendation.</b> ${esc(a.recommendation)}</div>`:''}
+    <div class="effect"><b>What happens if you approve.</b> ${esc(a.proposed_action)}${a.affects?` <span style="color:var(--muted)">Affects: ${esc(a.affects)}</span>`:''}</div>
+    ${blocked?`<div class="blocked"><b>Recorded, not executed.</b> ${esc(a.failure_reason)}. Only this action type is blocked. Nothing else is affected.</div>`:''}
+    ${a.status==='failed'?`<div class="blocked"><b>Failed.</b> ${esc(a.failure_reason||'no reason recorded')}. Retried ${a.retry_count} time(s).</div>`:''}
+    ${a.status==='awaiting_confirmation'?`<div class="blocked"><b>Uncertain.</b> ${esc(a.failure_reason||'')} Check the destination before retrying so nothing fires twice.</div>`:''}
+    ${ev.length?`<details><summary>Evidence (${ev.length})</summary><ul class="ev">${ev.map(e=>`<li>${esc(typeof e==='string'?e:(e.label?e.label+': ':'')+(e.value??JSON.stringify(e)))}</li>`).join('')}</ul></details>`:''}
+    ${links.length?`<div class="links">${links.map(l=>`<a href="${esc(l.url||l)}" target="_blank" rel="noopener">${esc(l.label||'Open source')} ↗</a>`).join('')}</div>`:''}
+    <div class="chips">
+      <span class="chip ${a.risk==='high'?'high':a.risk==='medium'?'med':''}">${esc(a.risk)} risk</span>
+      ${d?`<span class="chip due">${esc(d)}</span>`:''}
+      <span class="chip">${esc(when(a.created_at))}</span>
+      ${a.policy_id?`<span class="chip">policy ${esc(a.policy_id)}</span>`:''}
+    </div>
+    ${VIEWS.done(a.status)||['declined','cancelled','expired'].includes(a.status)?'':`
+    <div class="actions">
+      ${isManual
+        ? `<button class="btn manual wide" data-act="confirm_manual">I did this. Record it.</button>
+           <button class="btn ghost" data-act="edit">Edit wording</button>
+           <button class="btn ghost" data-act="snooze">Snooze</button>`
+        : `<button class="btn approve" data-act="approve">${a.status==='failed'?'Retry':'Approve'}</button>
+           <button class="btn ghost" data-act="edit">Edit</button>
+           <button class="btn ghost" data-act="snooze">Snooze</button>
+           <button class="btn danger" data-act="decline">Decline</button>`}
+    </div>`}
+    <div class="msg" role="status"></div>
+  </article>`;
+}
+
+function render(){
+  const shown=items.filter(a=>VIEWS[view](a.status));
+  for(const[k,fn]of Object.entries(VIEWS)){if(k==='all')continue;
+    const el=document.getElementById('n-'+k);if(el)el.textContent=items.filter(a=>fn(a.status)).length||''}
+  const decideCount=items.filter(a=>VIEWS.decide(a.status)).length;
+  document.getElementById('lede').textContent=decideCount
+    ?`${decideCount} decision${decideCount===1?'':'s'} waiting. The agents handled everything else.`
+    :'Nothing waiting. The agents handled everything else.';
+  if(view==='all'||view==='done'){
+    document.getElementById('list').innerHTML=shown.length?shown.map(a=>`<div class="hist"><div><div style="font-weight:650">${esc(a.title)}</div><div style="color:var(--muted);font-size:12.5px">${esc(a.approval_type.replace(/_/g,' '))}${a.destination_id?' · '+esc(a.destination_id):''}</div></div><div style="text-align:right"><span class="st st-${esc(a.status)}">${esc(a.status)}</span><div class="when">${esc(when(a.completed_at||a.updated_at))}</div></div></div>`).join(''):`<div class="empty">Nothing here yet.</div>`;
+    return;
+  }
+  document.getElementById('list').innerHTML=shown.length?shown.map(card).join(''):
+    `<div class="empty"><div class="big">✓</div>${view==='decide'?'Nothing needs you right now.':'Nothing here.'}</div>`;
+}
+
+const CONSEQUENTIAL=new Set(['newsletter_send','content_publish','spend_change','offer_or_cta_change','apollo_enrollment','kleo_schedule_post']);
+function needsConfirm(a){return a.requires_confirm||a.risk==='high'||CONSEQUENTIAL.has(a.approval_type)}
+
+function confirmDialog(text){return new Promise(r=>{
+  document.getElementById('confirmBody').textContent=text;
+  const dlg=document.getElementById('confirmDlg');dlg.showModal();
+  const yes=()=>{cleanup();dlg.close();r(true)},no=()=>{cleanup();dlg.close();r(false)};
+  function cleanup(){document.getElementById('confirmYes').removeEventListener('click',yes);document.getElementById('confirmNo').removeEventListener('click',no)}
+  document.getElementById('confirmYes').addEventListener('click',yes);
+  document.getElementById('confirmNo').addEventListener('click',no);
+})}
+
+async function act(id,action,el){
+  const a=items.find(x=>x.id===id);if(!a)return;
+  const msg=el.closest('.card').querySelector('.msg');
+  const set=(t,c='')=>{msg.textContent=t;msg.className='msg '+c};
+
+  if(action==='edit')return openEdit(a);
+  if(action==='snooze'){
+    const until=new Date(Date.now()+864e5).toISOString();
+    try{set('Snoozing…');await call('snooze',{id,until});set('Snoozed until tomorrow.','ok');await load()}catch(e){set(e.message,'err')}
+    return;
+  }
+  if(action==='decline'){
+    const reason=prompt('Why are you declining? (optional)')??'';
+    try{set('Declining…');await call('decline',{id,reason});set('Declined.','ok');await load()}catch(e){set(e.message,'err')}
+    return;
+  }
+  if((action==='approve'||action==='confirm_manual')&&needsConfirm(a)){
+    const ok=await confirmDialog(a.proposed_action);
+    if(!ok){set('Not done.');return}
+  }
+  try{
+    set(action==='confirm_manual'?'Recording…':'Approving and running…');
+    const out=await call(a.status==='failed'?'retry':action,{id});
+    if(out.blocked)set(`Decision recorded. ${out.blocked.missing} is missing, so this action type cannot run yet.`,'ok');
+    else if(out.status==='completed')set(`Done and verified at ${out.destination_id||'the destination'}.`,'ok');
+    else if(out.status==='awaiting_confirmation')set('It may have gone through. Check the destination before retrying.','err');
+    else if(out.status==='failed')set(`Failed: ${out.reason}`,'err');
+    else set(out.status,'ok');
+    await load();
+  }catch(e){set(e.message,'err')}
+}
+
+let editing=null;
+function openEdit(a){
+  editing=a;
+  const p=a.action_payload||{};
+  document.getElementById('editFields').innerHTML=Object.entries(p).map(([k,v])=>
+    `<label for="f-${esc(k)}">${esc(k.replace(/_/g,' '))}</label>${String(v??'').length>70
+      ?`<textarea id="f-${esc(k)}" data-k="${esc(k)}">${esc(v)}</textarea>`
+      :`<input id="f-${esc(k)}" data-k="${esc(k)}" value="${esc(v)}">`}`).join('')||'<p style="color:var(--muted)">This proposal has no editable fields.</p>';
+  document.getElementById('editMsg').textContent='';
+  document.getElementById('editDlg').showModal();
+}
+document.getElementById('editCancel').addEventListener('click',()=>document.getElementById('editDlg').close());
+document.getElementById('editSave').addEventListener('click',async()=>{
+  const m=document.getElementById('editMsg');m.textContent='Saving…';m.className='msg';
+  const patch={};document.querySelectorAll('#editFields [data-k]').forEach(i=>patch[i.dataset.k]=i.value);
+  try{
+    await call('edit',{id:editing.id,action_payload:patch});
+    const a=items.find(x=>x.id===editing.id);
+    if(a&&needsConfirm(a)){const ok=await confirmDialog(a.proposed_action);if(!ok){m.textContent='Saved. Not approved.';m.className='msg ok';await load();return}}
+    const out=await call(editing.status==='manual_action_ready'?'confirm_manual':'approve',{id:editing.id});
+    m.textContent=out.status==='completed'?'Saved, approved and verified.':`Saved. ${out.status}.`;m.className='msg ok';
+    document.getElementById('editDlg').close();await load();
+  }catch(e){m.textContent=e.message;m.className='msg err'}
+});
+
+document.getElementById('list').addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');if(!b)return;
+  act(b.closest('[data-id]').dataset.id,b.dataset.act,b);
+});
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected',String(x===t)));
+  view=t.dataset.view;render();
+}));
+
+async function load(){
+  const{data,error}=await supa.from('drive_hub_approvals').select('*').order('priority',{ascending:false}).order('created_at',{ascending:true}).limit(300);
+  if(error)throw error;
+  items=(data||[]).filter(a=>!(a.status==='snoozed'&&a.snoozed_until&&Date.parse(a.snoozed_until)>Date.now()));
+  render();
+}
+
+DriveAuth.onChange(async(_e,s)=>{
+  authLoading.style.display='none';
+  if(!s){location.href='/hub.html';return}
+  session=s;OrgStore.init(s);
+  const ctx=await OrgStore.resolveContext();
+  if(!ctx.permissions.isAdmin){location.href='/hub.html';return}
+  try{await load();app.style.display='block'}
+  catch(err){app.style.display='block';document.getElementById('list').innerHTML=`<div class="card">${esc(err.message)}</div>`}
+});
+</script>
+</body>
+</html>
