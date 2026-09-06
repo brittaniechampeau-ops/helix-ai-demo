@@ -416,6 +416,13 @@ serve(async (req) => {
       return json({ ok: true, retired: n })
     }
 
+    // ── read-only: is the machine running without her ──
+    if (op === 'cloud_status') {
+      const { data, error } = await supa.rpc('drive_hub_cloud_status')
+      if (error) return dbError(error)
+      return json({ ok: true, ...data })
+    }
+
     // ── read-only: what is the state of one item ──
     // An executor that has to reason about a card it did not just claim otherwise
     // has no way to see it. Returns state, never the caller's own secrets.

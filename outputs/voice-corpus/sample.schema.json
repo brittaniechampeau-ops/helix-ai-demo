@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Britt Bowman Voice Sample",
+  "type": "object",
+  "required": ["id", "author", "channel", "voice_mode", "privacy", "captured_at", "source_url", "quality", "text"],
+  "properties": {
+    "id": {"type": "string", "minLength": 1},
+    "author": {"const": "Britt Bowman"},
+    "channel": {"type": "string"},
+    "voice_mode": {"type": "string"},
+    "privacy": {"enum": ["public", "private_style_only", "confidential"]},
+    "captured_at": {"type": "string", "format": "date"},
+    "date_label": {"type": ["string", "null"]},
+    "source_url": {"type": "string"},
+    "quality": {"enum": ["published_authoritative", "sent_authoritative", "britt_edited_final", "explicitly_approved"]},
+    "audience": {"type": ["string", "null"]},
+    "relationship_type": {"type": ["string", "null"]},
+    "purpose": {"type": ["string", "null"]},
+    "emotional_register": {"type": ["string", "null"]},
+    "commercial_stage": {"type": ["string", "null"]},
+    "context": {"type": ["string", "null"]},
+    "text": {"type": "string", "minLength": 1}
+  },
+  "additionalProperties": true
+}
+

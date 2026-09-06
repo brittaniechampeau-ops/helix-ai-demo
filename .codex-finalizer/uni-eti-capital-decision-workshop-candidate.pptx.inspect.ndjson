@@ -1,0 +1,120 @@
+{"kind":"deck","id":"pr/fera7g","name":"Deck"}
+{"kind":"layout","layoutId":"b69d9ed1-6cd8-466f-bd71-8d9f54912ace","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"c4476ff1-a4b8-453f-9eb2-1d189e10d40f","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/0ousen","slide":1,"title":"BRITT BOWMAN LLC  ·  WORKING SESSION WITH LEE","textShapes":8}
+{"kind":"shape","id":"sh/wf69sfed","slide":1,"bbox":[0,0,1280,6]}
+{"kind":"textbox","id":"sh/bexsjaxs","slide":1,"text":"BRITT BOWMAN LLC  ·  WORKING SESSION WITH LEE","textPreview":"BRITT BOWMAN LLC  ·  WORKING SESSION WITH LEE","textChars":45,"textLines":1,"bbox":[70,52,750,24]}
+{"kind":"textbox","id":"sh/adorq5wn","slide":1,"text":"UNI + ETI","textPreview":"UNI + ETI","textChars":9,"textLines":1,"bbox":[70,116,700,28]}
+{"kind":"textbox","id":"sh/lkzapkfa","slide":1,"text":"What I think we need\nto get honest about","textPreview":"What I think we need | to get honest about","textChars":40,"textLines":2,"bbox":[70,183,940,150]}
+{"kind":"textbox","id":"sh/kjq9wfep","slide":1,"text":"I’ve gone through what you sent me. I understand the company you’re trying to build. This is a way to work out what has to happen next for that company to become real.","textPreview":"I’ve gone through what you sent me. I understand the company you’re trying to build. This is a way to work out what has to happen next fo...","textChars":167,"textLines":1,"bbox":[70,370,930,62]}
+{"kind":"textbox","id":"sh/jihsnax4","slide":1,"text":"Route","textPreview":"Route","textChars":5,"textLines":1,"bbox":[70,505,205,40]}
+{"kind":"textbox","id":"sh/yh8ru5wj","slide":1,"text":"Proof","textPreview":"Proof","textChars":5,"textLines":1,"bbox":[360,505,205,40]}
+{"kind":"textbox","id":"sh/1ovad0fq","slide":1,"text":"Commitment","textPreview":"Commitment","textChars":10,"textLines":1,"bbox":[650,505,280,40]}
+{"kind":"textbox","id":"sh/0nm9kve5","slide":1,"text":"September 8, 2026","textPreview":"September 8, 2026","textChars":17,"textLines":1,"bbox":[70,630,340,22]}
+{"kind":"notes","id":"nt/0ousen","slide":1,"text":"Internal decision workshop. Uses Lee Warren’s supplied UNI + ETI materials and the paid-session pressure-test context."}
+{"kind":"slide","id":"sl/16mjy5","slide":2,"title":"BRITT BOWMAN LLC  ·  WORKING SESSION WITH LEE","textShapes":12}
+{"kind":"shape","id":"sh/gbeh8jyp","slide":2,"bbox":[0,0,1280,6]}
+{"kind":"textbox","id":"sh/fa5gzex4","slide":2,"text":"BRITT BOWMAN LLC  ·  WORKING SESSION WITH LEE","textPreview":"BRITT BOWMAN LLC  ·  WORKING SESSION WITH LEE","textChars":45,"textLines":1,"bbox":[64,38,700,22]}
+{"kind":"textbox","id":"sh/e9wz69gj","slide":2,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[1160,38,55,22]}
+{"kind":"textbox","id":"sh/pg7i5of6","slide":2,"text":"What we’re actually deciding","textPreview":"What we’re actually deciding","textChars":28,"textLines":1,"bbox":[64,95,1080,70]}
+{"kind":"textbox","id":"sh/ofyhcjy1","slide":2,"text":"I don’t think the question is whether the thesis is interesting. I think the question is what turns it into a company.","textPreview":"I don’t think the question is whether the thesis is interesting. I think the question is what turns it into a company.","textChars":118,"textLines":1,"bbox":[64,174,1090,54]}
+{"kind":"shape","id":"sh/3e503exg","slide":2,"bbox":[64,662,1152,1]}
+{"kind":"textbox","id":"sh/2dwza9gv","slide":2,"text":"UNI + ETI  ·  SEPTEMBER 8, 2026","textPreview":"UNI + ETI  ·  SEPTEMBER 8, 2026","textChars":31,"textLines":1,"bbox":[64,677,550,18]}
+{"kind":"shape","id":"sh/d47i98fi","slide":2,"bbox":[64,275,350,205]}
+{"kind":"textbox","id":"sh/c3yhg3yx","slide":2,"text":"What you’re building","textPreview":"What you’re building","textChars":20,"textLines":1,"bbox":[84,293,310,28]}
+{"kind":"textbox","id":"sh/u9szmdsz","slide":2,"text":"An independent evidence and trust layer for consequential workforce decisions.","textPreview":"An independent evidence and trust layer for consequential workforce decisions.","textChars":78,"textLines":1,"bbox":[84,332,310,133]}
+{"kind":"shape","id":"sh/fa1gfitk","slide":2,"bbox":[465,275,350,205]}
+{"kind":"textbox","id":"sh/gbahona5","slide":2,"text":"What I’m worried about","textPreview":"What I’m worried about","textChars":22,"textLines":1,"bbox":[485,293,310,28]}
+{"kind":"textbox","id":"sh/hw3yh8bq","slide":2,"text":"Research and a product idea don’t yet create a capital plan, a company, or an acquisition target.","textPreview":"Research and a product idea don’t yet create a capital plan, a company, or an acquisition target.","textChars":97,"textLines":1,"bbox":[485,332,310,133]}
+{"kind":"shape","id":"sh/2xczqdsb","slide":2,"bbox":[866,275,350,205]}
+{"kind":"textbox","id":"sh/3ylgjitg","slide":2,"text":"What I want us to leave with","textPreview":"What I want us to leave with","textChars":28,"textLines":1,"bbox":[886,293,310,28]}
+{"kind":"textbox","id":"sh/4zuhsna1","slide":2,"text":"A route we agree on, what it needs to prove, and who has to commit to it.","textPreview":"A route we agree on, what it needs to prove, and who has to commit to it.","textChars":73,"textLines":1,"bbox":[886,332,310,133]}
+{"kind":"textbox","id":"sh/p03ylsbm","slide":2,"text":"Question: Who besides you needs to believe this enough to put something at risk?","textPreview":"Question: Who besides you needs to believe this enough to put something at risk?","textChars":80,"textLines":1,"bbox":[64,540,1090,35]}
+{"kind":"notes","id":"nt/16mjy5","slide":2,"text":"Internal decision workshop. Uses Lee Warren’s supplied UNI + ETI materials and the paid-session pressure-test context."}
+{"kind":"slide","id":"sl/kj947g","slide":3,"title":"BRITT BOWMAN LLC  ·  WORKING SESSION WITH LEE","textShapes":14}
+{"kind":"shape","id":"sh/kby1w3mh","slide":3,"bbox":[0,0,1280,6]}
+{"kind":"textbox","id":"sh/japk3y5w","slide":3,"text":"BRITT BOWMAN LLC  ·  WORKING SESSION WITH LEE","textPreview":"BRITT BOWMAN LLC  ·  WORKING SESSION WITH LEE","textChars":45,"textLines":1,"bbox":[64,38,700,22]}
+{"kind":"textbox","id":"sh/y9gjut4b","slide":3,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[1160,38,55,22]}
+{"kind":"textbox","id":"sh/x8721on6","slide":3,"text":"There are a few ways to get from idea to money","textPreview":"There are a few ways to get from idea to money","textChars":46,"textLines":1,"bbox":[64,95,1080,70]}
+{"kind":"textbox","id":"sh/w7e1sjml","slide":3,"text":"We need to choose the one you’re actually trying to do for the next year.","textPreview":"We need to choose the one you’re actually trying to do for the next year.","textChars":73,"textLines":1,"bbox":[64,174,1090,54]}
+{"kind":"shape","id":"sh/bm5kze50","slide":3,"bbox":[64,662,1152,1]}
+{"kind":"textbox","id":"sh/alwjq94f","slide":3,"text":"UNI + ETI  ·  SEPTEMBER 8, 2026","textPreview":"UNI + ETI  ·  SEPTEMBER 8, 2026","textChars":31,"textLines":1,"bbox":[64,677,550,18]}
+{"kind":"shape","id":"sh/9knix4nu","slide":3,"bbox":[64,264,535,132]}
+{"kind":"textbox","id":"sh/oje1ojm9","slide":3,"text":"Customer-funded","textPreview":"Customer-funded","textChars":15,"textLines":1,"bbox":[84,282,495,28]}
+{"kind":"textbox","id":"sh/its7mtw3","slide":3,"text":"Paying customers show there’s a painful problem, a product people value, and a path to repeatable revenue.","textPreview":"Paying customers show there’s a painful problem, a product people value, and a path to repeatable revenue.","textChars":106,"textLines":1,"bbox":[84,321,495,60]}
+{"kind":"shape","id":"sh/3u18vyx8","slide":3,"bbox":[647,264,535,132]}
+{"kind":"textbox","id":"sh/4vapo3et","slide":3,"text":"Pre-seed or angel-funded","textPreview":"Pre-seed or angel-funded","textChars":24,"textLines":1,"bbox":[667,282,495,28]}
+{"kind":"textbox","id":"sh/5w3qx8fe","slide":3,"text":"Capital helps a real team move faster against a clear plan. It doesn’t replace evidence that other people care.","textPreview":"Capital helps a real team move faster against a clear plan. It doesn’t replace evidence that other people care.","textChars":111,"textLines":1,"bbox":[667,321,495,60]}
+{"kind":"shape","id":"sh/ups7itwr","slide":3,"bbox":[64,425,535,132]}
+{"kind":"textbox","id":"sh/vq18rexc","slide":3,"text":"Strategic-partner-led","textPreview":"Strategic-partner-led","textChars":21,"textLines":1,"bbox":[84,443,495,28]}
+{"kind":"textbox","id":"sh/grapkjex","slide":3,"text":"A serious institution or platform has a real gap and is willing to put time, reputation, or money behind working with you.","textPreview":"A serious institution or platform has a real gap and is willing to put time, reputation, or money behind working with you.","textChars":122,"textLines":1,"bbox":[84,482,495,60]}
+{"kind":"shape","id":"sh/hsjqtofi","slide":3,"bbox":[647,425,535,132]}
+{"kind":"textbox","id":"sh/6187e9wv","slide":3,"text":"Acquisition","textPreview":"Acquisition","textChars":11,"textLines":1,"bbox":[667,443,495,28]}
+{"kind":"textbox","id":"sh/72h8nexg","slide":3,"text":"Something that might happen after UNI has built a team, customers, and an asset a buyer wants.","textPreview":"Something that might happen after UNI has built a team, customers, and an asset a buyer wants.","textChars":94,"textLines":1,"bbox":[667,482,495,60]}
+{"kind":"textbox","id":"sh/b6x4vad8","slide":3,"text":"Question: Which one is the plan, and what would tell us it’s working?","textPreview":"Question: Which one is the plan, and what would tell us it’s working?","textChars":69,"textLines":1,"bbox":[64,596,1090,30]}
+{"kind":"notes","id":"nt/kj947g","slide":3,"text":"Internal decision workshop. Uses Lee Warren’s supplied UNI + ETI materials and the paid-session pressure-test context."}
+{"kind":"slide","id":"sl/y5qn4s","slide":4,"title":"BRITT BOWMAN LLC  ·  WORKING SESSION WITH LEE","textShapes":14}
+{"kind":"shape","id":"sh/6103258f","slide":4,"bbox":[0,0,1280,6]}
+{"kind":"textbox","id":"sh/d4b2x0r6","slide":4,"text":"BRITT BOWMAN LLC  ·  WORKING SESSION WITH LEE","textPreview":"BRITT BOWMAN LLC  ·  WORKING SESSION WITH LEE","textChars":45,"textLines":1,"bbox":[64,38,700,22]}
+{"kind":"textbox","id":"sh/s32l4fql","slide":4,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[1160,38,55,22]}
+{"kind":"textbox","id":"sh/f6t4zapc","slide":4,"text":"What someone else has to see","textPreview":"What someone else has to see","textChars":28,"textLines":1,"bbox":[64,95,1080,70]}
+{"kind":"textbox","id":"sh/e5k3658r","slide":4,"text":"If you want money, somebody outside UNI has to see more than a smart idea.","textPreview":"If you want money, somebody outside UNI has to see more than a smart idea.","textChars":74,"textLines":1,"bbox":[64,174,1090,54]}
+{"kind":"shape","id":"sh/18bm1k72","slide":4,"bbox":[64,662,1152,1]}
+{"kind":"textbox","id":"sh/072l8fqh","slide":4,"text":"UNI + ETI  ·  SEPTEMBER 8, 2026","textPreview":"UNI + ETI  ·  SEPTEMBER 8, 2026","textChars":31,"textLines":1,"bbox":[64,677,550,18]}
+{"kind":"shape","id":"sh/vapknq9s","slide":4,"bbox":[64,270,260,220]}
+{"kind":"textbox","id":"sh/u9g3ul87","slide":4,"text":"Team","textPreview":"Team","textChars":4,"textLines":1,"bbox":[84,288,220,28]}
+{"kind":"textbox","id":"sh/kv6dwfm5","slide":4,"text":"Who is building this with you? What has to be in the company or formally committed?","textPreview":"Who is building this with you? What has to be in the company or formally committed?","textChars":83,"textLines":1,"bbox":[84,327,220,148]}
+{"kind":"shape","id":"sh/lwfupk3q","slide":4,"bbox":[360,270,260,220]}
+{"kind":"textbox","id":"sh/y9ovup4f","slide":4,"text":"A real commitment","textPreview":"A real commitment","textChars":17,"textLines":1,"bbox":[380,288,220,28]}
+{"kind":"textbox","id":"sh/jaxcnul0","slide":4,"text":"Who will put something at risk: a customer, a design partner, an investor, or an institution?","textPreview":"Who will put something at risk: a customer, a design partner, an investor, or an institution?","textChars":93,"textLines":1,"bbox":[380,327,220,148]}
+{"kind":"shape","id":"sh/8z6d0zmh","slide":4,"bbox":[656,270,260,220]}
+{"kind":"textbox","id":"sh/t0fet432","slide":4,"text":"Something that works","textPreview":"Something that works","textChars":20,"textLines":1,"bbox":[676,288,220,28]}
+{"kind":"textbox","id":"sh/6xovyp4b","slide":4,"text":"What’s the smallest thing UNI can put in the world that proves its point?","textPreview":"What’s the smallest thing UNI can put in the world that proves its point?","textChars":73,"textLines":1,"bbox":[676,327,220,148]}
+{"kind":"shape","id":"sh/7yxcrulw","slide":4,"bbox":[952,270,260,220]}
+{"kind":"textbox","id":"sh/o3mdovmd","slide":4,"text":"An asset that grows","textPreview":"An asset that grows","textChars":19,"textLines":1,"bbox":[972,288,220,28]}
+{"kind":"textbox","id":"sh/94vuh03i","slide":4,"text":"What does UNI build that a big incumbent can’t just copy later?","textPreview":"What does UNI build that a big incumbent can’t just copy later?","textChars":63,"textLines":1,"bbox":[972,327,220,148]}
+{"kind":"textbox","id":"sh/po325sba","slide":4,"text":"Question: What would make us say, a year from now, that this is working?","textPreview":"Question: What would make us say, a year from now, that this is working?","textChars":72,"textLines":1,"bbox":[64,555,1090,32]}
+{"kind":"notes","id":"nt/y5qn4s","slide":4,"text":"Internal decision workshop. Uses Lee Warren’s supplied UNI + ETI materials and the paid-session pressure-test context."}
+{"kind":"slide","id":"sl/ed82y1","slide":5,"title":"BRITT BOWMAN LLC  ·  WORKING SESSION WITH LEE","textShapes":13}
+{"kind":"shape","id":"sh/tcju54ve","slide":5,"bbox":[0,0,1280,6]}
+{"kind":"textbox","id":"sh/69sba9cn","slide":5,"text":"BRITT BOWMAN LLC  ·  WORKING SESSION WITH LEE","textPreview":"BRITT BOWMAN LLC  ·  WORKING SESSION WITH LEE","textChars":45,"textLines":1,"bbox":[64,38,700,22]}
+{"kind":"textbox","id":"sh/7a1c3ed8","slide":5,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[1160,38,55,22]}
+{"kind":"textbox","id":"sh/gfutgjup","slide":5,"text":"The customer question","textPreview":"The customer question","textChars":21,"textLines":1,"bbox":[64,95,1080,70]}
+{"kind":"textbox","id":"sh/1g3u9ova","slide":5,"text":"I don’t think early customers automatically make UNI a hiring-assessment company. It depends on what they buy and what it proves.","textPreview":"I don’t think early customers automatically make UNI a hiring-assessment company. It depends on what they buy and what it proves.","textChars":129,"textLines":1,"bbox":[64,174,1090,54]}
+{"kind":"shape","id":"sh/edcbe9cz","slide":5,"bbox":[64,662,1152,1]}
+{"kind":"textbox","id":"sh/felc7edk","slide":5,"text":"UNI + ETI  ·  SEPTEMBER 8, 2026","textPreview":"UNI + ETI  ·  SEPTEMBER 8, 2026","textChars":31,"textLines":1,"bbox":[64,677,550,18]}
+{"kind":"textbox","id":"sh/ojudkju1","slide":5,"text":"The job is to find a first use case that creates real value for the customer and demonstrates the larger trust-layer idea.","textPreview":"The job is to find a first use case that creates real value for the customer and demonstrates the larger trust-layer idea.","textChars":122,"textLines":1,"bbox":[64,255,1120,58]}
+{"kind":"shape","id":"sh/p4nudovm","slide":5,"bbox":[64,365,350,155]}
+{"kind":"textbox","id":"sh/h0vyp4ji","slide":5,"text":"One decision","textPreview":"One decision","textChars":12,"textLines":1,"bbox":[84,383,310,28]}
+{"kind":"textbox","id":"sh/gfmxwzix","slide":5,"text":"Which workforce decision do we start with?","textPreview":"Which workforce decision do we start with?","textChars":42,"textLines":1,"bbox":[84,422,310,83]}
+{"kind":"shape","id":"sh/vedgnu1s","slide":5,"bbox":[465,365,350,155]}
+{"kind":"textbox","id":"sh/ud4fup07","slide":5,"text":"One thing UNI makes real","textPreview":"One thing UNI makes real","textChars":24,"textLines":1,"bbox":[485,383,310,28]}
+{"kind":"textbox","id":"sh/54vyt4ju","slide":5,"text":"What record, credential, or proof object does the customer actually use?","textPreview":"What record, credential, or proof object does the customer actually use?","textChars":72,"textLines":1,"bbox":[485,422,310,83]}
+{"kind":"shape","id":"sh/43mx0zi9","slide":5,"bbox":[866,365,350,155]}
+{"kind":"textbox","id":"sh/32dgre1o","slide":5,"text":"One commitment","textPreview":"One commitment","textChars":14,"textLines":1,"bbox":[886,383,310,28]}
+{"kind":"textbox","id":"sh/i14fy903","slide":5,"text":"Who will rely on it strongly enough to create proof that matters?","textPreview":"Who will rely on it strongly enough to create proof that matters?","textChars":65,"textLines":1,"bbox":[886,422,310,83]}
+{"kind":"textbox","id":"sh/l8behkja","slide":5,"text":"Question: What would make an investor say this is more than another assessment product?","textPreview":"Question: What would make an investor say this is more than another assessment product?","textChars":87,"textLines":1,"bbox":[64,572,1120,34]}
+{"kind":"notes","id":"nt/ed82y1","slide":5,"text":"Internal decision workshop. Uses Lee Warren’s supplied UNI + ETI materials and the paid-session pressure-test context."}
+{"kind":"slide","id":"sl/t4drb7","slide":6,"title":"BRITT BOWMAN LLC  ·  WORKING SESSION WITH LEE","textShapes":15}
+{"kind":"shape","id":"sh/hszupcbe","slide":6,"bbox":[0,0,1280,6]}
+{"kind":"textbox","id":"sh/up8behc3","slide":6,"text":"BRITT BOWMAN LLC  ·  WORKING SESSION WITH LEE","textPreview":"BRITT BOWMAN LLC  ·  WORKING SESSION WITH LEE","textChars":45,"textLines":1,"bbox":[64,38,700,22]}
+{"kind":"textbox","id":"sh/fqhcnmto","slide":6,"text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[1160,38,55,22]}
+{"kind":"textbox","id":"sh/4vatkru5","slide":6,"text":"Where we land","textPreview":"Where we land","textChars":13,"textLines":1,"bbox":[64,95,1080,70]}
+{"kind":"textbox","id":"sh/pwjutwbq","slide":6,"text":"This doesn’t need to be perfect today. It needs to be honest enough for us to see what needs work.","textPreview":"This doesn’t need to be perfect today. It needs to be honest enough for us to see what needs work.","textChars":98,"textLines":1,"bbox":[64,174,1090,54]}
+{"kind":"shape","id":"sh/2tsbihcz","slide":6,"bbox":[64,662,1152,1]}
+{"kind":"textbox","id":"sh/3u1crmtk","slide":6,"text":"UNI + ETI  ·  SEPTEMBER 8, 2026","textPreview":"UNI + ETI  ·  SEPTEMBER 8, 2026","textChars":31,"textLines":1,"bbox":[64,677,550,18]}
+{"kind":"shape","id":"sh/czatobah","slide":6,"bbox":[64,260,535,115]}
+{"kind":"textbox","id":"sh/dkjuhwbm","slide":6,"text":"Route we chose","textPreview":"Route we chose","textChars":14,"textLines":1,"bbox":[84,278,495,28]}
+{"kind":"textbox","id":"sh/h8ny583q","slide":6,"text":"________________________________________","textPreview":"________________________________________","textChars":40,"textLines":1,"bbox":[84,317,495,43]}
+{"kind":"shape","id":"sh/g7exw3m5","slide":6,"bbox":[647,260,535,115]}
+{"kind":"textbox","id":"sh/f65g3ylk","slide":6,"text":"What we need to prove in 12 months","textPreview":"What we need to prove in 12 months","textChars":34,"textLines":1,"bbox":[667,278,495,28]}
+{"kind":"textbox","id":"sh/u5wfut4z","slide":6,"text":"________________________________________","textPreview":"________________________________________","textChars":40,"textLines":1,"bbox":[667,317,495,43]}
+{"kind":"shape","id":"sh/pw7y983m","slide":6,"bbox":[64,407,535,115]}
+{"kind":"textbox","id":"sh/4vyx0nmh","slide":6,"text":"Who has to commit","textPreview":"Who has to commit","textChars":17,"textLines":1,"bbox":[84,425,495,28]}
+{"kind":"textbox","id":"sh/3upg7ilw","slide":6,"text":"________________________________________","textPreview":"________________________________________","textChars":40,"textLines":1,"bbox":[84,464,495,43]}
+{"kind":"shape","id":"sh/2tgfyd4b","slide":6,"bbox":[647,407,535,115]}
+{"kind":"textbox","id":"sh/503yxo3i","slide":6,"text":"Asset UNI needs to build","textPreview":"Asset UNI needs to build","textChars":24,"textLines":1,"bbox":[667,425,495,28]}
+{"kind":"textbox","id":"sh/kzuxojmx","slide":6,"text":"________________________________________","textPreview":"________________________________________","textChars":40,"textLines":1,"bbox":[667,464,495,43]}
+{"kind":"textbox","id":"sh/wjyxkjut","slide":6,"text":"The next rational decision: _________________________________","textPreview":"The next rational decision: _________________________________","textChars":61,"textLines":1,"bbox":[64,575,900,34]}
+{"kind":"textbox","id":"sh/xk7ydobe","slide":6,"text":"We don’t need to predict a specific acquisition. We need to know what would make this company worth funding and eventually worth buying.","textPreview":"We don’t need to predict a specific acquisition. We need to know what would make this company worth funding and eventually worth buying.","textChars":136,"textLines":1,"bbox":[64,620,1080,22]}
+{"kind":"notes","id":"nt/t4drb7","slide":6,"text":"Internal decision workshop. Uses Lee Warren’s supplied UNI + ETI materials and the paid-session pressure-test context."}

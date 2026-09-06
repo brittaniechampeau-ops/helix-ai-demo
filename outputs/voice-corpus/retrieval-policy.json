@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "author": "Britt Bowman",
+  "authority_order": [
+    "sent_or_published_final",
+    "user_attested_published_final",
+    "britt_edited_final",
+    "explicitly_approved_draft",
+    "derived_voice_rule"
+  ],
+  "required_filters": [
+    "author",
+    "privacy",
+    "channel",
+    "voice_mode"
+  ],
+  "ranking_fields": [
+    "audience",
+    "relationship_type",
+    "purpose",
+    "emotional_register",
+    "commercial_stage",
+    "recency"
+  ],
+  "privacy": {
+    "public": {
+      "allowed_outputs": ["public", "private"]
+    },
+    "private_style_only": {
+      "allowed_outputs": ["private"],
+      "may_influence": ["cadence", "warmth", "directness", "sentence_shape"],
+      "may_not_reuse": ["names", "companies", "events", "client_facts", "family_facts", "dates", "commercial_details"]
+    },
+    "confidential": {
+      "allowed_outputs": ["same_authorized_relationship_only"]
+    }
+  },
+  "hard_failures": [
+    "wrong_author_attribution",
+    "private_fact_in_public_draft",
+    "confidential_fact_outside_authorized_context",
+    "invented_claim",
+    "unapproved_client_disclosure",
+    "prohibited_external_action",
+    "candidate_mislabeled_as_final"
+    ,"draft_without_natural_contractions"
+    ,"fragment_heavy_or_staccato_prose"
+  ],
+  "advisory_checks": [
+    "generic_validation",
+    "restates_source_without_adding_a_point",
+    "staccato_influencer_cadence",
+    "forced_not_x_but_y_construction",
+    "generic_consulting_language",
+    "forced_call_to_action",
+    "wrong_warmth_for_relationship",
+    "overexplains",
+    "unnecessary_hedging",
+    "channel_mismatch"
+    ,"mechanical_name_placement"
+    ,"engagement_optimization_language"
+  ],
+  "learning": {
+    "capture_proposed_text": true,
+    "capture_britt_edit": true,
+    "capture_final_text": true,
+    "capture_disposition": true,
+    "capture_outcome": true,
+    "scheduled_self_modification": false
+  },
+  "destination_readback": {
+    "required_for_authoritative_final": true,
+    "capture_inline_mentions": true,
+    "capture_difference_from_candidate": true
+  }
+}
