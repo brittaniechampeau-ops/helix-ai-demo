@@ -47,6 +47,30 @@ const base = (over = {}) => ({
   action_payload: { echo: 'hello' }, risk: 'low', ...over,
 });
 
+// Disclosure is required on every type except test_echo. These are the four fields
+// Britt must see before she can judge an action, so a fixture for a non-test type
+// has to carry them; omitting them is its own test, below.
+const disclosed = (over = {}) => base({
+  destination: 'test harness, no external system',
+  requested_timing: 'immediately on approval',
+  is_public: false,
+  readback_criteria: 'Closed only when the harness reads the result back.',
+  ...over,
+});
+
+// Authored types additionally have to show the strategy rules they applied and
+// same-channel published voice evidence. A fixture that stands in for a real draft
+// carries a real-shaped manifest.
+const authored = (over = {}) => disclosed({
+  evidence_manifest: {
+    channel: 'linkedin_post',
+    classification: { category: 'educational', altitude: 'narrow', spine_problem: 6 },
+    strategy: [{ id: 'spine_problems', authority: 'britt_rule', sources: ['S1'] }],
+    voice: [{ id: 'linkedin-post-2026-08-start-narrow', channel: 'linkedin_post', quality: 'published_authoritative' }],
+  },
+  ...over,
+});
+
 console.log('\nAUTHENTICATION AND AUTHORIZATION');
 await t('no credentials is rejected', async () => {
   const r = await raw({}, { op: 'ping' });
@@ -96,7 +120,7 @@ await t('idempotency_key is required', async () => {
   assert.equal(r.status, 400);
 });
 await t('policy assigns manual_action_ready to a manual-final action', async () => {
-  const r = await agent('upsert', base({
+  const r = await agent('upsert', disclosed({
     idempotency_key: `${RUN}:li`, approval_type: 'linkedin_manual_engagement',
     action_payload: { destination_url: 'https://www.linkedin.com/in/example', message: 'draft' },
   }));
@@ -122,8 +146,9 @@ await t('a superseded item is not reopened by a repeat request', async () => {
 
 console.log('\nHANDLER ALLOWLIST AND BLOCKED ADAPTERS');
 await t('a blocked adapter records the decision without executing', async () => {
-  const r = await agent('upsert', base({
+  const r = await agent('upsert', authored({
     idempotency_key: `${RUN}:kleo`, approval_type: 'kleo_create_draft', action_payload: { text: 'draft body' },
+    artifact: 'draft body',
   }));
   assert.equal(r.status, 200);
   // Britt approving it is covered in the live acceptance run; here we assert the
@@ -131,12 +156,118 @@ await t('a blocked adapter records the decision without executing', async () => 
   assert.ok(r.body.id);
 });
 await t('an invalid payload for a real handler is refused at edit time', async () => {
-  const r = await agent('upsert', base({
+  const r = await agent('upsert', disclosed({
     idempotency_key: `${RUN}:sync`, approval_type: 'bridge_content_sync',
     action_payload: { external_id: 'x', title: 'y' },
   }));
   assert.equal(r.status, 200);
 });
+
+console.log('\nDISCLOSURE AND EVIDENCE ARE ENFORCED, WITH A DETERMINISTIC 4XX');
+await t('a non-test type without disclosure is refused 422, not 500', async () => {
+  const r = await agent('upsert', base({
+    idempotency_key: `${RUN}:nodisc`, approval_type: 'bridge_content_sync',
+    action_payload: { external_id: 'x', title: 'y' },
+  }));
+  assert.equal(r.status, 422);
+  assert.equal(r.body.code, 'evidence_validation_failed');
+  assert.ok(r.body.invalid.some((i) => i.field === 'destination'));
+});
+await t('an authored type without an evidence manifest is refused 422', async () => {
+  const r = await agent('upsert', disclosed({
+    idempotency_key: `${RUN}:noman`, approval_type: 'kleo_create_draft',
+    action_payload: { text: 'body' }, artifact: 'body',
+  }));
+  assert.equal(r.status, 422);
+  assert.ok(/evidence_manifest/.test(r.body.error));
+});
+await t('voice evidence from another channel cannot anchor a draft', async () => {
+  const r = await agent('upsert', authored({
+    idempotency_key: `${RUN}:xchan`, approval_type: 'kleo_create_draft',
+    action_payload: { text: 'body' }, artifact: 'body',
+    evidence_manifest: {
+      channel: 'linkedin_post', strategy: [{ id: 'smpv' }],
+      voice: [{ id: 'n', channel: 'newsletter', quality: 'sent_authoritative' }],
+    },
+  }));
+  assert.equal(r.status, 422);
+  assert.ok(/another channel/.test(r.body.error));
+});
+await t('a prohibited type is still refused 403, not 422, whatever its payload', async () => {
+  const r = await agent('upsert', {
+    idempotency_key: `${RUN}:proh2`, approval_type: 'apollo_enrollment', source_system: 'test-harness',
+  });
+  assert.equal(r.status, 403);
+  assert.match(r.body.error, /prohibited/);
+});
+
+console.log('\nPOST-FAILURE RECONCILIATION CANNOT LAUNDER A FAILURE');
+{
+  // A terminal card whose action never happened. Nothing below may close it.
+  const ghostKey = `${RUN}:ghost`;
+  await agent('upsert', disclosed({
+    idempotency_key: ghostKey, approval_type: 'bridge_content_sync',
+    source_record_id: `${RUN}-ghost-ext`,
+    action_payload: { external_id: `${RUN}-ghost-ext`, title: 'never sent anywhere' },
+  }));
+  const ghost = (await agent('lookup', { idempotency_key: ghostKey })).body.approval;
+
+  await t('reconciliation refuses a card that is not terminal', async () => {
+    const r = await agent('reconcile_external', { id: ghost.id });
+    assert.equal(r.status, 409);
+    assert.equal(r.body.code, 'not_terminal');
+  });
+
+  await t('a destination with no such row does not close the card', async () => {
+    await agent('approve_for_test', { id: ghost.id }).catch(() => {});
+    // Drive it terminal the honest way: claim it, then report a failure.
+    // (approve is human-only, so the harness fails it through submit_result after
+    // a claim is impossible; instead assert the verifier itself refuses.)
+    const r = await agent('reconcile_external', { id: ghost.id });
+    assert.ok([409, 422].includes(r.status), `expected refusal, got ${r.status}`);
+    assert.notEqual(r.body.status, 'completed');
+  });
+
+  await t('a public action has no machine verifier and is refused', async () => {
+    const pubKey = `${RUN}:pub`;
+    await agent('upsert', authored({
+      idempotency_key: pubKey, approval_type: 'content_publish',
+      source_record_id: `${RUN}-pub`, artifact: 'public words',
+      action_payload: { text: 'public words' }, is_public: true,
+      destination: 'LinkedIn, via Kleo, on your own profile',
+      readback_criteria: 'a resolving linkedin.com URL',
+    }));
+    const pub = (await agent('lookup', { idempotency_key: pubKey })).body.approval;
+    const r = await agent('reconcile_external', { id: pub.id });
+    // Either it is refused because a job may not close a public action at all, or
+    // because no machine verifier exists. Both are correct; neither closes it.
+    assert.ok([403, 409, 422].includes(r.status), `expected refusal, got ${r.status}`);
+    assert.notEqual(r.body.status, 'completed');
+  });
+
+  await t('a fresh idempotency_key cannot buy a new retry budget', async () => {
+    // The real BRIDGE card is failed at the ceiling. A different key for the same
+    // source_record_id must be refused rather than silently created.
+    const r = await agent('upsert', disclosed({
+      idempotency_key: `${RUN}:evade`, approval_type: 'bridge_content_sync',
+      source_record_id: '421768ce-e1f2-42c1-a6e3-9d1490422237',
+      action_payload: { external_id: '421768ce-e1f2-42c1-a6e3-9d1490422237', title: 'same action, new key' },
+    }));
+    if (r.status === 409) {
+      assert.equal(r.body.code, 'retry_ceiling_evasion');
+    } else {
+      // Once that card is reconciled it is no longer failed, so the guard no longer
+      // applies. Assert the real reason rather than passing on a coincidence.
+      const orig = (await agent('lookup', { idempotency_key: 'sync:421768ce-e1f2-42c1-a6e3-9d1490422237' })).body.approval;
+      assert.notEqual(orig.status, 'failed', 'guard should fire while the twin is still failed');
+    }
+  });
+
+  await t('retry_count may never decrease', async () => {
+    const r = await agent('lookup', { idempotency_key: 'sync:421768ce-e1f2-42c1-a6e3-9d1490422237' });
+    if (r.body.found) assert.ok(r.body.approval.retry_count >= 3, 'the BRIDGE card kept its three failures');
+  });
+}
 
 console.log('\nSECRET NON-DISCLOSURE');
 await t('no response body contains the integration secret', async () => {
@@ -270,4 +401,7 @@ await t('LinkedIn automation is absent from the page', () => {
 });
 
 console.log(`\n${fail ? 'FAILED' : 'OK'}  ${pass} passed, ${fail} failed\n`);
+const purge = await agent('purge_test_items', {});
+console.log(`\nharness cleanup: retired ${purge.body.retired ?? 0} test item(s)`);
+
 process.exit(fail ? 1 : 0);

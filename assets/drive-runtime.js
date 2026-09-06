@@ -8,12 +8,12 @@
   });
 
   const TOOL_URLS = Object.freeze({
-    hub: '/hub.html', discover: '/discover.html', resolve: '/resolve.html',
+    hub: '/hub.html', discover: '/discover.html', scaler: '/scaler.html', resolve: '/resolve.html',
     intuit: '/intuit.html', visualize: '/visualize.html', execute: '/execute.html',
   });
 
   const UPSTREAM_TABLES = Object.freeze({
-    discover: 'org_discover', resolve: 'org_taxonomy', intuit: 'org_intelligence',
+    discover: 'org_discover', scaler: 'org_scaler', resolve: 'org_taxonomy', intuit: 'org_intelligence',
     visualize: 'org_vec_state', execute: 'org_engine_assets',
   });
 

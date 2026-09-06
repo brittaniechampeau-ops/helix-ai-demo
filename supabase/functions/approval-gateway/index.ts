@@ -93,6 +93,62 @@ function internalHandler(kind: string, required: string[] = []): Handler {
 }
 
 /**
+ * Machine verifiers for post-failure reconciliation.
+ *
+ * A card can fail while the action it asked for actually succeeded. That happened
+ * to the BRIDGE content row: production accepted it while the approval was already
+ * terminal on its retry ceiling. Both records were true and they disagreed.
+ *
+ * The wrong repairs are to reset retry_count, raise the ceiling, or file a
+ * duplicate approval. Each launders a policy breach into a clean record. The right
+ * repair is to go and look at the destination, and close the ORIGINAL card only if
+ * the destination says the action is really there.
+ *
+ * A type with no verifier here cannot be reconciled at all. That is deliberate: a
+ * human saying "it went out" is an assertion, not a readback, and for anything that
+ * speaks publicly an assertion is not good enough.
+ */
+type Readback = { verified: boolean; destination_id?: string; proof: unknown; why?: string }
+
+const VERIFIERS: Record<string, (a: Record<string, unknown>) => Promise<Readback>> = {
+  bridge_content_sync: async (approval) => {
+    const payload = (approval.action_payload ?? {}) as Record<string, unknown>
+    const externalId = str(payload.external_id)
+    if (!externalId) return { verified: false, proof: null, why: 'the approval carries no external_id to look up' }
+    if (!BRIDGE_SYNC_KEY) return { verified: false, proof: null, why: 'BRIDGE_SYNC_KEY is not set on the gateway, so nothing can be verified' }
+    const url = `${BRIDGE_BASE}/api/sync?readback=${encodeURIComponent(externalId)}&source=claude`
+    let body: Record<string, unknown>
+    try {
+      const res = await fetch(url, { headers: { 'x-sync-key': BRIDGE_SYNC_KEY }, signal: AbortSignal.timeout(20000) })
+      body = await res.json().catch(() => ({}))
+      if (!res.ok) return { verified: false, proof: { http: res.status, body }, why: `BRIDGE answered ${res.status}` }
+    } catch (e) {
+      return { verified: false, proof: null, why: `could not reach BRIDGE: ${String(e instanceof Error ? e.message : e)}` }
+    }
+    const row = (body.content_queue ?? null) as Record<string, unknown> | null
+    const ev = (body.sync_event ?? null) as Record<string, unknown> | null
+    if (body.found !== true || !row) return { verified: false, proof: body, why: 'BRIDGE has no row for that external_id' }
+    // The readback criteria for this type: the row exists, it is the row this
+    // approval asked for, and BRIDGE accepted rather than merely received it.
+    const titleMatches = !payload.title || str(row.title) === str(payload.title)
+    const accepted = str(ev?.status) === 'accepted'
+    if (!titleMatches) return { verified: false, proof: body, why: 'the row at BRIDGE is not the row this approval described' }
+    if (!accepted) return { verified: false, proof: body, why: `BRIDGE recorded the event as "${str(ev?.status)}", not accepted` }
+    return {
+      verified: true,
+      destination_id: `content_queue:${str(row.id)}`,
+      proof: { fetched_from: url.split('?')[0], fetched_at: new Date().toISOString(), sync_event: ev, content_queue: row },
+    }
+  },
+}
+
+/**
+ * Types that speak publicly. For these a human assertion may never stand in for a
+ * machine readback, whatever evidence someone believes they have.
+ */
+const PUBLIC_ACTION_TYPES = ['content_publish', 'newsletter_send', 'linkedin_manual_engagement']
+
+/**
  * Types whose payload is copy Britt will be seen to have written. These carry the
  * heaviest validation, because the cost of a bad one is public.
  */
@@ -319,7 +375,7 @@ async function logEvent(supa: SupabaseClient, approval_id: string | null, actor:
 // ── Operations ────────────────────────────────────────────────────────────────
 
 const HUMAN_ONLY = new Set(['approve', 'decline', 'edit', 'snooze', 'cancel', 'retry', 'confirm_manual', 'acknowledge', 'attest_final'])
-const AGENT_ONLY = new Set(['upsert', 'supersede', 'record_auto', 'attach_evidence', 'ping', 'claim_approved', 'submit_result', 'sweep'])
+const AGENT_ONLY = new Set(['upsert', 'supersede', 'record_auto', 'attach_evidence', 'claim_approved', 'submit_result', 'sweep', 'purge_test_items'])
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
@@ -341,6 +397,40 @@ serve(async (req) => {
     // ── connectivity, no side effect ──
     if (op === 'ping') return json({ ok: true, caller: auth.kind, actor: auth.actor, handlers: Object.keys(HANDLERS).length })
 
+    // ── agent: retire the test harness's own items ──
+    // The suite creates about a dozen cards per run and left them all in Britt's
+    // queue. Scoped hard to source_system 'test-harness' so it can never reach a
+    // real decision, and it cancels rather than deletes: the event history stands.
+    if (op === 'purge_test_items') {
+      const { data, error } = await supa.from('drive_hub_approvals')
+        .select('id, idempotency_key').eq('source_system', 'test-harness')
+        .not('status', 'in', '("cancelled","completed","declined")')
+      if (error) return dbError(error)
+      let n = 0
+      for (const row of data ?? []) {
+        await supa.from('drive_hub_approvals')
+          .update({ status: 'cancelled', decided_at: new Date().toISOString() }).eq('id', row.id)
+        await logEvent(supa, row.id, auth.actor, 'agent', 'harness_item_retired', null, 'cancelled', {})
+        n++
+      }
+      return json({ ok: true, retired: n })
+    }
+
+    // ── read-only: what is the state of one item ──
+    // An executor that has to reason about a card it did not just claim otherwise
+    // has no way to see it. Returns state, never the caller's own secrets.
+    if (op === 'lookup') {
+      const key = str(body.idempotency_key)
+      const lid = str(body.id)
+      if (!key && !lid) return json({ error: 'idempotency_key or id is required' }, 400)
+      const q = supa.from('drive_hub_approvals')
+        .select('id, idempotency_key, approval_type, status, title, retry_count, failure_reason, is_public, destination, destination_id, destination_readback, readback_verified, reconciled_at, reconciled_by, source_record_id, created_at, updated_at, completed_at')
+      const { data, error } = key ? await q.eq('idempotency_key', key).maybeSingle() : await q.eq('id', lid).maybeSingle()
+      if (error) return dbError(error)
+      if (!data) return json({ found: false }, 404)
+      return json({ found: true, approval: data })
+    }
+
     if (op === 'sweep') {
       const parked = await parkOverdue(supa)
       return json({ ok: true, parked: parked.length, items: parked })
@@ -353,15 +443,19 @@ serve(async (req) => {
       const type = str(body.approval_type)
       if (!HANDLERS[type]) return json({ error: `unknown approval_type "${type}". Allowed: ${Object.keys(HANDLERS).join(', ')}` }, 400)
 
-      // Fail closed, but say exactly what is wrong and answer 4xx. A caller that
-      // gets a 500 cannot tell a bad request from an outage and retries forever.
-      const bad = validateApproval(type, body)
-      if (bad.length) return invalid(bad)
-
+      // Prohibition is checked before shape. A forbidden action type is refused
+      // because it is forbidden, whatever its payload looks like; answering 422
+      // first would tell a caller to fix the payload and try again.
       const { data: policy } = await supa.from('drive_hub_policies')
         .select('id, disposition').eq('action_type', type).is('revoked_at', null).maybeSingle()
       if (policy?.disposition === 'prohibited')
         return json({ error: `action_type "${type}" is prohibited by policy ${policy.id}` }, 403)
+
+      // Then fail closed on shape, but say exactly what is wrong and answer 4xx. A
+      // caller that gets a 500 cannot tell a bad request from an outage and retries
+      // forever.
+      const bad = validateApproval(type, body)
+      if (bad.length) return invalid(bad)
 
       const { data: existing } = await supa.from('drive_hub_approvals')
         .select('id, status, source_fingerprint').eq('idempotency_key', key).maybeSingle()
@@ -382,6 +476,22 @@ serve(async (req) => {
           return json({ ok: true, id: existing.id, status: 'awaiting_approval', invalidated: true })
         }
         return json({ ok: true, id: existing.id, status: existing.status, unchanged: true, note: 'in flight; not modified' })
+      }
+
+      // A different key for the same real-world action would hand a job a fresh
+      // retry budget. The ceiling has to survive renaming.
+      const srcId = str(body.source_record_id)
+      if (!existing && srcId) {
+        const { data: twin } = await supa.from('drive_hub_approvals')
+          .select('id, idempotency_key, retry_count, status')
+          .eq('approval_type', type).eq('source_record_id', srcId)
+          .eq('status', 'failed').gte('retry_count', MAX_RETRIES).limit(1).maybeSingle()
+        if (twin) {
+          return json({
+            error: `${type} for "${srcId}" already has a card that exhausted its ${MAX_RETRIES}-retry ceiling (${twin.idempotency_key}). A new key would be a fresh retry budget for the same action. Reconcile or cancel that card instead.`,
+            code: 'retry_ceiling_evasion', existing_id: twin.id,
+          }, 409)
+        }
       }
 
       // A decided item is never silently reopened by a repeat request.
@@ -577,6 +687,73 @@ serve(async (req) => {
     // Britt pastes what she actually posted. One optional field, prefilled with the
     // approved version. Attested is stronger than approved and weaker than a
     // destination read, and reconciliation may still upgrade it later.
+    // ── human: reconcile an action that really happened after its card failed ──
+    if (op === 'reconcile_external') {
+      // Only a terminal card needs this. A live one should be retried or executed.
+      if (!['failed', 'awaiting_confirmation'].includes(approval.status))
+        return json({ error: `only a failed or unconfirmed card can be reconciled; this one is ${approval.status}`, code: 'not_terminal' }, 409)
+      if (approval.reconciled_at)
+        return json({ ok: true, status: approval.status, note: 'already reconciled', reconciled_at: approval.reconciled_at })
+
+      // Who may reconcile what. The gate is the evidence, not the caller: this op
+      // never accepts an assertion, only a readback the gateway fetched itself. An
+      // agent may therefore close an internal action it can prove. It may not close
+      // anything that spoke publicly under Britt's name, even with proof, because
+      // that judgement is hers.
+      const isPublicAction = approval.is_public === true || PUBLIC_ACTION_TYPES.includes(approval.approval_type as string)
+      if (auth.kind === 'agent' && isPublicAction)
+        return json({ error: `a job may not reconcile "${approval.approval_type}": it spoke publicly as Britt, so closing it is her decision`, code: 'human_only_public' }, 403)
+
+      const verifier = VERIFIERS[approval.approval_type as string]
+      if (!verifier) {
+        const why = PUBLIC_ACTION_TYPES.includes(approval.approval_type as string)
+          ? `"${approval.approval_type}" speaks publicly, so it can only be closed by a machine readback from the destination. There is no verifier for it, and an assertion that it went out is not evidence.`
+          : `no machine verifier exists for "${approval.approval_type}", so there is nothing that could confirm this independently.`
+        await logEvent(supa, id, auth.actor, 'human', 'reconciliation_refused', approval.status, approval.status, { why })
+        return json({ error: why, code: 'no_machine_verifier' }, 422)
+      }
+
+      const rb = await verifier(approval)
+      if (!rb.verified) {
+        await logEvent(supa, id, auth.actor, 'human', 'reconciliation_failed', approval.status, approval.status,
+          { why: rb.why, proof: rb.proof })
+        return json({ ok: false, error: rb.why ?? 'the destination did not confirm this', code: 'readback_failed', proof: rb.proof }, 422)
+      }
+
+      // Close the original card. retry_count is untouched: the failures happened
+      // and the ceiling still means what it meant. Nothing here claims another
+      // execution occurred; execution_result records that this was a reconciliation.
+      const patch = {
+        status: 'completed',
+        completed_at: new Date().toISOString(),
+        reconciled_at: new Date().toISOString(),
+        reconciled_by: auth.actor,
+        reconciliation_proof: rb.proof,
+        destination_system: str(body.destination_system) || approval.approval_type.split('_')[0],
+        destination_id: rb.destination_id ?? null,
+        destination_readback: rb.proof,
+        readback_verified: true,
+        failure_reason: null,
+        execution_result: {
+          ...(approval.execution_result as object ?? {}),
+          closed_by: 'external_reconciliation',
+          note: 'The action was verified at the destination after this card had already failed. No further execution was attempted.',
+          retry_count_at_reconciliation: approval.retry_count,
+        },
+      }
+      const { error: uerr } = await supa.from('drive_hub_approvals').update(patch).eq('id', id)
+      if (uerr) return dbError(uerr)
+
+      await logEvent(supa, id, auth.actor, 'human', 'reconciled_external', approval.status, 'completed', {
+        destination_id: rb.destination_id, retry_count_preserved: approval.retry_count, proof: rb.proof,
+      })
+      return json({
+        ok: true, status: 'completed', destination_id: rb.destination_id,
+        retry_count: approval.retry_count,
+        note: 'Closed on evidence from the destination. The failure history and the retry count are unchanged.',
+      })
+    }
+
     if (op === 'attest_final') {
       // Two things can arrive here, together or separately. `final_text` is what she
       // actually posted, which may differ from the draft and is the highest-authority
