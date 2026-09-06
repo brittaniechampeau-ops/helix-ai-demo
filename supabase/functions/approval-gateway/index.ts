@@ -375,7 +375,7 @@ async function logEvent(supa: SupabaseClient, approval_id: string | null, actor:
 // ── Operations ────────────────────────────────────────────────────────────────
 
 const HUMAN_ONLY = new Set(['approve', 'decline', 'edit', 'snooze', 'cancel', 'retry', 'confirm_manual', 'acknowledge', 'attest_final'])
-const AGENT_ONLY = new Set(['upsert', 'supersede', 'record_auto', 'attach_evidence', 'claim_approved', 'submit_result', 'sweep', 'purge_test_items'])
+const AGENT_ONLY = new Set(['upsert', 'supersede', 'record_auto', 'attach_evidence', 'claim_approved', 'submit_result', 'sweep', 'purge_test_items', 'approval_events'])
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
@@ -414,6 +414,30 @@ serve(async (req) => {
         n++
       }
       return json({ ok: true, retired: n })
+    }
+
+    // ── read-only: the decision record, for measuring whether anything has earned
+    // standing authority. Returns events, never grants anything.
+    if (op === 'approval_events') {
+      const limit = Math.min(Number(body.limit ?? 500), 2000)
+      const { data, error } = await supa.from('drive_hub_events')
+        .select('at, event, actor, actor_kind, from_status, to_status, detail, approval_id')
+        .order('at', { ascending: false }).limit(limit)
+      if (error) return dbError(error)
+      const ids = [...new Set((data ?? []).map((e) => e.approval_id).filter(Boolean))]
+      const { data: rows } = await supa.from('drive_hub_approvals')
+        .select('id, approval_type').in('id', ids.length ? ids : ['00000000-0000-0000-0000-000000000000'])
+      const typeOf = Object.fromEntries((rows ?? []).map((r) => [r.id, r.approval_type]))
+      return json({
+        ok: true,
+        events: (data ?? []).map((e) => ({
+          at: e.at, action: e.event, actor: e.actor, actor_kind: e.actor_kind,
+          approval_type: typeOf[e.approval_id] ?? null,
+          // An edit before approval is what breaks a streak, so it has to be visible.
+          was_edited: e.event === 'approved' && e.detail?.edited === true,
+          detail: e.detail ?? null,
+        })),
+      })
     }
 
     // ── read-only: is the machine running without her ──
