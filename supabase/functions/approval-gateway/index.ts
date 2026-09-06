@@ -269,6 +269,8 @@ serve(async (req) => {
         recommendation: str(body.recommendation) || null,
         proposed_action: str(body.proposed_action) || type,
         action_payload: body.action_payload ?? {},
+        artifact: str(body.artifact) || null,
+        artifact_label: str(body.artifact_label) || null,
         affects: str(body.affects) || null,
         source_links: body.source_links ?? [],
         risk: ['low', 'medium', 'high'].includes(str(body.risk)) ? str(body.risk) : 'low',
@@ -357,7 +359,14 @@ serve(async (req) => {
       const merged = { ...(approval.action_payload as Record<string, unknown>), ...patch }
       const invalid = handler.validate(merged)
       if (invalid) return json({ error: `edited payload is invalid: ${invalid}` }, 400)
-      await supa.from('drive_hub_approvals').update({ action_payload: merged, updated_at: new Date().toISOString() }).eq('id', id)
+      // Keep the visible artifact in step with the edited payload, so the card never
+      // shows one thing while the executable proposal says another.
+      const newArtifact = str(merged.text) || str(merged.body) || str(merged.message) || null
+      await supa.from('drive_hub_approvals').update({
+        action_payload: merged,
+        ...(newArtifact ? { artifact: newArtifact, artifact_label: `Edited by Britt, ${newArtifact.length} characters` } : {}),
+        updated_at: new Date().toISOString(),
+      }).eq('id', id)
       await logEvent(supa, id, auth.actor, 'human', 'edited', approval.status, approval.status,
         { changed_keys: Object.keys(patch), before: approval.action_payload, after: merged })
       return json({ ok: true, action_payload: merged })

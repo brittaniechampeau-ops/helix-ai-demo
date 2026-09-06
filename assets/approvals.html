@@ -33,6 +33,19 @@
     .why b{color:var(--text);font-weight:650}
     .rec{border-left:2px solid var(--green);padding-left:11px;margin:10px 0;font-size:14px}
     .rec b{color:var(--green);font-weight:700}
+    .artifact{background:#0a0d12;border:1px solid #2a3444;border-left:3px solid var(--purple);border-radius:10px;margin:12px 0}
+    .artifact .head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 13px;border-bottom:1px solid #1c2430;font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-weight:800;color:var(--purple)}
+    .artifact .head .len{color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0}
+    /* Clamped, never internally scrollable. An inner scroll box swallows the page
+       scroll on a phone, which makes a long post genuinely hard to read. */
+    .artifact .body{padding:13px;white-space:pre-wrap;word-wrap:break-word;font-size:14.5px;line-height:1.62;color:#dfe4ec;position:relative;max-height:19em;overflow:hidden}
+    .artifact .body::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3.2em;background:linear-gradient(transparent,#0a0d12);pointer-events:none}
+    .artifact .body.full{max-height:none}
+    .artifact .body.full::after{display:none}
+    .artifact .more{width:100%;background:#131924;border:0;border-top:1px solid #1c2430;color:var(--purple);padding:10px;font:inherit;font-weight:700;font-size:13px;cursor:pointer;border-radius:0 0 9px 9px}
+    .subjline{display:grid;gap:3px;padding:11px 13px;border-bottom:1px solid #1c2430;font-size:13.5px}
+    .subjline .k{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:800}
+    .subjline .v{color:var(--text);font-weight:650}
     .effect{background:#151b12;border:1px solid #2b3a20;border-radius:9px;padding:10px 12px;font-size:13px;margin:10px 0}
     .effect b{color:var(--amber)}
     details{margin:10px 0}summary{cursor:pointer;color:var(--muted);font-size:13px;font-weight:600;padding:4px 0}
@@ -141,6 +154,23 @@ async function call(op,payload){
   return out;
 }
 
+function artifactBlock(a){
+  const p=a.action_payload||{};
+  const text=a.artifact||p.text||p.body||p.message||'';
+  if(!text)return'';
+  const label=a.artifact_label||(a.approval_type==='newsletter_send'?'Issue body':a.approval_type==='linkedin_manual_engagement'?'Message you will send':'Draft');
+  const long=text.length>900;
+  const head=a.approval_type==='newsletter_send'&&(p.subject||p.preview)
+    ?`<div class="subjline"><span class="k">Subject</span><span class="v">${esc(p.subject||'not set')}</span>
+       <span class="k" style="margin-top:5px">Preview</span><span class="v">${esc(p.preview||'not set')}</span></div>`:'';
+  return `<div class="artifact">
+    <div class="head"><span>${esc(label)}</span><span class="len">${text.length.toLocaleString()} characters</span></div>
+    ${head}
+    <div class="body${long?'':' full'}" id="art-${esc(a.id)}" tabindex="0" role="region" aria-label="The exact content being approved">${esc(text)}</div>
+    ${long?`<button class="more" type="button" data-more="${esc(a.id)}">Show all ${text.length.toLocaleString()} characters</button>`:''}
+  </div>`;
+}
+
 function card(a){
   const isManual=a.status==='manual_action_ready';
   const ev=Array.isArray(a.evidence)?a.evidence:[];
@@ -151,6 +181,7 @@ function card(a){
     <div class="eyebrow">${esc(a.approval_type.replace(/_/g,' '))} · ${esc(a.source_system)}</div>
     <h2 class="title">${esc(a.title)}</h2>
     <p class="summary">${esc(a.decision_summary)}</p>
+    ${artifactBlock(a)}
     <div class="why"><b>Why this reached you.</b> ${esc(a.why_escalated)}</div>
     ${a.recommendation?`<div class="rec"><b>Recommendation.</b> ${esc(a.recommendation)}</div>`:''}
     <div class="effect"><b>What happens if you approve.</b> ${esc(a.proposed_action)}${a.affects?` <span style="color:var(--muted)">Affects: ${esc(a.affects)}</span>`:''}</div>
@@ -266,6 +297,9 @@ document.getElementById('editSave').addEventListener('click',async()=>{
 });
 
 document.getElementById('list').addEventListener('click',e=>{
+  const more=e.target.closest('[data-more]');
+  if(more){const el=document.getElementById('art-'+more.dataset.more);el.classList.toggle('full');
+    more.textContent=el.classList.contains('full')?'Collapse':'Show all';return}
   const b=e.target.closest('[data-act]');if(!b)return;
   act(b.closest('[data-id]').dataset.id,b.dataset.act,b);
 });

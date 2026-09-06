@@ -154,6 +154,32 @@ await t('the page ships no service role key', () => {
   assert.equal(claims.role, 'anon', `the page must ship the anon key, found role "${claims.role}"`);
 });
 
+console.log('\nTHE CONTENT BEING APPROVED IS VISIBLE');
+await t('the card renders the artifact, not a description of it', () => {
+  const html = fs.readFileSync(new URL('../assets/approvals.html', import.meta.url), 'utf8');
+  assert.match(html, /function artifactBlock/, 'there is an artifact block');
+  assert.match(html, /a\.artifact\|\|p\.text\|\|p\.body\|\|p\.message/, 'it reads the real content fields');
+  assert.ok(html.indexOf('artifactBlock(a)') < html.indexOf('Why this reached you'),
+    'the content appears above the rationale, because reading it is the decision');
+});
+await t('long content clamps and expands instead of trapping page scroll', () => {
+  const html = fs.readFileSync(new URL('../assets/approvals.html', import.meta.url), 'utf8');
+  assert.ok(!/\.artifact \.body\{[^}]*overflow-y:auto/.test(html), 'no inner scroll box, which swallows page scroll on a phone');
+  assert.match(html, /\.artifact \.body\.full\{max-height:none\}/, 'expanding removes the clamp');
+  assert.match(html, /data-more=/, 'there is a show-all control');
+});
+await t('editing the words updates the visible artifact too', () => {
+  const gw = fs.readFileSync(new URL('../supabase/functions/approval-gateway/index.ts', import.meta.url), 'utf8');
+  assert.match(gw, /newArtifact/, 'the edit path recomputes the artifact');
+  assert.match(gw, /artifact: newArtifact/, 'so the card cannot show one thing while the payload says another');
+});
+await t('a content approval without its content is refused by the database', () => {
+  const mig = fs.readFileSync(new URL('../supabase/migrations/20260906020000_approval_artifact.sql', import.meta.url), 'utf8');
+  assert.match(mig, /drive_hub_require_artifact/);
+  for (const type of ['content_brief_approve', 'newsletter_send', 'linkedin_manual_engagement'])
+    assert.ok(mig.includes(type), `${type} must carry its content`);
+});
+
 console.log('\nUI CONTRACT');
 await t('the page has no arbitrary execution path', () => {
   const html = fs.readFileSync(new URL('../assets/approvals.html', import.meta.url), 'utf8');
