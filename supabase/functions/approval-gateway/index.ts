@@ -111,6 +111,30 @@ function internalHandler(kind: string, required: string[] = []): Handler {
 type Readback = { verified: boolean; destination_id?: string; proof: unknown; why?: string }
 
 const VERIFIERS: Record<string, (a: Record<string, unknown>) => Promise<Readback>> = {
+  // A setup card whose fix is visible on the public internet verifies itself. The
+  // gateway fetches the page and reads the form action; Britt never confirms by hand.
+  setup_exception: async (approval) => {
+    const payload = (approval.action_payload ?? {}) as Record<string, unknown>
+    const page = str(payload.page)
+    const expect = str(payload.new_action)
+    if (!page || !expect) return { verified: false, proof: null, why: 'this setup item has nothing publicly checkable' }
+    const url = page.startsWith('http') ? page : `https://${page}`
+    try {
+      const res = await fetch(url, { redirect: 'follow', signal: AbortSignal.timeout(20000) })
+      if (!res.ok) return { verified: false, proof: { http: res.status }, why: `${url} answered ${res.status}` }
+      const html = await res.text()
+      const actions = [...html.matchAll(/<form\b[^>]*action="([^"]*)"/gi)].map((m) => m[1])
+      const hit = actions.includes(expect)
+      const hasSource = /name="fields\[source\]"/i.test(html)
+      if (!hit) return { verified: false, proof: { actions }, why: `the live page still posts to ${actions[0] ?? 'nowhere'}` }
+      if (!hasSource) return { verified: false, proof: { actions }, why: 'the form posts to the right place but carries no source field, so sign-ups would be unattributable' }
+      return { verified: true, destination_id: expect,
+               proof: { fetched_from: url, fetched_at: new Date().toISOString(), form_action: expect, attribution_field: true } }
+    } catch (e) {
+      return { verified: false, proof: null, why: `could not read ${url}: ${String(e instanceof Error ? e.message : e)}` }
+    }
+  },
+
   bridge_content_sync: async (approval) => {
     const payload = (approval.action_payload ?? {}) as Record<string, unknown>
     const externalId = str(payload.external_id)
@@ -375,7 +399,7 @@ async function logEvent(supa: SupabaseClient, approval_id: string | null, actor:
 // ── Operations ────────────────────────────────────────────────────────────────
 
 const HUMAN_ONLY = new Set(['approve', 'decline', 'edit', 'snooze', 'cancel', 'retry', 'confirm_manual', 'acknowledge', 'attest_final'])
-const AGENT_ONLY = new Set(['upsert', 'supersede', 'record_auto', 'attach_evidence', 'claim_approved', 'submit_result', 'sweep', 'purge_test_items', 'approval_events'])
+const AGENT_ONLY = new Set(['upsert', 'supersede', 'record_auto', 'attach_evidence', 'claim_approved', 'submit_result', 'sweep', 'purge_test_items', 'approval_events', 'activation', 'cron_diagnostic'])
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
@@ -437,6 +461,42 @@ serve(async (req) => {
           was_edited: e.event === 'approved' && e.detail?.edited === true,
           detail: e.detail ?? null,
         })),
+      })
+    }
+
+    if (op === 'cron_diagnostic') {
+      const { data, error } = await supa.rpc('drive_cron_diagnostic')
+      if (error) return dbError(error)
+      return json({ ok: true, ...data })
+    }
+
+    // ── read-only: the activation dashboard ──
+    // One answer per capability. In the hub, not a second surface.
+    if (op === 'activation') {
+      const cloud = await supa.rpc('drive_hub_cloud_status').then((r) => r.data ?? {})
+      const vac = await supa.rpc('drive_vacation_test_status').then((r) => r.data ?? {})
+      const { data: rows } = await supa.from('drive_activation').select('*').order('id')
+      const { data: pending } = await supa.from('drive_hub_approvals')
+        .select('idempotency_key, title, status').eq('status', 'awaiting_approval').order('priority', { ascending: false })
+      return json({
+        ok: true,
+        capabilities: rows ?? [],
+        cloud_sweep: {
+          // Deployed, authenticated, armed and running are four different things.
+          operational_state: cloud.operational_state ?? 'unknown',
+          armed: cloud.schedule?.armed ?? false,
+          schedule: cloud.schedule?.cron ?? null,
+          last_successful_scheduled_execution: cloud.last_scheduled_success ?? null,
+          scheduled_successes: cloud.scheduled_successes ?? 0,
+          scheduled_failures: cloud.scheduled_failures ?? 0,
+          receipt: cloud.last_cloud_run ?? null,
+          external_readback: cloud.last_snapshot
+            ? `funnel read ${cloud.last_snapshot.age_minutes} min ago, errors ${JSON.stringify(cloud.last_snapshot.errors)}`
+            : 'none',
+        },
+        vacation_test: vac,
+        blocked_by_britt: (pending ?? []).filter((p) => /^setup:|^cleanup:/.test(p.idempotency_key))
+          .map((p) => ({ card: p.idempotency_key, title: p.title })),
       })
     }
 

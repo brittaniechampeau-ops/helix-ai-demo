@@ -37,11 +37,18 @@ async function bridge(path: string) {
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
-  // pg_cron calls this with the integration secret. Nothing else may.
-  const supplied = req.headers.get('x-hub-secret') ?? ''
-  if (!SWEEP_SECRET || supplied !== SWEEP_SECRET) return json({ error: 'Unauthorized' }, 401)
-
   const supa = createClient(SUPA_URL, SERVICE_KEY, { auth: { persistSession: false } })
+
+  // The sweep has its own credential, generated in-database and stored in Vault. No
+  // human or agent has ever seen it, and it is deliberately NOT the integration
+  // secret: that one creates approvals, this one only reads and parks.
+  const supplied = req.headers.get('x-sweep-secret') ?? req.headers.get('x-hub-secret') ?? ''
+  const { data: valid, error: verr } = await supa.rpc('drive_hub_verify_sweep_secret', { supplied })
+  if (verr || valid !== true) {
+    // Fall back to the integration secret only for a hand-invoked run from a session
+    // that legitimately holds it. A scheduled run never takes this path.
+    if (!SWEEP_SECRET || supplied !== SWEEP_SECRET) return json({ error: 'Unauthorized' }, 401)
+  }
   const started = new Date().toISOString()
   const errors: string[] = []
 
@@ -96,8 +103,13 @@ Deno.serve(async (req) => {
     detail: { reading, parked: parked.length, errors, window_start: win, wrote_snapshot: !!snap },
   })
 
+  // The 48-hour observation window starts itself on the first SCHEDULED success.
+  // Nobody has to remember to begin it, and it cannot be begun early.
+  let vacation: unknown = null
+  try { const { data } = await supa.rpc('drive_start_vacation_test'); vacation = data } catch { /* not fatal */ }
+
   return json({
-    ok: errors.length === 0, window_start: win, wrote_snapshot: !!snap,
+    ok: errors.length === 0, window_start: win, wrote_snapshot: !!snap, vacation_test: vacation,
     writer: snap?.writer ?? 'another writer already owned this window',
     reading, parked: parked.length, errors,
   })
