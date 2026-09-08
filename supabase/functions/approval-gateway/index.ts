@@ -399,7 +399,7 @@ async function logEvent(supa: SupabaseClient, approval_id: string | null, actor:
 // ── Operations ────────────────────────────────────────────────────────────────
 
 const HUMAN_ONLY = new Set(['approve', 'decline', 'edit', 'snooze', 'cancel', 'retry', 'confirm_manual', 'acknowledge', 'attest_final'])
-const AGENT_ONLY = new Set(['upsert', 'supersede', 'record_auto', 'attach_evidence', 'claim_approved', 'submit_result', 'sweep', 'purge_test_items', 'approval_events', 'activation', 'cron_diagnostic', 'vacation_reconcile', 'capture_baseline', 'set_precondition', 'vacation_baseline', 'receipt_audit', 'boundary_check', 'external_attribution', 'receipts_per_window', 'structural_counters', 'attribute_external'])
+const AGENT_ONLY = new Set(['upsert', 'supersede', 'record_auto', 'attach_evidence', 'claim_approved', 'submit_result', 'sweep', 'purge_test_items', 'approval_events', 'activation', 'cron_diagnostic', 'vacation_reconcile', 'capture_baseline', 'set_precondition', 'vacation_baseline', 'receipt_audit', 'boundary_check', 'external_attribution', 'receipts_per_window', 'structural_counters', 'attribute_external', 'close_verified', 'to_backlog'])
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
@@ -618,6 +618,42 @@ serve(async (req) => {
       return json({ ok: true, recorded: data })
     }
 
+    // Close a card whose readback is already satisfied on the live destination. The
+    // gateway fetches the proof itself; Britt is never asked to confirm a thing that
+    // is visibly done.
+    if (op === 'close_verified') {
+      const key = str(body.idempotency_key)
+      if (!key) return json({ error: 'idempotency_key is required' }, 400)
+      const { data: row } = await supa.from('drive_hub_approvals')
+        .select('id, approval_type, action_payload, status').eq('idempotency_key', key).maybeSingle()
+      if (!row) return json({ error: 'approval not found' }, 404)
+      const verifier = VERIFIERS[row.approval_type as string]
+      if (!verifier) return json({ error: `no machine verifier for "${row.approval_type}"`, code: 'no_machine_verifier' }, 422)
+      const rb = await verifier(row)
+      if (!rb.verified) return json({ ok: false, code: 'readback_failed', error: rb.why, proof: rb.proof }, 422)
+      const { data, error } = await supa.rpc('drive_hub_close_verified', {
+        p_key: key, p_actor: auth.actor, p_proof: rb.proof, p_destination_id: rb.destination_id ?? null })
+      if (error) return dbError(error)
+      await logEvent(supa, row.id, auth.actor, 'agent', 'closed_verified_done', row.status, 'completed', { proof: rb.proof })
+      return json({ ok: true, ...data, proof: rb.proof })
+    }
+
+    // Move an engineering or instrumentation item out of the founder queue. It is not
+    // decided and not done; it is simply not hers.
+    if (op === 'to_backlog') {
+      const key = str(body.idempotency_key)
+      const cls = str(body.decision_class) || 'engineering_backlog'
+      const reason = str(body.reason)
+      if (!key || !reason) return json({ error: 'idempotency_key and reason are required' }, 400)
+      const { data: row } = await supa.from('drive_hub_approvals').select('id, status').eq('idempotency_key', key).maybeSingle()
+      if (!row) return json({ error: 'approval not found' }, 404)
+      const { data, error } = await supa.rpc('drive_hub_to_backlog',
+        { p_key: key, p_actor: auth.actor, p_class: cls, p_reason: reason })
+      if (error) return dbError(error)
+      await logEvent(supa, row.id, auth.actor, 'agent', 'moved_to_backlog', row.status, 'cancelled', { decision_class: cls, reason })
+      return json({ ok: true, ...data })
+    }
+
     // ── read-only: does every scheduled run have a receipt ──
     // This check CAN fail, because it compares two independent sources: pg_cron's own
     // record of what ran, and the receipts the runs wrote. A check that reads one
@@ -782,7 +818,16 @@ serve(async (req) => {
         requires_confirm: body.requires_confirm === true,
         policy_id: policy?.id ?? null,
         disposition: policy?.disposition ?? 'execute_after_approval',
-        status: policy?.disposition === 'manual_final_action' ? 'manual_action_ready' : 'awaiting_approval',
+        // auto_execute means the boundary already covers this. It is created approved
+        // and dispatched, appears in the auto log, and reaches Britt only on failure.
+        status: policy?.disposition === 'manual_final_action' ? 'manual_action_ready'
+              : policy?.disposition === 'auto_execute' ? 'approved'
+              : 'awaiting_approval',
+        decision_class: policy?.disposition === 'auto_execute' ? 'standing_policy' : 'founder_decision',
+        approved_at: policy?.disposition === 'auto_execute' ? new Date().toISOString() : null,
+        dispatched_at: policy?.disposition === 'auto_execute' ? new Date().toISOString() : null,
+        dispatch_deadline: policy?.disposition === 'auto_execute'
+          ? new Date(Date.now() + DISPATCH_DEADLINE_MIN * 60000).toISOString() : null,
         priority: Number(body.priority ?? 50),
         due_at: body.due_at ?? null,
         expires_at: body.expires_at ?? null,
@@ -793,6 +838,16 @@ serve(async (req) => {
         .upsert(row, { onConflict: 'idempotency_key' }).select('id, status').single()
       if (error) return dbError(error)
 
+      if (policy?.disposition === 'auto_execute')
+        await supa.from('drive_hub_auto_log').insert({
+          agent: auth.actor, action_type: type, policy_id: policy.id,
+          source: 'standing_policy',
+          summary: `${type} executed under standing policy without asking: ${str(body.title) || type}`,
+          source_record_id: str(body.source_record_id) || null,
+          evidence: { examined: 1, matched: 1, changed: 1, remaining: 0, errors: [],
+                      source_population: { policy: policy.id, disposition: 'auto_execute' }, complete: true },
+          detail: { idempotency_key: key, approval_id: saved.id },
+        })
       await logEvent(supa, saved.id, auth.actor, 'agent',
         existing ? 'updated' : 'created', existing?.status ?? null, saved.status,
         { fingerprint_changed: existing?.source_fingerprint !== row.source_fingerprint })
