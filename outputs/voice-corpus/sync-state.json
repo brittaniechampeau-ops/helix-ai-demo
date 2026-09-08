@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "chatgpt_feedback": {
+    "project_id": "g-p-6a1c7b99c28081918265952fe32c13a9",
+    "last_successful_sync_at": "2026-09-08T16:28:36Z",
+    "conversation_cursors": {
+      "6a807f94-59e8-83ea-831d-605fc20191ec": {
+        "updated_at": 1788880850.018077,
+        "newest_processed_turn_id": "eaa1be41-c162-4211-8d5f-3e79b7ba556f"
+      },
+      "6a9abab9-41bc-83e9-b4c1-520b7dec0f87": {
+        "updated_at": 1788525263.908498,
+        "newest_processed_turn_id": "63f9e31a-c559-4710-9fa1-4d38d3539b95"
+      },
+      "6a989be6-d7d4-83ea-b822-e411f46494ed": {
+        "updated_at": 1788386513.062476,
+        "newest_processed_turn_id": "e52958d3-40aa-4b95-bfbe-2e3291eceacb"
+      }
+    }
+  },
+  "linkedin_collection": {
+    "last_attempt_at": "2026-09-08T14:28:35Z",
+    "last_successful_collection_at": "2026-09-08T14:28:35Z",
+    "surface": "https://www.linkedin.com/in/britt-bowman-ai/recent-activity/all/",
+    "batch": "first 20 posts loaded; no pagination",
+    "newest_activity_observed": "2026-09-07",
+    "oldest_post_coverage": null,
+    "oldest_comment_coverage": null,
+    "historical_targets_complete": false,
+    "notes": "Authenticated read succeeded without warning, CAPTCHA, slowdown, or representational action. This batch established recent access and confirmed the story-first pattern in published posts; historical coverage was not advanced beyond the first visible batch."
+  }
+}

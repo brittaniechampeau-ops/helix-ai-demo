@@ -53,6 +53,9 @@ Deno.serve(async (req) => {
   else if (!SWEEP_SECRET || supplied !== SWEEP_SECRET) return json({ error: 'Unauthorized' }, 401)
   const started = new Date().toISOString()
   const errors: string[] = []
+  // Every run is identifiable. A receipt belongs to exactly one run, and a run with
+  // no receipt is detectable by absence rather than by nobody noticing.
+  const runId = `sweep-${started}-${crypto.randomUUID().slice(0, 8)}`
 
   const [counts, kit] = await Promise.all([
     bridge('/api/sync?counts=funnel'),
@@ -95,15 +98,50 @@ Deno.serve(async (req) => {
     .select('id, writer').maybeSingle()
   if (snapErr) errors.push(`snapshot: ${snapErr.message}`)
 
-  // A receipt every run, including a run that changed nothing.
-  await supa.from('drive_hub_auto_log').insert({
+  // A receipt every run, and the receipt is not optional bookkeeping. A run that
+  // cannot record what it did has not finished, and reporting success anyway is how
+  // one execution vanished from a 48-hour window without anything noticing: the
+  // insert's error was never read.
+  //
+  // Every source is named with how many were expected, so `complete: false` makes a
+  // zero here impossible to mistake for an answer.
+  const sources = ['funnel_counts', 'kit_stats']
+  const readFailures = errors.filter((e) => /^counts:|^kit:/.test(e)).length
+  const evidence = {
+    examined: sources.length - readFailures,
+    matched: Object.values(reading).filter((v) => v !== null).length,
+    changed: parked.length + (snap ? 1 : 0),
+    remaining: 0,
+    errors,
+    source_population: { sources, expected: sources.length, window_start: win },
+    complete: readFailures === 0,
+  }
+
+  const { error: receiptErr } = await supa.from('drive_hub_auto_log').insert({
     agent: 'cloud/funnel-sweep',
     action_type: 'collection',
+    run_id: runId,
+    source: triggerKind === 'scheduled' ? 'cloud/pg_cron' : 'cloud/manual',
+    evidence,
     summary: errors.length
       ? `Cloud sweep completed with ${errors.length} unreadable source(s). Counts that could not be read are null, not zero.`
       : `Cloud sweep read the funnel and parked ${parked.length} overdue item(s).`,
-    detail: { reading, parked: parked.length, errors, window_start: win, wrote_snapshot: !!snap },
+    detail: { reading, parked: parked.length, errors, window_start: win, wrote_snapshot: !!snap, run_id: runId },
   })
+
+  if (receiptErr) {
+    // A duplicate run_id is this same run recording itself twice, which is a retry
+    // and harmless. Anything else means the run left no evidence, and a run with no
+    // evidence must not report success.
+    const duplicate = /duplicate key|already exists/i.test(receiptErr.message)
+    if (!duplicate) {
+      return json({
+        ok: false, run_id: runId, evidence,
+        error: 'the receipt could not be written, so this run reports as failed',
+        detail: receiptErr.message, reading, parked: parked.length,
+      }, 500)
+    }
+  }
 
   // The 48-hour observation window starts itself on the first SCHEDULED success.
   // Nobody has to remember to begin it, and it cannot be begun early.
@@ -114,8 +152,8 @@ Deno.serve(async (req) => {
   } catch { /* not fatal */ }
 
   return json({
-    ok: errors.length === 0, window_start: win, wrote_snapshot: !!snap,
-    trigger_kind: triggerKind, vacation_test: vacation,
+    ok: errors.length === 0, run_id: runId, window_start: win, wrote_snapshot: !!snap,
+    trigger_kind: triggerKind, evidence, vacation_test: vacation,
     writer: snap?.writer ?? 'another writer already owned this window',
     reading, parked: parked.length, errors,
   })

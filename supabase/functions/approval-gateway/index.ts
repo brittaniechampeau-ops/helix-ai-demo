@@ -399,7 +399,7 @@ async function logEvent(supa: SupabaseClient, approval_id: string | null, actor:
 // ── Operations ────────────────────────────────────────────────────────────────
 
 const HUMAN_ONLY = new Set(['approve', 'decline', 'edit', 'snooze', 'cancel', 'retry', 'confirm_manual', 'acknowledge', 'attest_final'])
-const AGENT_ONLY = new Set(['upsert', 'supersede', 'record_auto', 'attach_evidence', 'claim_approved', 'submit_result', 'sweep', 'purge_test_items', 'approval_events', 'activation', 'cron_diagnostic', 'vacation_reconcile', 'capture_baseline', 'set_precondition', 'vacation_baseline'])
+const AGENT_ONLY = new Set(['upsert', 'supersede', 'record_auto', 'attach_evidence', 'claim_approved', 'submit_result', 'sweep', 'purge_test_items', 'approval_events', 'activation', 'cron_diagnostic', 'vacation_reconcile', 'capture_baseline', 'set_precondition', 'vacation_baseline', 'receipt_audit', 'boundary_check', 'external_attribution', 'receipts_per_window', 'structural_counters', 'attribute_external'])
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
@@ -426,18 +426,66 @@ serve(async (req) => {
     // queue. Scoped hard to source_system 'test-harness' so it can never reach a
     // real decision, and it cancels rather than deletes: the event history stands.
     if (op === 'purge_test_items') {
-      const { data, error } = await supa.from('drive_hub_approvals')
-        .select('id, idempotency_key').eq('source_system', 'test-harness')
-        .not('status', 'in', '("cancelled","completed","declined")')
-      if (error) return dbError(error)
-      let n = 0
-      for (const row of data ?? []) {
-        await supa.from('drive_hub_approvals')
-          .update({ status: 'cancelled', decided_at: new Date().toISOString() }).eq('id', row.id)
-        await logEvent(supa, row.id, auth.actor, 'agent', 'harness_item_retired', null, 'cancelled', {})
-        n++
+      // REPAIR 10, 2026-09-08. This counted ATTEMPTED updates, not confirmed ones: it
+      // incremented n after every update call without reading the error, so a purge
+      // that changed nothing reported the same shape as one that worked. It reported
+      // "retired 77" once and the queue still held 96 cards two days later.
+      //
+      // It now checks every write, paginates so a large queue is not silently
+      // truncated, and returns the evidence tuple. `remaining` is re-counted from the
+      // database afterwards, so the caller learns what is still there rather than
+      // what was hoped for.
+      const dryRun = body.dry_run === true
+      const PAGE = 200
+      let examined = 0, changed = 0
+      const errors: string[] = []
+      const ACTIVE = ['awaiting_approval', 'snoozed', 'manual_action_ready', 'failed', 'approved', 'executing', 'awaiting_confirmation']
+
+      for (let page = 0; page < 50; page++) {
+        const { data, error } = await supa.from('drive_hub_approvals')
+          .select('id, idempotency_key, status')
+          .eq('source_system', 'test-harness')
+          .in('status', ACTIVE)
+          .order('id').range(page * PAGE, page * PAGE + PAGE - 1)
+        if (error) { errors.push(`page ${page}: ${error.message}`); break }
+        if (!data || !data.length) break
+        examined += data.length
+        for (const row of data) {
+          if (dryRun) continue
+          const { data: upd, error: uerr } = await supa.from('drive_hub_approvals')
+            // `decided_at` does not exist on this table. The old purge set it anyway
+            // and never read the error, so every update failed while it reported
+            // success. That is why "retired 77" left 96 cards live two days later.
+            .update({ status: 'cancelled', declined_at: new Date().toISOString(),
+                      failure_reason: 'retired: created by the test harness, never a real decision' })
+            .eq('id', row.id).select('id').maybeSingle()
+          // A confirmed change is a returned row. Anything else is not a retirement.
+          if (uerr) { errors.push(`${row.idempotency_key}: ${uerr.message}`); continue }
+          if (!upd) { errors.push(`${row.idempotency_key}: update returned no row, so it is not confirmed retired`); continue }
+          await logEvent(supa, row.id, auth.actor, 'agent', 'harness_item_retired', row.status, 'cancelled', {})
+          changed++
+        }
+        if (data.length < PAGE) break
       }
-      return json({ ok: true, retired: n })
+
+      // Re-count from the source of truth. Not from arithmetic on what we intended.
+      const { count: remaining, error: cerr } = await supa.from('drive_hub_approvals')
+        .select('id', { count: 'exact', head: true })
+        .eq('source_system', 'test-harness').in('status', ACTIVE)
+      if (cerr) errors.push(`recount: ${cerr.message}`)
+
+      return json({
+        ok: errors.length === 0,
+        dry_run: dryRun,
+        examined, matched: examined, changed,
+        remaining: remaining ?? null,
+        errors,
+        source_population: { filter: "source_system = 'test-harness'", active_statuses: ACTIVE, page_size: PAGE },
+        // A purge that cannot re-count what is left has not proved anything.
+        complete: errors.length === 0 && remaining !== null && (dryRun || remaining === 0),
+        // Kept for callers that read the old field, but it is now confirmed, not attempted.
+        retired: changed,
+      })
     }
 
     // ── read-only: the decision record, for measuring whether anything has earned
@@ -528,6 +576,60 @@ serve(async (req) => {
       if (error) return dbError(error)
       const { data: all } = await supa.from('drive_test_preconditions').select('id, met, met_at').order('id')
       return json({ ok: true, preconditions: all })
+    }
+
+    if (op === 'boundary_check') {
+      const { data, error } = await supa.rpc('drive_vacation_boundary_check')
+      if (error) return dbError(error)
+      return json({ ok: true, ...data })
+    }
+
+    if (op === 'external_attribution') {
+      const { data, error } = await supa.rpc('drive_external_attribution_state')
+      if (error) return dbError(error)
+      return json({ ok: true, ...data })
+    }
+
+    if (op === 'receipts_per_window') {
+      const { data, error } = await supa.rpc('drive_receipts_per_window',
+        { p_settle_seconds: Number(body.settle_seconds ?? 120) })
+      if (error) return dbError(error)
+      return json({ ok: true, ...data })
+    }
+
+    if (op === 'structural_counters') {
+      const { data, error } = await supa.rpc('drive_structural_counters')
+      if (error) return dbError(error)
+      return json({ ok: true, counters: data })
+    }
+
+    // Attribute one external change. Fable required the +1 subscriber be recorded
+    // BEFORE any cleanup removes it, or the record loses its only chance.
+    if (op === 'attribute_external') {
+      const metric = str(body.metric)
+      const attribution = str(body.attribution)
+      if (!metric || !attribution) return json({ error: 'metric and attribution are required' }, 400)
+      const { data, error } = await supa.from('drive_test_external').insert({
+        metric, delta: Number(body.delta ?? 0), attribution,
+        rationale: str(body.rationale) || null,
+        reconciled: body.reconciled === true,
+      }).select('id, observed_at, metric, attribution, reconciled').single()
+      if (error) return dbError(error)
+      return json({ ok: true, recorded: data })
+    }
+
+    // ── read-only: does every scheduled run have a receipt ──
+    // This check CAN fail, because it compares two independent sources: pg_cron's own
+    // record of what ran, and the receipts the runs wrote. A check that reads one
+    // source and agrees with itself is not an audit.
+    if (op === 'receipt_audit') {
+      const since = str(body.since) || null
+      const settle = Number(body.settle_seconds ?? 120)
+      const { data, error } = since
+        ? await supa.rpc('drive_receipt_audit', { p_since: since, p_settle_seconds: settle })
+        : await supa.rpc('drive_receipt_audit', { p_settle_seconds: settle })
+      if (error) return dbError(error)
+      return json({ ok: true, ...data })
     }
 
     // ── read-only: the activation dashboard ──
