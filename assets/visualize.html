@@ -2263,7 +2263,9 @@ function restoreUI() {
   if (VEC.ref && (VEC.ref.generated || (VEC.ref.contacts || []).length)) reached = Math.max(reached, 2);
   if (VEC.cred && (VEC.cred.generated || (VEC.cred.cases || []).length)) reached = Math.max(reached, 3);
   if (VEC.ops && VEC.ops.generated) reached = Math.max(reached, 4);
-  if (VEC.plan && VEC.plan.generated) reached = Math.max(reached, 5);
+  // A generated sequence completes Step 6 (index 5), so the next destination,
+  // Growth Command Center (index 6), must be reachable after a reload.
+  if (VEC.plan && VEC.plan.generated) reached = Math.max(reached, 6);
   PHASE = reached;
   // Step nav unlock — every step up to the furthest reached becomes clickable.
   for (let i = 0; i <= 7; i++) {
@@ -3312,6 +3314,9 @@ function generatePlan() {
   document.getElementById('planTableWrap').innerHTML = html;
   VEC.plan.generated = true;
   document.getElementById('nav-5').classList.add('done');
+  // The tracker lives in Growth Command Center. Unlock it as soon as the
+  // implementation sequence exists so both tracker buttons have a valid target.
+  unlockStep(6);
   const planEmpty = document.getElementById('planCtaEmpty');
   const planGen   = document.getElementById('planCtaGenerated');
   if (planEmpty) planEmpty.style.display = 'none';
