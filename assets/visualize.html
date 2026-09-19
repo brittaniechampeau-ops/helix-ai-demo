@@ -972,6 +972,19 @@
           <label class="form-label">Proof point (a number or outcome that validates the one-line)</label>
           <input class="form-input" id="pos-proof" placeholder="e.g. 87% of our engagements hit adoption targets within 90 days of go-live." title="Proof point: a number or outcome that validates the one-line. e.g. 87% of our engagements hit adoption targets within 90 days of go-live." />
         </div>
+        <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--border)">
+          <div class="section-label" style="margin-bottom:12px">Ideal Client Profile</div>
+          <div class="three-col">
+            <div class="form-group"><label class="form-label">Best-fit organization</label><textarea class="form-textarea" id="icp-organization" style="min-height:92px" placeholder="Sector, size, operating model, geography, and maturity"></textarea></div>
+            <div class="form-group"><label class="form-label">Economic buyer + work owners</label><textarea class="form-textarea" id="icp-buyers" style="min-height:92px" placeholder="Who controls budget, who sponsors the work, and who owns implementation"></textarea></div>
+            <div class="form-group"><label class="form-label">Buying triggers</label><textarea class="form-textarea" id="icp-triggers" style="min-height:92px" placeholder="The event, deadline, decision, or risk that makes action urgent"></textarea></div>
+          </div>
+          <div class="three-col">
+            <div class="form-group"><label class="form-label">Required conditions</label><textarea class="form-textarea" id="icp-required" style="min-height:92px" placeholder="Data, owner, budget, access, and capacity required for success"></textarea></div>
+            <div class="form-group"><label class="form-label">Disqualifiers</label><textarea class="form-textarea" id="icp-disqualifiers" style="min-height:92px" placeholder="Who is not ready or what Lucent will not be hired to do"></textarea></div>
+            <div class="form-group"><label class="form-label">Commercial path</label><textarea class="form-textarea" id="icp-commercial" style="min-height:92px" placeholder="How the right account is reached and converted into the first paid engagement"></textarea></div>
+          </div>
+        </div>
       </div>
 
       <div class="card">
@@ -1738,7 +1751,7 @@ let PORTFOLIO_STATE = null; // authoritative recommendation and reviewed evidenc
 const VEC = {
   practice: { name: '', founder: '', email: '', website: '' },
   diag: { size: '', who: '', market: '', motion: '', archetype: '', operatingProfile: null, crm: [], pm: [], storage: [], comms: [], track: '', tier: '', weights: {} },
-  pos:  { buyer: '', constraint: '', oneline: '', proof: '', offer1: {}, offer2: {}, offer3: {}, generated: false },
+  pos:  { buyer: '', constraint: '', oneline: '', proof: '', icp: {}, offer1: {}, offer2: {}, offer3: {}, generated: false },
   ref:  { contacts: [], generated: false },
   cred: { cases: [], placements: [], generated: false },
   ops:  { duration: '', cadence: '', refAsk: true, caseDraft: true, nps: false, generated: false },
@@ -2239,6 +2252,11 @@ function restoreUI() {
   ['buyer','constraint','oneline','proof'].forEach(k => {
     const el = document.getElementById('pos-' + k);
     if (el && pos[k]) el.value = pos[k];
+  });
+  const icp = pos.icp || {};
+  ['organization','buyers','triggers','required','disqualifiers','commercial'].forEach(k => {
+    const el = document.getElementById('icp-' + k);
+    if (el && icp[k]) el.value = icp[k];
   });
   [1,2,3].forEach(i => {
     const o = pos['offer' + i] || {};
@@ -2794,6 +2812,10 @@ async function runPositioning() {
   VEC.pos.constraint = constr;
   VEC.pos.oneline    = oneline;
   VEC.pos.proof      = document.getElementById('pos-proof').value.trim();
+  VEC.pos.icp = {};
+  ['organization','buyers','triggers','required','disqualifiers','commercial'].forEach(k => {
+    VEC.pos.icp[k] = document.getElementById('icp-' + k).value.trim();
+  });
   VEC.pos.offer1     = { name: document.getElementById('offer1-name').value, price: document.getElementById('offer1-price').value, duration: document.getElementById('offer1-duration').value, desc: document.getElementById('offer1-desc').value };
   VEC.pos.offer2     = { name: document.getElementById('offer2-name').value, price: document.getElementById('offer2-price').value, duration: document.getElementById('offer2-duration').value, desc: document.getElementById('offer2-desc').value };
   VEC.pos.offer3     = { name: document.getElementById('offer3-name').value, price: document.getElementById('offer3-price').value, duration: document.getElementById('offer3-duration').value, desc: document.getElementById('offer3-desc').value };
@@ -2837,6 +2859,13 @@ TARGET BUYER: ${p.buyer}
 THE REAL CONSTRAINT THEY FACE: ${p.constraint}
 THEIR CURRENT ONE-LINE: ${p.oneline}
 PROOF POINT: ${p.proof || '(none provided)'}
+IDEAL CLIENT PROFILE:
+- Best-fit organization: ${p.icp?.organization || '(not provided)'}
+- Economic buyer and work owners: ${p.icp?.buyers || '(not provided)'}
+- Buying triggers: ${p.icp?.triggers || '(not provided)'}
+- Required conditions: ${p.icp?.required || '(not provided)'}
+- Disqualifiers: ${p.icp?.disqualifiers || '(not provided)'}
+- Commercial path: ${p.icp?.commercial || '(not provided)'}
 
 OFFERS:
 1. ${p.offer1.name || '(unnamed)'} — ${p.offer1.price || '?'}, ${p.offer1.duration || '?'} — ${p.offer1.desc || '(no description)'}
@@ -3232,7 +3261,7 @@ function renderIntakeResult() {
 
 // ─── STEP 5: EVIDENCE-BASED IMPLEMENTATION SEQUENCE ─────
 function authoritativeRecommendation(){const p=PORTFOLIO_STATE||{},active=(p.enhancements||[]).filter(x=>x.advisorDecision==='accepted'&&!['Rejected','Complete'].includes(x.status)),priority={Critical:4,High:3,Medium:2,Low:1};if(active.length)return active.sort((a,b)=>(priority[b.priority]||0)-(priority[a.priority]||0)||String(b.updatedAt||b.advisorAcceptedAt||'').localeCompare(String(a.updatedAt||a.advisorAcceptedAt||'')))[0];return(p.proposals||[]).filter(x=>x.decision==='pending').sort((a,b)=>(a.rank||99)-(b.rank||99)||(b.score||0)-(a.score||0))[0]||null}
-function recommendationRows(rec){const seq=(rec.implementationSequence||[]).filter(x=>x&&x.action);if(seq.length)return seq.map((x,i)=>[i<2?'Foundation':i===2?'Activation':'Optimization',i===0&&rec.decision==='pending'?'WAIT':'DO',x.gate||'Decision',x.action]);const prerequisites=(rec.prerequisites||[]).filter(Boolean),milestones=(rec.milestones||[]).map(x=>typeof x==='string'?x:x.title).filter(Boolean),measure=rec.measure||'the agreed business measure';return[['Foundation',rec.decision==='pending'?'WAIT':'DO','Decision',rec.decision==='pending'?'Advisor accepts or revises the ranked recommendation.':`Confirm the binding constraint: ${rec.constraint||'recorded recommendation constraint'}`],...prerequisites.map(x=>['Foundation','DO','Prerequisite',x]),['Activation','DO','Intervention',rec.recommendation||'Run the approved bounded intervention.'],...milestones.map((x,i)=>[i===milestones.length-1?'Optimization':'Activation','DO',i===milestones.length-1?'Measurement':'Milestone',x]),['Optimization','DO','Outcome decision',`Review ${measure.toLowerCase()} and record continue, revise, stop, or expand.`]]}
+function recommendationRows(rec){const seq=(rec.implementationSequence||[]).filter(x=>x&&x.action);if(seq.length)return seq.map((x,i)=>[x.phase||x.stage||(i<2?'Foundation':i===2?'Activation':'Optimization'),i===0&&rec.decision==='pending'?'WAIT':'DO',x.gate||x.week||'Decision',x.action,x]);const prerequisites=(rec.prerequisites||[]).filter(Boolean),milestones=(rec.milestones||[]).map(x=>typeof x==='string'?x:x.title).filter(Boolean),measure=rec.measure||'the agreed business measure';return[['Foundation',rec.decision==='pending'?'WAIT':'DO','Decision',rec.decision==='pending'?'Advisor accepts or revises the ranked recommendation.':`Confirm the binding constraint: ${rec.constraint||'recorded recommendation constraint'}`,{}],...prerequisites.map(x=>['Foundation','DO','Prerequisite',x,{}]),['Activation','DO','Intervention',rec.recommendation||'Run the approved bounded intervention.',{}],...milestones.map((x,i)=>[i===milestones.length-1?'Optimization':'Activation','DO',i===milestones.length-1?'Measurement':'Milestone',x,{}]),['Optimization','DO','Outcome decision',`Review ${measure.toLowerCase()} and record continue, revise, stop, or expand.`,{}]]}
 function renderRecommendationRequired(){const wrap=document.getElementById('planTableWrap');if(wrap)wrap.innerHTML='<div class="step-cta-copy" style="padding:18px"><strong>No authoritative recommendation is available.</strong><br>Visualize will not generate a Track A-C substitute. Build and approve the ranked intervention in Recommendations.</div>';VEC.plan.generated=false;VEC.plan.source='recommendation-required';const empty=document.getElementById('planCtaEmpty'),generated=document.getElementById('planCtaGenerated');if(empty)empty.style.display='';if(generated)generated.style.display='none';renderPlanTracker()}
 function generatePlan() {
   const plans = {
@@ -4389,7 +4418,7 @@ function renderPlanTracker() {
   const recommendation=authoritativeRecommendation(),trackerEl=document.getElementById('planTracker'),pctEl=document.getElementById('planProgressPct');
   if(!trackerEl||!pctEl)return;
   if(!recommendation){pctEl.textContent='';trackerEl.innerHTML='<div class="pattern-warning">No advisor recommendation is available. The legacy Track A-C tracker has been disabled.</div>';return}
-  const fingerprint=recommendation.sourceFingerprint||recommendation.fingerprint||recommendation.id||'recommendation',rows=recommendationRows(recommendation),groups={Foundation:[],Activation:[],Optimization:[]};rows.forEach((row,index)=>groups[row[0]].push({id:`${fingerprint}-${index}`,task:row[3],how:[]}));const titles={Foundation:'Foundation: validate and establish',Activation:'Activation: run the bounded intervention',Optimization:'Optimization: measure and decide'},plan={phases:Object.keys(groups).filter(name=>groups[name].length).map(name=>({title:titles[name],items:groups[name]}))};
+  const fingerprint=recommendation.sourceFingerprint||recommendation.fingerprint||recommendation.id||'recommendation',rows=recommendationRows(recommendation),groups={Foundation:[],Activation:[],Optimization:[]};rows.forEach((row,index)=>{const source=row[4]||{};const phase=groups[row[0]]?row[0]:'Activation';groups[phase].push({id:`${fingerprint}-${index}`,task:row[3],how:source.how||[],week:source.week||'',owner:source.ownerRole||source.owner||'',measure:source.measure||'',done:source.definitionOfDone||''})});const titles={Foundation:'Foundation: choose and prepare',Activation:'Activation: create qualified demand',Optimization:'Conversion: close and learn'},plan={phases:Object.keys(groups).filter(name=>groups[name].length).map(name=>({title:titles[name],items:groups[name]}))};
   const checked = VEC.plan.checked || {};
   const allItems = plan.phases.flatMap(p => p.items);
   const doneCount = allItems.filter(i => checked[i.id]).length;
@@ -4408,7 +4437,8 @@ function renderPlanTracker() {
             <input type="checkbox" ${done ? 'checked' : ''} onchange="toggleMilestone('${item.id}', this.checked)"
               style="margin-top:2px;accent-color:var(--accent);flex-shrink:0;width:14px;height:14px;cursor:pointer">
             <div style="flex:1;min-width:0">
-              <span style="font-size:13px;color:${done ? 'var(--txt3)' : 'var(--txt)'};text-decoration:${done ? 'line-through' : 'none'};line-height:1.5">${item.task}</span>
+              <span style="font-size:13px;color:${done ? 'var(--txt3)' : 'var(--txt)'};text-decoration:${done ? 'line-through' : 'none'};line-height:1.5">${item.week ? `<strong>${escHtml(item.week)}:</strong> ` : ''}${escHtml(item.task)}</span>
+              ${(item.owner||item.measure||item.done) ? `<div style="font-size:11px;color:var(--txt3);line-height:1.5;margin-top:4px">${item.owner?`<strong>Owner:</strong> ${escHtml(item.owner)} &nbsp;`:''}${item.measure?`<strong>Measure:</strong> ${escHtml(item.measure)}`:''}${item.done?`<br><strong>Done:</strong> ${escHtml(item.done)}`:''}</div>`:''}
               ${howto ? `<button onclick="toggleHowTo('${item.id}')" style="display:block;margin-top:4px;font-size:11px;color:var(--accent);background:none;border:none;padding:0;cursor:pointer;font-family:inherit;text-align:left">How? ↓</button>` : ''}
               ${howto ? `<div id="howto-${item.id}" style="display:none;margin-top:8px;padding:10px 12px;background:var(--surface2);border-radius:8px;border-left:2px solid var(--accent)">
                 ${howto.steps.map((s, i) => `<div style="display:flex;gap:8px;padding:4px 0;font-size:12px;color:var(--txt2);line-height:1.5"><span style="color:var(--accent);font-weight:700;flex-shrink:0;min-width:16px">${i+1}.</span><span>${s}</span></div>`).join('')}
@@ -4891,6 +4921,8 @@ function downloadArtifact(type) {
 
   if (type === 'positioning') {
     const ai = pos.ai || null;
+    const icp = pos.icp || {};
+    const icpHtml = ['organization','buyers','triggers','required','disqualifiers','commercial'].some(k=>icp[k]) ? `<h2>Ideal Client Profile</h2><table><tr><th>Best-fit organization</th><td>${icp.organization||'—'}</td></tr><tr><th>Economic buyer + work owners</th><td>${icp.buyers||'—'}</td></tr><tr><th>Buying triggers</th><td>${icp.triggers||'—'}</td></tr><tr><th>Required conditions</th><td>${icp.required||'—'}</td></tr><tr><th>Disqualifiers</th><td>${icp.disqualifiers||'—'}</td></tr><tr><th>Commercial path</th><td>${icp.commercial||'—'}</td></tr></table>` : '';
     const pillarsHtml = (ai && Array.isArray(ai.pillars) && ai.pillars.length)
       ? `<h2>Messaging Pillars</h2>${ai.pillars.map(pl => `<h3>${pl.title}</h3><p>${pl.body}</p>`).join('')}` : '';
     dlDoc(`${slug}_positioning_canvas.doc`, 'Positioning Canvas',
@@ -4898,6 +4930,7 @@ function downloadArtifact(type) {
       <p class="meta">${p.name} &nbsp;·&nbsp; ${p.founder}</p>
       ${ai && ai.positioning_statement ? `<h2>Positioning Statement</h2><div class="highlight"><p>${ai.positioning_statement}</p></div>` : ''}
       <h2>The Buyer</h2><p>${pos.buyer || '—'}</p>
+      ${icpHtml}
       <h2>The Real Constraint</h2><p>${pos.constraint || '—'}</p>
       <h2>The One-Line</h2><div class="highlight"><p style="font-size:13pt;font-style:italic">${(ai && ai.refined_oneline) || pos.oneline || '—'}</p></div>
       <h2>Proof Point</h2><p>${pos.proof || '—'}</p>
@@ -5121,7 +5154,7 @@ function downloadBundle() {
   logEvent('artifact_downloaded', { type: 'bundle' });
   const p = VEC.practice, pos = VEC.pos, d = VEC.diag;
   const slug = (p.name || 'practice').toLowerCase().replace(/\s+/g,'-');
-  const o1 = pos.offer1||{}, o2 = pos.offer2||{}, o3 = pos.offer3||{};
+  const o1 = pos.offer1||{}, o2 = pos.offer2||{}, o3 = pos.offer3||{}, icp=pos.icp||{};
   const offerRow = (o, label) => o.name ? `<tr><td><strong>${o.name}</strong><br><span style="font-size:9pt;color:#6b7280">${label}</span></td><td>${o.price||'—'}</td><td>${o.duration||'—'}</td><td>${o.desc||'—'}</td></tr>` : '';
   dlDoc(`${slug}_vector_growth_bundle.doc`, `${p.name || 'Practice'} — Growth System`,
     `<h1>${p.name || 'Practice'} — Growth System</h1>
@@ -5132,6 +5165,13 @@ function downloadBundle() {
     <p><strong>Buyer:</strong> ${pos.buyer||'—'}</p>
     <p><strong>Real Constraint:</strong> ${pos.constraint||'—'}</p>
     <p><strong>Proof:</strong> ${pos.proof||'—'}</p>
+    <h3>Ideal Client Profile</h3>
+    <p><strong>Best-fit organization:</strong> ${icp.organization||'—'}</p>
+    <p><strong>Economic buyer + work owners:</strong> ${icp.buyers||'—'}</p>
+    <p><strong>Buying triggers:</strong> ${icp.triggers||'—'}</p>
+    <p><strong>Required conditions:</strong> ${icp.required||'—'}</p>
+    <p><strong>Disqualifiers:</strong> ${icp.disqualifiers||'—'}</p>
+    <p><strong>Commercial path:</strong> ${icp.commercial||'—'}</p>
 
     <h2>Packaged Offers</h2>
     <table><tr><th>Offer</th><th>Price</th><th>Duration</th><th>What They Get</th></tr>
@@ -5964,7 +6004,7 @@ function adminNewClient() {
   document.getElementById('adminHome').style.display = 'none';
   document.getElementById('btnBackAdmin').style.display = '';
   // Clear current VEC state for fresh client
-  Object.assign(VEC, { practice:{name:'',founder:'',email:'',website:''}, diag:{size:'',who:'',market:'',motion:'',archetype:'expert-practice',constraint:'',crm:[],pm:[],storage:[],comms:[],track:'',weights:{}}, pos:{buyer:'',constraint:'',oneline:'',proof:'',offer1:{},offer2:{},offer3:{},generated:false}, ref:{contacts:[],scripts:[],generated:false}, cred:{placements:[],cases:[],generated:false}, ops:{duration:'',refAsk:true,caseDraft:true,nps:false,cadence:'weekly',generated:false}, plan:{generated:false,checked:{}} });
+  Object.assign(VEC, { practice:{name:'',founder:'',email:'',website:''}, diag:{size:'',who:'',market:'',motion:'',archetype:'expert-practice',constraint:'',crm:[],pm:[],storage:[],comms:[],track:'',weights:{}}, pos:{buyer:'',constraint:'',oneline:'',proof:'',icp:{},offer1:{},offer2:{},offer3:{},generated:false}, ref:{contacts:[],scripts:[],generated:false}, cred:{placements:[],cases:[],generated:false}, ops:{duration:'',refAsk:true,caseDraft:true,nps:false,cadence:'weekly',generated:false}, plan:{generated:false,checked:{}} });
   PHASE = 0; restoreUI(); updateSidebar();
   openTranscriptImport();
 }

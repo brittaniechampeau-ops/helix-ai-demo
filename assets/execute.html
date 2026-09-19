@@ -617,9 +617,9 @@ function authoritativeRecommendation() {
 function recommendationRows(rec) {
   const seq = (rec.implementationSequence || []).filter(x => x && x.action);
   if (seq.length) return seq.map((x,i) => [
-    i < 2 ? 'Foundation' : i === 2 ? 'Activation' : 'Optimization',
+    x.phase || x.stage || (i < 2 ? 'Foundation' : i === 2 ? 'Activation' : 'Optimization'),
     i === 0 && rec.decision === 'pending' ? 'WAIT' : 'DO',
-    x.gate || 'Decision',
+    x.gate || x.week || 'Decision',
     x.action,
     x
   ]);
@@ -647,7 +647,10 @@ function recommendationWork() {
     focus,
     action,
     measure: source?.measure || primaryMeasure,
-    ownerRole: rec.owner || (phase === 'Foundation' ? 'Decision owner' : 'Accountable owner'),
+    ownerRole: source?.ownerRole || source?.owner || rec.owner || (phase === 'Foundation' ? 'Decision owner' : 'Accountable owner'),
+    dueDate: source?.dueDate || source?.due || '',
+    baseline: source?.baseline || '',
+    target: source?.target || '',
     cadence: source?.cadence || (phase === 'Foundation' ? 'Weekly' : phase === 'Activation' ? 'Biweekly' : 'Monthly'),
     definitionOfDone: source?.definitionOfDone || `${action} Evidence is attached and the result is reviewed against ${String(primaryMeasure).toLowerCase()}.`,
     sourceFingerprint: fingerprint,
@@ -985,12 +988,12 @@ function buildWorkflowForm(asset, saved) {
     <div class="form-grid single">${fld('title', 'Work Item', inp('title', s('title', asset.action), 'Required action'))}</div>
     <div class="form-grid">
       ${fld('status', 'Status', sel('status', ['Planned','In Progress','Blocked','Complete'], s('status',asset.upstreamComplete ? 'Complete' : 'Planned')))}
-      ${fld('owner', 'Accountable Owner', inp('owner', s('owner',''), asset.ownerRole))}
-      ${fld('due_date', 'Decision or Completion Date', dateinp('due_date', s('due_date','')))}
+      ${fld('owner', 'Accountable Owner', inp('owner', s('owner',asset.ownerRole), asset.ownerRole))}
+      ${fld('due_date', 'Decision or Completion Date', dateinp('due_date', s('due_date',asset.dueDate)))}
       ${fld('cadence', 'Review Cadence', sel('cadence', ['Weekly','Biweekly','Monthly','Quarterly'], s('cadence',asset.cadence)))}
       ${fld('measure', 'Primary Measure', inp('measure', s('measure',asset.measure), 'Observable measure'))}
-      ${fld('baseline', 'Baseline', inp('baseline', s('baseline',''), 'Current result'))}
-      ${fld('target', 'Target', inp('target', s('target',''), 'Target result and date'))}
+      ${fld('baseline', 'Baseline', inp('baseline', s('baseline',asset.baseline), 'Current result'))}
+      ${fld('target', 'Target', inp('target', s('target',asset.target), 'Target result and date'))}
       ${fld('decision', 'Decision', sel('decision', ['Not decided','Continue','Revise','Stop','Expand'], s('decision','Not decided')))}
     </div>
   </div>
