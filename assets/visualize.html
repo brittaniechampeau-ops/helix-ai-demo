@@ -2710,6 +2710,13 @@ async function draftPositioning(force = false) {
       fill('constraint', 'pos-constraint', draft.constraint);
       fill('oneline', 'pos-oneline', draft.oneline);
       fill('proof', 'pos-proof', draft.proof);
+      if (draft.icp && typeof draft.icp === 'object') {
+        if (!VEC.pos.icp || force) VEC.pos.icp = {};
+        ['organization','buyers','triggers','required','disqualifiers','commercial'].forEach(k => {
+          const val = draft.icp[k];
+          if (val && (force || !VEC.pos.icp[k])) { VEC.pos.icp[k] = val; set('icp-' + k, val); }
+        });
+      }
       // Offers — extracted from the carried materials when present, else a sensible 3-tier ladder.
       if (Array.isArray(draft.offers)) {
         ['offer1', 'offer2', 'offer3'].forEach((k, i) => {
@@ -2747,9 +2754,17 @@ Return ONLY valid JSON (no fences): {
   "constraint": "the real thing blocking that buyer's progress (1-2 sentences)",
   "oneline": "what they do and for whom, no jargon (one sentence)",
   "proof": "a proof-point they can drop a real number into",
+  "icp": {
+    "organization": "sector, geography, size or revenue range, operating model, and maturity",
+    "buyers": "economic buyer, executive sponsor, and functional work owner",
+    "triggers": "specific events, deadlines, decisions, or risks that create urgency",
+    "required": "data, budget, authority, access, and implementation capacity required",
+    "disqualifiers": "conditions that make the account unready plus work that is out of scope",
+    "commercial": "primary acquisition path and the paid first transaction"
+  },
   "offers": [ { "name": "offer name", "price": "$ or range", "duration": "e.g. 3 weeks", "desc": "one sentence" } ]
 }
-Return exactly 3 offers, ordered entry → core → expansion. Do not invent consulting retainers for product, field-service, or enterprise organizations.`;
+Return exactly 3 offers, ordered entry → core → expansion. Make the ICP usable as a qualification rule, not a broad audience description. Distinguish the economic buyer from the person who will own the work. Do not invent consulting retainers for product, field-service, or enterprise organizations.`;
   const user = `ORGANIZATION: ${p.name || 'the organization'}${p.founder ? ' (leader: ' + p.founder + ')' : ''}
 OPERATING ARCHETYPE: ${archetype.label} — ${archetype.description}
 INDUSTRY: ${p.industry || dc.industry || 'unknown'}
@@ -2807,6 +2822,8 @@ async function runPositioning() {
   const constr = document.getElementById('pos-constraint').value.trim();
   const oneline = document.getElementById('pos-oneline').value.trim();
   if (!buyer || !constr || !oneline) { showToast('Fill in buyer, constraint, and one-line before generating'); return; }
+  const missingIcp = ['organization','buyers','triggers','required','disqualifiers','commercial'].filter(k => !document.getElementById('icp-' + k).value.trim());
+  if (missingIcp.length) { showToast('Complete the full ICP before generating: organization, buyers, triggers, required conditions, disqualifiers, and commercial path'); return; }
 
   VEC.pos.buyer      = buyer;
   VEC.pos.constraint = constr;
