@@ -30,6 +30,11 @@
     try { safeLocalStorage()?.setItem(key, String(value)); } catch (_) {}
   }
 
+  function readUrlEngagement() {
+    try { return new URLSearchParams(global.location.search).get('org') || new URLSearchParams(global.location.search).get('engagement') || ''; }
+    catch (_) { return ''; }
+  }
+
   function createAuth(supabase) {
     return Object.freeze({
       getSession: () => supabase.auth.getSession(),
@@ -51,7 +56,8 @@
       init(session) {
         this.session = session || null;
         this.userEmail = session?.user?.email || '';
-        const engagementId = readLocal(KEYS.engagementId);
+        const engagementId = readUrlEngagement() || readLocal(KEYS.engagementId);
+        if (engagementId) writeLocal(KEYS.engagementId, engagementId);
         this.orgId = engagementId || this.userEmail || 'default';
         if (engagementId && tool) writeLocal('drive_last_tool_' + engagementId, tool);
         return this.orgId;
@@ -80,7 +86,7 @@
         const activeSession = session || this.session;
         if (!this.orgId) this.init(activeSession);
         const user = activeSession?.user || null;
-        const engagementId = readLocal(KEYS.engagementId) || null;
+        const engagementId = readUrlEngagement() || readLocal(KEYS.engagementId) || null;
         let engagement = null;
         let members = [];
         let isAdmin = false;
@@ -150,8 +156,27 @@
   function navigate(tool, engagementId) {
     const url = TOOL_URLS[tool];
     if (!url) throw new Error('Unknown DRIVE tool: ' + tool);
-    if (engagementId) writeLocal(KEYS.engagementId, engagementId);
-    global.location.href = url;
+    const activeId = engagementId || readUrlEngagement() || readLocal(KEYS.engagementId);
+    if (activeId) writeLocal(KEYS.engagementId, activeId);
+    global.location.href = activeId ? `${url}?org=${encodeURIComponent(activeId)}` : url;
+  }
+
+  function decorateToolLinks() {
+    const activeId = readUrlEngagement() || readLocal(KEYS.engagementId);
+    if (!activeId || !global.document) return;
+    global.document.querySelectorAll('a[href]').forEach(link => {
+      try {
+        const target = new URL(link.getAttribute('href'), global.location.origin);
+        if (target.origin !== global.location.origin || !Object.values(TOOL_URLS).includes(target.pathname)) return;
+        target.searchParams.set('org', activeId);
+        link.setAttribute('href', target.pathname + target.search + target.hash);
+      } catch (_) {}
+    });
+  }
+
+  if (global.document) {
+    if (global.document.readyState === 'loading') global.document.addEventListener('DOMContentLoaded', decorateToolLinks);
+    else decorateToolLinks();
   }
 
   global.DRIVE = Object.freeze({
@@ -162,5 +187,6 @@
     createStore,
     navigate,
     readLocal,
+    readUrlEngagement,
   });
 })(window);
