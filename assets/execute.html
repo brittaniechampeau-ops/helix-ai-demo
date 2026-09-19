@@ -455,6 +455,10 @@ const TOKEN_OPTIONS = ['{{first_name}}', '{{last_name}}', '{{company}}', '{{titl
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
 let practiceData = {};
+let positioningData = {};
+let visualizeState = {};
+let visualizePlan = {};
+let portfolioState = null;
 let cdna         = {};
 let taxonomy     = {};
 let intelSignals = [];
@@ -475,7 +479,10 @@ async function loadDRIVEData(engagementContext = {}) {
   try {
     const vecData = await OrgStore.load('org_vec_state');
     if (vecData) {
-      practiceData = vecData.practice || vecData.pos || {};
+      visualizeState = vecData;
+      practiceData = vecData.practice || {};
+      positioningData = vecData.pos || {};
+      visualizePlan = vecData.plan || {};
       cdna = vecData.cdna || {};
       operatingArchetype = vecData.diag?.archetype || operatingArchetype;
       motionTrack = vecData.diag?.track || motionTrack;
@@ -484,13 +491,20 @@ async function loadDRIVEData(engagementContext = {}) {
       const vecRaw = localStorage.getItem('vec_v1');
       if (vecRaw) {
         const v = JSON.parse(vecRaw);
+        visualizeState = v.VEC || {};
         practiceData = v.VEC?.practice || {};
+        positioningData = v.VEC?.pos || {};
+        visualizePlan = v.VEC?.plan || {};
         cdna = v.VEC?.cdna || {};
         operatingArchetype = v.VEC?.diag?.archetype || operatingArchetype;
         motionTrack = v.VEC?.diag?.track || motionTrack;
       }
     }
   } catch(e) { console.warn('Failed to load upstream data:', e); }
+
+  try {
+    portfolioState = await OrgStore.load('org_gtm_portfolio') || null;
+  } catch(e) { console.warn('Failed to load recommendation:', e); }
 
   try {
     const discovery = await OrgStore.load('org_discover') || {};
@@ -534,10 +548,12 @@ function getPracticeName() {
 }
 
 function getOffers() {
-  const o = [];
-  if (practiceData.offer1 || cdna.offer1) o.push(practiceData.offer1 || cdna.offer1);
-  if (practiceData.offer2 || cdna.offer2) o.push(practiceData.offer2 || cdna.offer2);
-  if (practiceData.offer3 || cdna.offer3) o.push(practiceData.offer3 || cdna.offer3);
+  const offerName = value => typeof value === 'string' ? value : value?.name || '';
+  const o = [
+    offerName(positioningData.offer1 || practiceData.offer1 || cdna.offer1),
+    offerName(positioningData.offer2 || practiceData.offer2 || cdna.offer2),
+    offerName(positioningData.offer3 || practiceData.offer3 || cdna.offer3),
+  ].filter(Boolean);
   return o.length ? o : DEFAULT_OFFERS;
 }
 
@@ -548,7 +564,7 @@ function getChannels() {
   return DEFAULT_CHANNELS;
 }
 
-function getPersona() { return cdna.buyer_persona || DEFAULT_PERSONA; }
+function getPersona() { return positioningData.buyer || cdna.buyer_persona || DEFAULT_PERSONA; }
 
 function getThemes() {
   if (cdna.content_themes) {
@@ -585,9 +601,63 @@ function damFolder(practiceArea, assetType) {
 }
 
 // ─── BUILD ASSET LIST ─────────────────────────────────────────────────────────
+function authoritativeRecommendation() {
+  const p = portfolioState || {};
+  const active = (p.enhancements || []).filter(x => x.advisorDecision === 'accepted' && !['Rejected','Complete'].includes(x.status));
+  const priority = { Critical:4, High:3, Medium:2, Low:1 };
+  if (active.length) return active.sort((a,b) =>
+    (priority[b.priority] || 0) - (priority[a.priority] || 0) ||
+    String(b.updatedAt || b.advisorAcceptedAt || '').localeCompare(String(a.updatedAt || a.advisorAcceptedAt || ''))
+  )[0];
+  return (p.proposals || []).filter(x => x.decision === 'pending').sort((a,b) =>
+    (a.rank || 99) - (b.rank || 99) || (b.score || 0) - (a.score || 0)
+  )[0] || null;
+}
+
+function recommendationRows(rec) {
+  const seq = (rec.implementationSequence || []).filter(x => x && x.action);
+  if (seq.length) return seq.map((x,i) => [
+    i < 2 ? 'Foundation' : i === 2 ? 'Activation' : 'Optimization',
+    i === 0 && rec.decision === 'pending' ? 'WAIT' : 'DO',
+    x.gate || 'Decision',
+    x.action,
+    x
+  ]);
+  const prerequisites = (rec.prerequisites || []).filter(Boolean);
+  const milestones = (rec.milestones || []).map(x => typeof x === 'string' ? x : x.title).filter(Boolean);
+  const measure = rec.measure || 'the agreed business measure';
+  return [
+    ['Foundation', rec.decision === 'pending' ? 'WAIT' : 'DO', 'Decision', rec.decision === 'pending' ? 'Advisor accepts or revises the ranked recommendation.' : `Confirm the binding constraint: ${rec.constraint || 'recorded recommendation constraint'}`, {}],
+    ...prerequisites.map(x => ['Foundation','DO','Prerequisite',x,{}]),
+    ['Activation','DO','Intervention',rec.recommendation || 'Run the approved bounded intervention.',{}],
+    ...milestones.map((x,i) => [i === milestones.length - 1 ? 'Optimization' : 'Activation','DO',i === milestones.length - 1 ? 'Measurement' : 'Milestone',x,{}]),
+    ['Optimization','DO','Outcome decision',`Review ${measure.toLowerCase()} and record continue, revise, stop, or expand.`,{}]
+  ];
+}
+
+function recommendationWork() {
+  const rec = authoritativeRecommendation();
+  if (!rec) return null;
+  const fingerprint = rec.sourceFingerprint || rec.fingerprint || rec.id || 'recommendation';
+  const primaryMeasure = rec.measure || 'Agreed business measure';
+  return recommendationRows(rec).map(([phase,type,focus,action,source], index) => ({
+    id: `${fingerprint}-${index}`,
+    phase,
+    type,
+    focus,
+    action,
+    measure: source?.measure || primaryMeasure,
+    ownerRole: rec.owner || (phase === 'Foundation' ? 'Decision owner' : 'Accountable owner'),
+    cadence: source?.cadence || (phase === 'Foundation' ? 'Weekly' : phase === 'Activation' ? 'Biweekly' : 'Monthly'),
+    definitionOfDone: source?.definitionOfDone || `${action} Evidence is attached and the result is reviewed against ${String(primaryMeasure).toLowerCase()}.`,
+    sourceFingerprint: fingerprint,
+    upstreamComplete: !!visualizePlan.checked?.[`${fingerprint}-${index}`]
+  }));
+}
+
 function buildAssets() {
   if (executeMode === 'workflow') {
-    const work = (!operatingProfile?.archetypePreset ? DRIVE_OPERATING_PROFILE.execution(operatingProfile,motionTrack) : null) || DRIVE_ARCHETYPES.execute(operatingArchetype, motionTrack) || [];
+    const work = recommendationWork() || (!operatingProfile?.archetypePreset ? DRIVE_OPERATING_PROFILE.execution(operatingProfile,motionTrack) : null) || DRIVE_ARCHETYPES.execute(operatingArchetype, motionTrack) || [];
     assets = work.map(item => ({
       ...item,
       mode: 'workflow',
@@ -645,7 +715,7 @@ function renderAssetList() {
     html += `<div class="channel-label">${channel}</div>`;
     byChannel[channel].forEach(a => {
       const saved = savedAssets[a.id] || {};
-      const status = saved.status || (a.mode === 'workflow' ? 'Planned' : 'Draft');
+      const status = saved.status || (a.mode === 'workflow' ? (a.upstreamComplete ? 'Complete' : 'Planned') : 'Draft');
       const statusClass = { 'Draft': 'status-draft', 'Planned': 'status-draft', 'In Review': 'status-review', 'In Progress': 'status-review', 'Blocked': 'status-review', 'Approved': 'status-approved', 'Live': 'status-live', 'Complete': 'status-live' }[status] || 'status-draft';
       const title = saved.title || a.type;
       html += `<div class="asset-item${activeId === a.id ? ' active' : ''}" id="item-${a.id}" onclick="selectAsset('${a.id}')">
@@ -781,6 +851,17 @@ async function saveCurrentAsset() {
   // FIX 1: Await save and only show Synced on success; show error indicator on failure
   try {
     await OrgStore.save('org_engine_assets', savedAssets);
+    const activeAsset = assets.find(a => a.id === activeId);
+    if (executeMode === 'workflow' && activeAsset?.sourceFingerprint) {
+      const latestVec = await OrgStore.load('org_vec_state') || visualizeState;
+      latestVec.plan = latestVec.plan || {};
+      latestVec.plan.checked = latestVec.plan.checked || {};
+      latestVec.plan.checked[activeId] = vals.status === 'Complete';
+      await OrgStore.save('org_vec_state', latestVec);
+      visualizeState = latestVec;
+      visualizePlan = latestVec.plan;
+      activeAsset.upstreamComplete = vals.status === 'Complete';
+    }
     const si = document.getElementById('sync-indicator');
     if (si) {
       si.textContent = '● Synced';
@@ -901,7 +982,7 @@ function buildWorkflowForm(asset, saved) {
     <div class="form-section-title">Accountable Work Record</div>
     <div class="form-grid single">${fld('title', 'Work Item', inp('title', s('title', asset.action), 'Required action'))}</div>
     <div class="form-grid">
-      ${fld('status', 'Status', sel('status', ['Planned','In Progress','Blocked','Complete'], s('status','Planned')))}
+      ${fld('status', 'Status', sel('status', ['Planned','In Progress','Blocked','Complete'], s('status',asset.upstreamComplete ? 'Complete' : 'Planned')))}
       ${fld('owner', 'Accountable Owner', inp('owner', s('owner',''), asset.ownerRole))}
       ${fld('due_date', 'Decision or Completion Date', dateinp('due_date', s('due_date','')))}
       ${fld('cadence', 'Review Cadence', sel('cadence', ['Weekly','Biweekly','Monthly','Quarterly'], s('cadence',asset.cadence)))}
@@ -1088,7 +1169,7 @@ function collectCurrentValues() {
       phase: asset.phase,
       focus: asset.focus,
       title: vals.title || asset.action,
-      status: vals.status || 'Planned',
+      status: vals.status || (asset.upstreamComplete ? 'Complete' : 'Planned'),
       accountable_owner: vals.owner || null,
       due_date: vals.due_date || null,
       review_cadence: vals.cadence || asset.cadence,
@@ -1193,7 +1274,7 @@ function exportAllCSV() {
       return {
         work_item_id: a.id, archetype: operatingArchetype, track: motionTrack,
         phase: a.phase, focus: a.focus, title: saved.title || a.action,
-        status: saved.status || 'Planned', accountable_owner: saved.owner || '',
+        status: saved.status || (a.upstreamComplete ? 'Complete' : 'Planned'), accountable_owner: saved.owner || '',
         due_date: saved.due_date || '', review_cadence: saved.cadence || a.cadence,
         primary_measure: saved.measure || a.measure, baseline: saved.baseline || '',
         target: saved.target || '', decision: saved.decision || 'Not decided',
