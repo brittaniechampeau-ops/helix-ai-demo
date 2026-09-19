@@ -1463,12 +1463,18 @@ function applyExecuteContext() {
 }
 
 const loginScreen = document.getElementById('loginScreen');
+let initRun = null;
+function ensureInit(session) {
+  if (!session) return Promise.resolve();
+  if (!initRun) initRun = initApp(session).catch(err => { initRun = null; showToast('Failed to load — please refresh.'); console.error(err); });
+  return initRun;
+}
 
 DriveAuth.onChange(async (event, session) => {
   document.getElementById('authLoading').style.display = 'none';
   if (session) {
     loginScreen.classList.remove('visible');
-    initApp(session).catch(err => { showToast('Failed to load — please refresh.'); console.error(err); });
+    ensureInit(session);
   } else {
     loginScreen.classList.add('visible');
     // Also try to init without auth (for local dev / demo)
@@ -1478,7 +1484,11 @@ DriveAuth.onChange(async (event, session) => {
 // Kick off session check; also init without auth for demo purposes
 (async () => {
   const { data: { session } } = await DriveAuth.getSession();
-  if (!session) {
+  if (session) {
+    document.getElementById('authLoading').style.display = 'none';
+    loginScreen.classList.remove('visible');
+    await ensureInit(session);
+  } else {
     // Still init the UI so it's explorable
     await loadDRIVEData();
     applyExecuteContext();
