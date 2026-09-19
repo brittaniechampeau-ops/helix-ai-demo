@@ -717,12 +717,13 @@ function renderAssetList() {
       const saved = savedAssets[a.id] || {};
       const status = saved.status || (a.mode === 'workflow' ? (a.upstreamComplete ? 'Complete' : 'Planned') : 'Draft');
       const statusClass = { 'Draft': 'status-draft', 'Planned': 'status-draft', 'In Review': 'status-review', 'In Progress': 'status-review', 'Blocked': 'status-review', 'Approved': 'status-approved', 'Live': 'status-live', 'Complete': 'status-live' }[status] || 'status-draft';
-      const title = saved.title || a.type;
+      const title = saved.title || (a.mode === 'workflow' ? a.action : a.type);
+      const subtitle = a.mode === 'workflow' ? `${a.focus} · ${a.offer || ''}` : (a.offer || '');
       html += `<div class="asset-item${activeId === a.id ? ' active' : ''}" id="item-${a.id}" onclick="selectAsset('${a.id}')">
         <span class="asset-item-icon">${a.icon}</span>
         <div class="asset-item-body">
           <div class="asset-item-name">${escHtml(title)}</div>
-          <div class="asset-item-sub">${escHtml(a.offer || '')}</div>
+          <div class="asset-item-sub">${escHtml(subtitle)}</div>
         </div>
         <span class="status-badge ${statusClass}">${escHtml(status)}</span>
       </div>`;
@@ -742,7 +743,8 @@ function updateBottomCount() {
   }).length;
   const el = document.getElementById('assetCount');
   const noun = executeMode === 'workflow' ? 'work items' : 'assets';
-  if (el) el.innerHTML = `<strong>${total}</strong> ${noun} · <strong>${approved}</strong> approved`;
+  const completionLabel = executeMode === 'workflow' ? 'complete' : 'approved';
+  if (el) el.innerHTML = `<strong>${total}</strong> ${noun} · <strong>${approved}</strong> ${completionLabel}`;
 }
 
 // ─── ASSET SELECTION & FORM ───────────────────────────────────────────────────
