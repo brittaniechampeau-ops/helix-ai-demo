@@ -1452,7 +1452,7 @@ function applyExecuteContext() {
   const definition = DRIVE_ARCHETYPES.definitions[operatingArchetype];
   if (executeMode !== 'workflow' || !definition) return;
   document.getElementById('executeModeLabel').textContent = 'Workflow Ops';
-  document.getElementById('leftPanelTitle').textContent = '90-Day Execution System';
+  document.getElementById('leftPanelTitle').textContent = 'Implementation Workflow';
   document.getElementById('rightPanelTitle').textContent = 'Operating Record Preview';
   document.getElementById('operatingContextPill').style.display = 'flex';
   const business=DRIVE_OPERATING_PROFILE.label('businessModel',operatingProfile?.dimensions?.businessModel);
